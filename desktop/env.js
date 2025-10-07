@@ -3,10 +3,21 @@ import path from "path";
 
 /**
  * Helper util to load .env values into node process
- * @param {string} envFilePath File path
+ * @param {string} envFilePath Optional path for dev override
  */
 export function loadEnv(envFilePath = ".env") {
-  const fullPath = path.resolve(process.cwd(), envFilePath);
+  let fullPath;
+
+  // Detect if running inside ASAR
+  const isProd = __dirname.includes("app.asar");
+
+  if (isProd) {
+    // In production, load from ASAR root
+    fullPath = path.join(__dirname, ".env");
+  } else {
+    // In dev, use provided path relative to project root
+    fullPath = path.resolve(process.cwd(), envFilePath);
+  }
 
   if (!fs.existsSync(fullPath)) {
     console.warn(`⚠️  No .env file found at ${fullPath}`);

@@ -1,5 +1,5 @@
 const { app, BrowserWindow } = require("electron");
-const { loadEnv } = require("./libs/env");
+const { loadEnv } = require("./env");
 
 loadEnv();
 
@@ -19,7 +19,7 @@ const createWindow = () => {
 
     win.loadURL(process.env.DEV_UI_PORT);
   } else {
-    win.loadFile("index.html"); // fix this later to point to dist folder
+    win.loadFile("index.html"); 
   }
 };
 
