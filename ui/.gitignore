@@ -1,0 +1,40 @@
+# Node dependencies
+node_modules/
+
+# Production build output
+dist/
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Optional: coverage and test artifacts
+coverage/
+*.lcov
+
+# Optional: local server cache
+.cache/
