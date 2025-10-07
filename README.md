@@ -9,6 +9,7 @@ Simple text editor
 - create file ro folder
 - click see file or folder 
 - edit text in file or folder
+- custom build script to build react app and then package it with electron
 
 # Overview
 
@@ -21,3 +22,8 @@ Simple text editor
 
 - Read UI readme 
 - Read desktop readme
+
+# Building 
+
+- set up scripts deps cd into scripts and run `npm ci`
+- then from root run `node .\scripts\build.js` pass any args it needs

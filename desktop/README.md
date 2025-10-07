@@ -2,7 +2,6 @@
 
 Contains all our desktop specific code built with electron
 
-
 # Running
 
 - Install deps `npm ci`
