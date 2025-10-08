@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "../ui/src/gen", // for frontend to use
+    "noEmit": false,
+    "module": "commonjs"
+  },
+  "files": [
+    "type.js"
+  ]
+}

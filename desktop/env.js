@@ -1,11 +1,11 @@
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Helper util to load .env values into node process
  * @param {string} envFilePath Optional path for dev override
  */
-export function loadEnv(envFilePath = ".env") {
+function loadEnv(envFilePath = ".env") {
   let fullPath;
 
   // Detect if running inside ASAR
@@ -41,3 +41,7 @@ export function loadEnv(envFilePath = ".env") {
     process.env[key.trim()] = cleanValue;
   });
 }
+
+module.exports = {
+  loadEnv,
+};

@@ -1,23 +1,13 @@
-# UI
+# Ui
 
-Contains all fluffy ui code built with plain react and web pack
-
-
-# Style guide
-
-- use plain react js 
-- use JSDoc and plain js
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.10.
 
 # Running 
 
-- Have deps installed `npm ci`
-- Run dev `npm run start`
+dev:
+- `npm ci`
+- `npm run start`
 
-# Building prod
+build:
 
-- Build with `npm run build`
-
-# Seeing prod build
-
-- Build it
-- Then run `npm run serve`
+- `npm run build`

@@ -21,8 +21,10 @@ logInfo("Starting build");
 let argsMap = getArgsMap();
 
 const distPath = path.join(__dirname, "..", "dist");
+
 const uiPath = path.join(__dirname, "..", "ui");
-const uiDistPath = path.join(uiPath, "dist");
+const uiDistPath = path.join(uiPath, "dist", "ui", "browser");
+
 const desktopPath = path.join(__dirname, "..", "desktop");
 const desktopDistPath = path.join(desktopPath, "dist");
 
@@ -84,6 +86,35 @@ if (!fs.existsSync(desktopPath)) {
   logInfo("Desktop path found at " + desktopPath);
 }
 
+if (!fs.existsSync(distPath)) {
+  logInfo("Creating dist folder at " + distPath);
+  fs.mkdirSync(distPath, { recursive: true });
+}
+
+if (!fs.existsSync(distAppPath)) {
+  logInfo("Creating app folder at " + distAppPath);
+  fs.mkdirSync(distAppPath, { recursive: true });
+}
+
+logInfo("Building Desktop source code");
+try {
+  logInfo("Running npm ci");
+  execSync("npm ci", { cwd: uiPath, stdio: "inherit" });
+
+  logInfo("Running npm run build at " + desktopDistPath);
+  execSync("npm run build", { cwd: desktopPath, stdio: "inherit" });
+} catch (err) {
+  logError("Desktop build failed");
+  exit(1);
+}
+
+if (!fs.existsSync(desktopDistPath)) {
+  logError("Desktop build dist not found at " + desktopDistPath);
+  exit(1);
+} else {
+  logInfo("Desktop build dist found at " + desktopDistPath);
+}
+
 logInfo("Building UI source code");
 
 try {
@@ -104,32 +135,6 @@ if (!fs.existsSync(uiDistPath)) {
   exit(1);
 } else {
   logInfo("UI dist path found at " + uiDistPath);
-}
-
-if (!fs.existsSync(distPath)) {
-  logInfo("Creating dist folder at " + distPath);
-  fs.mkdirSync(distPath, { recursive: true });
-}
-
-if (!fs.existsSync(distAppPath)) {
-  logInfo("Creating app folder at " + distAppPath);
-  fs.mkdirSync(distAppPath, { recursive: true });
-}
-
-logInfo("Building Desktop source code");
-try {
-  logInfo("Running node build.js");
-  execSync("node build.js", { cwd: desktopPath, stdio: "inherit" });
-} catch (err) {
-  logError("Desktop build failed");
-  exit(1);
-}
-
-if (!fs.existsSync(desktopDistPath)) {
-  logError("Desktop build dist not found at " + desktopDistPath);
-  exit(1);
-} else {
-  logInfo("Desktop build dist found at " + desktopDistPath);
 }
 
 logInfo("Copying desktop dist into " + distAppPath);
