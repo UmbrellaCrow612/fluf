@@ -1,0 +1,11 @@
+<div class="container">
+  <h1>Welcome to Fluffy</h1>
+  <p class="tagline">Your lightweight code editor</p>
+  <button
+    mat-button
+    (click)="openFolderInEditor()"
+    [disabled]="isOpeningFolder"
+  >
+    Open Folder
+  </button>
+</div>

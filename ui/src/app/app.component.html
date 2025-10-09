@@ -1,16 +1,3 @@
-<router-outlet />
-
-<div class="container">
-  <h1>Electron Folder Selector Demo</h1>
-
-  <button (click)="openFolderDialog()">Select Folder</button>
-
-  @if (selectedFolder) {
-    <div class="result">
-      <strong>Selected Folder:</strong>
-      <p>{{ selectedFolder }}</p>
-    </div>
-  }
+<div class="app_shell">
+  <router-outlet />
 </div>
-
-  
