@@ -1,30 +1,63 @@
-# Flufy
+# **Flufy**
 
-Simple text editor
+A simple text editor with desktop packaging support using Electron.
 
-# Feature goals
+---
 
-- open folder
-- side bar see all files and folders
-- create file ro folder
-- click see file or folder
-- edit text in file or folder
-- custom build script to build react app and then package it with electron
+## **Feature Goals**
 
-# Overview
+* Open a folder
+* Display all files and folders in a sidebar
+* Create new files or folders
+* View files or folders by clicking on them
+* Edit text content in files
+* Use a custom build script to build the Angular app and package it with Electron
 
-- `UI` - Contains out ui source code built in react and webpack
-- `Desktop` - Contains ourdesktop wrapper code built with electron and scripts
-- `Scripts` - Contains our custom build scripts to build for desktop using electron and react source code
+---
 
-# Running
+## **Project Overview**
 
-- Read UI readme
-- Read desktop readme
+* **`UI/`** – Contains the frontend source code (built with **Angular**)
+* **`Desktop/`** – Contains the Electron desktop wrapper (built with **Electron** and **esbuild**)
+* **`Scripts/`** – Contains custom build scripts for packaging the Angular app with Electron
 
-# Building for prod
+---
 
-- set up scripts deps cd into scripts and run `npm ci`
-- in `desktop` change `.env` `mode` to `prod`
-- then from root run `node .\scripts\build.js --platform=windows --electronVersion=v38.2.1 --platformPackage=electron-v38.2.1-win32-x64.zip` pass any args it needs
-- check if it worked go into the `dist` folder and run `.\electron.exe` it should open the project
+## **Running the Project**
+
+1. Refer to the **UI** folder’s README for frontend setup and development instructions.
+2. Refer to the **Desktop** folder’s README for Electron-specific setup and running instructions.
+
+---
+
+## **Building for Production**
+
+1. **Install script dependencies:**
+
+   ```bash
+   cd scripts
+   npm ci
+   ```
+
+2. **Set the build mode to production:**
+
+   * Open `desktop/.env`
+   * Change the value of `mode` to `prod`
+
+3. **Run the build script from the project root:**
+
+   ```bash
+   node .\scripts\build.js --platform=windows --electronVersion=v38.2.1 --platformPackage=electron-v38.2.1-win32-x64.zip
+   ```
+
+   *(You can pass additional arguments as needed.)*
+
+4. **Verify the build:**
+
+   * Navigate to the `dist` folder
+   * Run:
+
+     ```bash
+     .\electron.exe
+     ```
+   * The app should open successfully.
