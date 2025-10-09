@@ -1,75 +1,101 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { AppContext, ContextService } from './app-context.service';
+import { WinKey } from './win-key';
 
-type HotKeyCallback = (context: AppContext) => void;
+/**
+ * Represents a hot key
+ */
+export interface HotKey {
+  /**
+   * Keys that will be listened to i.e ["Control", "p"]
+   */
+  keys: WinKey[];
 
-interface HotKeySubscription {
-  keys: string[];
-  callback: HotKeyCallback;
-  contextFilter?: (context: AppContext) => boolean; // optional filter
+  /**
+   * A callback function to run when the keys are ran
+   * @param ctx The application context at the time of running it
+   */
+  callback: (ctx: AppContext) => void;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class HotKeyService {
-  private pressedKeys = new Set<string>();
-  private subscriptions: HotKeySubscription[] = [];
+  /**
+   * List of keys pressed
+   */
+  private _keys: Set<string> = new Set();
 
-  constructor(private contextService: ContextService) {
+  /**
+   * List of subscriptions
+   */
+  private _subs: Set<HotKey> = new Set();
+
+  /**
+   * App context
+   */
+  private readonly _context = inject(ContextService);
+
+  constructor() {
     document.addEventListener('keydown', (event) => this.handleKeyDown(event));
     document.addEventListener('keyup', (event) => this.handleKeyUp(event));
   }
 
-  private normalizeKey(key: string) {
-    return key.toLowerCase();
+  /**
+   * Subscribe a hot key to be run when the condition is met
+   * @param sub The hot key to register
+   */
+  sub(sub: HotKey) {
+    this._subs.add(sub);
   }
 
-  handleKeyDown(event: KeyboardEvent) {
-    this.pressedKeys.add(this.normalizeKey(event.key));
-    this.checkSubscriptions();
+  /**
+   * Remove a hot key subscription
+   * @param sub The hot key to remove
+   */
+  unsub(sub: HotKey) {
+    this._subs.delete(sub);
   }
 
-  handleKeyUp(event: KeyboardEvent) {
-    this.pressedKeys.delete(this.normalizeKey(event.key));
+  /**
+   * Runs when a keydown event is run
+   * @param event - Keyboard event
+   */
+  private handleKeyDown(event: KeyboardEvent) {
+    this._keys.add(event.key);
+    this.runSubs();
   }
 
-  subscribe(
-    keys: string[],
-    callback: HotKeyCallback,
-    contextFilter?: (context: AppContext) => boolean
-  ) {
-    this.subscriptions.push({
-      keys: keys.map(this.normalizeKey),
-      callback,
-      contextFilter,
-    });
+  /**
+   * Runs when keyup event is run
+   * @param event - Keyboard event
+   */
+  private handleKeyUp(event: KeyboardEvent) {
+    this._keys.delete(event.key);
   }
 
-  unsubscribe(keys: string[], callback: HotKeyCallback) {
-    this.subscriptions = this.subscriptions.filter(
-      (sub) =>
-        !(
-          this.arraysEqual(sub.keys, keys.map(this.normalizeKey)) &&
-          sub.callback === callback
-        )
-    );
-  }
-
-  private checkSubscriptions() {
-    const context = this.contextService.getContext();
-    for (const sub of this.subscriptions) {
-      if (
-        sub.keys.every((key) => this.pressedKeys.has(key)) &&
-        (!sub.contextFilter || sub.contextFilter(context))
-      ) {
-        sub.callback(context);
+  /**
+   * Run all hot keys registered
+   */
+  private runSubs() {
+    let ctx = this._context.getContext();
+    for (let item of this._subs) {
+      if (this.arrayMatchesSet(item.keys, this._keys)) {
+        item.callback(ctx);
       }
     }
   }
 
-  private arraysEqual(arr1: string[], arr2: string[]) {
-    if (arr1.length !== arr2.length) return false;
-    return arr1.every((val) => arr2.includes(val));
+  /**
+   * Check if an item's keys match the current keys being pressed
+   * @param arr The keys of a hot key for example ["Control", "p"]
+   * @param set The tracked keys are pressed
+   * @returns {boolean} If the item's keys match the current pressed keys
+   */
+  private arrayMatchesSet(arr: string[], set: Set<string>) {
+    if (arr.length !== set.size) return false;
+
+    return arr.every((key) => set.has(key));
   }
 }

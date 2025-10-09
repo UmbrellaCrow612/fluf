@@ -1,32 +1,45 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
 
+/**
+ * Represents the application context.
+ */
 export interface AppContext {
+  /**
+   * The current section of the editor or application where the user has focus,
+   * e.g., "file", "terminal", etc.
+   */
   section: string;
-  [key: string]: any; // Allow any additional dynamic properties
 }
 
+/**
+ * Service that holds and manages the application context state.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class ContextService {
-  private contextSubject = new BehaviorSubject<AppContext>({
-    section: 'dashboard',
-  });
+  /**
+   * The current application context.
+   */
+  private _context: AppContext = {
+    section: 'init',
+  };
 
-  // Observable for components/services to subscribe
-  context$ = this.contextSubject.asObservable();
-
-  // Get the current value synchronously
+  /**
+   * Retrieves the current application context synchronously.
+   * @returns {AppContext} The current application context.
+   */
   getContext(): AppContext {
-    return this.contextSubject.value;
+    return this._context;
   }
 
-  // Update the context
-  setContext(newContext: Partial<AppContext>) {
-    this.contextSubject.next({
-      ...this.contextSubject.value,
+  /**
+   * Updates the application context with a new value.
+   * @param newContext - The new context to set.
+   */
+  setContext(newContext: AppContext) {
+    this._context = {
       ...newContext,
-    });
+    };
   }
 }

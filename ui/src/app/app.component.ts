@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HotKeyService } from '../features/hotkeys/hot-key.service';
-import { Keys } from '../features/hotkeys/keys';
+import { HotKeyService, HotKey } from '../features/hotkeys/hot-key.service';
 import { ContextService } from '../features/hotkeys/app-context.service';
 
 @Component({
@@ -13,21 +12,31 @@ import { ContextService } from '../features/hotkeys/app-context.service';
 export class AppComponent {
   private readonly hotKeyService = inject(HotKeyService);
   private readonly contextService = inject(ContextService);
+
+  number = 5;
+
+  hotKey: HotKey = {
+    keys: ['Control', 'p'], // Specify the keys for Ctrl + P
+    callback: (ctx) => {
+      if (ctx.section == 'file') {
+        console.log('Control + P ran in file');
+        this.number = 100;
+        return;
+      }
+      this.number = 12;
+      console.log('Control + P ran');
+    },
+  };
+
   ngOnInit() {
-    this.hotKeyService.subscribe(
-      [Keys.Control, Keys.P],
-      (context) => {
-        console.log('Ctrl+P pressed in file section!', context);
-        // do your logic here
-      },
-      (context) => context.section === 'file' // only fire if in 'file' context
-    );
+    this.hotKeyService.sub(this.hotKey);
   }
 
   ngOnDestroy() {
-    // optional: unsubscribe if needed
-    this.hotKeyService.unsubscribe([Keys.Control, Keys.P], (context) => {
-      console.log('Ctrl+P pressed in file section!', context);
-    });
+    this.hotKeyService.unsub(this.hotKey);
+  }
+
+  change() {
+    this.contextService.setContext({ section: 'file' });
   }
 }
