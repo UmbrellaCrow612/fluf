@@ -1,14 +1,14 @@
 /**
- * Es Build to compile all js files into a single one for easier building and packing
+ * ESBuild script to compile all JS files into the dist folder for packaging.
  */
 
 const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
-const chalk = require("chalk").default; // For colored console output
+const chalk = require("chalk").default; // Colored console output
 
-// Helper for logging with timestamp
+// Logging helper
 const log = {
   info: (msg) => console.log(`${chalk.blue("[INFO]")} [${new Date().toISOString()}] ${msg}`),
   success: (msg) => console.log(`${chalk.green("[SUCCESS]")} [${new Date().toISOString()}] ${msg}`),
@@ -16,15 +16,19 @@ const log = {
   error: (msg) => console.error(`${chalk.red("[ERROR]")} [${new Date().toISOString()}] ${msg}`),
 };
 
-// Define paths
+// Paths
 const distFolder = path.resolve(__dirname, "dist");
 const envFile = path.resolve(__dirname, ".env");
 const packageFile = path.resolve(__dirname, "package.json");
 const distEnvFile = path.join(distFolder, ".env");
 const distPackageFile = path.join(distFolder, "package.json");
-const preloadScriptPath = path.join(__dirname, "preload.js");
-const preloadScriptDestPath = path.join(distFolder, "preload.js");
 
+const entryPoints = {
+  index: path.resolve(__dirname, "index.js"),
+  preload: path.resolve(__dirname, "preload.js"),
+};
+
+// Run TypeScript compilation
 try {
   log.info("Running TypeScript compiler...");
   execSync("npx tsc", { cwd: __dirname, stdio: "inherit" });
@@ -43,7 +47,7 @@ if (fs.existsSync(distFolder)) {
 fs.mkdirSync(distFolder);
 log.info(`Created new dist folder at ${distFolder}`);
 
-// Copy .env file
+// Copy .env and package.json
 if (!fs.existsSync(envFile)) {
   log.error(".env file not found. Build cannot continue.");
   process.exit(1);
@@ -51,7 +55,6 @@ if (!fs.existsSync(envFile)) {
 fs.copyFileSync(envFile, distEnvFile);
 log.info(".env file copied to dist folder.");
 
-// Copy package.json
 if (!fs.existsSync(packageFile)) {
   log.error("package.json not found. Build cannot continue.");
   process.exit(1);
@@ -59,44 +62,29 @@ if (!fs.existsSync(packageFile)) {
 fs.copyFileSync(packageFile, distPackageFile);
 log.info("package.json copied to dist folder.");
 
-// Bundle preload.js using esbuild
-if (!fs.existsSync(preloadScriptPath)) {
-  log.error("preload.js script not found. Build cannot continue.");
-  process.exit(1);
-}
-log.info("Bundling preload.js with esbuild...");
-esbuild
-  .build({
-    entryPoints: [preloadScriptPath],
-    bundle: true,
-    platform: "node", // Electron preload runs in a Node-like environment
-    target: ["node16"], // adjust Node version as needed
-    outfile: preloadScriptDestPath,
-    external: ["electron"],
-    minify: true,
-  })
-  .then(() => log.success("preload.js bundled successfully!"))
-  .catch((err) => {
-    log.error("Failed to bundle preload.js.");
-    log.error(err.message);
+// Validate entry files
+for (const [name, filePath] of Object.entries(entryPoints)) {
+  if (!fs.existsSync(filePath)) {
+    log.error(`${name}.js not found. Build cannot continue.`);
     process.exit(1);
-  });
+  }
+}
 
-// Bundle main Electron file using esbuild
-log.info("Bundling main index.js with esbuild...");
+// Combined esbuild build
+log.info("Bundling Electron scripts (index.js & preload.js) with esbuild...");
 esbuild
   .build({
-    entryPoints: ["index.js"], // your Electron main file
+    entryPoints: entryPoints,
+    outdir: distFolder,
     bundle: true,
     platform: "node",
     target: ["node16"],
-    outfile: "dist/index.js",
-    external: ["electron"], // don't bundle electron itself
+    external: ["electron"],
     minify: true,
   })
-  .then(() => log.success("Main build completed successfully!"))
+  .then(() => log.success("All scripts bundled successfully!"))
   .catch((err) => {
-    log.error("Main build failed.");
+    log.error("esbuild bundling failed.");
     log.error(err.message);
     process.exit(1);
   });

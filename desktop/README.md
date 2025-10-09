@@ -27,4 +27,14 @@ const readFileImpl = async (event = undefined, filePath) => {
 
 cmd
 
-run `npx tsc --noEmit` to see for any errors
+run `npx tsc` to see for any errors and generating frontend ts types to use
+
+
+# Info 
+
+Build script:
+- copys .env file
+- copys pack json
+- es builds index.js and preload js - note should only minify and exclude electron
+- puts into a dist folder
+- end

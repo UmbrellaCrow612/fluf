@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
-const { readFileImpl } = require("./ipcFuncs");
+const { readFileImpl, readDirImpl, selectFolderImpl } = require("./ipcFuncs");
 
 loadEnv();
 
@@ -12,8 +12,8 @@ const createWindow = () => {
     height: 600,
     minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
-    }
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
 
   if (process.env.MODE === "dev") {
@@ -25,12 +25,14 @@ const createWindow = () => {
     // @ts-ignore
     win.loadURL(process.env.DEV_UI_PORT);
   } else {
-    win.loadFile("index.html"); 
+    win.loadFile("index.html");
   }
 };
 
 app.whenReady().then(() => {
-  ipcMain.handle('file:read', readFileImpl)
+  ipcMain.handle("file:read", readFileImpl);
+  ipcMain.handle("dir:read", readDirImpl);
+  ipcMain.handle("dir:select", selectFolderImpl)
 
   createWindow();
 });

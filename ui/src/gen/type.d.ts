@@ -1,23 +1,76 @@
 /**
- * Method to read a file's content - in main world you dont need to worry about event arg thats just a electron main process thing you dont need to pass it
- * simpley ignore it and pass any other args after it
+ * Reads the contents of a file.
+ *
+ * In the main world, you don't need to worry about the `event` argument — it's specific to Electron's main process.
+ * Simply ignore it and provide any other arguments after it.
  */
 type readFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string>;
 /**
- * API's we expose in the render process to use the electron funcs
+ * Recursively reads a directory and retrieves all files and folders within it.
+ */
+type readDir = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string, options?: ReadDirOptions | undefined) => Promise<ReadDirObject>;
+/**
+ * Opens a folder selection dialog and returns the selected path.
+ */
+type selectFolder = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<import("electron").OpenDialogReturnValue>;
+/**
+ * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
     /**
-     * - The function used to format text.
+     * - Reads the contents of a file.
      */
     readFile: readFile;
+    /**
+     * - Reads the contents of a directory.
+     */
+    readDir: readDir;
+    /**
+     * - Opens a dialog and allows the user to choose a folder to select
+     */
+    selectFolder: selectFolder;
 };
 /**
- * Extends window and offers the electron api
+ * Extends the global `window` object to include the Electron API.
  */
 type EWindow = {
     /**
-     * - The electron api attached
+     * - The attached Electron API.
      */
     electronApi: ElectronApi;
+};
+/**
+ * Represents an object in a directory tree. Each object can be a file or a folder.
+ * If it’s a folder, it contains all its subfolders and files in a tree structure.
+ */
+type ReadDirObject = {
+    /**
+     * - Indicates whether the object is a file (`true`) or a directory (`false`).
+     */
+    isFile: boolean;
+    /**
+     * - A list of child items if the object is a directory.
+     */
+    children?: ReadDirObject[] | undefined;
+    /**
+     * - The name of the file or folder.
+     */
+    name: string;
+    /**
+     * - The full path to the file or folder.
+     */
+    path: string;
+};
+/**
+ * Options for reading a directory.
+ */
+type ReadDirOptions = {
+    /**
+     * - A list of folder names to ignore.
+     */
+    ignoreFolders?: string[] | undefined;
+    /**
+     * - A list of file names to ignore.
+     */
+    ignoreFiles?: string[] | undefined;
 };
