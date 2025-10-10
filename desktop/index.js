@@ -1,7 +1,12 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
-const { readFileImpl, readDirImpl, selectFolderImpl } = require("./ipcFuncs");
+const {
+  readFileImpl,
+  readDirImpl,
+  selectFolderImpl,
+  existsImpl,
+} = require("./ipcFuncs");
 
 loadEnv();
 
@@ -32,7 +37,8 @@ const createWindow = () => {
 app.whenReady().then(() => {
   ipcMain.handle("file:read", readFileImpl);
   ipcMain.handle("dir:read", readDirImpl);
-  ipcMain.handle("dir:select", selectFolderImpl)
+  ipcMain.handle("dir:select", selectFolderImpl);
+  ipcMain.handle("exists", existsImpl);
 
   createWindow();
 });

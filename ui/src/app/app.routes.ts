@@ -6,4 +6,9 @@ export const routes: Routes = [
     loadChildren: () =>
       import('../features/home/home.routes').then((m) => m.homeRoutes),
   },
+  {
+    path: 'editor',
+    loadChildren: () =>
+      import('../features/editor/editor.routes').then((m) => m.editorRoutes),
+  },
 ];

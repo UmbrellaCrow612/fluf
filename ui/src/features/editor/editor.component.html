@@ -1,0 +1,18 @@
+<div class="container">
+  @if (isLoading) {
+  <div>Loading editor</div>
+  }
+
+  <!---->
+  @if (!isLoading && error) {
+  <div>Error occured {{ error }}</div>
+  }
+
+  <!---->
+  @if (!isLoading && !error) {
+  <div>
+    render file explor compo for now click a file it could be
+    editor/view/file/:pathToFile
+  </div>
+  }
+</div>

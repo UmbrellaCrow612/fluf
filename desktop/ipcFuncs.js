@@ -4,6 +4,7 @@
 
 const { dialog } = require("electron");
 const fsp = require("fs/promises");
+const fs = require("fs");
 const path = require("path");
 
 /**
@@ -90,8 +91,22 @@ const selectFolderImpl = async (event = undefined) => {
   return await dialog.showOpenDialog({ properties: ["openDirectory"] });
 };
 
+/**
+ * @type {exists}
+ */
+const existsImpl = async (_event = undefined, path) => {
+  try {
+    fs.existsSync(path);
+    return true;
+  } catch (error) {
+    console.log("Error with exists function");
+    return false;
+  }
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
-  selectFolderImpl
+  selectFolderImpl,
+  existsImpl,
 };

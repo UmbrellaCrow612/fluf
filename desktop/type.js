@@ -23,8 +23,16 @@
 /**
  * Opens a folder selection dialog and returns the selected path.
  * @callback selectFolder
- * @param {import("electron").IpcMainInvokeEvent} [event] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @returns {Promise<import("electron").OpenDialogReturnValue>} - A promise that resolves with the dialog result, including the selected path or a flag indicating cancellation.
+ */
+
+/**
+ * Checks if a file or folder exists
+ * @callback exists
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} path - The file or folder path to check if it exists
+ * @returns {Promise<boolean>} - True or false if it exists
  */
 
 /**
@@ -34,6 +42,7 @@
  * @property {readFile} readFile - Reads the contents of a file.
  * @property {readDir} readDir - Reads the contents of a directory.
  * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
+ * @property {exists} exists - Check if a file or folder exists
  */
 
 /**

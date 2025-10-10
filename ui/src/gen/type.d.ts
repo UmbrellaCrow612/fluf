@@ -14,6 +14,10 @@ type readDir = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: 
  */
 type selectFolder = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<import("electron").OpenDialogReturnValue>;
 /**
+ * Checks if a file or folder exists
+ */
+type exists = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -29,6 +33,10 @@ type ElectronApi = {
      * - Opens a dialog and allows the user to choose a folder to select
      */
     selectFolder: selectFolder;
+    /**
+     * - Check if a file or folder exists
+     */
+    exists: exists;
 };
 /**
  * Extends the global `window` object to include the Electron API.

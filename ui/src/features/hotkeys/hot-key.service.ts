@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { AppContext, ContextService } from './app-context.service';
+import { AppContext, ContextService } from '../app-context/app-context.service';
 import { WinKey } from './win-key';
 
 /**
@@ -93,7 +93,7 @@ export class HotKeyService {
    * @param set The tracked keys are pressed
    * @returns {boolean} If the item's keys match the current pressed keys
    */
-  private arrayMatchesSet(arr: string[], set: Set<string>) {
+  private arrayMatchesSet(arr: string[], set: Set<string>): boolean {
     if (arr.length !== set.size) return false;
 
     return arr.every((key) => set.has(key));
