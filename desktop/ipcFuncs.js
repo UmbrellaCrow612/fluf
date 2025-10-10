@@ -131,6 +131,24 @@ const closeImpl = (_event = undefined) => {
   win.close();
 };
 
+/**
+ * @type {isMaximized}
+ */
+const isMaximizedImpl = async (_event = undefined) => {
+  const webContents = _event.sender;
+  const win = BrowserWindow.fromWebContents(webContents);
+  return win.isMaximized();
+};
+
+/**
+ * @type {restore}
+ */
+const restoreImpl = (_event = undefined) => {
+  const webContents = _event.sender;
+  const win = BrowserWindow.fromWebContents(webContents);
+  win.restore();
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
@@ -139,4 +157,6 @@ module.exports = {
   minimizeImpl,
   maximizeImpl,
   closeImpl,
+  isMaximizedImpl,
+  restoreImpl
 };

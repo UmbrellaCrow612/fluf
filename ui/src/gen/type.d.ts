@@ -30,6 +30,14 @@ type maximize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
  */
 type close = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
 /**
+ * Checks if the window is maximized
+ */
+type isMaximized = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
+/**
+ * Restores the browsers window back to beofre it was maximized
+ */
+type restore = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -61,6 +69,14 @@ type ElectronApi = {
      * - Close the window
      */
     close: close;
+    /**
+     * - Check if the window screen is fully maximized
+     */
+    isMaximized: isMaximized;
+    /**
+     * - Restores the window back to beofre it was maximized
+     */
+    restore: restore;
 };
 /**
  * Extends the global `window` object to include the Electron API.

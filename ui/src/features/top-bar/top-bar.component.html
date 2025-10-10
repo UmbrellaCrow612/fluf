@@ -15,9 +15,15 @@
     <button mat-icon-button matTooltip="Minimize" (click)="minimize()">
       <mat-icon>minimize</mat-icon>
     </button>
+    @if (isMaximized) {
+    <button mat-icon-button matTooltip="Restore" (click)="restore()">
+      <mat-icon>filter_none</mat-icon>
+    </button>
+    } @else {
     <button mat-icon-button matTooltip="Maximize" (click)="maximize()">
       <mat-icon>crop_square</mat-icon>
     </button>
+    }
     <button mat-icon-button matTooltip="Close" (click)="close()">
       <mat-icon>close</mat-icon>
     </button>

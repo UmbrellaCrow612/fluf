@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../utils';
+import { debounceTime, fromEvent, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-top-bar',
@@ -11,31 +12,56 @@ import { getElectronApi } from '../../utils';
   templateUrl: './top-bar.component.html',
   styleUrl: './top-bar.component.css',
 })
-export class TopBarComponent {
+export class TopBarComponent implements OnInit, OnDestroy {
+  private readonly _api = getElectronApi();
+
+  /**
+   * Holds window maximized state
+   */
+  isMaximized = false;
+  resizeSub: Subscription | null = null;
+
+  ngOnInit(): void {
+    this.resizeSub = fromEvent(window, 'resize')
+      .pipe(debounceTime(250)) // 500ms buffer
+      .subscribe(() => {
+        console.log("Reload")
+        this.reloadMaxState();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.resizeSub?.unsubscribe();
+  }
+
+  /**
+   * Re checks if a window is maximized for reestore
+   */
+  async reloadMaxState() {
+    this.isMaximized = await this._api.isMaximized();
+  }
   /**
    * Minimizes screen window
    */
-  minimize() {
-    let api = getElectronApi();
-
-    api.minimize();
+  async minimize() {
+    this._api.minimize();
   }
 
   /**
    * Maximizes screen window
    */
-  maximize() {
-    let api = getElectronApi();
+  async maximize() {
+    this._api.maximize();
+  }
 
-    api.maximize();
+  async restore() {
+    this._api.restore();
   }
 
   /**
    * Closes screen window
    */
   close() {
-    let api = getElectronApi();
-
-    api.close();
+    this._api.close();
   }
 }

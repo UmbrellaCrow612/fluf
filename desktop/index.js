@@ -9,6 +9,8 @@ const {
   minimizeImpl,
   maximizeImpl,
   closeImpl,
+  isMaximizedImpl,
+  restoreImpl,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -35,6 +37,7 @@ const createWindow = () => {
     win.loadURL(process.env.DEV_UI_PORT);
   } else {
     win.loadFile("index.html");
+    // todo remove dev tools
   }
 };
 
@@ -43,10 +46,12 @@ app.whenReady().then(() => {
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
   ipcMain.handle("exists", existsImpl);
+  ipcMain.handle("window:isMaximized", isMaximizedImpl);
 
   ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);
   ipcMain.on("window:close", closeImpl);
+  ipcMain.on("window:restore", restoreImpl);
 
   createWindow();
 });

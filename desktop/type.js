@@ -57,6 +57,20 @@
  */
 
 /**
+ * Checks if the window is maximized
+ * @callback isMaximized
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @returns {Promise<boolean>} True or false
+ */
+
+/**
+ * Restores the browsers window back to beofre it was maximized
+ * @callback restore
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @returns {void} Nothing
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -67,6 +81,8 @@
  * @property {minimize} minimize - Minimizes the screen window
  * @property {maximize} maximize - Maximize a window
  * @property {close} close - Close the window
+ * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
+ * @property {restore} restore - Restores the window back to beofre it was maximized
  */
 
 /**
