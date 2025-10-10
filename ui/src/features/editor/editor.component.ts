@@ -1,10 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
+import { FileExplorerComponent } from './file-explorer/file-explorer.component';
 
 @Component({
   selector: 'app-editor',
-  imports: [],
+  imports: [FileExplorerComponent],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })

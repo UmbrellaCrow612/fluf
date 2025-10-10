@@ -1,0 +1,38 @@
+<div class="container">
+  @if (isLoading) {
+  <div>Loading dir</div>
+  }
+
+  <!---->
+  @if (!isLoading && error) {
+  <div>Error loading dir {{ error }}</div>
+  }
+
+  <!---->
+  @if (!isLoading && !error) {
+  <div class="top">
+    <span> Explorer </span>
+
+    <div class="icons">
+      <button mat-icon-button matTooltip="Add file">
+        <mat-icon>note_add</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Add folder">
+        <mat-icon>create_new_folder</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Collapse all">
+        <mat-icon>unfold_less</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="file_container">
+    @if (readDirObject) {
+    <app-file-item [readDirObject]="readDirObject" [level]="0" />
+    }
+  </div>
+  }
+</div>
