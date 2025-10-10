@@ -1,0 +1,25 @@
+<mat-toolbar class="parent">
+  <div class="left">
+    <span> Fluffy </span>
+    <div>
+      <button mat-button matTooltip="Open a file or folder">File</button>
+      <button mat-button matTooltip="Edit history">Edit</button>
+      <button mat-button matTooltip="Edit history">Selection</button>
+      <button mat-button matTooltip="View more">View</button>
+      <button mat-button matTooltip="View more">Go</button>
+      <button mat-button matTooltip="Terminal actions">Terminal</button>
+      <button mat-button matTooltip="Help and assistance">Help</button>
+    </div>
+  </div>
+  <div class="right">
+    <button mat-icon-button matTooltip="Minimize" (click)="minimize()">
+      <mat-icon>minimize</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Maximize" (click)="maximize()">
+      <mat-icon>crop_square</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Close" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>

@@ -6,6 +6,9 @@ const {
   readDirImpl,
   selectFolderImpl,
   existsImpl,
+  minimizeImpl,
+  maximizeImpl,
+  closeImpl,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -40,6 +43,10 @@ app.whenReady().then(() => {
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
   ipcMain.handle("exists", existsImpl);
+
+  ipcMain.on("window:minimize", minimizeImpl);
+  ipcMain.on("window:maximize", maximizeImpl);
+  ipcMain.on("window:close", closeImpl);
 
   createWindow();
 });

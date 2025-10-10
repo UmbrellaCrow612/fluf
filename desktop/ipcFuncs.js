@@ -2,7 +2,7 @@
  * File contains all our impl of electron api funcs to be exposed in the electron api to render
  */
 
-const { dialog } = require("electron");
+const { dialog, BrowserWindow } = require("electron");
 const fsp = require("fs/promises");
 const fs = require("fs");
 const path = require("path");
@@ -104,9 +104,39 @@ const existsImpl = async (_event = undefined, path) => {
   }
 };
 
+/**
+ * @type {minimize}
+ */
+const minimizeImpl = (_event = undefined) => {
+  const webContents = _event.sender;
+  const win = BrowserWindow.fromWebContents(webContents);
+  win.minimize();
+};
+
+/**
+ * @type {maximize}
+ */
+const maximizeImpl = (_event = undefined) => {
+  const webContents = _event.sender;
+  const win = BrowserWindow.fromWebContents(webContents);
+  win.maximize();
+};
+
+/**
+ * @type {close}
+ */
+const closeImpl = (_event = undefined) => {
+  const webContents = _event.sender;
+  const win = BrowserWindow.fromWebContents(webContents);
+  win.close();
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
   selectFolderImpl,
   existsImpl,
+  minimizeImpl,
+  maximizeImpl,
+  closeImpl,
 };

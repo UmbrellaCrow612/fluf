@@ -3,10 +3,11 @@ import { getElectronApi } from '../../../utils';
 import { MatButtonModule } from '@angular/material/button';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContextService } from '../../app-context/app-context.service';
+import { TopBarComponent } from "../../top-bar/top-bar.component";
 
 @Component({
   selector: 'app-home-view',
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, TopBarComponent],
   templateUrl: './home-view.component.html',
   styleUrl: './home-view.component.css',
 })

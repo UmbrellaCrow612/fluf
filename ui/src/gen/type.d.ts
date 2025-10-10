@@ -18,6 +18,18 @@ type selectFolder = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise
  */
 type exists = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<boolean>;
 /**
+ * Minimizes the window
+ */
+type minimize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+/**
+ * Maximize a window
+ */
+type maximize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+/**
+ * Close the window
+ */
+type close = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -37,6 +49,18 @@ type ElectronApi = {
      * - Check if a file or folder exists
      */
     exists: exists;
+    /**
+     * - Minimizes the screen window
+     */
+    minimize: minimize;
+    /**
+     * - Maximize a window
+     */
+    maximize: maximize;
+    /**
+     * - Close the window
+     */
+    close: close;
 };
 /**
  * Extends the global `window` object to include the Electron API.

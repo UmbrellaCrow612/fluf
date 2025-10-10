@@ -36,6 +36,27 @@
  */
 
 /**
+ * Minimizes the window
+ * @callback minimize
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @returns {void} Nothing
+ */
+
+/**
+ * Maximize a window
+ * @callback maximize
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @returns {void} Nothing
+ */
+
+/**
+ * Close the window
+ * @callback close
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @returns {void} Nothing
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -43,6 +64,9 @@
  * @property {readDir} readDir - Reads the contents of a directory.
  * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
  * @property {exists} exists - Check if a file or folder exists
+ * @property {minimize} minimize - Minimizes the screen window
+ * @property {maximize} maximize - Maximize a window
+ * @property {close} close - Close the window
  */
 
 /**
