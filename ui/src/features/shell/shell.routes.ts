@@ -5,6 +5,5 @@ export const shellRoutes: Routes = [
   {
     path: '',
     component: ShellComponent,
-    children: [],
   },
 ];

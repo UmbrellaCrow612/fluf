@@ -23,9 +23,8 @@ export class TopBarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.resizeSub = fromEvent(window, 'resize')
-      .pipe(debounceTime(250)) // 500ms buffer
+      .pipe(debounceTime(250)) 
       .subscribe(() => {
-        console.log("Reload")
         this.reloadMaxState();
       });
   }

@@ -1,22 +1,47 @@
 <div class="container">
   <div class="top">
-    <button mat-icon-button matTooltip="File explorer">
+    <button
+      mat-icon-button
+      matTooltip="File explorer"
+      (click)="toggleFileExplorer()"
+      [class.active]="activeElement == 'file-explorer'"
+    >
       <mat-icon>file_copy</mat-icon>
     </button>
 
-    <button mat-icon-button matTooltip="Search">
+    <button
+      mat-icon-button
+      matTooltip="Search"
+      [class.active]="activeElement == 'search'"
+      (click)="toggleSearch()"
+    >
       <mat-icon>search</mat-icon>
     </button>
 
-    <button mat-icon-button matTooltip="Source control">
+    <button
+      mat-icon-button
+      matTooltip="Source control"
+      [class.active]="activeElement == 'source-control'"
+      (click)="toggleSourceControl()"
+    >
       <mat-icon>change_history</mat-icon>
     </button>
 
-    <button mat-icon-button matTooltip="Run and debug">
+    <button
+      mat-icon-button
+      matTooltip="Run and debug"
+      [class.active]="activeElement == 'run-and-debug'"
+      (click)="toggleRunAndDebug()"
+    >
       <mat-icon>bug_report</mat-icon>
     </button>
 
-    <button mat-icon-button matTooltip="Extensions">
+    <button
+      mat-icon-button
+      matTooltip="Extensions"
+      [class.active]="activeElement == 'extensions'"
+      (click)="toggleExteions()"
+    >
       <mat-icon>extension</mat-icon>
     </button>
   </div>

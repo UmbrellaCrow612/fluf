@@ -4,6 +4,11 @@
     <div class="side_bar_wrapper">
       <app-side-bar />
     </div>
-    <div class="page_shell"></div>
+    <div class="page_shell">
+      @if (isSideBarRenderActive) {
+      <app-side-bar-render />
+      }
+      <app-open-file-container />
+    </div>
   </div>
 </div>

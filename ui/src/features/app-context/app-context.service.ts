@@ -1,89 +1,49 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { sideBarActiveElement } from './type';
 
 /**
- * Represents the application context.
+ * Holds app wide ctx (Context) such as specific fields or values and allows peope,l to change and notify any subs
  */
-export interface AppContext {
+class AppContext {
   /**
-   * The current section of the editor or application where the user has focus,
-   * e.g., "file", "terminal", etc.
+   * Holds the current side bar active element clicked
    */
-  section: '' | 'editor';
+  private sideBarActiveElementSubject =
+    new BehaviorSubject<sideBarActiveElement>(null);
 
   /**
-   * The application selected directory folder that is in view.
+   * Observable for sidebar active element sub to this for it's value and change notify
    */
-  directoryFolder: string;
+  public readonly sideBarActiveElement$ =
+    this.sideBarActiveElementSubject.asObservable();
+
+  /**
+   * Sets a new active element in the sidebar and notifies subscribers
+   * Toggles off if the element is already active
+   * @param element The new sidebar active element
+   */
+  public setSideBarActiveElement(element: sideBarActiveElement) {
+    const current = this.sideBarActiveElementSubject.getValue();
+
+    // If the current active element is the same as the new one, reset to null
+    if (current === element) {
+      this.sideBarActiveElementSubject.next(null);
+    } else {
+      this.sideBarActiveElementSubject.next(element);
+    }
+  }
 }
 
 /**
- * Service that holds and manages the application context state.
+ * Service that provides acess to application context
  */
 @Injectable({
   providedIn: 'root',
 })
 export class ContextService {
-  private readonly LOCAL_STORAGE_KEY = 'app_context';
-
   /**
-   * The current application context.
+   * Exposes the single app wide AppContext to be read
    */
-  private _context: AppContext = {
-    section: '',
-    directoryFolder: '',
-  };
-
-  constructor() {
-    this.loadContextFromStorage();
-  }
-
-  /**
-   * Loads the application context from localStorage (if available).
-   */
-  private loadContextFromStorage(): void {
-    const savedContext = localStorage.getItem(this.LOCAL_STORAGE_KEY);
-    if (savedContext) {
-      try {
-        this._context = JSON.parse(savedContext);
-      } catch (error) {
-        console.warn(
-          'Failed to parse saved app context from localStorage:',
-          error
-        );
-        this._context = { section: '', directoryFolder: '' };
-      }
-    }
-  }
-
-  /**
-   * Saves the current application context to localStorage.
-   */
-  private saveContextToStorage(): void {
-    localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(this._context));
-  }
-
-  /**
-   * Retrieves the current application context synchronously.
-   * @returns {AppContext} The current application context.
-   */
-  getContext(): AppContext {
-    return this._context;
-  }
-
-  /**
-   * Updates the application context with a new value.
-   * @param newContext - The new context to set.
-   */
-  setContext(newContext: AppContext): void {
-    this._context = { ...newContext };
-    this.saveContextToStorage();
-  }
-
-  /**
-   * Clears the context (and removes it from localStorage).
-   */
-  clearContext(): void {
-    this._context = { section: '', directoryFolder: '' };
-    localStorage.removeItem(this.LOCAL_STORAGE_KEY);
-  }
+  public readonly instace = new AppContext();
 }
