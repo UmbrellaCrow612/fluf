@@ -3,8 +3,10 @@ import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
 import { SideBarRenderComponent } from '../side-bar-render/side-bar-render.component';
 import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
-import { Subscription } from 'rxjs';
-import { ContextService } from '../app-context/app-context.service';
+import {
+  ContextService,
+  UnsubscribeFn,
+} from '../app-context/app-context.service';
 
 @Component({
   selector: 'app-shell',
@@ -20,24 +22,21 @@ import { ContextService } from '../app-context/app-context.service';
 export class ShellComponent implements OnInit, OnDestroy {
   private readonly _appCtx = inject(ContextService);
 
-  /**
-   * Keeps track if a user clicked a side bar element and made it active the render compo will then render the 
-   * specific compo they want
-   */
-  isSideBarRenderActive = true;
-  private isSideBarRenderActiveSub: Subscription | null = null;
+  isSideBarRenderActive = false;
+  private unSub: UnsubscribeFn | null = null;
 
   ngOnInit(): void {
-    this.isSideBarRenderActiveSub =
-      this._appCtx.instace.sideBarActiveElement$.subscribe((el) => {
-        if (el) {
-          this.isSideBarRenderActive = true; // a side bar element was clicked and now is active
-        } else {
-          this.isSideBarRenderActive = false; // no side bar element was clicked
-        }
-      });
+    this.unSub = this._appCtx.sub('side-bar-active-element', (ctx) => {
+      if (ctx.sideBarActiveElement) {
+        this.isSideBarRenderActive = true;
+      } else {
+        this.isSideBarRenderActive = false;
+      }
+    });
   }
   ngOnDestroy(): void {
-    this.isSideBarRenderActiveSub?.unsubscribe();
+    if (this.unSub) {
+      this.unSub();
+    }
   }
 }

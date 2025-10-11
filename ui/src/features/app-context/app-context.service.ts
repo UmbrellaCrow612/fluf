@@ -1,49 +1,78 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
 import { sideBarActiveElement } from './type';
 
-/**
- * Holds app wide ctx (Context) such as specific fields or values and allows peope,l to change and notify any subs
- */
-class AppContext {
-  /**
-   * Holds the current side bar active element clicked
-   */
-  private sideBarActiveElementSubject =
-    new BehaviorSubject<sideBarActiveElement>(null);
+export type AppContext = {
+  sideBarActiveElement: sideBarActiveElement;
+};
 
-  /**
-   * Observable for sidebar active element sub to this for it's value and change notify
-   */
-  public readonly sideBarActiveElement$ =
-    this.sideBarActiveElementSubject.asObservable();
-
-  /**
-   * Sets a new active element in the sidebar and notifies subscribers
-   * Toggles off if the element is already active
-   * @param element The new sidebar active element
-   */
-  public setSideBarActiveElement(element: sideBarActiveElement) {
-    const current = this.sideBarActiveElementSubject.getValue();
-
-    // If the current active element is the same as the new one, reset to null
-    if (current === element) {
-      this.sideBarActiveElementSubject.next(null);
-    } else {
-      this.sideBarActiveElementSubject.next(element);
-    }
-  }
-}
+export type ContextSubKey = 'side-bar-active-element';
+export type SubCallBack = (ctx: AppContext) => void;
+export type UnsubscribeFn = () => void; 
 
 /**
- * Service that provides acess to application context
+ * Service that provides access to application context
  */
 @Injectable({
   providedIn: 'root',
 })
 export class ContextService {
+  private _ctx: AppContext = {
+    sideBarActiveElement: null,
+  };
+
+  private subscriptions = new Map<ContextSubKey, Set<SubCallBack>>();
+
   /**
-   * Exposes the single app wide AppContext to be read
+   * Subscribe to a specific application context key and run some logic
+   * @param key The key event to subscribe to
+   * @param callback The callback to register
+   * @returns A function that unsubscribes this callback when called
    */
-  public readonly instace = new AppContext();
+  sub(key: ContextSubKey, callback: SubCallBack): UnsubscribeFn {
+    if (!this.subscriptions.has(key)) {
+      this.subscriptions.set(key, new Set());
+    }
+
+    const set = this.subscriptions.get(key)!;
+    set.add(callback);
+
+    // Return an unsubscribe function
+    return () => {
+      set.delete(callback);
+    };
+  }
+
+  /**
+   * Update part of the application context and notify subscribers
+   * @param key The key in the context to update
+   * @param value The new value for that key
+   * @param event Optional event key to notify subscribers
+   */
+  update<K extends keyof AppContext>(
+    key: K,
+    value: AppContext[K],
+    event: ContextSubKey
+  ) {
+    this._ctx[key] = value;
+    this.notify(event);
+  }
+
+  /**
+   * Notify all subscribers for a specific key
+   */
+  private notify(key: ContextSubKey) {
+    const callbacks = this.subscriptions.get(key);
+    if (callbacks) {
+      for (const callback of callbacks) {
+        callback(this._ctx);
+      }
+    }
+  }
+
+  /**
+   * Get the current context snapshot
+   */
+  get context(): AppContext {
+    return { ...this._ctx };
+  }
 }

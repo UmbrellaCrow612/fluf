@@ -2,8 +2,10 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ContextService } from '../app-context/app-context.service';
-import { Subscription } from 'rxjs';
+import {
+  ContextService,
+  UnsubscribeFn,
+} from '../app-context/app-context.service';
 import { sideBarActiveElement } from '../app-context/type';
 
 @Component({
@@ -15,40 +17,53 @@ import { sideBarActiveElement } from '../app-context/type';
 export class SideBarComponent implements OnInit, OnDestroy {
   private readonly _appCtx = inject(ContextService);
 
-  private _activeElementSub: Subscription | null = null;
   /**
    * Keeps track of the current active side bar element
    */
   activeElement: sideBarActiveElement | null = null;
+  private unSub: UnsubscribeFn | null = null;
 
   ngOnInit(): void {
-    this._activeElementSub =
-      this._appCtx.instace.sideBarActiveElement$.subscribe((activeElement) => {
-        this.activeElement = activeElement;
-      });
+    this.unSub = this._appCtx.sub('side-bar-active-element', (ctx) => {
+      this.activeElement = ctx.sideBarActiveElement;
+    });
   }
 
   ngOnDestroy(): void {
-    this._activeElementSub?.unsubscribe();
+    if (this.unSub) {
+      this.unSub();
+    }
   }
 
+  /** Generic toggle handler to avoid repetition */
+  private toggleElement(element: sideBarActiveElement) {
+    const newValue = this.activeElement === element ? null : element;
+
+    this._appCtx.update(
+      'sideBarActiveElement',
+      newValue,
+      'side-bar-active-element'
+    );
+  }
+
+  // --- Convenience wrappers for each sidebar button ---
   toggleFileExplorer() {
-    this._appCtx.instace.setSideBarActiveElement('file-explorer');
+    this.toggleElement('file-explorer');
   }
 
   toggleSearch() {
-    this._appCtx.instace.setSideBarActiveElement('search');
+    this.toggleElement('search');
   }
 
   toggleSourceControl() {
-    this._appCtx.instace.setSideBarActiveElement('source-control');
+    this.toggleElement('source-control');
   }
 
   toggleRunAndDebug() {
-    this._appCtx.instace.setSideBarActiveElement('run-and-debug');
+    this.toggleElement('run-and-debug');
   }
 
-  toggleExteions() {
-    this._appCtx.instace.setSideBarActiveElement('extensions');
+  toggleExtensions() {
+    this.toggleElement('extensions');
   }
 }
