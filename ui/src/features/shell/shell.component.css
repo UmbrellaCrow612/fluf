@@ -1,0 +1,21 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.page_wrapper {
+  flex: 1;
+  display: flex;
+}
+
+.page_shell {
+  flex: 1;
+  height: 100%;
+}
+
+.side_bar_wrapper {
+  width: 65px;
+  height: 100%;
+}

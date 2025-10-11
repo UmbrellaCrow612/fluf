@@ -1,0 +1,24 @@
+.container {
+  width: 100%;
+  height: 100%;
+  background-color: rgb(14, 13, 13);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
