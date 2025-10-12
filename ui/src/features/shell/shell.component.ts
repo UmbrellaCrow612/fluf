@@ -7,6 +7,9 @@ import {
   ContextService,
   UnsubscribeFn,
 } from '../app-context/app-context.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-shell',
@@ -15,6 +18,9 @@ import {
     SideBarComponent,
     SideBarRenderComponent,
     OpenFileContainerComponent,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.css',
@@ -36,16 +42,10 @@ export class ShellComponent implements OnInit, OnDestroy {
   reSizeMouseStartX = 0;
 
   ngOnInit(): void {
-    this.isSideBarRenderActive = this._appCtx.context.sideBarActiveElement
-      ? true
-      : false;
+    this.isSideBarRenderActive = !!this._appCtx.context.sideBarActiveElement;
 
     this.unSub = this._appCtx.sub('side-bar-active-element', (ctx) => {
-      if (ctx.sideBarActiveElement) {
-        this.isSideBarRenderActive = true;
-      } else {
-        this.isSideBarRenderActive = false;
-      }
+      this.isSideBarRenderActive = !!ctx.sideBarActiveElement;
     });
   }
 
@@ -53,6 +53,14 @@ export class ShellComponent implements OnInit, OnDestroy {
     if (this.unSub) {
       this.unSub();
     }
+  }
+
+  closeSideBar() {
+    this._appCtx.update(
+      'sideBarActiveElement',
+      null,
+      'side-bar-active-element'
+    );
   }
 
   resizerMouseDown(event: MouseEvent) {
@@ -82,7 +90,7 @@ export class ShellComponent implements OnInit, OnDestroy {
     sidebarWidth += deltaX;
     fileWidth -= deltaX;
 
-    const minWidth = 50;
+    const minWidth = 225;
     if (sidebarWidth < minWidth) {
       sidebarWidth = minWidth;
       fileWidth = totalWidth - sidebarWidth;

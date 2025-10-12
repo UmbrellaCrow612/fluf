@@ -6,12 +6,26 @@
     </div>
     <div class="page_shell">
       @if (isSideBarRenderActive) {
-      <div [style.flex]="sideBarRenderContainerFlex">
-        <app-side-bar-render />
+      <div
+        [style.flex]="sideBarRenderContainerFlex"
+        class="side_bar_render_wrapper"
+      >
+        <div class="side_bar_render_wrapper_top">
+          <button
+            mat-icon-button
+            (click)="closeSideBar()"
+            matTooltip="Close side bar"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="flex-1">
+          <app-side-bar-render />
+        </div>
       </div>
-      }
 
       <div class="resizer" (mousedown)="resizerMouseDown($event)"></div>
+      }
 
       <div [style.flex]="fileOpenContainerFlex">
         <app-open-file-container />

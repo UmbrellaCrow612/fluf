@@ -30,3 +30,19 @@
   cursor: col-resize;
   background-color: rgb(97, 95, 95);
 }
+
+.side_bar_render_wrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: rgb(10, 9, 9);
+}
+
+.side_bar_render_wrapper_top {
+  display: flex;
+  justify-content: end;
+}
+
+.flex-1 {
+  flex: 1;
+}
