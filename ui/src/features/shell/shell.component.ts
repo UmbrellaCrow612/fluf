@@ -39,4 +39,6 @@ export class ShellComponent implements OnInit, OnDestroy {
       this.unSub();
     }
   }
+
+  resizerMouseDown(event: MouseEvent) {}
 }

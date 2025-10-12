@@ -6,9 +6,17 @@
     </div>
     <div class="page_shell">
       @if (isSideBarRenderActive) {
-      <app-side-bar-render />
+      <div class="side_bar_render_wrapper">
+        <app-side-bar-render />
+      </div>
       }
-      <app-open-file-container />
+
+      <div class="resizer" (mousedown)="resizerMouseDown($event)"></div>
+
+
+      <div class="open_file_container_wrapper">
+        <app-open-file-container />
+      </div>
     </div>
   </div>
 </div>

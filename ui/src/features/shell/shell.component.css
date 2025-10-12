@@ -20,3 +20,21 @@
   width: 65px;
   height: 100%;
 }
+
+.resizer {
+  width: 8px;
+  background-color: rgb(75, 72, 72);
+}
+
+.resizer:hover {
+  cursor: col-resize;
+  background-color: rgb(97, 95, 95);
+}
+
+.side_bar_render_wrapper {
+  flex: 1;
+}
+
+.open_file_container_wrapper {
+  flex: 5;
+}
