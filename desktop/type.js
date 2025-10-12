@@ -26,6 +26,7 @@
  * @property {string} path - The file path to the file or folder
  * @property {boolean} isDirectory - If the given node is a directory
  * @property {Array<fileNode>} children - Children of the node
+ * @property {boolean} expanded - Indicates if the node has been expanded
  */
 
 /**

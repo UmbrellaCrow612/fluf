@@ -32,11 +32,13 @@ const readDirImpl = async (event = undefined, directoryPath) => {
   let items = await fsp.readdir(directoryPath, { withFileTypes: true });
 
   // Map to include metadata
+  /**@type {Array<fileNode>} */
   let mappedItems = items.map((item) => ({
     name: item.name,
     path: path.join(directoryPath, item.name),
     isDirectory: item.isDirectory(),
     children: [],
+    expanded: false
   }));
 
   // Sort: folders first, then files — both alphabetically

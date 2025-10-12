@@ -29,6 +29,10 @@ type fileNode = {
      * - Children of the node
      */
     children: Array<fileNode>;
+    /**
+     * - Indicates if the node has been expanded and the children have been fetched
+     */
+    expanded: boolean;
 };
 /**
  * Opens a folder selection dialog and returns the selected path.

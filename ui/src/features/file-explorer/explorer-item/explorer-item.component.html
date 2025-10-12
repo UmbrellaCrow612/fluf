@@ -1,12 +1,13 @@
 <div
   class="item"
+  [class.focused]="isOpenInFileEditorView"
   (click)="itemClicked($event)"
   [style.padding-left.px]="depth() * 16"
 >
   <!---->
   @if (node().isDirectory) {
   <!---->
-  @if (!expanded) {
+  @if (!node().expanded) {
   <mat-icon>keyboard_arrow_right</mat-icon>
   } @else {
   <mat-icon>keyboard_arrow_down</mat-icon>
@@ -18,12 +19,12 @@
   </span>
 </div>
 
-@if (expanded && node().isDirectory) {
+@if (node().expanded && node().isDirectory) {
 <!---->
 <div class="child_items_container">
   @for (child of node().children; track $index) {
-    <app-explorer-item [node]="child" [depth]="depth() + 1" />
-    }
+  <app-explorer-item [node]="child" [depth]="depth() + 1" />
+  }
 </div>
 
 <!---->}

@@ -14,17 +14,23 @@ export type AppContext = {
    * The folder path opened to edit files etc
    */
   selectedDirectoryFolderPath: string | null;
+
+  /**
+   * The last clicked and focused file either through the file explorer or file editor tabs
+   */
+  activeFileOpen: fileNode | null;
 };
 
 export type ContextSubKey =
   | 'side-bar-active-element'
   | 'file-explorer-opene-nodes'
-  | 'selected-director-folder-path';
+  | 'selected-director-folder-path'
+  | "active-open-file";
 export type SubCallBack = (ctx: AppContext) => void;
 export type UnsubscribeFn = () => void;
 
 /**
- * Service that provides access to application context
+ * Service that provides access to application context sub and update it globally - think of it as a global object shared
  */
 @Injectable({
   providedIn: 'root',
@@ -34,6 +40,7 @@ export class ContextService {
     sideBarActiveElement: null,
     fileExplorerOpenedNodes: null,
     selectedDirectoryFolderPath: null,
+    activeFileOpen: null,
   };
 
   private subscriptions = new Map<ContextSubKey, Set<SubCallBack>>();

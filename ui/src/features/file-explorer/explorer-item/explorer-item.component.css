@@ -9,6 +9,10 @@
   border-radius: 5px;
 }
 
+.focused {
+  background-color: rgb(75, 61, 61);
+}
+
 .item:hover {
   cursor: pointer;
   background-color: rgb(34, 31, 31);
