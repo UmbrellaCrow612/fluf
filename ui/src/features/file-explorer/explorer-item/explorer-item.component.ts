@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { getElectronApi } from '../../../utils';
 
 @Component({
   selector: 'app-explorer-item',
@@ -8,15 +9,21 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './explorer-item.component.css',
 })
 export class ExplorerItemComponent {
+  private readonly _api = getElectronApi();
+
   node = input.required<fileNode>();
   depth = input.required<number>();
 
-  readChildren = output(); // pass read childrne to parent to update state
-
   expanded = false;
 
-  itemClicked() {
-    // expand if dir
-    // push to ctx as file to open or show in file explorer
+  async itemClicked(event: Event) {
+    event.preventDefault();
+    if (this.node().isDirectory && !this.expanded) {
+      let nodes = await this._api.readDir(undefined, this.node().path);
+      this.node().children = nodes;
+      this.expanded = true;
+    } else {
+      this.expanded = false;
+    }
   }
 }

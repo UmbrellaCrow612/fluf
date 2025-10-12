@@ -1,4 +1,8 @@
-<div class="item" (click)="itemClicked()">
+<div
+  class="item"
+  (click)="itemClicked($event)"
+  [style.padding-left.px]="depth() * 16"
+>
   <!---->
   @if (node().isDirectory) {
   <!---->
@@ -14,3 +18,12 @@
   </span>
 </div>
 
+@if (expanded && node().isDirectory) {
+<!---->
+<div class="child_items_container">
+  @for (child of node().children; track $index) {
+    <app-explorer-item [node]="child" [depth]="depth() + 1" />
+    }
+</div>
+
+<!---->}

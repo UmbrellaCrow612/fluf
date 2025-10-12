@@ -3,11 +3,25 @@ import { sideBarActiveElement } from './type';
 
 export type AppContext = {
   sideBarActiveElement: sideBarActiveElement;
+
+  /**
+   * List of files opened in the file explorer form the selected directory path - keeps track of it when it cloopases and re opens
+   * without having to re read the dir
+   */
+  fileExplorerOpenedNodes: Array<fileNode> | null;
+
+  /**
+   * The folder path opened to edit files etc
+   */
+  selectedDirectoryFolderPath: string | null;
 };
 
-export type ContextSubKey = 'side-bar-active-element';
+export type ContextSubKey =
+  | 'side-bar-active-element'
+  | 'file-explorer-opene-nodes'
+  | 'selected-director-folder-path';
 export type SubCallBack = (ctx: AppContext) => void;
-export type UnsubscribeFn = () => void; 
+export type UnsubscribeFn = () => void;
 
 /**
  * Service that provides access to application context
@@ -18,6 +32,8 @@ export type UnsubscribeFn = () => void;
 export class ContextService {
   private _ctx: AppContext = {
     sideBarActiveElement: null,
+    fileExplorerOpenedNodes: null,
+    selectedDirectoryFolderPath: null,
   };
 
   private subscriptions = new Map<ContextSubKey, Set<SubCallBack>>();
