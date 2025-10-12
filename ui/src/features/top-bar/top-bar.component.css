@@ -16,6 +16,7 @@ mat-tooltip {
   display: flex;
   align-items: center;
   gap: 5px;
+  min-height: 0; 
 }
 
 .right {
@@ -23,4 +24,5 @@ mat-tooltip {
   display: flex;
   justify-content: end;
   gap: 5px;
+  min-height: 0; 
 }

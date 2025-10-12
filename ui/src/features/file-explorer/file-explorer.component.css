@@ -1,0 +1,13 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0; /* prevents child overflow from expanding parent */
+}
+
+.container {
+  flex: 1; /* takes remaining space */
+  min-height: 0; /* important for scroll behavior */
+  overflow-y: auto; /* enables scroll within the child */
+  background-color: blue;
+}

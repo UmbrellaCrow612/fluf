@@ -1,9 +1,7 @@
 <div class="container">
   <app-top-bar />
   <div class="page_wrapper">
-    <div class="side_bar_wrapper">
-      <app-side-bar />
-    </div>
+    <app-side-bar />
     <div class="page_shell">
       @if (isSideBarRenderActive) {
       <div
@@ -19,9 +17,7 @@
             <mat-icon>close</mat-icon>
           </button>
         </div>
-        <div class="flex-1">
-          <app-side-bar-render />
-        </div>
+        <app-side-bar-render />
       </div>
 
       <div class="resizer" (mousedown)="resizerMouseDown($event)"></div>

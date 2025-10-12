@@ -1,5 +1,5 @@
 .container {
-  width: 100%;
+  width: 60px;
   height: 100%;
   background-color: rgb(14, 13, 13);
   display: flex;
@@ -8,7 +8,6 @@
   justify-content: space-between;
   padding-top: 10px;
   padding-bottom: 10px;
-  position: relative;
 }
 
 .top,
