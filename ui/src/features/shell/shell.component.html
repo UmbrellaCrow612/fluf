@@ -6,15 +6,14 @@
     </div>
     <div class="page_shell">
       @if (isSideBarRenderActive) {
-      <div class="side_bar_render_wrapper">
+      <div [style.flex]="sideBarRenderFlex">
         <app-side-bar-render />
       </div>
       }
 
       <div class="resizer" (mousedown)="resizerMouseDown($event)"></div>
 
-
-      <div class="open_file_container_wrapper">
+      <div [style.flex]="openFileContainerFlex">
         <app-open-file-container />
       </div>
     </div>

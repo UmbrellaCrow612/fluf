@@ -30,11 +30,3 @@
   cursor: col-resize;
   background-color: rgb(97, 95, 95);
 }
-
-.side_bar_render_wrapper {
-  flex: 1;
-}
-
-.open_file_container_wrapper {
-  flex: 5;
-}
