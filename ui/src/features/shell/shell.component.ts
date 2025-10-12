@@ -22,21 +22,24 @@ import {
 export class ShellComponent implements OnInit, OnDestroy {
   private readonly _appCtx = inject(ContextService);
 
+  /**
+   * Side bar render active component
+   */
   isSideBarRenderActive = false;
   private unSub: UnsubscribeFn | null = null;
 
-  sideBarRenderFlex = 1;
-  openFileContainerFlex = 4;
+  sideBarRenderContainerFlex = 1;
+  fileOpenContainerFlex = 4;
+  pageShellTotalFlex = 5;
 
-  private minFlex = 0.5;
-  private maxFlex = 6;
-
-  private isResizing = false;
-  private startX = 0;
-  private startSideBarFlex = 0;
-  private startOpenFileFlex = 0;
+  isResizing = false;
+  reSizeMouseStartX = 0;
 
   ngOnInit(): void {
+    this.isSideBarRenderActive = this._appCtx.context.sideBarActiveElement
+      ? true
+      : false;
+
     this.unSub = this._appCtx.sub('side-bar-active-element', (ctx) => {
       if (ctx.sideBarActiveElement) {
         this.isSideBarRenderActive = true;
@@ -45,6 +48,7 @@ export class ShellComponent implements OnInit, OnDestroy {
       }
     });
   }
+
   ngOnDestroy(): void {
     if (this.unSub) {
       this.unSub();
@@ -53,41 +57,52 @@ export class ShellComponent implements OnInit, OnDestroy {
 
   resizerMouseDown(event: MouseEvent) {
     event.preventDefault();
-    this.isResizing = true;
-    this.startX = event.clientX;
-    this.startSideBarFlex = this.sideBarRenderFlex;
-    this.startOpenFileFlex = this.openFileContainerFlex;
 
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
+    this.isResizing = true;
+    this.reSizeMouseStartX = event.clientX;
+
+    document.addEventListener('mousemove', this.rezierMouseMove);
+    document.addEventListener('mouseup', this.resizerMouseUp);
   }
 
-  private onMouseMove = (event: MouseEvent) => {
+  private rezierMouseMove = (event: MouseEvent) => {
     if (!this.isResizing) return;
-  
-    const container = document.querySelector('.page_shell');
-    if (!container) return;
-  
-    const containerWidth = container.clientWidth;
-    const deltaX = event.clientX - this.startX;
-  
-    const totalFlex = this.startSideBarFlex + this.startOpenFileFlex;
-    const flexRatio = deltaX / containerWidth * totalFlex;
-  
-    let newSideBarFlex = this.startSideBarFlex + flexRatio;
-    let newOpenFileFlex = this.startOpenFileFlex - flexRatio;
-  
-    newSideBarFlex = Math.min(Math.max(newSideBarFlex, this.minFlex), this.maxFlex);
-    newOpenFileFlex = Math.min(Math.max(newOpenFileFlex, this.minFlex), this.maxFlex);
-  
-    this.sideBarRenderFlex = newSideBarFlex;
-    this.openFileContainerFlex = newOpenFileFlex;
-  };
-  
 
-  private onMouseUp = () => {
+    const container = document.querySelector('.page_shell') as HTMLElement;
+    if (!container) return;
+
+    const totalWidth = container.clientWidth;
+    const deltaX = event.clientX - this.reSizeMouseStartX;
+
+    let sidebarWidth =
+      (this.sideBarRenderContainerFlex / this.pageShellTotalFlex) * totalWidth;
+    let fileWidth =
+      (this.fileOpenContainerFlex / this.pageShellTotalFlex) * totalWidth;
+
+    sidebarWidth += deltaX;
+    fileWidth -= deltaX;
+
+    const minWidth = 50;
+    if (sidebarWidth < minWidth) {
+      sidebarWidth = minWidth;
+      fileWidth = totalWidth - sidebarWidth;
+    } else if (fileWidth < minWidth) {
+      fileWidth = minWidth;
+      sidebarWidth = totalWidth - fileWidth;
+    }
+
+    const totalFlex = sidebarWidth + fileWidth;
+    this.sideBarRenderContainerFlex =
+      (sidebarWidth / totalFlex) * this.pageShellTotalFlex;
+    this.fileOpenContainerFlex =
+      (fileWidth / totalFlex) * this.pageShellTotalFlex;
+
+    this.reSizeMouseStartX = event.clientX;
+  };
+
+  private resizerMouseUp = () => {
     this.isResizing = false;
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener('mousemove', this.rezierMouseMove);
+    document.removeEventListener('mouseup', this.resizerMouseUp);
   };
 }
