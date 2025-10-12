@@ -1,0 +1,16 @@
+<div class="item" (click)="itemClicked()">
+  <!---->
+  @if (node().isDirectory) {
+  <!---->
+  @if (!expanded) {
+  <mat-icon>keyboard_arrow_right</mat-icon>
+  } @else {
+  <mat-icon>keyboard_arrow_down</mat-icon>
+  } }
+
+  <!---->
+  <span>
+    {{ node().name }}
+  </span>
+</div>
+

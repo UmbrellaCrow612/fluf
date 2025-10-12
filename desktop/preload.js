@@ -5,8 +5,7 @@ const { contextBridge, ipcRenderer } = require("electron");
  */
 const api = {
   readFile: (_event, filepath) => ipcRenderer.invoke("file:read", filepath),
-  readDir: (_event, dirPath, options) =>
-    ipcRenderer.invoke("dir:read", dirPath, options),
+  readDir: (_event, dirPath) => ipcRenderer.invoke("dir:read", dirPath),
   selectFolder: (_event) => ipcRenderer.invoke("dir:select"),
   exists: (_event, path) => ipcRenderer.invoke("exists", path),
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),

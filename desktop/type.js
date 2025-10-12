@@ -11,13 +11,21 @@
  */
 
 /**
- * Recursively reads a directory and retrieves all files and folders within it.
+ * Reads a folder content not recursive
  *
  * @callback readDir
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron event argument (used in the main process; can be ignored in the main world).
  * @param {string} directoryPath - The path to the directory to read.
- * @param {ReadDirOptions} [options={}] - Optional settings for reading the directory.
- * @returns {Promise<ReadDirObject>} - A promise that resolves with the directory structure.
+ * @returns {Promise<Array<fileNode>>} - A promise that resolves to a list of file nodes
+ */
+
+/**
+ * Represents a file or folder read from a directory
+ * @typedef {object} fileNode
+ * @property {string} name - The name of the file or folder
+ * @property {string} path - The file path to the file or folder
+ * @property {boolean} isDirectory - If the given node is a directory
+ * @property {Array<fileNode>} children - Children of the node
  */
 
 /**
@@ -90,23 +98,4 @@
  *
  * @typedef {Object} EWindow
  * @property {ElectronApi} electronApi - The attached Electron API.
- */
-
-/**
- * Represents an object in a directory tree. Each object can be a file or a folder.
- * If it’s a folder, it contains all its subfolders and files in a tree structure.
- *
- * @typedef {Object} ReadDirObject
- * @property {boolean} isFile - Indicates whether the object is a file (`true`) or a directory (`false`).
- * @property {Array<ReadDirObject>} [children] - A list of child items if the object is a directory.
- * @property {string} name - The name of the file or folder.
- * @property {string} path - The full path to the file or folder.
- */
-
-/**
- * Options for reading a directory.
- *
- * @typedef {Object} ReadDirOptions
- * @property {Array<string>} [ignoreFolders=[]] - A list of folder names to ignore.
- * @property {Array<string>} [ignoreFiles=[]] - A list of file names to ignore.
  */

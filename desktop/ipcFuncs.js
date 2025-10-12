@@ -28,60 +28,27 @@ const readFileImpl = async (event = undefined, filePath) => {
 /**
  * @type {readDir}
  */
-const readDirImpl = async (event = undefined, directoryPath, options = {}) => {
-  const { ignoreFolders = [], ignoreFiles = [] } = options;
+const readDirImpl = async (event = undefined, directoryPath) => {
+  let items = await fsp.readdir(directoryPath, { withFileTypes: true });
 
-  /**
-   * Recursive helper to read a directory and build its structure
-   * @param {string} currentPath
-   * @returns {Promise<ReadDirObject | null>}
-   */
-  async function helper(currentPath) {
-    const stat = await fsp.stat(currentPath);
-    const name = path.basename(currentPath);
+  // Map to include metadata
+  let mappedItems = items.map((item) => ({
+    name: item.name,
+    path: path.join(directoryPath, item.name),
+    isDirectory: item.isDirectory(),
+    children: [],
+  }));
 
-    // If it's a file
-    if (stat.isFile()) {
-      if (ignoreFiles.includes(name)) return null;
-      return {
-        isFile: true,
-        children: [],
-        name,
-        path: currentPath,
-      };
-    }
+  // Sort: folders first, then files — both alphabetically
+  mappedItems.sort((a, b) => {
+    // If one is a folder and the other is not
+    if (a.isDirectory && !b.isDirectory) return -1;
+    if (!a.isDirectory && b.isDirectory) return 1;
+    // Otherwise, sort alphabetically by name
+    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+  });
 
-    // If it's a folder
-    if (ignoreFolders.includes(name)) return null;
-
-    const entries = await fsp.readdir(currentPath);
-    const children = [];
-
-    for (const entry of entries) {
-      const fullPath = path.join(currentPath, entry);
-      const child = await helper(fullPath);
-      if (child) children.push(child);
-    }
-
-    return {
-      isFile: false,
-      children,
-      name,
-      path: currentPath,
-    };
-  }
-
-  try {
-    return await helper(directoryPath);
-  } catch (error) {
-    console.error("Error reading directory:", error);
-    return {
-      isFile: false,
-      children: [],
-      name: path.basename(directoryPath),
-      path: directoryPath,
-    };
-  }
+  return mappedItems;
 };
 
 /**
@@ -158,5 +125,5 @@ module.exports = {
   maximizeImpl,
   closeImpl,
   isMaximizedImpl,
-  restoreImpl
+  restoreImpl,
 };

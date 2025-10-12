@@ -6,9 +6,30 @@
  */
 type readFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string>;
 /**
- * Recursively reads a directory and retrieves all files and folders within it.
+ * Reads a folder content not recursive
  */
-type readDir = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string, options?: ReadDirOptions | undefined) => Promise<ReadDirObject>;
+type readDir = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<Array<fileNode>>;
+/**
+ * Represents a file or folder read from a directory
+ */
+type fileNode = {
+    /**
+     * - The name of the file or folder
+     */
+    name: string;
+    /**
+     * - The file path to the file or folder
+     */
+    path: string;
+    /**
+     * - If the given node is a directory
+     */
+    isDirectory: boolean;
+    /**
+     * - Children of the node
+     */
+    children: Array<fileNode>;
+};
 /**
  * Opens a folder selection dialog and returns the selected path.
  */
@@ -86,39 +107,4 @@ type EWindow = {
      * - The attached Electron API.
      */
     electronApi: ElectronApi;
-};
-/**
- * Represents an object in a directory tree. Each object can be a file or a folder.
- * If it’s a folder, it contains all its subfolders and files in a tree structure.
- */
-type ReadDirObject = {
-    /**
-     * - Indicates whether the object is a file (`true`) or a directory (`false`).
-     */
-    isFile: boolean;
-    /**
-     * - A list of child items if the object is a directory.
-     */
-    children?: ReadDirObject[] | undefined;
-    /**
-     * - The name of the file or folder.
-     */
-    name: string;
-    /**
-     * - The full path to the file or folder.
-     */
-    path: string;
-};
-/**
- * Options for reading a directory.
- */
-type ReadDirOptions = {
-    /**
-     * - A list of folder names to ignore.
-     */
-    ignoreFolders?: string[] | undefined;
-    /**
-     * - A list of file names to ignore.
-     */
-    ignoreFiles?: string[] | undefined;
 };

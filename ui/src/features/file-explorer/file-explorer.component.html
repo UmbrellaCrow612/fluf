@@ -1,3 +1,26 @@
 <div class="container">
-    lorem1000
+  @if (!selectedDirectory) {
+  <div class="no_dir_selected">
+    <span> No folder selected pick a folder </span>
+    <button mat-button (click)="openFolder()" [disabled]="isSelectingFolder">
+      Open folder
+    </button>
+  </div>
+  }
+
+  <!---->
+  @if (isLoadingFolder && selectedDirectory) {
+  <div class="loading_init_folders">
+    <span> Loading </span>
+  </div>
+  }
+
+  <!---->
+  @if (!isLoadingFolder && selectedDirectory && !loadingFolderError) {
+  <div class="explorer_item_container">
+    @for (item of nodes; track $index) {
+    <app-explorer-item [node]="item" [depth]="0" />
+    }
+  </div>
+  }
 </div>
