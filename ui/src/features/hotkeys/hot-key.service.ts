@@ -79,7 +79,7 @@ export class HotKeyService {
    * Run all hot keys registered
    */
   private runSubs() {
-    let ctx = this._context.getContext();
+    let ctx = this._context.context;
     for (let item of this._subs) {
       if (this.arrayMatchesSet(item.keys, this._keys)) {
         item.callback(ctx);

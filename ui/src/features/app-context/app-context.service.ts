@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { DestroyRef, Injectable } from '@angular/core';
 import { sideBarActiveElement } from './type';
 
 export type AppContext = {
@@ -44,7 +44,7 @@ export class ContextService {
    * @param callback The callback to register
    * @returns A function that unsubscribes this callback when called
    */
-  sub(key: ContextSubKey, callback: SubCallBack): UnsubscribeFn {
+  private sub(key: ContextSubKey, callback: SubCallBack): UnsubscribeFn {
     if (!this.subscriptions.has(key)) {
       this.subscriptions.set(key, new Set());
     }
@@ -56,6 +56,18 @@ export class ContextService {
     return () => {
       set.delete(callback);
     };
+  }
+
+  /**
+   * Subscribe and automatically unsubscribe when the provided DestroyRef is destroyed
+   */
+  autoSub(
+    key: ContextSubKey,
+    callback: SubCallBack,
+    destroyRef: DestroyRef
+  ): void {
+    const unsubscribe = this.sub(key, callback);
+    destroyRef.onDestroy(unsubscribe);
   }
 
   /**
