@@ -37,7 +37,7 @@ export class ContextService {
   private subscriptions = new Map<ContextSubKey, Set<SubCallBack>>();
 
   constructor() {
-    this.restoreState(); 
+    this.restoreState();
   }
 
   /**
@@ -120,11 +120,8 @@ export class ContextService {
     }
   }
 
-  /**
-   * Get a snapshot of the current context
-   */
-  get context(): AppContext {
-    return { ...this._ctx };
+  getSnapShot() {
+    return structuredClone(this._ctx);
   }
 
   /**

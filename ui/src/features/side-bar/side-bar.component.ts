@@ -28,7 +28,8 @@ export class SideBarComponent implements OnInit {
   activeElement: sideBarActiveElement | null = null;
 
   ngOnInit(): void {
-    this.activeElement = this._appCtx.context.sideBarActiveElement;
+    this.activeElement = this._appCtx.getSnapShot().sideBarActiveElement;
+    
     this._appCtx.autoSub(
       'side-bar-active-element',
       (ctx) => {
@@ -38,7 +39,6 @@ export class SideBarComponent implements OnInit {
     );
   }
 
-  /** Generic toggle handler to avoid repetition */
   private toggleElement(element: sideBarActiveElement) {
     const newValue = this.activeElement === element ? null : element;
 
@@ -49,7 +49,6 @@ export class SideBarComponent implements OnInit {
     );
   }
 
-  // --- Convenience wrappers for each sidebar button ---
   toggleFileExplorer() {
     this.toggleElement('file-explorer');
   }
