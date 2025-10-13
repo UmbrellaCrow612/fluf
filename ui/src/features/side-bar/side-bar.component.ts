@@ -2,7 +2,6 @@ import {
   Component,
   DestroyRef,
   inject,
-  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';

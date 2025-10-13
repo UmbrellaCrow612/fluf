@@ -1,31 +1,17 @@
-<div class="container">
-  <app-top-bar />
-  <div class="page_wrapper">
-    <app-side-bar />
-    <div class="page_shell">
+<div class="container_one">
+  <div>
+    <app-top-bar />
+  </div>
+  <div class="container_two">
+    <div>
+      <app-side-bar />
+    </div>
+    <div class="container_three" [class.one_hidden]="!isSideBarRenderActive">
       @if (isSideBarRenderActive) {
-      <div
-        [style.flex]="sideBarRenderContainerFlex"
-        class="side_bar_render_wrapper"
-      >
-        <div class="side_bar_render_wrapper_top">
-          <button
-            mat-icon-button
-            (click)="closeSideBar()"
-            matTooltip="Close side bar"
-          >
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-        <app-side-bar-render />
-      </div>
-
-      <div class="resizer" (mousedown)="resizerMouseDown($event)"></div>
+      <div class="one">contional side bar render</div>
       }
 
-      <div [style.flex]="fileOpenContainerFlex">
-        <app-open-file-container />
-      </div>
+      <div class="two">file editor</div>
     </div>
   </div>
 </div>

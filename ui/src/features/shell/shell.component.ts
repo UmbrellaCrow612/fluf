@@ -17,14 +17,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 @Component({
   selector: 'app-shell',
   imports: [
-    TopBarComponent,
-    SideBarComponent,
-    SideBarRenderComponent,
-    OpenFileContainerComponent,
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-  ],
+    TopBarComponent,
+    SideBarComponent
+],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.css',
 })

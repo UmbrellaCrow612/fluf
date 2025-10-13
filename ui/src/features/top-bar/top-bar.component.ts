@@ -1,14 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../utils';
 import { debounceTime, fromEvent, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-top-bar',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: './top-bar.component.html',
   styleUrl: './top-bar.component.css',
 })

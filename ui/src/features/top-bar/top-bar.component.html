@@ -1,5 +1,5 @@
-<mat-toolbar class="parent">
-  <div class="left">
+<div class="parent">
+  <div class="flex">
     <span> Fluffy </span>
     <div>
       <button mat-button matTooltip="Open a file or folder">File</button>
@@ -11,7 +11,7 @@
       <button mat-button matTooltip="Help and assistance">Help</button>
     </div>
   </div>
-  <div class="right">
+  <div class="flex">
     <button mat-icon-button matTooltip="Minimize" (click)="minimize()">
       <mat-icon>minimize</mat-icon>
     </button>
@@ -28,4 +28,4 @@
       <mat-icon>close</mat-icon>
     </button>
   </div>
-</mat-toolbar>
+</div>
