@@ -27,11 +27,6 @@
   height: 100%;
   /* flex: 1; set via angular */
   min-height: 0; /*Make sure all flex containers have min height to allow overflow to work within them */
-
-  background-color: aliceblue;
-
-  overflow-y: auto;
-  padding: 20px;
 }
 
 .right {

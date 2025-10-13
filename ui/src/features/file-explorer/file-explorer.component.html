@@ -1,26 +1,24 @@
-<div class="container">
-  @if (!selectedDirectory) {
-  <div class="no_dir_selected">
-    <span> No folder selected pick a folder </span>
-    <button mat-button (click)="openFolder()" [disabled]="isSelectingFolder">
-      Open folder
-    </button>
+<div class="file_explorer_container">
+  <div class="file_explorer_top">
+    <span> File Explorer </span>
+    <div class="file_explorer_buttons">
+      <button mat-icon-button matTooltip="New File">
+        <mat-icon>note_add</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="New Folder">
+        <mat-icon>create_new_folder</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Collapse folders">
+        <mat-icon>unfold_less</mat-icon>
+      </button>
+    </div>
   </div>
-  }
 
-  <!---->
-  @if (isLoadingFolder && selectedDirectory) {
-  <div class="loading_init_folders">
-    <span> Loading </span>
-  </div>
-  }
 
-  <!---->
-  @if (!isLoadingFolder && selectedDirectory && !loadingFolderError) {
-  <div class="explorer_item_container">
-    @for (item of nodes; track $index) {
-    <app-explorer-item [node]="item" [depth]="0" />
-    }
+  <div class="file_explorer_file_tree_container">
+    lorem1000
   </div>
-  }
 </div>

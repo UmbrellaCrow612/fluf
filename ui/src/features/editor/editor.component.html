@@ -5,7 +5,11 @@
 
     <div class="side" id="resizer_container">
       @if (isLeftActive) {
-      <div class="left" [style.flex]="leftFlex">lorem1000</div>
+      <div class="left" [style.flex]="leftFlex">
+        @if (sideBarActivateElement === "file-explorer") {
+        <app-file-explorer />
+        }
+      </div>
       <div class="resizer" (mousedown)="initResizer($event)"></div>
       }
       <div class="right" [style.flex]="rightFlex">right</div>

@@ -1,11 +1,13 @@
+import { sideBarActiveElement } from './../app-context/type';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
 import { ContextService } from '../app-context/app-context.service';
+import { FileExplorerComponent } from "../file-explorer/file-explorer.component";
 
 @Component({
   selector: 'app-editor',
-  imports: [TopBarComponent, SideBarComponent],
+  imports: [TopBarComponent, SideBarComponent, FileExplorerComponent],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
@@ -66,17 +68,27 @@ export class EditorComponent implements OnInit {
   }
 
   isLeftActive = false;
+  sideBarActivateElement: sideBarActiveElement = null;
 
   ngOnInit(): void {
     // set stored state
     this.isLeftActive =
       this.appContext.getSnapShot().sideBarActiveElement != null;
+    this.sideBarActivateElement =
+      this.appContext.getSnapShot().sideBarActiveElement;
 
     // subs
     this.appContext.autoSub(
       'side-bar-active-element',
       (ctx) => {
         this.isLeftActive = ctx.sideBarActiveElement != null;
+      },
+      this.destroyRef
+    );
+    this.appContext.autoSub(
+      'side-bar-active-element',
+      (ctx) => {
+        this.sideBarActivateElement = ctx.sideBarActiveElement;
       },
       this.destroyRef
     );
