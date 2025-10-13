@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
@@ -13,6 +13,7 @@ import { ExplorerItemComponent } from './explorer-item/explorer-item.component';
 export class FileExplorerComponent implements OnInit {
   private readonly _appCtx = inject(ContextService);
   private readonly _api = getElectronApi();
+  private readonly _dialogRef = inject(DestroyRef);
 
   /**
    * The directory to show in file explorer
@@ -29,6 +30,15 @@ export class FileExplorerComponent implements OnInit {
     if (this._appCtx.context.fileExplorerOpenedNodes) {
       this.nodes = this._appCtx.context.fileExplorerOpenedNodes;
     }
+    this._appCtx.autoSub(
+      'file-explorer-opene-nodes',
+      (ctx) => {
+        if (ctx.fileExplorerOpenedNodes) {
+          this.nodes = ctx.fileExplorerOpenedNodes;
+        }
+      },
+      this._dialogRef
+    );
   }
 
   async openFolder() {

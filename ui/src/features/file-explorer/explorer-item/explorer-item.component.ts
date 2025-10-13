@@ -30,7 +30,7 @@ export class ExplorerItemComponent implements OnInit {
   ngOnInit(): void {
     this.isOpenInFileEditorView =
       this._appCtx.context.activeFileOpen?.path === this.node().path;
-      
+
     this._appCtx.autoSub(
       'active-open-file',
       (ctx) => {
@@ -58,6 +58,13 @@ export class ExplorerItemComponent implements OnInit {
       );
     } else {
       this.node().expanded = false;
+
+      this._appCtx.update(
+        'fileExplorerOpenedNodes',
+        this._appCtx.context.fileExplorerOpenedNodes,
+        'file-explorer-opene-nodes'
+      );
+
       if (!this.node().isDirectory) {
         this._appCtx.update('activeFileOpen', this.node(), 'active-open-file');
       }

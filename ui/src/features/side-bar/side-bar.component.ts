@@ -10,7 +10,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   ContextService,
-  UnsubscribeFn,
 } from '../app-context/app-context.service';
 import { sideBarActiveElement } from '../app-context/type';
 
@@ -30,6 +29,7 @@ export class SideBarComponent implements OnInit {
   activeElement: sideBarActiveElement | null = null;
 
   ngOnInit(): void {
+    this.activeElement = this._appCtx.context.sideBarActiveElement;
     this._appCtx.autoSub(
       'side-bar-active-element',
       (ctx) => {

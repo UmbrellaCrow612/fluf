@@ -3,21 +3,8 @@ import { sideBarActiveElement } from './type';
 
 export type AppContext = {
   sideBarActiveElement: sideBarActiveElement;
-
-  /**
-   * List of files opened in the file explorer form the selected directory path - keeps track of it when it cloopases and re opens
-   * without having to re read the dir
-   */
   fileExplorerOpenedNodes: Array<fileNode> | null;
-
-  /**
-   * The folder path opened to edit files etc
-   */
   selectedDirectoryFolderPath: string | null;
-
-  /**
-   * The last clicked and focused file either through the file explorer or file editor tabs
-   */
   activeFileOpen: fileNode | null;
 };
 
@@ -25,12 +12,16 @@ export type ContextSubKey =
   | 'side-bar-active-element'
   | 'file-explorer-opene-nodes'
   | 'selected-director-folder-path'
-  | "active-open-file";
+  | 'active-open-file';
+
 export type SubCallBack = (ctx: AppContext) => void;
 export type UnsubscribeFn = () => void;
 
+const LOCAL_STORAGE_KEY = 'app-context';
+
 /**
- * Service that provides access to application context sub and update it globally - think of it as a global object shared
+ * Service that provides access to application context, persists it,
+ * and allows subscribing to changes.
  */
 @Injectable({
   providedIn: 'root',
@@ -45,11 +36,40 @@ export class ContextService {
 
   private subscriptions = new Map<ContextSubKey, Set<SubCallBack>>();
 
+  constructor() {
+    this.restoreState(); 
+  }
+
+  /**
+   * Restore persisted context from localStorage
+   */
+  private restoreState() {
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!raw) return;
+
+      const saved = JSON.parse(raw) as Partial<AppContext>;
+      this._ctx = { ...this._ctx, ...saved };
+      console.log('[ContextService] Restored state from localStorage');
+    } catch (err) {
+      console.warn('[ContextService] Failed to restore context', err);
+    }
+  }
+
+  /**
+   * Persist the current context state to localStorage
+   */
+  private saveState() {
+    try {
+      // Save shallow copy to avoid circular refs
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(this._ctx));
+    } catch (err) {
+      console.warn('[ContextService] Failed to save context', err);
+    }
+  }
+
   /**
    * Subscribe to a specific application context key and run some logic
-   * @param key The key event to subscribe to
-   * @param callback The callback to register
-   * @returns A function that unsubscribes this callback when called
    */
   private sub(key: ContextSubKey, callback: SubCallBack): UnsubscribeFn {
     if (!this.subscriptions.has(key)) {
@@ -59,10 +79,7 @@ export class ContextService {
     const set = this.subscriptions.get(key)!;
     set.add(callback);
 
-    // Return an unsubscribe function
-    return () => {
-      set.delete(callback);
-    };
+    return () => set.delete(callback);
   }
 
   /**
@@ -79,9 +96,6 @@ export class ContextService {
 
   /**
    * Update part of the application context and notify subscribers
-   * @param key The key in the context to update
-   * @param value The new value for that key
-   * @param event Optional event key to notify subscribers
    */
   update<K extends keyof AppContext>(
     key: K,
@@ -89,6 +103,8 @@ export class ContextService {
     event: ContextSubKey
   ) {
     this._ctx[key] = value;
+
+    this.saveState();
     this.notify(event);
   }
 
@@ -105,9 +121,26 @@ export class ContextService {
   }
 
   /**
-   * Get the current context snapshot
+   * Get a snapshot of the current context
    */
   get context(): AppContext {
     return { ...this._ctx };
+  }
+
+  /**
+   * Clear context and localStorage
+   */
+  clear() {
+    this._ctx = {
+      sideBarActiveElement: null,
+      fileExplorerOpenedNodes: null,
+      selectedDirectoryFolderPath: null,
+      activeFileOpen: null,
+    };
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    this.notify('side-bar-active-element');
+    this.notify('file-explorer-opene-nodes');
+    this.notify('selected-director-folder-path');
+    this.notify('active-open-file');
   }
 }
