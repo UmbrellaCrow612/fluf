@@ -12,15 +12,18 @@
   transition: grid-template-columns 0.3s;
 }
 
-.container_three {
+.container_three_active {
+  /*Apply this when side bar is active*/
   display: grid;
-  grid-template-columns: 3fr 8fr; 
+  grid-template-columns: 2fr 8fr;
   transition: grid-template-columns 0.3s;
-  width: 100%;
 }
 
-.container_three.one_hidden {
-  grid-template-columns: 1fr; 
+.container_three_inactive {
+  /*Apply when side bar is gone*/
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
 }
 
 .one {
@@ -39,8 +42,8 @@
   .container_two {
     grid-template-columns: 0.5fr 10fr;
   }
-
-  .container_three {
+ 
+  .container_three_active{
     grid-template-columns: 2fr 8fr;
   }
 }

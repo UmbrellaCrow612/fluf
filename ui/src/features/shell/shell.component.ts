@@ -21,8 +21,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatButtonModule,
     MatTooltipModule,
     TopBarComponent,
-    SideBarComponent
-],
+    SideBarComponent,
+  ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.css',
 })
@@ -35,12 +35,7 @@ export class ShellComponent implements OnInit {
    */
   isSideBarRenderActive = false;
 
-  sideBarRenderContainerFlex = 1;
-  fileOpenContainerFlex = 4;
-  pageShellTotalFlex = 5;
-
-  isResizing = false;
-  reSizeMouseStartX = 0;
+  
 
   ngOnInit(): void {
     this.isSideBarRenderActive = !!this._appCtx.context.sideBarActiveElement;
@@ -53,63 +48,4 @@ export class ShellComponent implements OnInit {
       this.destroyRef
     );
   }
-
-  closeSideBar() {
-    this._appCtx.update(
-      'sideBarActiveElement',
-      null,
-      'side-bar-active-element'
-    );
-  }
-
-  resizerMouseDown(event: MouseEvent) {
-    event.preventDefault();
-
-    this.isResizing = true;
-    this.reSizeMouseStartX = event.clientX;
-
-    document.addEventListener('mousemove', this.rezierMouseMove);
-    document.addEventListener('mouseup', this.resizerMouseUp);
-  }
-
-  private rezierMouseMove = (event: MouseEvent) => {
-    if (!this.isResizing) return;
-
-    const container = document.querySelector('.page_shell') as HTMLElement;
-    if (!container) return;
-
-    const totalWidth = container.clientWidth;
-    const deltaX = event.clientX - this.reSizeMouseStartX;
-
-    let sidebarWidth =
-      (this.sideBarRenderContainerFlex / this.pageShellTotalFlex) * totalWidth;
-    let fileWidth =
-      (this.fileOpenContainerFlex / this.pageShellTotalFlex) * totalWidth;
-
-    sidebarWidth += deltaX;
-    fileWidth -= deltaX;
-
-    const minWidth = 225;
-    if (sidebarWidth < minWidth) {
-      sidebarWidth = minWidth;
-      fileWidth = totalWidth - sidebarWidth;
-    } else if (fileWidth < minWidth) {
-      fileWidth = minWidth;
-      sidebarWidth = totalWidth - fileWidth;
-    }
-
-    const totalFlex = sidebarWidth + fileWidth;
-    this.sideBarRenderContainerFlex =
-      (sidebarWidth / totalFlex) * this.pageShellTotalFlex;
-    this.fileOpenContainerFlex =
-      (fileWidth / totalFlex) * this.pageShellTotalFlex;
-
-    this.reSizeMouseStartX = event.clientX;
-  };
-
-  private resizerMouseUp = () => {
-    this.isResizing = false;
-    document.removeEventListener('mousemove', this.rezierMouseMove);
-    document.removeEventListener('mouseup', this.resizerMouseUp);
-  };
 }

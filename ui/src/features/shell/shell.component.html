@@ -6,11 +6,13 @@
     <div>
       <app-side-bar />
     </div>
-    <div class="container_three" [class.one_hidden]="!isSideBarRenderActive">
+    <div
+      [class.container_three_active]="isSideBarRenderActive"
+      [class.container_three_inactive]="!isSideBarRenderActive"
+    >
       @if (isSideBarRenderActive) {
       <div class="one">contional side bar render</div>
       }
-
       <div class="two">file editor</div>
     </div>
   </div>
