@@ -1,12 +1,7 @@
-import {
-  Component,
-  DestroyRef,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
 import { sideBarActiveElement } from '../app-context/type';
-import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
+import { FileExplorerComponent } from "../file-explorer/file-explorer.component";
 
 @Component({
   selector: 'app-side-bar-render',

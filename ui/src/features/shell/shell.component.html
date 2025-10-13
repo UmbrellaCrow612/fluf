@@ -1,19 +1,15 @@
 <div class="container_one">
-  <div>
-    <app-top-bar />
-  </div>
+  <app-top-bar />
+
   <div class="container_two">
-    <div>
-      <app-side-bar />
-    </div>
-    <div
-      [class.container_three_active]="isSideBarRenderActive"
-      [class.container_three_inactive]="!isSideBarRenderActive"
-    >
+    <app-side-bar />
+    <div class="container_three">
       @if (isSideBarRenderActive) {
-      <div class="one">contional side bar render</div>
+      <app-side-bar-render [style.flex]="side_bar_render_flex" />
+
+      <div class="resizer" (mousedown)="initResize($event)"></div>
       }
-      <div class="two">file editor</div>
+      <div [style.flex]="container_four_flex" class="shell">shell</div>
     </div>
   </div>
 </div>

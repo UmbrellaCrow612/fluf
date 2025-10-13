@@ -1,14 +1,9 @@
-:host {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
 .container {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  height: 100%;
+
+  background-color: rgb(8, 8, 8);
 }
 
 /* Chrome, Edge, Safari */
