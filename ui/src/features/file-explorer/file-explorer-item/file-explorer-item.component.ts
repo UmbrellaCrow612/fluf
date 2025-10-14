@@ -38,6 +38,10 @@ export class FileExplorerItemComponent implements OnInit {
   getFileExt = getFileExtension;
 
   ngOnInit(): void {
+    this.isFocused =
+      this.appContext.getSnapShot().activeFileOrfolder?.path ===
+      this.fileNode().path;
+
     this.appContext.autoSub(
       'active-file-folder',
       (ctx) => {

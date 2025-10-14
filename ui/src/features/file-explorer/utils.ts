@@ -100,3 +100,16 @@ export function collapseNodeByPath(
 
   return false;
 }
+
+/**
+ * Collapse all expanded file nodes - will set it back to root nodes only
+ * @param nodes The nodes to affect these will be changed
+ */
+export function collapseAllFileNodesToRoot(nodes:fileNode[]){
+  for(let node of nodes){
+    if(node.isDirectory){
+      node.expanded = false;
+      node.children = []
+    }
+  }
+}

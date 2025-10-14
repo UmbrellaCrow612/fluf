@@ -58,3 +58,8 @@
   gap: 10px;
   text-align: center;
 }
+
+.file_explorer_file_tree_active {
+  border: 1px solid white;
+  border-radius: 5px;
+}

@@ -9,17 +9,25 @@
       <button mat-icon-button matTooltip="New Folder">
         <mat-icon>create_new_folder</mat-icon>
       </button>
-      <button mat-icon-button matTooltip="Refresh">
+      <button mat-icon-button matTooltip="Refresh" (click)="refreshClicked()">
         <mat-icon>refresh</mat-icon>
       </button>
-      <button mat-icon-button matTooltip="Collapse folders">
+      <button
+        mat-icon-button
+        matTooltip="Collapse folders"
+        (click)="collapseFolders()"
+      >
         <mat-icon>unfold_less</mat-icon>
       </button>
     </div>
   </div>
 
   <!---->
-  <div class="file_explorer_file_tree_container scroll_bar">
+  <div
+    class="file_explorer_file_tree_container scroll_bar"
+    (click)="fileExplorerScrollContainerClicked($event)"
+    [class.file_explorer_file_tree_active]="isExplorerActive"
+  >
     @for (file of directoryFileNodes; track file.name) {
     <app-file-explorer-item [fileNode]="file" [depth]="0" />
     }
