@@ -1,0 +1,40 @@
+<div
+  class="file_explorer_tree_item"
+  [style.padding-left.px]="depth() === 0 ? 6 : depth() * 6"
+>
+  @if (fileNode().expanded && fileNode().isDirectory) {
+  <mat-icon>keyboard_arrow_down</mat-icon>
+  }
+  <!---->
+  @if (!fileNode().expanded && fileNode().isDirectory) {
+  <mat-icon>keyboard_arrow_down</mat-icon>
+  }
+  <!---->
+
+  @if (fileNode().isDirectory) {
+  <mat-icon>folder</mat-icon>
+  }
+  <!---->
+
+  @if (!fileNode().isDirectory && getFileExt(fileNode().path) ==="html" ) {
+  <mat-icon>html</mat-icon>
+  }
+  <!---->
+
+  @if (!fileNode().isDirectory && getFileExt(fileNode().path) ==="css" ) {
+  <mat-icon>css</mat-icon>
+  }
+  <!---->
+
+  @if (!fileNode().isDirectory && getFileExt(fileNode().path) ==="js" ) {
+  <mat-icon>javascript</mat-icon>
+  }
+  <!---->
+  @if (!fileNode().isDirectory && !getFileExt(fileNode().path)) {
+  <mat-icon>description</mat-icon>
+  }
+
+  <span class="elipses">
+    {{ fileNode().name }}
+  </span>
+</div>

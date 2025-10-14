@@ -24,7 +24,7 @@ export class EditorComponent implements OnInit {
     let previousX = event.clientX;
     const container = document.getElementById('resizer_container')!;
 
-    const MIN_FLEX = 0.2;
+    const MIN_FLEX = 0.3;
     const sensitivity = (1 / container?.clientWidth) * 2;
 
     const mouseMove = (mouseMove: MouseEvent) => {

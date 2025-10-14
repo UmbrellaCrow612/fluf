@@ -18,10 +18,8 @@
   </div>
 
   <div class="file_explorer_file_tree_container scroll_bar">
-    <div class="file_explorer_tree_item">
-      <mat-icon>keyboard_arrow_right</mat-icon>
-      <mat-icon>folder</mat-icon>
-      <span class="elipses"> folder name </span>
-    </div>
+    <app-file-explorer-item [fileNode]="testFileNode" [depth]="1"/>
+    <app-file-explorer-item [fileNode]="testFileNode" [depth]="2"/>
+    <app-file-explorer-item [fileNode]="testFileNode" [depth]="3"/>
   </div>
 </div>

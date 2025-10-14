@@ -1,0 +1,29 @@
+.file_explorer_tree_item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  min-height: 0;
+  min-width: 0;
+
+  padding: 2px;
+}
+
+.file_explorer_tree_item mat-icon {
+  flex-shrink: 0;
+}
+
+.file_explorer_tree_item:hover {
+  cursor: pointer;
+  background-color: rgb(31, 30, 30);
+}
+
+.elipses {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
