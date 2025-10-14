@@ -82,12 +82,6 @@ export class EditorComponent implements OnInit {
       'side-bar-active-element',
       (ctx) => {
         this.isLeftActive = ctx.sideBarActiveElement != null;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'side-bar-active-element',
-      (ctx) => {
         this.sideBarActivateElement = ctx.sideBarActiveElement;
       },
       this.destroyRef

@@ -33,3 +33,70 @@ export function getFileExtension(path: string): SupportedFileExtensions {
  * List of supported file extenions
  */
 export type SupportedFileExtensions = 'html' | 'css' | 'js' | null;
+
+/**
+ * Recursively searches for a fileNode by its path and appends new children to it.
+ *
+ * @param nodes - The root list of fileNodes to search through.
+ * @param targetPath - The path of the node to append children to.
+ * @param newChildren - An array of new fileNodes to append.
+ * @returns true if children were appended successfully, false otherwise.
+ */
+export function appendChildrenToNode(
+  nodes: fileNode[],
+  targetPath: string,
+  newChildren: fileNode[]
+): boolean {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      // Ensure children array exists
+      if (!Array.isArray(node.children)) {
+        node.children = [];
+      }
+
+      // Append new children
+      node.children = newChildren;
+      node.expanded = true; 
+      return true;
+    }
+
+    // Recurse into subdirectories
+    if (node.isDirectory && node.children && node.children.length > 0) {
+      const appended = appendChildrenToNode(
+        node.children,
+        targetPath,
+        newChildren
+      );
+      if (appended) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Recursively searches for a fileNode by its path and sets its `expanded` to false.
+ *
+ * @param nodes - The root list of fileNodes to search through.
+ * @param targetPath - The path of the node to collapse.
+ * @returns true if the node was found and updated, false otherwise.
+ */
+export function collapseNodeByPath(
+  nodes: fileNode[],
+  targetPath: string
+): boolean {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      node.expanded = false;
+      node.children = [];
+      return true;
+    }
+
+    if (node.isDirectory && node.children && node.children.length > 0) {
+      const found = collapseNodeByPath(node.children, targetPath);
+      if (found) return true;
+    }
+  }
+
+  return false;
+}

@@ -1,13 +1,15 @@
 <div
   class="file_explorer_tree_item"
-  [style.padding-left.px]="depth() === 0 ? 6 : depth() * 6"
+  [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
+  [class.focused]="isFocused"
+  (click)="itemClicked($event)"
 >
   @if (fileNode().expanded && fileNode().isDirectory) {
   <mat-icon>keyboard_arrow_down</mat-icon>
   }
   <!---->
   @if (!fileNode().expanded && fileNode().isDirectory) {
-  <mat-icon>keyboard_arrow_down</mat-icon>
+  <mat-icon>keyboard_arrow_right</mat-icon>
   }
   <!---->
 
@@ -38,3 +40,11 @@
     {{ fileNode().name }}
   </span>
 </div>
+
+@if (fileNode().children && fileNode().children.length > 0) {
+<div class="child_wrapper">
+  @for (child of fileNode().children; track child.name) {
+  <app-file-explorer-item [fileNode]="child" [depth]="depth() + 1" />
+  }
+</div>
+}

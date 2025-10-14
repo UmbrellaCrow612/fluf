@@ -2,17 +2,32 @@ import { DestroyRef, Injectable } from '@angular/core';
 import { sideBarActiveElement } from './type';
 
 export type AppContext = {
+  /**
+   * Current active sidebat element
+   */
   sideBarActiveElement: sideBarActiveElement;
-  fileExplorerOpenedNodes: Array<fileNode> | null;
+
+  /**
+   * List of nodes read from the selected directory
+   */
+  directoryFileNodes: Array<fileNode> | null;
+
+  /**
+   * Folder path selected in editor
+   */
   selectedDirectoryFolderPath: string | null;
-  activeFileOpen: fileNode | null;
+
+  /**
+   * The current focused file or folder clicked or in view in either editor or file explorer
+   */
+  activeFileOrfolder: fileNode | null;
 };
 
 export type ContextSubKey =
   | 'side-bar-active-element'
-  | 'file-explorer-opene-nodes'
-  | 'selected-director-folder-path'
-  | 'active-open-file';
+  | 'selected-directory-folder-path'
+  | 'directory-file-nodes'
+  | 'active-file-folder';
 
 export type SubCallBack = (ctx: AppContext) => void;
 export type UnsubscribeFn = () => void;
@@ -29,9 +44,9 @@ const LOCAL_STORAGE_KEY = 'app-context';
 export class ContextService {
   private _ctx: AppContext = {
     sideBarActiveElement: null,
-    fileExplorerOpenedNodes: null,
     selectedDirectoryFolderPath: null,
-    activeFileOpen: null,
+    directoryFileNodes: null,
+    activeFileOrfolder: null
   };
 
   private subscriptions = new Map<ContextSubKey, Set<SubCallBack>>();
@@ -115,29 +130,12 @@ export class ContextService {
     const callbacks = this.subscriptions.get(key);
     if (callbacks) {
       for (const callback of callbacks) {
-        callback(this._ctx);
+        callback(this.getSnapShot());
       }
     }
   }
 
   getSnapShot() {
     return structuredClone(this._ctx);
-  }
-
-  /**
-   * Clear context and localStorage
-   */
-  clear() {
-    this._ctx = {
-      sideBarActiveElement: null,
-      fileExplorerOpenedNodes: null,
-      selectedDirectoryFolderPath: null,
-      activeFileOpen: null,
-    };
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-    this.notify('side-bar-active-element');
-    this.notify('file-explorer-opene-nodes');
-    this.notify('selected-director-folder-path');
-    this.notify('active-open-file');
   }
 }

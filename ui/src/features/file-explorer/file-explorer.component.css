@@ -48,3 +48,13 @@
 
   padding: 10px;
 }
+
+.select_folder {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}

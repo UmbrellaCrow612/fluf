@@ -15,7 +15,11 @@
 
 .file_explorer_tree_item:hover {
   cursor: pointer;
-  background-color: rgb(31, 30, 30);
+  background-color: rgb(46, 44, 44);
+}
+
+.focused {
+  background-color: rgb(46, 44, 44);
 }
 
 .elipses {
@@ -26,4 +30,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.child_wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  gap: 5px;
 }
