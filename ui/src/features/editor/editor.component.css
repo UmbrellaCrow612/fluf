@@ -27,10 +27,12 @@
   height: 100%;
   /* flex: 1; set via angular */
   min-height: 0; /*Make sure all flex containers have min height to allow overflow to work within them */
+  min-width: 0; 
 }
 
 .right {
   min-height: 0;
+  min-width: 0;
   height: 100%;
   /* flex: 1;  set via angular */
   background-color: aquamarine;

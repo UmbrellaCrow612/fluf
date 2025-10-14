@@ -2,8 +2,10 @@
   width: 100%;
   height: 100%;
 
-  display: flex;
+  min-width: 0;
   min-height: 0;
+
+  display: flex;
   flex-direction: column;
   gap: 5px;
 
@@ -14,6 +16,10 @@
 
 .file_explorer_top {
   display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+
   align-items: center;
   height: 60px;
   justify-content: space-between;
@@ -32,29 +38,43 @@
 .file_explorer_file_tree_container {
   flex: 1;
   overflow-y: auto;
-  background-color: blue;
 
-  /* Enable custom scrollbar styling */
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #555 #222; /* Firefox (thumb color, track color) */
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  padding: 10px;
 }
 
-/* Chrome, Edge, Safari */
-.file_explorer_file_tree_container::-webkit-scrollbar {
-  width: 6px; /* Thin scrollbar */
+.file_explorer_tree_item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  min-height: 0;
+  min-width: 0;
+
+  padding: 2px;
 }
 
-.file_explorer_file_tree_container::-webkit-scrollbar-track {
-  background: #222; /* Dark track */
-  border-radius: 3px;
+.file_explorer_tree_item mat-icon {
+  flex-shrink: 0;
 }
 
-.file_explorer_file_tree_container::-webkit-scrollbar-thumb {
-  background-color: #555; /* Dark thumb */
-  border-radius: 3px;
-  border: 1px solid #333; /* Slight border for definition */
+.file_explorer_tree_item:hover {
+  cursor: pointer;
+  background-color: rgb(31, 30, 30);
 }
 
-.file_explorer_file_tree_container::-webkit-scrollbar-thumb:hover {
-  background-color: #777; /* Slightly lighter on hover */
+.elipses {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

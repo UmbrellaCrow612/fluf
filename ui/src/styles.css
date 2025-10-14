@@ -17,3 +17,28 @@ body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
+
+.scroll_bar {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #222;
+}
+
+/* Chrome, Edge, Safari */
+.scroll_bar::-webkit-scrollbar {
+  width: 6px; /* Thin scrollbar */
+}
+
+.scroll_bar::-webkit-scrollbar-track {
+  background: #222; /* Dark track */
+  border-radius: 3px;
+}
+
+.scroll_bar::-webkit-scrollbar-thumb {
+  background-color: #555; /* Dark thumb */
+  border-radius: 3px;
+  border: 1px solid #333; /* Slight border for definition */
+}
+
+.scroll_bar::-webkit-scrollbar-thumb:hover {
+  background-color: #777; /* Slightly lighter on hover */
+}
