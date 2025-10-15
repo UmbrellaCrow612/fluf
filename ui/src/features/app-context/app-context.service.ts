@@ -18,9 +18,14 @@ export type AppContext = {
   selectedDirectoryFolderPath: string | null;
 
   /**
-   * The current focused file or folder clicked or in view in either editor or file explorer
+   * The current focused / last clicked or last edited file (from editor) in the file explorer tree
    */
-  activeFileOrfolder: fileNode | null;
+  fileExplorerActiveFileOrFolder: fileNode | null;
+
+  /**
+   * Represents when a file extiro creator is active or not
+   */
+  isCreateFileOrFolderActive: boolean | null;
 };
 
 export type ContextSubKey =
@@ -46,7 +51,8 @@ export class ContextService {
     sideBarActiveElement: null,
     selectedDirectoryFolderPath: null,
     directoryFileNodes: null,
-    activeFileOrfolder: null,
+    fileExplorerActiveFileOrFolder: null,
+    isCreateFileOrFolderActive: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

@@ -30,10 +30,19 @@ type fileNode = {
      */
     children: Array<fileNode>;
     /**
-     * - Indicates if the node has been expanded and the children have been fetched
+     * - Indicates if the node has been expanded
      */
     expanded: boolean;
+    /**
+     * - Indicates the mode of the editor to either create a file or folder
+     */
+    mode: fileNodeMode;
 };
+/**
+ * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
+ * that the given node is going to be rendered as a editor to create said file or folder
+ */
+type fileNodeMode = "createFile" | "createFolder" | "default";
 /**
  * Opens a folder selection dialog and returns the selected path.
  */

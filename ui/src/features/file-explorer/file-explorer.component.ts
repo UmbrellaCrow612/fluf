@@ -6,7 +6,11 @@ import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { CommonModule } from '@angular/common';
 import { FileExplorerItemComponent } from './file-explorer-item/file-explorer-item.component';
-import { collapseAllFileNodesToRoot } from './utils';
+import {
+  collapseAllFileNodesToRoot,
+  getParentNode,
+  pushChildrenToNode,
+} from './utils';
 
 @Component({
   selector: 'app-file-explorer',
@@ -28,6 +32,7 @@ export class FileExplorerComponent implements OnInit {
   selectedDirectorPath: string | null = null;
   directoryFileNodes: fileNode[] | null = null;
   isExplorerActive = false;
+  disableCreateFileOrFolder: boolean | null = null;
 
   ngOnInit(): void {
     let init = this.appContext.getSnapshot();
@@ -36,7 +41,8 @@ export class FileExplorerComponent implements OnInit {
     this.selectedDirectorPath = init.selectedDirectoryFolderPath;
     this.directoryFileNodes = init.directoryFileNodes;
     this.isExplorerActive =
-      init.activeFileOrfolder?.path === this.selectedDirectorPath;
+      init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
+    this.disableCreateFileOrFolder = init.isCreateFileOrFolderActive;
 
     // Subscribe to changes update local state
     this.appContext.autoSub(
@@ -54,10 +60,18 @@ export class FileExplorerComponent implements OnInit {
       this.destroyRef
     );
     this.appContext.autoSub(
-      'activeFileOrfolder',
+      'fileExplorerActiveFileOrFolder',
       (ctx) => {
         this.isExplorerActive =
-          ctx.activeFileOrfolder?.path === this.selectedDirectorPath;
+          ctx.fileExplorerActiveFileOrFolder?.path ===
+          this.selectedDirectorPath;
+      },
+      this.destroyRef
+    );
+    this.appContext.autoSub(
+      'isCreateFileOrFolderActive',
+      (ctx) => {
+        this.disableCreateFileOrFolder = ctx.isCreateFileOrFolderActive;
       },
       this.destroyRef
     );
@@ -89,6 +103,14 @@ export class FileExplorerComponent implements OnInit {
   collapseFolders() {
     let ctx = this.appContext.getSnapshot();
     collapseAllFileNodesToRoot(ctx.directoryFileNodes!);
+    this.appContext.update('fileExplorerActiveFileOrFolder', {
+      children: [],
+      expanded: false,
+      isDirectory: true,
+      path: this.selectedDirectorPath!,
+      name: 'Root',
+      mode: 'default',
+    });
     this.appContext.update('directoryFileNodes', ctx.directoryFileNodes);
   }
 
@@ -108,13 +130,57 @@ export class FileExplorerComponent implements OnInit {
 
     if (target === container) {
       /*Clicked empty space so set the file or folder focus in side bar to root node */
-      this.appContext.update('activeFileOrfolder', {
+      this.appContext.update('fileExplorerActiveFileOrFolder', {
         children: [],
         expanded: false,
         isDirectory: true,
         path: this.selectedDirectorPath!,
-        name: 'Root ',
+        name: 'Root',
+        mode: 'default',
       });
     }
+  }
+
+  createNewFile() {
+    const ctx = this.appContext.getSnapshot();
+
+    const nodes = ctx.directoryFileNodes!;
+    const activeNode = ctx.fileExplorerActiveFileOrFolder;
+
+    if (!activeNode) {
+      console.log('No file or folder in focus');
+      return;
+    }
+
+    const isRootActive = activeNode.path === this.selectedDirectorPath;
+
+    // Construct the new file node
+    const newFileNode: fileNode = {
+      children: [],
+      expanded: false,
+      isDirectory: false,
+      name: 'Editor',
+      path: activeNode.path,
+      mode: 'createFile',
+    };
+
+    if (isRootActive) {
+      // Root node is not part of `nodes`, so push directly
+      nodes.push(newFileNode);
+    } else if (activeNode.isDirectory) {
+      // Push under the active directory
+      pushChildrenToNode(nodes, activeNode.path, [newFileNode]);
+    } else {
+      // Active node is a file — find its parent
+      const parent = getParentNode(nodes, activeNode.path);
+      if (parent) {
+        pushChildrenToNode(nodes, parent.path, [newFileNode]);
+      } else {
+        console.warn('Parent not found for active file node.');
+      }
+    }
+
+    this.appContext.update("isCreateFileOrFolderActive", true)
+    this.appContext.update('directoryFileNodes', nodes);
   }
 }

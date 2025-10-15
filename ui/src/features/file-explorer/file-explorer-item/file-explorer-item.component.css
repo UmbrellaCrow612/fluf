@@ -40,3 +40,25 @@
   min-width: 0;
   gap: 5px;
 }
+
+.create_item {
+  display: flex;
+  align-items: center;
+  padding: 2px 6px;
+  min-height: 24px;
+  cursor: text;
+  border-radius: 4px;
+  gap: 3px;
+  background-color: rgb(43, 41, 41);
+}
+
+.create_input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+  background-color: rgb(71, 69, 69);
+  padding: 3px;
+  color: white;
+}

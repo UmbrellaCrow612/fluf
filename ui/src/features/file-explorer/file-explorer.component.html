@@ -3,10 +3,19 @@
   <div class="file_explorer_top scroll_bar">
     <span> File Explorer </span>
     <div class="file_explorer_buttons">
-      <button mat-icon-button matTooltip="New File">
+      <button
+        mat-icon-button
+        matTooltip="New File"
+        (click)="createNewFile()"
+        [disabled]="disableCreateFileOrFolder"
+      >
         <mat-icon>note_add</mat-icon>
       </button>
-      <button mat-icon-button matTooltip="New Folder">
+      <button
+        mat-icon-button
+        matTooltip="New Folder"
+        [disabled]="disableCreateFileOrFolder"
+      >
         <mat-icon>create_new_folder</mat-icon>
       </button>
       <button mat-icon-button matTooltip="Refresh" (click)="refreshClicked()">

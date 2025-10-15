@@ -1,10 +1,21 @@
-import { Component, DestroyRef, inject, input, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  input,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import {
   appendChildrenToNode,
   collapseNodeByPath,
   expandNodeByPath,
   getFileExtension,
+  removeCreateNodes,
+  removeNodeByPath,
 } from '../utils';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
@@ -15,7 +26,7 @@ import { getElectronApi } from '../../../utils';
   templateUrl: './file-explorer-item.component.html',
   styleUrl: './file-explorer-item.component.css',
 })
-export class FileExplorerItemComponent implements OnInit {
+export class FileExplorerItemComponent implements OnInit, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly appContext = inject(ContextService);
   private readonly api = getElectronApi();
@@ -38,18 +49,38 @@ export class FileExplorerItemComponent implements OnInit {
 
   getFileExt = getFileExtension;
 
+  /**
+   * Input rendered when making a file
+   */
+  createInput = viewChild<ElementRef<HTMLInputElement>>('create_input');
+
   ngOnInit(): void {
     this.isFocused =
-      this.appContext.getSnapshot().activeFileOrfolder?.path ===
+      this.appContext.getSnapshot().fileExplorerActiveFileOrFolder?.path ===
       this.fileNode().path;
 
     this.appContext.autoSub(
-      'activeFileOrfolder',
+      'fileExplorerActiveFileOrFolder',
       (ctx) => {
-        this.isFocused = ctx.activeFileOrfolder?.path === this.fileNode().path;
+        this.isFocused =
+          ctx.fileExplorerActiveFileOrFolder?.path === this.fileNode().path;
       },
       this.destroyRef
     );
+  }
+
+  ngAfterViewInit(): void {
+    if (this.createInput()) {
+      this.createInput()?.nativeElement.focus();
+    }
+  }
+
+  onCreateInputBlur() {
+    let nodes = this.appContext.getSnapshot().directoryFileNodes;
+    removeCreateNodes(nodes!);
+
+    this.appContext.update('isCreateFileOrFolderActive', false);
+    this.appContext.update('directoryFileNodes', nodes);
   }
 
   /**
@@ -59,7 +90,7 @@ export class FileExplorerItemComponent implements OnInit {
     event.preventDefault();
 
     if (!this.fileNode().isDirectory) {
-      this.appContext.update('activeFileOrfolder', this.fileNode());
+      this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
       return;
     }
 
@@ -67,12 +98,14 @@ export class FileExplorerItemComponent implements OnInit {
 
     if (this.fileNode().expanded) {
       collapseNodeByPath(previousNodes!, this.fileNode().path);
+      this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
       this.appContext.update('directoryFileNodes', previousNodes);
       return;
     }
 
     if (!this.fileNode().expanded && this.fileNode().children.length > 0) {
       expandNodeByPath(previousNodes!, this.fileNode().path!);
+      this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
       this.appContext.update('directoryFileNodes', previousNodes);
       return;
     }
@@ -88,7 +121,7 @@ export class FileExplorerItemComponent implements OnInit {
       newChildrenNodes
     );
 
-    this.appContext.update('activeFileOrfolder', this.fileNode());
+    this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
     this.appContext.update('directoryFileNodes', previousNodes);
   }
 }

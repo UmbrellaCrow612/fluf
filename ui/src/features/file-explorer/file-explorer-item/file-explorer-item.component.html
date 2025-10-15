@@ -1,3 +1,6 @@
+<!--Render normal file component-->
+
+@if (fileNode().mode == "default") {
 <div
   class="file_explorer_tree_item"
   [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
@@ -40,8 +43,27 @@
     {{ fileNode().name }}
   </span>
 </div>
+}
 
-@if (fileNode().children && fileNode().children.length > 0 && fileNode().expanded) {
+<!-- Render input to create file or folder -->
+@if (fileNode().mode == "createFile" || fileNode().mode == "createFolder") {
+<form
+  class="create_item"
+  [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
+>
+  <mat-icon>note_add</mat-icon>
+  <input
+    class="create_input"
+    required
+    #create_input
+    (blur)="onCreateInputBlur()"
+  />
+</form>
+}
+
+<!--Render chilren when expanded and there are children-->
+@if (fileNode().children && fileNode().children.length > 0 &&
+fileNode().expanded) {
 <div class="child_wrapper">
   @for (child of fileNode().children; track child.name) {
   <app-file-explorer-item [fileNode]="child" [depth]="depth() + 1" />

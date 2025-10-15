@@ -75,6 +75,75 @@ export function appendChildrenToNode(
 }
 
 /**
+ * Recursively searches for a fileNode by its path and pushes new children onto its existing children.
+ *
+ * @param nodes - The root list of fileNodes to search through.
+ * @param targetPath - The path of the node to append children to.
+ * @param newChildren - An array of new fileNodes to push.
+ * @returns true if children were appended successfully, false otherwise.
+ */
+export function pushChildrenToNode(
+  nodes: fileNode[],
+  targetPath: string,
+  newChildren: fileNode[]
+): boolean {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      // Ensure children array exists
+      if (!Array.isArray(node.children)) {
+        node.children = [];
+      }
+
+      // Push new children (instead of replacing)
+      node.children.push(...newChildren);
+      node.expanded = true;
+      return true;
+    }
+
+    // Recurse into subdirectories
+    if (node.isDirectory && node.children && node.children.length > 0) {
+      const appended = pushChildrenToNode(
+        node.children,
+        targetPath,
+        newChildren
+      );
+      if (appended) return true;
+    }
+  }
+
+  return false;
+}
+/**
+ * Recursively searches for the parent node of a given file path.
+ *
+ * @param nodes - The root list of fileNodes to search through.
+ * @param childPath - The full path of the child node whose parent is to be found.
+ * @returns The parent node if found, or null if the node is at the root or not found.
+ */
+export function getParentNode(
+  nodes: fileNode[],
+  childPath: string
+): fileNode | null {
+  for (const node of nodes) {
+    // Only directories can have children
+    if (node.isDirectory && Array.isArray(node.children)) {
+      // If any of this node's children match the target path → this is the parent
+      if (node.children.some((child) => child.path === childPath)) {
+        return node;
+      }
+
+      // Otherwise, recurse into child directories
+      const foundParent = getParentNode(node.children, childPath);
+      if (foundParent) {
+        return foundParent;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
  * Recursively searches for a fileNode by its path and sets its `expanded` to false.
  *
  * @param nodes - The root list of fileNodes to search through.
@@ -137,4 +206,55 @@ export function expandNodeByPath(
   }
 
   return false;
+}
+
+
+/**
+ * Recursively searches for a fileNode by its path and removes it from the node tree.
+ *
+ * @param nodes - The root list of fileNodes to search through.
+ * @param targetPath - The path of the node to remove.
+ * @returns true if the node was found and removed, false otherwise.
+ */
+export function removeNodeByPath(
+  nodes: fileNode[],
+  targetPath: string
+): boolean {
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+
+    if (node.path === targetPath) {
+      nodes.splice(i, 1); // Remove the node
+      return true;
+    }
+
+    if (node.isDirectory && node.children && node.children.length > 0) {
+      const removed = removeNodeByPath(node.children, targetPath);
+      if (removed) return true;
+    }
+  }
+
+  return false; // Node not found
+}
+
+/**
+ * Recursively removes all nodes that are in "createFile" or "createFolder" mode.
+ *
+ * @param nodes - The root list of fileNodes to search through and modify.
+ */
+export function removeCreateNodes(nodes: fileNode[]): void {
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const node = nodes[i];
+
+    // Remove if node is in create mode
+    if (node.mode === "createFile" || node.mode === "createFolder") {
+      nodes.splice(i, 1);
+      continue;
+    }
+
+    // Recursively check children
+    if (node.isDirectory && node.children.length > 0) {
+      removeCreateNodes(node.children);
+    }
+  }
 }

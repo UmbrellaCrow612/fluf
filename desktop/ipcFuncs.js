@@ -38,7 +38,8 @@ const readDirImpl = async (event = undefined, directoryPath) => {
     path: path.join(directoryPath, item.name),
     isDirectory: item.isDirectory(),
     children: [],
-    expanded: false
+    expanded: false,
+    mode: "default",
   }));
 
   // Sort: folders first, then files — both alphabetically

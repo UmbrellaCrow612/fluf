@@ -27,6 +27,13 @@
  * @property {boolean} isDirectory - If the given node is a directory
  * @property {Array<fileNode>} children - Children of the node
  * @property {boolean} expanded - Indicates if the node has been expanded
+ * @property {fileNodeMode} mode - Indicates the mode of the editor to either create a file or folder
+ */
+
+/**
+ * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means 
+ * that the given node is going to be rendered as a editor to create said file or folder
+ * @typedef {"createFile" | "createFolder" | "default"} fileNodeMode
  */
 
 /**
