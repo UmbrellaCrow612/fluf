@@ -35,6 +35,7 @@
   <div
     class="file_explorer_file_tree_container scroll_bar"
     (click)="fileExplorerScrollContainerClicked($event)"
+    (dblclick)="fileExplorerScrollContainerDoubleClicked($event)"
     [class.file_explorer_file_tree_active]="isExplorerActive"
   >
     @for (file of directoryFileNodes; track file.name) {

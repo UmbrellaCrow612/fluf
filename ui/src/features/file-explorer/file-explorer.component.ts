@@ -141,6 +141,18 @@ export class FileExplorerComponent implements OnInit {
     }
   }
 
+  /**
+   * Runs when the file explorer empty space is doubled clicked making a call to create file logic
+   */
+  fileExplorerScrollContainerDoubleClicked(event: Event) {
+    const target = event.target as HTMLElement;
+    const container = event.currentTarget as HTMLElement;
+
+    if (target === container) {
+      this.createNewFile();
+    }
+  }
+
   createNewFile() {
     const ctx = this.appContext.getSnapshot();
 
@@ -180,7 +192,7 @@ export class FileExplorerComponent implements OnInit {
       }
     }
 
-    this.appContext.update("isCreateFileOrFolderActive", true)
+    this.appContext.update('isCreateFileOrFolderActive', true);
     this.appContext.update('directoryFileNodes', nodes);
   }
 }
