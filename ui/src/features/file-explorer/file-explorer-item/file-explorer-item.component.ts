@@ -133,6 +133,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     e.preventDefault();
     const inputEl = this.createInput()?.nativeElement;
     const value = inputEl?.value.trim();
+    if (!value) return;
 
     const parentPath = this.fileNode().path;
     const newPath = await this.api.normalize(
@@ -140,40 +141,74 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
       `${parentPath}/${value}`
     );
 
-    if (this.fileNode().mode === 'createFile') {
-      let exists = await this.api.fileExists(undefined, newPath);
-      if (exists) {
-        inputEl?.setCustomValidity('A file already exists');
-        inputEl?.reportValidity();
-        return;
+    try {
+      if (this.fileNode().mode === 'createFile') {
+        const fileExists = await this.api.fileExists(undefined, newPath);
+        const folderExists = await this.api.directoryExists(undefined, newPath);
+
+        if (fileExists || folderExists) {
+          inputEl?.setCustomValidity(
+            folderExists
+              ? 'A folder with this name already exists'
+              : 'A file with this name already exists'
+          );
+          inputEl?.reportValidity();
+          return;
+        }
+
+        const suc = await this.api.createFile(undefined, newPath);
+        if (suc) {
+          this.onCreateInputBlur();
+          this.appContext.update('refreshDirectoryFolderNodes', true);
+          this.appContext.update('fileExplorerActiveFileOrFolder', {
+            children: [],
+            expanded: false,
+            isDirectory: false,
+            mode: 'default',
+            name: value!,
+            path: newPath,
+          });
+        } else {
+          inputEl?.setCustomValidity('File creation operation failed');
+          inputEl?.reportValidity();
+        }
       }
 
-      let suc = await this.api.createFile(undefined, newPath);
-      if (suc) {
-        this.onCreateInputBlur();
-        this.appContext.update('refreshDirectoryFolderNodes', true);
-      } else {
-        inputEl?.setCustomValidity('Operation failed');
-        inputEl?.reportValidity();
-      }
-    }
+      if (this.fileNode().mode === 'createFolder') {
+        const folderExists = await this.api.directoryExists(undefined, newPath);
+        const fileExists = await this.api.fileExists(undefined, newPath);
 
-    if (this.fileNode().mode === 'createFolder') {
-      let exists = await this.api.directoryExists(undefined, newPath);
-      if (exists) {
-        inputEl?.setCustomValidity('A folder already exists');
-        inputEl?.reportValidity();
-        return;
-      }
+        if (folderExists || fileExists) {
+          inputEl?.setCustomValidity(
+            folderExists
+              ? 'A folder with this name already exists'
+              : 'A file with this name already exists'
+          );
+          inputEl?.reportValidity();
+          return;
+        }
 
-      let suc = await this.api.createDirectory(undefined, newPath);
-      if (suc) {
-        this.onCreateInputBlur();
-        this.appContext.update('refreshDirectoryFolderNodes', true);
-      } else {
-        inputEl?.setCustomValidity('Operation failed');
-        inputEl?.reportValidity();
+        const suc = await this.api.createDirectory(undefined, newPath);
+        if (suc) {
+          this.onCreateInputBlur();
+          this.appContext.update('refreshDirectoryFolderNodes', true);
+          this.appContext.update('fileExplorerActiveFileOrFolder', {
+            children: [],
+            expanded: false,
+            isDirectory: true,
+            mode: 'default',
+            name: value!,
+            path: newPath,
+          });
+        } else {
+          inputEl?.setCustomValidity('Folder creation operation failed');
+          inputEl?.reportValidity();
+        }
       }
+    } catch (err) {
+      console.error('Error creating file or folder:', err);
+      inputEl?.setCustomValidity('An unexpected error occurred');
+      inputEl?.reportValidity();
     }
   }
 }

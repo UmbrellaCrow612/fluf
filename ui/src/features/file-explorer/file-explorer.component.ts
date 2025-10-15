@@ -126,8 +126,8 @@ export class FileExplorerComponent implements OnInit {
   /**
    * Runs when refresh button clicked - re reads nodes and updates global state
    */
-  async refreshClicked() {
-    await this.readDir();
+  refreshClicked() {
+    this.appContext.update('refreshDirectoryFolderNodes', true);
   }
 
   /**
@@ -158,7 +158,7 @@ export class FileExplorerComponent implements OnInit {
     const container = event.currentTarget as HTMLElement;
 
     if (target === container) {
-      this.createFileOrFolder("createFile");
+      this.createFileOrFolder('createFile');
     }
   }
 
