@@ -31,7 +31,7 @@
  */
 
 /**
- * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means 
+ * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
  * that the given node is going to be rendered as a editor to create said file or folder
  * @typedef {"createFile" | "createFolder" | "default"} fileNodeMode
  */
@@ -87,6 +87,22 @@
  */
 
 /**
+ * Normalise a path
+ * @callback normalize
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} path - The path to normalize
+ * @returns {Promise<string>} - The normalised path
+ */
+
+/**
+ * Create a file
+ * @callback createFile
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} destionationPath - The path to where the file should be created
+ * @returns {Promise<boolean>} - True or false if it was able to be created
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -99,6 +115,8 @@
  * @property {close} close - Close the window
  * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
  * @property {restore} restore - Restores the window back to beofre it was maximized
+ * @property {normalize} normalize - Normalize a path string
+ * @property {createFile} createFile - Create a file at the target path
  */
 
 /**

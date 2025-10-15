@@ -66,8 +66,7 @@ const selectFolderImpl = async (event = undefined) => {
  */
 const existsImpl = async (_event = undefined, path) => {
   try {
-    fs.existsSync(path);
-    return true;
+    return fs.existsSync(path);
   } catch (error) {
     console.log("Error with exists function");
     return false;
@@ -119,6 +118,28 @@ const restoreImpl = (_event = undefined) => {
   win.restore();
 };
 
+/**
+ * @type {normalize}
+ */
+const normalizeImpl = async (_event = undefined, p) => {
+  return path.normalize(p);
+};
+
+/**
+ * @type {createFile}
+ */
+const createFileImpl = async (_event = undefined, destinationPath) => {
+  try {
+    await fsp.mkdir(path.dirname(destinationPath), { recursive: true });
+
+    await fsp.writeFile(destinationPath, "");
+    return true;
+  } catch (error) {
+    console.error("Error creating file:", error);
+    return false;
+  }
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
@@ -129,4 +150,6 @@ module.exports = {
   closeImpl,
   isMaximizedImpl,
   restoreImpl,
+  normalizeImpl,
+  createFileImpl,
 };

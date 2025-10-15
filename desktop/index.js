@@ -11,6 +11,8 @@ const {
   closeImpl,
   isMaximizedImpl,
   restoreImpl,
+  normalizeImpl,
+  createFileImpl,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -43,10 +45,12 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   ipcMain.handle("file:read", readFileImpl);
+  ipcMain.handle("file:create", createFileImpl)
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
   ipcMain.handle("exists", existsImpl);
   ipcMain.handle("window:isMaximized", isMaximizedImpl);
+  ipcMain.handle("path:normalize", normalizeImpl)
 
   ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);

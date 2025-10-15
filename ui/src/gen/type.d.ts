@@ -72,6 +72,14 @@ type isMaximized = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<
  */
 type restore = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
 /**
+ * Normalise a path
+ */
+type normalize = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<string>;
+/**
+ * Create a file
+ */
+type createFile = (event?: Electron.IpcMainInvokeEvent | undefined, destionationPath: string) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -111,6 +119,14 @@ type ElectronApi = {
      * - Restores the window back to beofre it was maximized
      */
     restore: restore;
+    /**
+     * - Normalize a path string
+     */
+    normalize: normalize;
+    /**
+     * - Create a file at the target path
+     */
+    createFile: createFile;
 };
 /**
  * Extends the global `window` object to include the Electron API.

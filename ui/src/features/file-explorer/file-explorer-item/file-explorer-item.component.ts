@@ -15,7 +15,6 @@ import {
   expandNodeByPath,
   getFileExtension,
   removeCreateNodes,
-  removeNodeByPath,
 } from '../utils';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
@@ -83,6 +82,11 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     this.appContext.update('directoryFileNodes', nodes);
   }
 
+  onInputChange(event: Event) {
+    event.preventDefault();
+    this.createInput()?.nativeElement.setCustomValidity('');
+  }
+
   /**
    * Runs when a file explorer item is clicked
    */
@@ -123,5 +127,37 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
 
     this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
     this.appContext.update('directoryFileNodes', previousNodes);
+  }
+
+  async createFile(e: Event) {
+    e.preventDefault();
+    const inputEl = this.createInput()?.nativeElement;
+    const value = inputEl?.value.trim();
+
+    const parentPath = this.fileNode().path;
+    const newPath = await this.api.normalize(
+      undefined,
+      `${parentPath}/${value}`
+    );
+
+    const exists = await this.api.exists(undefined, newPath);
+    if (exists) {
+      inputEl?.setCustomValidity(
+        'A file or folder with this name already exists!'
+      );
+      inputEl?.reportValidity();
+      return;
+    }
+
+    // todo add some custom checks sanitization
+
+    var suc = await this.api.createFile(undefined, newPath);
+    if (suc) {
+      this.onCreateInputBlur(); // same logic as blur remove the node
+
+      // refresh call ctx file change
+      // refresh call i.e reefrehs button call will also call this
+      // read dirs of all open / expanded dir's already recu and re read the nodes and change them
+    }
   }
 }
