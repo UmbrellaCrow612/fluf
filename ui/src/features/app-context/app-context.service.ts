@@ -46,10 +46,10 @@ export class ContextService {
     sideBarActiveElement: null,
     selectedDirectoryFolderPath: null,
     directoryFileNodes: null,
-    activeFileOrfolder: null
+    activeFileOrfolder: null,
   };
 
-  private subscriptions = new Map<ContextSubKey, Set<SubCallBack>>();
+  private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();
 
   constructor() {
     this.restoreState();
@@ -76,7 +76,6 @@ export class ContextService {
    */
   private saveState() {
     try {
-      // Save shallow copy to avoid circular refs
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(this._ctx));
     } catch (err) {
       console.warn('[ContextService] Failed to save context', err);
@@ -84,9 +83,12 @@ export class ContextService {
   }
 
   /**
-   * Subscribe to a specific application context key and run some logic
+   * Subscribe to changes for a specific AppContext field
    */
-  private sub(key: ContextSubKey, callback: SubCallBack): UnsubscribeFn {
+  sub<K extends keyof AppContext>(
+    key: K,
+    callback: SubCallBack
+  ): UnsubscribeFn {
     if (!this.subscriptions.has(key)) {
       this.subscriptions.set(key, new Set());
     }
@@ -100,8 +102,8 @@ export class ContextService {
   /**
    * Subscribe and automatically unsubscribe when the provided DestroyRef is destroyed
    */
-  autoSub(
-    key: ContextSubKey,
+  autoSub<K extends keyof AppContext>(
+    key: K,
     callback: SubCallBack,
     destroyRef: DestroyRef
   ): void {
@@ -112,30 +114,26 @@ export class ContextService {
   /**
    * Update part of the application context and notify subscribers
    */
-  update<K extends keyof AppContext>(
-    key: K,
-    value: AppContext[K],
-    event: ContextSubKey
-  ) {
+  update<K extends keyof AppContext>(key: K, value: AppContext[K]) {
     this._ctx[key] = value;
-
     this.saveState();
-    this.notify(event);
+    this.notify(key);
   }
 
   /**
-   * Notify all subscribers for a specific key
+   * Notify all subscribers for a specific AppContext field
    */
-  private notify(key: ContextSubKey) {
+  private notify<K extends keyof AppContext>(key: K) {
     const callbacks = this.subscriptions.get(key);
     if (callbacks) {
+      let ctx = this.getSnapshot();
       for (const callback of callbacks) {
-        callback(this.getSnapShot());
+        callback(ctx);
       }
     }
   }
 
-  getSnapShot() {
+  getSnapshot(): AppContext {
     return structuredClone(this._ctx);
   }
 }

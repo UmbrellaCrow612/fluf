@@ -3,6 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import {
   appendChildrenToNode,
   collapseNodeByPath,
+  expandNodeByPath,
   getFileExtension,
 } from '../utils';
 import { ContextService } from '../../app-context/app-context.service';
@@ -39,11 +40,11 @@ export class FileExplorerItemComponent implements OnInit {
 
   ngOnInit(): void {
     this.isFocused =
-      this.appContext.getSnapShot().activeFileOrfolder?.path ===
+      this.appContext.getSnapshot().activeFileOrfolder?.path ===
       this.fileNode().path;
 
     this.appContext.autoSub(
-      'active-file-folder',
+      'activeFileOrfolder',
       (ctx) => {
         this.isFocused = ctx.activeFileOrfolder?.path === this.fileNode().path;
       },
@@ -58,23 +59,21 @@ export class FileExplorerItemComponent implements OnInit {
     event.preventDefault();
 
     if (!this.fileNode().isDirectory) {
-      this.appContext.update(
-        'activeFileOrfolder',
-        this.fileNode(),
-        'active-file-folder'
-      );
+      this.appContext.update('activeFileOrfolder', this.fileNode());
       return;
     }
 
-    let previousNodes = this.appContext.getSnapShot().directoryFileNodes;
+    let previousNodes = this.appContext.getSnapshot().directoryFileNodes;
 
     if (this.fileNode().expanded) {
       collapseNodeByPath(previousNodes!, this.fileNode().path);
-      this.appContext.update(
-        'directoryFileNodes',
-        previousNodes,
-        'directory-file-nodes'
-      );
+      this.appContext.update('directoryFileNodes', previousNodes);
+      return;
+    }
+
+    if (!this.fileNode().expanded && this.fileNode().children.length > 0) {
+      expandNodeByPath(previousNodes!, this.fileNode().path!);
+      this.appContext.update('directoryFileNodes', previousNodes);
       return;
     }
 
@@ -89,15 +88,7 @@ export class FileExplorerItemComponent implements OnInit {
       newChildrenNodes
     );
 
-    this.appContext.update(
-      'activeFileOrfolder',
-      this.fileNode(),
-      'active-file-folder'
-    );
-    this.appContext.update(
-      'directoryFileNodes',
-      previousNodes,
-      'directory-file-nodes'
-    );
+    this.appContext.update('activeFileOrfolder', this.fileNode());
+    this.appContext.update('directoryFileNodes', previousNodes);
   }
 }

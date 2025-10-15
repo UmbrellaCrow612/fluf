@@ -73,13 +73,13 @@ export class EditorComponent implements OnInit {
   ngOnInit(): void {
     // set stored state
     this.isLeftActive =
-      this.appContext.getSnapShot().sideBarActiveElement != null;
+      this.appContext.getSnapshot().sideBarActiveElement != null;
     this.sideBarActivateElement =
-      this.appContext.getSnapShot().sideBarActiveElement;
+      this.appContext.getSnapshot().sideBarActiveElement;
 
     // subs
     this.appContext.autoSub(
-      'side-bar-active-element',
+      'sideBarActiveElement',
       (ctx) => {
         this.isLeftActive = ctx.sideBarActiveElement != null;
         this.sideBarActivateElement = ctx.sideBarActiveElement;

@@ -1,15 +1,8 @@
-import {
-  Component,
-  DestroyRef,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {
-  ContextService,
-} from '../app-context/app-context.service';
+import { ContextService } from '../app-context/app-context.service';
 import { sideBarActiveElement } from '../app-context/type';
 
 @Component({
@@ -28,10 +21,10 @@ export class SideBarComponent implements OnInit {
   activeElement: sideBarActiveElement | null = null;
 
   ngOnInit(): void {
-    this.activeElement = this._appCtx.getSnapShot().sideBarActiveElement;
-    
+    this.activeElement = this._appCtx.getSnapshot().sideBarActiveElement;
+
     this._appCtx.autoSub(
-      'side-bar-active-element',
+      'sideBarActiveElement',
       (ctx) => {
         this.activeElement = ctx.sideBarActiveElement;
       },
@@ -42,11 +35,7 @@ export class SideBarComponent implements OnInit {
   private toggleElement(element: sideBarActiveElement) {
     const newValue = this.activeElement === element ? null : element;
 
-    this._appCtx.update(
-      'sideBarActiveElement',
-      newValue,
-      'side-bar-active-element'
-    );
+    this._appCtx.update('sideBarActiveElement', newValue);
   }
 
   toggleFileExplorer() {

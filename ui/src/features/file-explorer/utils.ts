@@ -56,7 +56,7 @@ export function appendChildrenToNode(
 
       // Append new children
       node.children = newChildren;
-      node.expanded = true; 
+      node.expanded = true;
       return true;
     }
 
@@ -88,7 +88,6 @@ export function collapseNodeByPath(
   for (const node of nodes) {
     if (node.path === targetPath) {
       node.expanded = false;
-      node.children = [];
       return true;
     }
 
@@ -105,11 +104,37 @@ export function collapseNodeByPath(
  * Collapse all expanded file nodes - will set it back to root nodes only
  * @param nodes The nodes to affect these will be changed
  */
-export function collapseAllFileNodesToRoot(nodes:fileNode[]){
-  for(let node of nodes){
-    if(node.isDirectory){
+export function collapseAllFileNodesToRoot(nodes: fileNode[]) {
+  for (let node of nodes) {
+    if (node.isDirectory) {
       node.expanded = false;
-      node.children = []
+      node.children = [];
     }
   }
+}
+
+/**
+ * Recursively searches for a fileNode by its path and sets its `expanded` to true.
+ *
+ * @param nodes - The root list of fileNodes to search through.
+ * @param targetPath - The path of the node to expand.
+ * @returns true if the node was found and updated, false otherwise.
+ */
+export function expandNodeByPath(
+  nodes: fileNode[],
+  targetPath: string
+): boolean {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      node.expanded = true;
+      return true;
+    }
+
+    if (node.isDirectory && node.children && node.children.length > 0) {
+      const found = expandNodeByPath(node.children, targetPath);
+      if (found) return true;
+    }
+  }
+
+  return false;
 }

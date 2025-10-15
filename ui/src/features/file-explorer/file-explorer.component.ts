@@ -30,29 +30,31 @@ export class FileExplorerComponent implements OnInit {
   isExplorerActive = false;
 
   ngOnInit(): void {
-    let init = this.appContext.getSnapShot();
+    let init = this.appContext.getSnapshot();
 
     // set inital state based on ctx
     this.selectedDirectorPath = init.selectedDirectoryFolderPath;
     this.directoryFileNodes = init.directoryFileNodes;
+    this.isExplorerActive =
+      init.activeFileOrfolder?.path === this.selectedDirectorPath;
 
     // Subscribe to changes update local state
     this.appContext.autoSub(
-      'selected-directory-folder-path',
+      'selectedDirectoryFolderPath',
       (ctx) => {
         this.selectedDirectorPath = ctx.selectedDirectoryFolderPath;
       },
       this.destroyRef
     );
     this.appContext.autoSub(
-      'directory-file-nodes',
+      'directoryFileNodes',
       (ctx) => {
         this.directoryFileNodes = ctx.directoryFileNodes;
       },
       this.destroyRef
     );
     this.appContext.autoSub(
-      'active-file-folder',
+      'activeFileOrfolder',
       (ctx) => {
         this.isExplorerActive =
           ctx.activeFileOrfolder?.path === this.selectedDirectorPath;
@@ -67,11 +69,7 @@ export class FileExplorerComponent implements OnInit {
       return;
     }
 
-    this.appContext.update(
-      'selectedDirectoryFolderPath',
-      res.filePaths[0],
-      'selected-directory-folder-path'
-    );
+    this.appContext.update('selectedDirectoryFolderPath', res.filePaths[0]);
 
     await this.readDir();
   }
@@ -82,20 +80,16 @@ export class FileExplorerComponent implements OnInit {
   async readDir() {
     let nodes = await this.api.readDir(undefined, this.selectedDirectorPath!);
 
-    this.appContext.update('directoryFileNodes', nodes, 'directory-file-nodes');
+    this.appContext.update('directoryFileNodes', nodes);
   }
 
   /**
    * Runs when colapse folders is clicked will un expand all folder all the way to root
    */
   collapseFolders() {
-    let ctx = this.appContext.getSnapShot();
+    let ctx = this.appContext.getSnapshot();
     collapseAllFileNodesToRoot(ctx.directoryFileNodes!);
-    this.appContext.update(
-      'directoryFileNodes',
-      ctx.directoryFileNodes,
-      'directory-file-nodes'
-    );
+    this.appContext.update('directoryFileNodes', ctx.directoryFileNodes);
   }
 
   /**
@@ -114,17 +108,13 @@ export class FileExplorerComponent implements OnInit {
 
     if (target === container) {
       /*Clicked empty space so set the file or folder focus in side bar to root node */
-      this.appContext.update(
-        'activeFileOrfolder',
-        {
-          children: [],
-          expanded: false,
-          isDirectory: true,
-          path: this.selectedDirectorPath!,
-          name: 'Root ',
-        },
-        'active-file-folder'
-      );
+      this.appContext.update('activeFileOrfolder', {
+        children: [],
+        expanded: false,
+        isDirectory: true,
+        path: this.selectedDirectorPath!,
+        name: 'Root ',
+      });
     }
   }
 }
