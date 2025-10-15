@@ -75,6 +75,15 @@ export class FileExplorerComponent implements OnInit {
       },
       this.destroyRef
     );
+    this.appContext.autoSub(
+      'refreshDirectoryFolderNodes',
+      async (ctx) => {
+        if (ctx.refreshDirectoryFolderNodes) {
+          await this.merge();
+        }
+      },
+      this.destroyRef
+    );
   }
 
   async openFolder() {
@@ -194,5 +203,73 @@ export class FileExplorerComponent implements OnInit {
 
     this.appContext.update('isCreateFileOrFolderActive', true);
     this.appContext.update('directoryFileNodes', nodes);
+  }
+
+  /**
+   * Merges and synchronizes the current directory structure with the filesystem.
+   * - Adds new nodes
+   * - Updates existing ones
+   * - Removes stale nodes that no longer exist
+   */
+  private async merge() {
+    let newNodes = await this.api.readDir(
+      undefined,
+      this.selectedDirectorPath!
+    );
+    let updatedNodes = await this.mergeNodes(
+      this.directoryFileNodes!,
+      newNodes
+    );
+    this.appContext.update('directoryFileNodes', updatedNodes);
+  }
+
+  /**
+   * Recursively merges new nodes into old nodes, fetching children when necessary.
+   */
+  private async mergeNodes(
+    oldNodes: fileNode[],
+    newNodes: fileNode[]
+  ): Promise<fileNode[]> {
+    const merged: fileNode[] = [];
+
+    for (const newNode of newNodes) {
+      const existing = oldNodes.find((n) => n.path === newNode.path);
+
+      if (!existing) {
+        // ➕ Node is new → add it
+        const nodeToAdd: fileNode = { ...newNode };
+
+        // If directory is expanded, load its children
+        if (nodeToAdd.isDirectory && nodeToAdd.expanded) {
+          nodeToAdd.children = await this.api.readDir(
+            undefined,
+            nodeToAdd.path
+          );
+        }
+
+        merged.push(nodeToAdd);
+      } else {
+        // 🔄 Node exists → update name and handle children
+        existing.name = newNode.name;
+
+        if (existing.isDirectory && existing.expanded) {
+          const newChildren = await this.api.readDir(undefined, existing.path);
+          existing.children = await this.mergeNodes(
+            existing.children || [],
+            newChildren
+          );
+        } else {
+          existing.children = [];
+        }
+
+        merged.push(existing);
+      }
+    }
+
+    const filtered = merged.filter((m) =>
+      newNodes.some((n) => n.path === m.path)
+    );
+
+    return filtered;
   }
 }

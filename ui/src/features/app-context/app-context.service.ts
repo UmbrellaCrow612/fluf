@@ -26,6 +26,12 @@ export type AppContext = {
    * Represents when a file extiro creator is active or not
    */
   isCreateFileOrFolderActive: boolean | null;
+
+  /**
+   * Inidicates if it should refresh / re read nodes and update the current nodes with updated folder nodes - keep expanded state and adds / removes children
+   * based on new state
+   */
+  refreshDirectoryFolderNodes: boolean | null;
 };
 
 export type ContextSubKey =
@@ -34,7 +40,7 @@ export type ContextSubKey =
   | 'directory-file-nodes'
   | 'active-file-folder';
 
-export type SubCallBack = (ctx: AppContext) => void;
+export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
 export type UnsubscribeFn = () => void;
 
 const LOCAL_STORAGE_KEY = 'app-context';
@@ -53,6 +59,7 @@ export class ContextService {
     directoryFileNodes: null,
     fileExplorerActiveFileOrFolder: null,
     isCreateFileOrFolderActive: null,
+    refreshDirectoryFolderNodes: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();
@@ -120,23 +127,35 @@ export class ContextService {
   /**
    * Update part of the application context and notify subscribers
    */
-  update<K extends keyof AppContext>(key: K, value: AppContext[K]) {
+  async update<K extends keyof AppContext>(key: K, value: AppContext[K]) {
     this._ctx[key] = value;
     this.saveState();
-    this.notify(key);
+    await this.notify(key);
   }
 
   /**
    * Notify all subscribers for a specific AppContext field
    */
-  private notify<K extends keyof AppContext>(key: K) {
+  private async notify<K extends keyof AppContext>(key: K) {
     const callbacks = this.subscriptions.get(key);
-    if (callbacks) {
-      let ctx = this.getSnapshot();
-      for (const callback of callbacks) {
-        callback(ctx);
+    if (!callbacks || callbacks.size === 0) return;
+
+    const ctx = this.getSnapshot();
+
+    // Run all callbacks concurrently, safely catch errors
+    const promises = Array.from(callbacks).map(async (callback) => {
+      try {
+        await callback(ctx);
+      } catch (err) {
+        console.warn(
+          `[ContextService] Error in callback for "${String(key)}":`,
+          err
+        );
       }
-    }
+    });
+
+    // Wait for all async callbacks to complete (optional)
+    await Promise.all(promises);
   }
 
   getSnapshot(): AppContext {

@@ -149,15 +149,10 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // todo add some custom checks sanitization
-
     var suc = await this.api.createFile(undefined, newPath);
     if (suc) {
-      this.onCreateInputBlur(); // same logic as blur remove the node
-
-      // refresh call ctx file change
-      // refresh call i.e reefrehs button call will also call this
-      // read dirs of all open / expanded dir's already recu and re read the nodes and change them
+      this.onCreateInputBlur();
+      this.appContext.update('refreshDirectoryFolderNodes', true);
     }
   }
 }
