@@ -129,7 +129,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     this.appContext.update('directoryFileNodes', previousNodes);
   }
 
-  async createFile(e: Event) {
+  async createFileOrFolder(e: Event) {
     e.preventDefault();
     const inputEl = this.createInput()?.nativeElement;
     const value = inputEl?.value.trim();
@@ -140,19 +140,40 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
       `${parentPath}/${value}`
     );
 
-    const exists = await this.api.exists(undefined, newPath);
-    if (exists) {
-      inputEl?.setCustomValidity(
-        'A file or folder with this name already exists!'
-      );
-      inputEl?.reportValidity();
-      return;
+    if (this.fileNode().mode === 'createFile') {
+      let exists = await this.api.fileExists(undefined, newPath);
+      if (exists) {
+        inputEl?.setCustomValidity('A file already exists');
+        inputEl?.reportValidity();
+        return;
+      }
+
+      let suc = await this.api.createFile(undefined, newPath);
+      if (suc) {
+        this.onCreateInputBlur();
+        this.appContext.update('refreshDirectoryFolderNodes', true);
+      } else {
+        inputEl?.setCustomValidity('Operation failed');
+        inputEl?.reportValidity();
+      }
     }
 
-    var suc = await this.api.createFile(undefined, newPath);
-    if (suc) {
-      this.onCreateInputBlur();
-      this.appContext.update('refreshDirectoryFolderNodes', true);
+    if (this.fileNode().mode === 'createFolder') {
+      let exists = await this.api.directoryExists(undefined, newPath);
+      if (exists) {
+        inputEl?.setCustomValidity('A folder already exists');
+        inputEl?.reportValidity();
+        return;
+      }
+
+      let suc = await this.api.createDirectory(undefined, newPath);
+      if (suc) {
+        this.onCreateInputBlur();
+        this.appContext.update('refreshDirectoryFolderNodes', true);
+      } else {
+        inputEl?.setCustomValidity('Operation failed');
+        inputEl?.reportValidity();
+      }
     }
   }
 }

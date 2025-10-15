@@ -50,9 +50,16 @@
 <form
   class="create_item"
   [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
-  (submit)="createFile($event)"
+  (submit)="createFileOrFolder($event)"
 >
+  @if (fileNode().mode === "createFile") {
   <mat-icon>note_add</mat-icon>
+  }
+  <!---->
+  @if (fileNode().mode === "createFolder") {
+  <mat-icon>folder_add</mat-icon>
+  }
+  <!---->
   <input
     class="create_input"
     required

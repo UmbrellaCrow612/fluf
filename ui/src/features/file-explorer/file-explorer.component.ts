@@ -158,11 +158,11 @@ export class FileExplorerComponent implements OnInit {
     const container = event.currentTarget as HTMLElement;
 
     if (target === container) {
-      this.createNewFile();
+      this.createFileOrFolder("createFile");
     }
   }
 
-  createNewFile() {
+  createFileOrFolder(mode: fileNodeMode) {
     const ctx = this.appContext.getSnapshot();
 
     const nodes = ctx.directoryFileNodes!;
@@ -182,7 +182,7 @@ export class FileExplorerComponent implements OnInit {
       isDirectory: false,
       name: 'Editor',
       path: activeNode.path,
-      mode: 'createFile',
+      mode: mode,
     };
 
     if (isRootActive) {
@@ -236,20 +236,9 @@ export class FileExplorerComponent implements OnInit {
       const existing = oldNodes.find((n) => n.path === newNode.path);
 
       if (!existing) {
-        // ➕ Node is new → add it
         const nodeToAdd: fileNode = { ...newNode };
-
-        // If directory is expanded, load its children
-        if (nodeToAdd.isDirectory && nodeToAdd.expanded) {
-          nodeToAdd.children = await this.api.readDir(
-            undefined,
-            nodeToAdd.path
-          );
-        }
-
         merged.push(nodeToAdd);
       } else {
-        // 🔄 Node exists → update name and handle children
         existing.name = newNode.name;
 
         if (existing.isDirectory && existing.expanded) {

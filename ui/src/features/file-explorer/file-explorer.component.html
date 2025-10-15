@@ -6,7 +6,7 @@
       <button
         mat-icon-button
         matTooltip="New File"
-        (click)="createNewFile()"
+        (click)="createFileOrFolder('createFile')"
         [disabled]="disableCreateFileOrFolder"
       >
         <mat-icon>note_add</mat-icon>
@@ -14,6 +14,7 @@
       <button
         mat-icon-button
         matTooltip="New Folder"
+        (click)="createFileOrFolder('createFolder')"
         [disabled]="disableCreateFileOrFolder"
       >
         <mat-icon>create_new_folder</mat-icon>

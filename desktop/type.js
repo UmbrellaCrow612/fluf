@@ -103,6 +103,30 @@
  */
 
 /**
+ * Check if a file exists at a given path
+ * @callback fileExists
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} filePath - The file path to the file to check if it exists
+ * @returns {Promise<boolean>} - True or false
+ */
+
+/**
+ * Check if a folder exists
+ * @callback directoryExists
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directoryPath - The path to the folder to check
+ * @returns {Promise<boolean>} True or false
+ */
+
+/**
+ * Create a folder at a given path
+ * @callback createDirectory
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directoryPath - Path to create the directory at
+ * @returns {Promise<boolean>} - True or false
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -117,6 +141,9 @@
  * @property {restore} restore - Restores the window back to beofre it was maximized
  * @property {normalize} normalize - Normalize a path string
  * @property {createFile} createFile - Create a file at the target path
+ * @property {fileExists} fileExists - Check if a file exists
+ * @property {directoryExists} directoryExists - Check if a folder exists
+ * @property {createDirectory} createDirectory - Create a directory folder at a given path
  */
 
 /**

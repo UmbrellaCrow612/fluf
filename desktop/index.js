@@ -13,6 +13,9 @@ const {
   restoreImpl,
   normalizeImpl,
   createFileImpl,
+  fileExistsImpl,
+  directoryExistsImpl,
+  createDirectoryImpl,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -46,8 +49,11 @@ const createWindow = () => {
 app.whenReady().then(() => {
   ipcMain.handle("file:read", readFileImpl);
   ipcMain.handle("file:create", createFileImpl)
+  ipcMain.handle("file:exists", fileExistsImpl)
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
+  ipcMain.handle("dir:exists", directoryExistsImpl);
+  ipcMain.handle("dir:create", createDirectoryImpl);
   ipcMain.handle("exists", existsImpl);
   ipcMain.handle("window:isMaximized", isMaximizedImpl);
   ipcMain.handle("path:normalize", normalizeImpl)

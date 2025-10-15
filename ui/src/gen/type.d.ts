@@ -80,6 +80,18 @@ type normalize = (event?: Electron.IpcMainInvokeEvent | undefined, path: string)
  */
 type createFile = (event?: Electron.IpcMainInvokeEvent | undefined, destionationPath: string) => Promise<boolean>;
 /**
+ * Check if a file exists at a given path
+ */
+type fileExists = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
+/**
+ * Check if a folder exists
+ */
+type directoryExists = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+/**
+ * Create a folder at a given path
+ */
+type createDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -127,6 +139,18 @@ type ElectronApi = {
      * - Create a file at the target path
      */
     createFile: createFile;
+    /**
+     * - Check if a file exists
+     */
+    fileExists: fileExists;
+    /**
+     * - Check if a folder exists
+     */
+    directoryExists: directoryExists;
+    /**
+     * - Create a directory folder at a given path
+     */
+    createDirectory: createDirectory;
 };
 /**
  * Extends the global `window` object to include the Electron API.

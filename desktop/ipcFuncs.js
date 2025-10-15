@@ -140,6 +140,47 @@ const createFileImpl = async (_event = undefined, destinationPath) => {
   }
 };
 
+/**
+ * @type {fileExists}
+ */
+const fileExistsImpl = async (_event = undefined, fp) => {
+  try {
+    const stats = await fsp.stat(fp);
+    return stats.isFile();
+  } catch (err) {
+    if (err.code === "ENOENT") return false;
+    throw err;
+  }
+};
+
+/**
+ * @type {directoryExists}
+ */
+const directoryExistsImpl = async (_event = undefined, fp) => {
+  try {
+    const stats = await fsp.stat(fp);
+    return stats.isDirectory();
+  } catch (err) {
+    if (err.code === "ENOENT") return false;
+    throw err;
+  }
+};
+
+/**
+ * @type {createDirectory}
+ */
+const createDirectoryImpl = async (_event = undefined, fp) => {
+  try {
+    await fsp.mkdir(fp, { recursive: false });
+    return true; // folder created
+  } catch (err) {
+    if (err.code === "EEXIST") {
+      return false;
+    }
+    throw err;
+  }
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
@@ -152,4 +193,7 @@ module.exports = {
   restoreImpl,
   normalizeImpl,
   createFileImpl,
+  fileExistsImpl,
+  directoryExistsImpl,
+  createDirectoryImpl,
 };
