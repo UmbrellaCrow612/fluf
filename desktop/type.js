@@ -127,6 +127,22 @@
  */
 
 /**
+ * Delete a file by it's path
+ * @callback deleteFile
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} filePath - The path to the file to delete
+ * @returns {Promise<boolean>} True or false if the file was deleted
+ */
+
+/**
+ * Delete an directory by it's path - recusive delete
+ * @callback deleteDirectory
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directoryPath - The path to the directory to delete
+ * @returns {Promise<boolean>} True or false if it was deleted
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -144,6 +160,8 @@
  * @property {fileExists} fileExists - Check if a file exists
  * @property {directoryExists} directoryExists - Check if a folder exists
  * @property {createDirectory} createDirectory - Create a directory folder at a given path
+ * @property {deleteFile} deleteFile - Delete a file by it's file path
+ * @property {deleteDirectory} deleteDirectory - Delete a folder directory by it's path is recursive
  */
 
 /**

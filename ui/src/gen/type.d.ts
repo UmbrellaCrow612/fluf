@@ -92,6 +92,14 @@ type directoryExists = (event?: Electron.IpcMainInvokeEvent | undefined, directo
  */
 type createDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
+ * Delete a file by it's path
+ */
+type deleteFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
+/**
+ * Delete an directory by it's path - recusive delete
+ */
+type deleteDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -151,6 +159,14 @@ type ElectronApi = {
      * - Create a directory folder at a given path
      */
     createDirectory: createDirectory;
+    /**
+     * - Delete a file by it's file path
+     */
+    deleteFile: deleteFile;
+    /**
+     * - Delete a folder directory by it's path is recursive
+     */
+    deleteDirectory: deleteDirectory;
 };
 /**
  * Extends the global `window` object to include the Electron API.

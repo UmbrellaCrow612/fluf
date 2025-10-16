@@ -7,6 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
+import { getElectronApi } from '../../../utils';
 
 @Component({
   selector: 'app-file-explorer-context-menu',
@@ -18,9 +19,11 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService);
   private readonly dialogRef =
     viewChild<ElementRef<HTMLDialogElement>>('dialog');
+  private readonly api = getElectronApi();
 
   fileNode: fileNode | null = null;
   error: string | null = null;
+  operationError: string | null = null;
 
   private dialogCloseListener: (() => void) | null = null;
   private backdropClickListener: ((event: MouseEvent) => void) | null = null;
@@ -64,6 +67,30 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
 
   closeDialog() {
     this.dialogRef()?.nativeElement.close();
+  }
+
+  async deleteFileOrFolder() {
+    this.operationError = null;
+
+    if (this.fileNode?.isDirectory) {
+      let suc = await this.api.deleteDirectory(undefined, this.fileNode.path);
+      if (suc) {
+        this.appContext.update('refreshDirectoryFolderNodes', true);
+        this.closeDialog();
+      } else {
+        this.operationError = 'Failed to delete folder';
+      }
+    }
+
+    if (!this.fileNode?.isDirectory && this.fileNode) {
+      let suc = await this.api.deleteFile(undefined, this.fileNode.path);
+      if (suc) {
+        this.appContext.update('refreshDirectoryFolderNodes', true);
+        this.closeDialog();
+      } else {
+        this.operationError = 'Failed to delete file';
+      }
+    }
   }
 
   private onDialogClosed() {

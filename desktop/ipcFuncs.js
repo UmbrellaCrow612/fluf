@@ -181,6 +181,38 @@ const createDirectoryImpl = async (_event = undefined, fp) => {
   }
 };
 
+/**
+ * @type {deleteFile}
+ */
+const deleteFileImpl = async (_event = undefined, fp) => {
+  try {
+    const resolvedPath = path.resolve(fp);
+
+    await fsp.unlink(resolvedPath);
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+/**
+ * @type {deleteDirectory}
+ */
+const deletDirectoryImpl = async (_event = undefined, dp) => {
+  try {
+    const resolvedPath = path.resolve(dp);
+
+    await fsp.rm(resolvedPath, { recursive: true, force: false });
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
@@ -196,4 +228,6 @@ module.exports = {
   fileExistsImpl,
   directoryExistsImpl,
   createDirectoryImpl,
+  deleteFileImpl,
+  deletDirectoryImpl,
 };

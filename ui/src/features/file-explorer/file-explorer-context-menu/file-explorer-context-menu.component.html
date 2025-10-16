@@ -1,7 +1,18 @@
 <dialog #dialog>
-  <button>Open</button>
-  <button>Rename <span class="shortcut">F2</span></button>
-  <button>Delete <span class="shortcut">Del</span></button>
+  @if (error) {
+  <span> Error {{ error }} </span>
+  }
+
+  <!---->
+  @if (!error) {
+  <button>New file</button>
+  <button>New folder</button>
   <hr />
-  <button>Properties</button>
+  <button (click)="deleteFileOrFolder()">Delete</button>
+
+  @if (operationError) {
+  <span>
+    {{ operationError }}
+  </span>
+  } }
 </dialog>
