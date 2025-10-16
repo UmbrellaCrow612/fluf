@@ -32,13 +32,23 @@ export type AppContext = {
    * based on new state
    */
   refreshDirectoryFolderNodes: boolean | null;
-};
 
-export type ContextSubKey =
-  | 'side-bar-active-element'
-  | 'selected-directory-folder-path'
-  | 'directory-file-nodes'
-  | 'active-file-folder';
+  /**
+   * Indicates that the right click context menu on a file explorer item should be displayed - think of this as simpley a trigger
+   * you push values to and the context menu will react when you want to display or hide it
+   */
+  displayFileEplorerContextMenu: boolean | null;
+
+  /**
+   * The node to process the context menu for, the trigger node the context menu was opened for
+   */
+  fileExplorerContextMenufileNode: fileNode | null;
+
+  /**
+   * Set this before showing the node as to where it was clicked for file explorer context menu to show from the trigger area
+   */
+  fileExplorerContextMenuClickPosition: { x: number; y: number } | null;
+};
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
 export type UnsubscribeFn = () => void;
@@ -60,6 +70,9 @@ export class ContextService {
     fileExplorerActiveFileOrFolder: null,
     isCreateFileOrFolderActive: null,
     refreshDirectoryFolderNodes: null,
+    displayFileEplorerContextMenu: null,
+    fileExplorerContextMenufileNode: null,
+    fileExplorerContextMenuClickPosition: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

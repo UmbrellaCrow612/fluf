@@ -129,6 +129,19 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     this.appContext.update('directoryFileNodes', previousNodes);
   }
 
+  /**
+   * Runs when right click ran on a specific item
+   */
+  onRightClick(event: MouseEvent) {
+    event.preventDefault();
+    this.appContext.update('fileExplorerContextMenufileNode', this.fileNode());
+    this.appContext.update('fileExplorerContextMenuClickPosition', {
+      x: event.clientX,
+      y: event.clientY,
+    });
+    this.appContext.update('displayFileEplorerContextMenu', true);
+  }
+
   async createFileOrFolder(e: Event) {
     e.preventDefault();
     const inputEl = this.createInput()?.nativeElement;

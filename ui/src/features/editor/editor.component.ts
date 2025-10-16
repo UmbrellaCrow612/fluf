@@ -3,11 +3,12 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
 import { ContextService } from '../app-context/app-context.service';
-import { FileExplorerComponent } from "../file-explorer/file-explorer.component";
+import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
+import { FileExplorerContextMenuComponent } from "../file-explorer/file-explorer-context-menu/file-explorer-context-menu.component";
 
 @Component({
   selector: 'app-editor',
-  imports: [TopBarComponent, SideBarComponent, FileExplorerComponent],
+  imports: [TopBarComponent, SideBarComponent, FileExplorerComponent, FileExplorerContextMenuComponent],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
@@ -70,12 +71,14 @@ export class EditorComponent implements OnInit {
   isLeftActive = false;
   sideBarActivateElement: sideBarActiveElement = null;
 
+  isFileExplorerContextMenuActive: boolean | null = null;
+
   ngOnInit(): void {
+    let ctx = this.appContext.getSnapshot();
+
     // set stored state
-    this.isLeftActive =
-      this.appContext.getSnapshot().sideBarActiveElement != null;
-    this.sideBarActivateElement =
-      this.appContext.getSnapshot().sideBarActiveElement;
+    this.isLeftActive = ctx.sideBarActiveElement != null;
+    this.sideBarActivateElement = ctx.sideBarActiveElement;
 
     // subs
     this.appContext.autoSub(
@@ -83,6 +86,14 @@ export class EditorComponent implements OnInit {
       (ctx) => {
         this.isLeftActive = ctx.sideBarActiveElement != null;
         this.sideBarActivateElement = ctx.sideBarActiveElement;
+      },
+      this.destroyRef
+    );
+    this.appContext.autoSub(
+      'displayFileEplorerContextMenu',
+      (ctx) => {
+        this.isFileExplorerContextMenuActive =
+          ctx.displayFileEplorerContextMenu;
       },
       this.destroyRef
     );

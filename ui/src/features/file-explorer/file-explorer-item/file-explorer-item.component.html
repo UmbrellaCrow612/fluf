@@ -6,6 +6,7 @@
   [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
   [class.focused]="isFocused"
   (click)="itemClicked($event)"
+  (contextmenu)="onRightClick($event)"
 >
   @if (fileNode().expanded && fileNode().isDirectory) {
   <mat-icon>keyboard_arrow_down</mat-icon>
