@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
+import { getParentNode, pushChildrenToNode } from '../utils';
 
 @Component({
   selector: 'app-file-explorer-context-menu',
@@ -97,6 +98,53 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
     this.appContext.update('fileExplorerContextMenuClickPosition', null);
     this.appContext.update('fileExplorerContextMenufileNode', null);
     this.appContext.update('displayFileEplorerContextMenu', false);
+  }
+
+  /**
+   * Based on the node file node clicked on create the create file ro folder node in that tree
+   */
+  createNewFileOrFolder(mode: fileNodeMode) {
+    this.operationError = null;
+
+    let ctx = this.appContext.getSnapshot();
+
+    const nodes = ctx.directoryFileNodes!;
+    if (!this.fileNode) {
+      this.operationError = 'File not present';
+      return;
+    }
+
+    let nodePath = this.fileNode.path;
+    if (!this.fileNode.isDirectory) {
+      nodePath = this.fileNode.parentPath;
+    }
+
+    let newNode: fileNode = {
+      children: [],
+      expanded: false,
+      isDirectory: false,
+      mode: mode,
+      name: 'Editor',
+      parentPath: this.fileNode.parentPath,
+      path: nodePath,
+    }; // renders node for creation rest is handled by it
+
+    if (this.fileNode.isDirectory) {
+      // Push under the directory
+      pushChildrenToNode(nodes, this.fileNode.path, [newNode]);
+    } else {
+      // Node is a file — find its parent
+      const parent = getParentNode(nodes, this.fileNode.path);
+      if (parent) {
+        pushChildrenToNode(nodes, parent.path, [newNode]);
+      } else {
+        // we are in root
+        nodes.push(newNode)
+      }
+    }
+
+    this.appContext.update('directoryFileNodes', nodes);
+    this.closeDialog();
   }
 
   ngOnDestroy(): void {

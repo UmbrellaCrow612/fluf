@@ -117,6 +117,7 @@ export class FileExplorerComponent implements OnInit {
       expanded: false,
       isDirectory: true,
       path: this.selectedDirectorPath!,
+      parentPath: "",
       name: 'Root',
       mode: 'default',
     });
@@ -144,6 +145,7 @@ export class FileExplorerComponent implements OnInit {
         expanded: false,
         isDirectory: true,
         path: this.selectedDirectorPath!,
+        parentPath: "",
         name: 'Root',
         mode: 'default',
       });
@@ -182,6 +184,7 @@ export class FileExplorerComponent implements OnInit {
       isDirectory: false,
       name: 'Editor',
       path: activeNode.path,
+      parentPath: activeNode.parentPath,
       mode: mode,
     };
 
@@ -240,6 +243,7 @@ export class FileExplorerComponent implements OnInit {
         merged.push(nodeToAdd);
       } else {
         existing.name = newNode.name;
+        existing.parentPath = newNode.parentPath
 
         if (existing.isDirectory && existing.expanded) {
           const newChildren = await this.api.readDir(undefined, existing.path);

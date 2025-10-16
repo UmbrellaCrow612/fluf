@@ -24,6 +24,7 @@
  * @typedef {object} fileNode
  * @property {string} name - The name of the file or folder
  * @property {string} path - The file path to the file or folder
+ * @property {string} parentPath - The path to the parent folder contaning said file or folder
  * @property {boolean} isDirectory - If the given node is a directory
  * @property {Array<fileNode>} children - Children of the node
  * @property {boolean} expanded - Indicates if the node has been expanded

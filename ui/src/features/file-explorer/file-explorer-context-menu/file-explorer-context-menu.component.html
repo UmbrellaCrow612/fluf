@@ -5,8 +5,8 @@
 
   <!---->
   @if (!error) {
-  <button>New file</button>
-  <button>New folder</button>
+  <button (click)="createNewFileOrFolder('createFile')">New file</button>
+  <button (click)="createNewFileOrFolder('createFolder')">New folder</button>
   <hr />
   <button (click)="deleteFileOrFolder()">Delete</button>
 

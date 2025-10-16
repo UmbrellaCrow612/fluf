@@ -22,6 +22,10 @@ type fileNode = {
      */
     path: string;
     /**
+     * - The path to the parent folder contaning said file or folder
+     */
+    parentPath: string;
+    /**
      * - If the given node is a directory
      */
     isDirectory: boolean;

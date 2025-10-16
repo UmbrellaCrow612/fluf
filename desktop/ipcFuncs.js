@@ -39,6 +39,7 @@ const readDirImpl = async (event = undefined, directoryPath) => {
     isDirectory: item.isDirectory(),
     children: [],
     expanded: false,
+    parentPath: directoryPath,
     mode: "default",
   }));
 

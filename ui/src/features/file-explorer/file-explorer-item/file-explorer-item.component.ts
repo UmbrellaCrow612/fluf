@@ -180,6 +180,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
             mode: 'default',
             name: value!,
             path: newPath,
+            parentPath: ""
           });
         } else {
           inputEl?.setCustomValidity('File creation operation failed');
@@ -212,6 +213,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
             mode: 'default',
             name: value!,
             path: newPath,
+            parentPath: ""
           });
         } else {
           inputEl?.setCustomValidity('Folder creation operation failed');
