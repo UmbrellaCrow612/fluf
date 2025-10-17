@@ -4,10 +4,15 @@
   align-items: center;
   gap: 2px;
   cursor: pointer;
-  background-color: rgb(46, 45, 45); 
+  background-color: rgb(19, 18, 18);
   width: 176px;
   padding-left: 5px;
   padding-right: 5px;
+}
+
+.active {
+  border-bottom: 5px solid blue;
+  background-color: rgb(32, 32, 32); 
 }
 
 .ellipses {

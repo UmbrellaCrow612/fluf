@@ -1,3 +1,20 @@
 <div class="container scroll_bar">
-    lorem2000
+  @if (error) {
+  <div>Error occured {{ error }}</div>
+  }
+  <!---->
+
+  @if (!error && isLoading) {
+  <div>Loading file</div>
+  }
+
+  <!---->
+  @if (!error && !isLoading && openFileNode) {
+  <pre class="content"><code>{{ stringContent }}</code></pre>
+  }
+
+  <!---->
+  @if (!openFileNode && !error && !isLoading) {
+  <div class="content">No file to show</div>
+  }
 </div>

@@ -1,6 +1,6 @@
-<div class="file_tab_item">
-  <span class="ellipses"> Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias, corrupti! </span>
-  <button mat-icon-button matTooltip="Close file">
+<div class="file_tab_item" [class.active]="isActive" (click)="tabItemClicked()">
+  <span class="ellipses"> {{ fileNode().name }} </span>
+  <button mat-icon-button matTooltip="Close file" (click)="removeTabItem($event)">
     <mat-icon>close</mat-icon>
   </button>
 </div>

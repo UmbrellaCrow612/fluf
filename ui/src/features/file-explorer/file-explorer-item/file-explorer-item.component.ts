@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import {
+  addUniqueFile,
   appendChildrenToNode,
   collapseNodeByPath,
   expandNodeByPath,
@@ -94,7 +95,15 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     event.preventDefault();
 
     if (!this.fileNode().isDirectory) {
+      let ctx = this.appContext.getSnapshot();
+
       this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
+
+      let files = ctx.openFiles ?? [];
+      addUniqueFile(files, this.fileNode());
+
+      this.appContext.update('openFiles', files);
+      this.appContext.update('currentOpenFileInEditor', this.fileNode());
       return;
     }
 
@@ -180,7 +189,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
             mode: 'default',
             name: value!,
             path: newPath,
-            parentPath: ""
+            parentPath: '',
           });
         } else {
           inputEl?.setCustomValidity('File creation operation failed');
@@ -213,7 +222,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
             mode: 'default',
             name: value!,
             path: newPath,
-            parentPath: ""
+            parentPath: '',
           });
         } else {
           inputEl?.setCustomValidity('Folder creation operation failed');

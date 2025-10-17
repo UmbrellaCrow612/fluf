@@ -39,7 +39,7 @@
     (dblclick)="fileExplorerScrollContainerDoubleClicked($event)"
     [class.file_explorer_file_tree_active]="isExplorerActive"
   >
-    @for (file of directoryFileNodes; track file.name) {
+    @for (file of directoryFileNodes; track file.path) {
     <app-file-explorer-item [fileNode]="file" [depth]="0" />
     }
   </div>

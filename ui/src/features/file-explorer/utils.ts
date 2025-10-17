@@ -208,7 +208,6 @@ export function expandNodeByPath(
   return false;
 }
 
-
 /**
  * Recursively searches for a fileNode by its path and removes it from the node tree.
  *
@@ -247,7 +246,7 @@ export function removeCreateNodes(nodes: fileNode[]): void {
     const node = nodes[i];
 
     // Remove if node is in create mode
-    if (node.mode === "createFile" || node.mode === "createFolder") {
+    if (node.mode === 'createFile' || node.mode === 'createFolder') {
       nodes.splice(i, 1);
       continue;
     }
@@ -256,5 +255,29 @@ export function removeCreateNodes(nodes: fileNode[]): void {
     if (node.isDirectory && node.children.length > 0) {
       removeCreateNodes(node.children);
     }
+  }
+}
+
+/**
+ * Add a file to array if it isnt in it
+ * @param files Files to add to
+ * @param fileToAdd File ot add
+ */
+export function addUniqueFile(files: fileNode[], fileToAdd: fileNode) {
+  const exists = files.some((f) => f.path === fileToAdd.path);
+  if (!exists) {
+    files.unshift(fileToAdd);
+  }
+}
+
+/**
+ * Remove a file from the array if it exists
+ * @param files Files to remove from
+ * @param fileToRemove File to remove
+ */
+export function removeFileIfExists(files: fileNode[], fileToRemove: fileNode) {
+  const index = files.findIndex((f) => f.path === fileToRemove.path);
+  if (index !== -1) {
+    files.splice(index, 1);
   }
 }

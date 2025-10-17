@@ -75,7 +75,7 @@
 @if (fileNode().children && fileNode().children.length > 0 &&
 fileNode().expanded) {
 <div class="child_wrapper">
-  @for (child of fileNode().children; track child.name) {
+  @for (child of fileNode().children; track child.path) {
   <app-file-explorer-item [fileNode]="child" [depth]="depth() + 1" />
   }
 </div>

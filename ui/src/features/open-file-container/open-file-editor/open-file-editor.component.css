@@ -8,4 +8,26 @@
 .container {
   flex: 1;
   overflow-y: auto;
+  background-color: #1e1e1e;
+  padding: 16px;
+  color: #ffffff;
+  font-family: "Consolas", "Courier New", monospace;
+}
+
+.content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.loading,
+.error {
+  color: #ffcc00;
+  font-family: monospace;
+  padding: 10px;
+}
+
+.error {
+  color: #ff6b6b;
 }

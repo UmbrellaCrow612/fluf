@@ -48,6 +48,16 @@ export type AppContext = {
    * Set this before showing the node as to where it was clicked for file explorer context menu to show from the trigger area
    */
   fileExplorerContextMenuClickPosition: { x: number; y: number } | null;
+
+  /**
+   * List of open files in the editor to show in the open file tab bar
+   */
+  openFiles: fileNode[] | null;
+
+  /**
+   * The current file showing in edit text file editor bit
+   */
+  currentOpenFileInEditor: fileNode | null;
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -73,6 +83,8 @@ export class ContextService {
     displayFileEplorerContextMenu: null,
     fileExplorerContextMenufileNode: null,
     fileExplorerContextMenuClickPosition: null,
+    openFiles: null,
+    currentOpenFileInEditor: null
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();
