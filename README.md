@@ -1,5 +1,7 @@
 # **Flufy**
 
+![Flufy UI Preview](assets/ui.png)
+
 A simple text editor with desktop packaging support using Electron.
 
 ---
