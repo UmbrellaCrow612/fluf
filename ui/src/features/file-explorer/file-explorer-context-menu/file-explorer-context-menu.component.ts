@@ -143,6 +143,7 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.appContext.update('isCreateFileOrFolderActive', true);
     this.appContext.update('directoryFileNodes', nodes);
     this.closeDialog();
   }

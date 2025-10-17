@@ -95,7 +95,7 @@ export function pushChildrenToNode(
       }
 
       // Push new children (instead of replacing)
-      node.children.push(...newChildren);
+      node.children.unshift(...newChildren);
       node.expanded = true;
       return true;
     }

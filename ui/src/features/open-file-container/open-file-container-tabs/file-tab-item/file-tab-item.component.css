@@ -1,0 +1,19 @@
+.file_tab_item {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  background-color: rgb(46, 45, 45); 
+  width: 176px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.ellipses {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: white;
+}

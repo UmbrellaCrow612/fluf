@@ -1,0 +1,15 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  height: 55px;
+}
+
+.open_file_container_tabs_wrapper {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  background-color: rgb(29, 28, 28);
+}

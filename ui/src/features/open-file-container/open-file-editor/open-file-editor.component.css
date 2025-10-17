@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.container {
+  flex: 1;
+  overflow-y: auto;
+}
