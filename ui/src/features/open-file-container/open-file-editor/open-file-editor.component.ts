@@ -54,6 +54,7 @@ export class OpenFileEditorComponent implements OnInit {
       undefined,
       this.openFileNode?.path
     );
+    this.appContext.update("fileExplorerActiveFileOrFolder", this.openFileNode)
 
     this.isLoading = false;
   }

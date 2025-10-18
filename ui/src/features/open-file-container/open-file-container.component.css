@@ -8,3 +8,13 @@
   width: 100%;
   height: 100%;
 }
+
+.resizer {
+  height: 10px;
+  background-color: rgb(51, 49, 49);
+  cursor: row-resize;
+}
+
+.resizer:hover {
+  background-color: rgb(78, 76, 76);
+}

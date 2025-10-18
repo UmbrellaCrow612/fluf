@@ -58,6 +58,12 @@ export type AppContext = {
    * The current file showing in edit text file editor bit
    */
   currentOpenFileInEditor: fileNode | null;
+
+
+  /**
+   * Indicates if it should show the file editor bottom which contaisdn the terminal porblems etc 
+   */
+  displayFileEditorBottom: boolean | null
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -84,7 +90,8 @@ export class ContextService {
     fileExplorerContextMenufileNode: null,
     fileExplorerContextMenuClickPosition: null,
     openFiles: null,
-    currentOpenFileInEditor: null
+    currentOpenFileInEditor: null,
+    displayFileEditorBottom: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

@@ -31,3 +31,49 @@
 .error {
   color: #ff6b6b;
 }
+
+.no_file_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.no_file_container h1 {
+  font-size: 64px;
+  font-weight: 800;
+  background: linear-gradient(
+    270deg,
+    #ff8a00,
+    #e52e71,
+    #9b5de5,
+    #00bbf9,
+    #00f5d4
+  );
+  background-size: 400% 400%;
+
+  /* Gradient text clipping */
+  background-clip: text;
+  -webkit-background-clip: text;
+
+  /* Make text transparent to show gradient */
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+
+  animation: gradientShift 8s ease infinite;
+  letter-spacing: 2px;
+  user-select: none;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

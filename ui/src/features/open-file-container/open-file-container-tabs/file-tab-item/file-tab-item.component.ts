@@ -38,15 +38,19 @@ export class FileTabItemComponent implements OnInit {
 
   removeTabItem(event: MouseEvent) {
     event.stopPropagation();
-
+  
     const ctx = this.appContext.getSnapshot();
     const files = ctx.openFiles ?? [];
-
+  
     removeFileIfExists(files, this.fileNode());
     this.appContext.update('openFiles', files);
-
+  
     if (ctx.currentOpenFileInEditor?.path === this.fileNode().path) {
-      this.appContext.update('currentOpenFileInEditor', null);
+      if (files.length > 0) {
+        this.appContext.update('currentOpenFileInEditor', files[0]);
+      } else {
+        this.appContext.update('currentOpenFileInEditor', null);
+      }
     }
   }
 }
