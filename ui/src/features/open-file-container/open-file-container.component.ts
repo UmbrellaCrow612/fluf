@@ -24,8 +24,12 @@ export class OpenFileContainerComponent implements OnInit {
     callback: (ctx) => {
       if (!ctx.displayFileEditorBottom) {
         this.appContext.update('displayFileEditorBottom', true);
+        this.fileEditorContainerFlex = 1;
+        this.bottomFlex = 1
       } else {
         this.appContext.update('displayFileEditorBottom', false);
+        this.fileEditorContainerFlex = 1;
+        this.bottomFlex = 1
       }
     },
     keys: ['Control', 'j'],
