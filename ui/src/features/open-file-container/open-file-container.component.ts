@@ -40,7 +40,7 @@ export class OpenFileContainerComponent implements OnInit {
 
   fileEditorContainerFlex = 1;
   bottomFlex = 1;
-  minFlex = 0.3;
+  minFlex = 0.4;
 
   ngOnInit(): void {
     let init = this.appContext.getSnapshot();

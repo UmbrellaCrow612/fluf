@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable } from '@angular/core';
-import { sideBarActiveElement } from './type';
+import { fileEditorBottomActiveElement, sideBarActiveElement } from './type';
 
 export type AppContext = {
   /**
@@ -59,11 +59,15 @@ export type AppContext = {
    */
   currentOpenFileInEditor: fileNode | null;
 
+  /**
+   * Indicates if it should show the file editor bottom which contaisdn the terminal porblems etc
+   */
+  displayFileEditorBottom: boolean | null;
 
   /**
-   * Indicates if it should show the file editor bottom which contaisdn the terminal porblems etc 
+   * The current active element in the file bottom container
    */
-  displayFileEditorBottom: boolean | null
+  fileEditorBottomActiveElement: fileEditorBottomActiveElement | null;
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -92,6 +96,7 @@ export class ContextService {
     openFiles: null,
     currentOpenFileInEditor: null,
     displayFileEditorBottom: null,
+    fileEditorBottomActiveElement: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

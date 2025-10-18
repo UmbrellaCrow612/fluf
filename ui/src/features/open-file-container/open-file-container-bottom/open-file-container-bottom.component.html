@@ -1,1 +1,18 @@
-<p>open-file-container-bottom works!</p>
+<div class="container">
+  <div class="left scroll_bar">
+    @for (btn of btnsList; track $index) {
+    <button
+      [class.active]="activeElement == btn.element"
+      (click)="buttonClicked(btn)"
+    >
+      {{ btn.label }}
+    </button>
+    }
+  </div>
+
+  <div class="right">
+    @if (activeElement === "terminal") {
+    <app-terminal />
+    }
+  </div>
+</div>

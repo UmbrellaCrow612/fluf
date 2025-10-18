@@ -1,0 +1,56 @@
+:host {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.container {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+
+  display: flex;
+}
+
+.left {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: start;
+  background-color: rgb(22, 21, 21);
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.left button {
+  background: transparent;
+  border: none;
+  color: #cccccc;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.2s, color 0.2s;
+}
+
+.left button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.left button.active {
+  background-color: #0078d4;
+  color: white;
+}
+
+.right {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+}

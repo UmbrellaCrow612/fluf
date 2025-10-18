@@ -8,3 +8,8 @@ export type sideBarActiveElement =
   | 'run-and-debug'
   | 'extensions'
   | null;
+
+/**
+ * The current active element to be rendered in the bottom editor pop up
+ */
+export type fileEditorBottomActiveElement = 'terminal' | "debug-console" | "ports" | "output" | "problems";

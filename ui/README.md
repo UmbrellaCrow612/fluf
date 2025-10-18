@@ -1,26 +1,38 @@
-# Ui
+# UI
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.10.
 
 # Running
 
-dev:
+**Development:**
 
 - `npm ci`
 - `npm run start`
 
-build:
+**Build:**
 
 - `npm run build`
 
 # Notes
 
-- When using flex layout and `flex:1` make sure the first decendant has defined height like `100vh` this being body and each sub child that uses flex
-  layout containers to have
+- When using Flex Layout and `flex: 1`, make sure the first descendant has a defined height (e.g., `100vh`). This usually applies to the `body` element and each subchild that uses flex layout containers. Add the following styles:
 
-```css
-min-height: 0;
-min-width: 0;
-```
+  ```css
+  min-height: 0;
+  min-width: 0;
+  ```
 
-for overflow proprties to work when said container use flex or percent based layout
+  This ensures that overflow properties work correctly when the container uses flex or percentage-based layouts.
+
+- Sometimes, even if a child component is assigned `flex: 1` by a parent with `display: flex`, it might still not take up the full width. Make sure both the parent and the child have defined minimum width and height. For example, in the CSS file of `<app-child />`, include:
+
+  ```css
+  :host {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    min-width: 0;
+  }
+  ```
+
+  The `:host` wrapper acts as an HTML element itself, so these properties help ensure proper flex behavior.
