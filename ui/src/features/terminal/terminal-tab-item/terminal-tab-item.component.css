@@ -1,0 +1,50 @@
+.tab_item {
+  height: 100%;
+  background-color: rgb(43, 41, 41);
+  width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #ccc;
+  font-family: monospace;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.active {
+  background-color: rgb(31, 30, 30);
+}
+
+.tab_text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.close_btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s, background-color 0.15s;
+  border-radius: 3px;
+}
+
+.close_btn:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.close_btn mat-icon {
+  color: white;
+  font-size: 14px;
+  height: 14px;
+  width: 14px;
+  line-height: 14px;
+}

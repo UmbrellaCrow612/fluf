@@ -3,7 +3,7 @@ import { fileEditorBottomActiveElement, sideBarActiveElement } from './type';
 
 export type AppContext = {
   /**
-   * Current active sidebat element
+   * Current active sidebar element
    */
   sideBarActiveElement: sideBarActiveElement;
 

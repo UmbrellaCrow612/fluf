@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TerminalComponent } from './terminal.component';
+import { TerminalEditorComponent } from './terminal-editor.component';
 
-describe('TerminalComponent', () => {
-  let component: TerminalComponent;
-  let fixture: ComponentFixture<TerminalComponent>;
+describe('TerminalEditorComponent', () => {
+  let component: TerminalEditorComponent;
+  let fixture: ComponentFixture<TerminalEditorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TerminalComponent]
+      imports: [TerminalEditorComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(TerminalComponent);
+    fixture = TestBed.createComponent(TerminalEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
