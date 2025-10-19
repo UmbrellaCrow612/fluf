@@ -4,12 +4,18 @@ import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
 import { ContextService } from '../app-context/app-context.service';
 import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
-import { FileExplorerContextMenuComponent } from "../file-explorer/file-explorer-context-menu/file-explorer-context-menu.component";
-import { OpenFileContainerComponent } from "../open-file-container/open-file-container.component";
+import { FileExplorerContextMenuComponent } from '../file-explorer/file-explorer-context-menu/file-explorer-context-menu.component';
+import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
 
 @Component({
   selector: 'app-editor',
-  imports: [TopBarComponent, SideBarComponent, FileExplorerComponent, FileExplorerContextMenuComponent, OpenFileContainerComponent],
+  imports: [
+    TopBarComponent,
+    SideBarComponent,
+    FileExplorerComponent,
+    FileExplorerContextMenuComponent,
+    OpenFileContainerComponent,
+  ],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
@@ -91,10 +97,10 @@ export class EditorComponent implements OnInit {
       this.destroyRef
     );
     this.appContext.autoSub(
-      'displayFileEplorerContextMenu',
+      'displayFileExplorerContextMenu',
       (ctx) => {
         this.isFileExplorerContextMenuActive =
-          ctx.displayFileEplorerContextMenu;
+          ctx.displayFileExplorerContextMenu;
       },
       this.destroyRef
     );

@@ -32,7 +32,7 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const ctx = this.appContext.getSnapshot();
 
-    this.fileNode = ctx.fileExplorerContextMenufileNode;
+    this.fileNode = ctx.fileExplorerContextMenuFileNode;
     const clickPos = ctx.fileExplorerContextMenuClickPosition;
 
     if (!this.fileNode) {
@@ -76,7 +76,7 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
     if (this.fileNode?.isDirectory) {
       let suc = await this.api.deleteDirectory(undefined, this.fileNode.path);
       if (suc) {
-        this.appContext.update('refreshDirectoryFolderNodes', true);
+        this.appContext.update('refreshDirectory', true);
         this.closeDialog();
       } else {
         this.operationError = 'Failed to delete folder';
@@ -86,7 +86,7 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
     if (!this.fileNode?.isDirectory && this.fileNode) {
       let suc = await this.api.deleteFile(undefined, this.fileNode.path);
       if (suc) {
-        this.appContext.update('refreshDirectoryFolderNodes', true);
+        this.appContext.update('refreshDirectory', true);
         this.closeDialog();
       } else {
         this.operationError = 'Failed to delete file';
@@ -96,8 +96,8 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
 
   private onDialogClosed() {
     this.appContext.update('fileExplorerContextMenuClickPosition', null);
-    this.appContext.update('fileExplorerContextMenufileNode', null);
-    this.appContext.update('displayFileEplorerContextMenu', false);
+    this.appContext.update('fileExplorerContextMenuFileNode', null);
+    this.appContext.update('displayFileExplorerContextMenu', false);
   }
 
   /**
@@ -139,7 +139,7 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
         pushChildrenToNode(nodes, parent.path, [newNode]);
       } else {
         // we are in root
-        nodes.push(newNode)
+        nodes.push(newNode);
       }
     }
 

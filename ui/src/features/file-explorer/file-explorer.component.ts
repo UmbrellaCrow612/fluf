@@ -38,7 +38,7 @@ export class FileExplorerComponent implements OnInit {
     let init = this.appContext.getSnapshot();
 
     // set inital state based on ctx
-    this.selectedDirectorPath = init.selectedDirectoryFolderPath;
+    this.selectedDirectorPath = init.selectedDirectoryPath;
     this.directoryFileNodes = init.directoryFileNodes;
     this.isExplorerActive =
       init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
@@ -46,9 +46,9 @@ export class FileExplorerComponent implements OnInit {
 
     // Subscribe to changes update local state
     this.appContext.autoSub(
-      'selectedDirectoryFolderPath',
+      'selectedDirectoryPath',
       (ctx) => {
-        this.selectedDirectorPath = ctx.selectedDirectoryFolderPath;
+        this.selectedDirectorPath = ctx.selectedDirectoryPath;
       },
       this.destroyRef
     );
@@ -76,9 +76,9 @@ export class FileExplorerComponent implements OnInit {
       this.destroyRef
     );
     this.appContext.autoSub(
-      'refreshDirectoryFolderNodes',
+      'refreshDirectory',
       async (ctx) => {
-        if (ctx.refreshDirectoryFolderNodes) {
+        if (ctx.refreshDirectory) {
           await this.merge();
         }
       },
@@ -92,7 +92,7 @@ export class FileExplorerComponent implements OnInit {
       return;
     }
 
-    this.appContext.update('selectedDirectoryFolderPath', res.filePaths[0]);
+    this.appContext.update('selectedDirectoryPath', res.filePaths[0]);
 
     await this.readDir();
   }
@@ -128,7 +128,7 @@ export class FileExplorerComponent implements OnInit {
    * Runs when refresh button clicked - re reads nodes and updates global state
    */
   refreshClicked() {
-    this.appContext.update('refreshDirectoryFolderNodes', true);
+    this.appContext.update('refreshDirectory', true);
   }
 
   /**

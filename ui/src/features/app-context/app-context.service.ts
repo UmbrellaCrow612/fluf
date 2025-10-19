@@ -13,9 +13,9 @@ export type AppContext = {
   directoryFileNodes: Array<fileNode> | null;
 
   /**
-   * Folder path selected in editor
+   * Folder path selected in the editor
    */
-  selectedDirectoryFolderPath: string | null;
+  selectedDirectoryPath: string | null;
 
   /**
    * The current focused / last clicked or last edited file (from editor) in the file explorer tree
@@ -23,29 +23,29 @@ export type AppContext = {
   fileExplorerActiveFileOrFolder: fileNode | null;
 
   /**
-   * Represents when a file extiro creator is active or not
+   * Represents whether a file or folder creator is active
    */
   isCreateFileOrFolderActive: boolean | null;
 
   /**
-   * Inidicates if it should refresh / re read nodes and update the current nodes with updated folder nodes - keep expanded state and adds / removes children
-   * based on new state
+   * Indicates if it should refresh / reread nodes and update the current nodes with updated folder nodes -
+   * keeps expanded state and adds / removes children based on new state
    */
-  refreshDirectoryFolderNodes: boolean | null;
+  refreshDirectory: boolean | null;
 
   /**
-   * Indicates that the right click context menu on a file explorer item should be displayed - think of this as simpley a trigger
-   * you push values to and the context menu will react when you want to display or hide it
+   * Indicates that the right-click context menu on a file explorer item should be displayed -
+   * think of this as simply a trigger you push values to, and the context menu will react when you want to display or hide it
    */
-  displayFileEplorerContextMenu: boolean | null;
+  displayFileExplorerContextMenu: boolean | null;
 
   /**
-   * The node to process the context menu for, the trigger node the context menu was opened for
+   * The node to process the context menu for — the trigger node the context menu was opened for
    */
-  fileExplorerContextMenufileNode: fileNode | null;
+  fileExplorerContextMenuFileNode: fileNode | null;
 
   /**
-   * Set this before showing the node as to where it was clicked for file explorer context menu to show from the trigger area
+   * Set this before showing the context menu to indicate where it was clicked in the file explorer
    */
   fileExplorerContextMenuClickPosition: { x: number; y: number } | null;
 
@@ -55,17 +55,17 @@ export type AppContext = {
   openFiles: fileNode[] | null;
 
   /**
-   * The current file showing in edit text file editor bit
+   * The current file being displayed in the text file editor
    */
   currentOpenFileInEditor: fileNode | null;
 
   /**
-   * Indicates if it should show the file editor bottom which contaisdn the terminal porblems etc
+   * Indicates if it should show the file editor bottom section, which contains the terminal, problems, etc.
    */
   displayFileEditorBottom: boolean | null;
 
   /**
-   * The current active element in the file bottom container
+   * The current active element in the file editor bottom container
    */
   fileEditorBottomActiveElement: fileEditorBottomActiveElement | null;
 };
@@ -85,13 +85,13 @@ const LOCAL_STORAGE_KEY = 'app-context';
 export class ContextService {
   private _ctx: AppContext = {
     sideBarActiveElement: null,
-    selectedDirectoryFolderPath: null,
+    selectedDirectoryPath: null,
     directoryFileNodes: null,
     fileExplorerActiveFileOrFolder: null,
     isCreateFileOrFolderActive: null,
-    refreshDirectoryFolderNodes: null,
-    displayFileEplorerContextMenu: null,
-    fileExplorerContextMenufileNode: null,
+    refreshDirectory: null,
+    displayFileExplorerContextMenu: null,
+    fileExplorerContextMenuFileNode: null,
     fileExplorerContextMenuClickPosition: null,
     openFiles: null,
     currentOpenFileInEditor: null,

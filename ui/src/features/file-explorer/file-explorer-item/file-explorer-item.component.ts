@@ -143,12 +143,12 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
    */
   onRightClick(event: MouseEvent) {
     event.preventDefault();
-    this.appContext.update('fileExplorerContextMenufileNode', this.fileNode());
+    this.appContext.update('fileExplorerContextMenuFileNode', this.fileNode());
     this.appContext.update('fileExplorerContextMenuClickPosition', {
       x: event.clientX,
       y: event.clientY,
     });
-    this.appContext.update('displayFileEplorerContextMenu', true);
+    this.appContext.update('displayFileExplorerContextMenu', true);
   }
 
   async createFileOrFolder(e: Event) {
@@ -181,7 +181,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
         const suc = await this.api.createFile(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.update('refreshDirectoryFolderNodes', true);
+          this.appContext.update('refreshDirectory', true);
           this.appContext.update('fileExplorerActiveFileOrFolder', {
             children: [],
             expanded: false,
@@ -214,7 +214,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
         const suc = await this.api.createDirectory(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.update('refreshDirectoryFolderNodes', true);
+          this.appContext.update('refreshDirectory', true);
           this.appContext.update('fileExplorerActiveFileOrFolder', {
             children: [],
             expanded: false,
