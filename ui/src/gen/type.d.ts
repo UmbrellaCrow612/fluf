@@ -124,10 +124,6 @@ type terminal = {
      */
     history: string[];
     /**
-     * - The output string in the terminal
-     */
-    output: string;
-    /**
      * - The spawned shell process - ignore in main world
      */
     process: import("child_process").ChildProcessWithoutNullStreams;
@@ -156,10 +152,6 @@ type terminalInformation = {
      * - List of cmds ran in the terminal
      */
     history: string[];
-    /**
-     * - The output string in the terminal
-     */
-    output: string;
 };
 /**
  * Create a terminal insatce and run cmds agaisnt
@@ -174,18 +166,27 @@ type runCmdInTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, termin
  */
 type killTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => any;
 /**
- * Subscribes to data events from any terminal.
+ * Shape of data passed to callback when data changes
  */
-type onTerminalData = (callback: (arg0: {
+type terminalChangeData = {
+    /**
+     * - The id of the terminal emitting event
+     */
     id: string;
-    output: string;
-}) => any) => Function;
+    /**
+     * - The chunk string sent across
+     */
+    chunk: string;
+};
+type onTerminalChangeCallBack = (data: terminalChangeData) => void;
 /**
- * Subscribes to exit events from any terminal.
+ * Listen to when a terminal changes and run custom logic through a callback function
  */
-type onTerminalExit = (callback: (arg0: {
-    id: string;
-}) => any) => Function;
+type onTerminalChange = (callback: onTerminalChangeCallBack) => () => void;
+/**
+ * A listner to register callbacks passed in for terminal change - internal
+ */
+type onTerminalChangeListner = (event?: Electron.IpcRendererEvent | undefined, data: terminalChangeData) => any;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
@@ -267,13 +268,9 @@ type ElectronApi = {
      */
     killTerminal: killTerminal;
     /**
-     * - Sub to terminal data changes
+     * - Listen to when a terminal changes and react , returns a unsub function for the callback
      */
-    onTerminalData: onTerminalData;
-    /**
-     * - Sub to exit of a terminal
-     */
-    onTerminalExit: onTerminalExit;
+    onTerminalChange: onTerminalChange;
 };
 /**
  * Extends the global `window` object to include the Electron API.

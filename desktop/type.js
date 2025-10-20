@@ -150,7 +150,6 @@
  * @property {string} shell - The shell type to run it in
  * @property {string} directory - The directory folder to run the cmds in
  * @property {string[]} history - List of cmds ran in the terminal
- * @property {string} output - The output string in the terminal
  * @property {import("child_process").ChildProcessWithoutNullStreams} process - The spawned shell process - ignore in main world
  * @property {import("electron").WebContents} webContents - Electron web
  */
@@ -162,7 +161,6 @@
  * @property {string} shell - The shell type to run it in
  * @property {string} directory - The directory folder to run the cmds in
  * @property {string[]} history - List of cmds ran in the terminal
- * @property {string} output - The output string in the terminal
  */
 
 /**
@@ -190,17 +188,30 @@
  */
 
 /**
- * Subscribes to data events from any terminal.
- * @callback onTerminalData
- * @param {function({id: string, output: string})} callback - The function to call with terminal data.
- * @returns {function} - A function to call to unsubscribe from the event.
+ * Shape of data passed to callback when data changes
+ * @typedef {Object} terminalChangeData
+ * @property {string }id - The id of the terminal emitting event
+ * @property {string} chunk - The chunk string sent across
  */
 
 /**
- * Subscribes to exit events from any terminal.
- * @callback onTerminalExit
- * @param {function({id: string})} callback - The function to call when a terminal exits.
- * @returns {function} - A function to call to unsubscribe from the event.
+ * @callback onTerminalChangeCallBack
+ * @param {terminalChangeData} data
+ * @return {void}
+ */
+
+/**
+ * Listen to when a terminal changes and run custom logic through a callback function
+ * @callback onTerminalChange
+ * @param {onTerminalChangeCallBack} callback - The callback to run
+ * @returns {() => void} - Method to unsub the callback
+ */
+
+/**
+ * A listner to register callbacks passed in for terminal change - internal
+ * @callback onTerminalChangeListner
+ * @param {import("electron").IpcRendererEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {terminalChangeData} data
  */
 
 /**
@@ -226,8 +237,7 @@
  * @property {createTerminal} createTerminal - Create a terminal to run cmds in
  * @property {runCmdInTerminal} runCmdsInTerminal - Run cmds in a given terminal
  * @property {killTerminal} killTerminal - Kill a terminal processes
- * @property {onTerminalData} onTerminalData - Sub to terminal data changes
- * @property {onTerminalExit} onTerminalExit - Sub to exit of a terminal
+ * @property {onTerminalChange} onTerminalChange - Listen to when a terminal changes and react , returns a unsub function for the callback
  */
 
 /**

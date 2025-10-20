@@ -22,7 +22,11 @@
   </form>
 
   <div class="content scroll_bar">
-    {{ outputStr }}
+    @for (line of outputStr; track $index) {
+    <span>
+      {{ line }}
+    </span>
+    }
   </div>
   }
 </div>

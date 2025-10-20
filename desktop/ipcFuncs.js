@@ -2,7 +2,7 @@
  * File contains all our impl of electron api funcs to be exposed in the electron api to render
  */
 
-const { dialog, BrowserWindow } = require("electron");
+const { dialog, BrowserWindow, ipcRenderer } = require("electron");
 const fsp = require("fs/promises");
 const fs = require("fs");
 const path = require("path");
@@ -231,7 +231,6 @@ const cleanupTerminals = () => {
       if (term.webContents && !term.webContents.isDestroyed()) {
         term.webContents.send("terminal-exit", { id: term.id });
       }
-
     } catch (err) {
       console.error(`Failed to kill terminal ${id}:`, err);
     } finally {
@@ -265,34 +264,19 @@ const createTerminalImpl = async (_event = undefined, dir) => {
       shell: shell,
       directory: dir,
       history: [],
-      output: "",
       process: termProcess,
-      webContents: webContents, 
+      webContents: webContents,
     };
 
     termProcess.stdout.on("data", (data) => {
-      const text = data.toString();
-
-      if (term.output.length > 2000) {
-        term.output = term.output.slice(-1000) + text;
-      } else {
-        term.output += text;
-      }
+      /** @type {terminalChangeData} */
+      const termDataPassed = {
+        id: term.id,
+        chunk: data.toString(),
+      };
 
       if (term.webContents && !term.webContents.isDestroyed()) {
-        term.webContents.send("terminal-data", {
-          id: term.id,
-          output: term.output, 
-        });
-      }
-    });
-
-    termProcess.on("exit", () => {
-      terminalStore.delete(term.id);
-      
-     
-      if (term.webContents && !term.webContents.isDestroyed()) {
-        term.webContents.send("terminal-exit", { id: term.id });
+        term.webContents.send("terminal-data", termDataPassed);
       }
     });
 
@@ -302,7 +286,6 @@ const createTerminalImpl = async (_event = undefined, dir) => {
       directory: term.directory,
       history: term.history,
       id: term.id,
-      output: term.output,
       shell: term.shell,
     };
   } catch (error) {

@@ -4,13 +4,11 @@ import {
   inject,
   OnDestroy,
   OnInit,
-  ChangeDetectorRef, // 1. Import ChangeDetectorRef
 } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 
-// This type would come from your type definitions
 type anonCallback = () => void;
 
 @Component({
@@ -23,7 +21,6 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
-  private readonly cdr = inject(ChangeDetectorRef); // 2. Inject ChangeDetectorRef
 
   currentActiveTerminal: terminalInformation | null = null;
   currentActiveTerminalId: string | null = null;
@@ -35,8 +32,8 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     validators: [Validators.required],
   });
 
-  outputStr: string = '';
-  unSubData: Function | null = null;
+  outputStr: string[] = [];
+  unSub: anonCallback | null = null;
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
@@ -45,7 +42,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.currentActiveTerminal =
       init.terminals?.find((x) => x.id == this.currentActiveTerminalId) ?? null;
 
-    this.initTerm(); 
+    this.initTerm();
 
     this.appContext.autoSub(
       'currentActiveTerminald',
@@ -59,32 +56,11 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       },
       this.destroyRef
     );
-
-    this.unSubData = this.api.onTerminalData((data) => {
-      if (data.id === this.currentActiveTerminalId) {
-        this.outputStr = data.output;
-        this.cdr.markForCheck();
-      }
-    });
-
-    const unSubExit = this.api.onTerminalExit(({ id }) => {
-      if (id === this.currentActiveTerminalId) {
-        this.error = 'Active terminal was closed.';
-        this.outputStr = '';
-        this.currentActiveTerminal = null;
-        this.currentActiveTerminalId = null;
-        this.cdr.markForCheck();
-      }
-    });
-
-    this.destroyRef.onDestroy(() => {
-      unSubExit();
-    });
   }
 
-  ngOnDestroy(): void {
-    if (this.unSubData) {
-      this.unSubData();
+  ngOnDestroy() {
+    if (this.unSub) {
+      this.unSub();
     }
   }
 
@@ -98,11 +74,21 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     if (!this.currentActiveTerminal) {
       this.error = 'No terminal found';
       this.isLoading = false;
-      this.outputStr = ''; // Clear output if no terminal
+      this.outputStr = [];
       return;
     }
 
-    this.outputStr = this.currentActiveTerminal.output;
+    if (this.unSub) {
+      this.unSub();
+    }
+
+    this.unSub = this.api.onTerminalChange((data) => {
+      if (data.id == this.currentActiveTerminalId) {
+        this.outputStr.push(data.chunk);
+      }
+      console.log(data);
+    });
+
     this.isLoading = false;
   }
 
@@ -110,30 +96,20 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
    * Runs a custom cmd wants to be run
    */
   async onSubmit(event: Event) {
-    event.preventDefault(); // Stop form from reloading page
+    event.preventDefault();
 
-    if (this.cmdInputControl.invalid || !this.currentActiveTerminalId) {
+    if (!this.cmdInputControl.valid) {
       return;
     }
 
-    const cmd = this.cmdInputControl.value;
-    if (!cmd) return;
+    let cmd = this.cmdInputControl.value;
 
-    try {
-      const success = await this.api.runCmdsInTerminal(
-        undefined,
-        this.currentActiveTerminalId,
-        cmd
-      );
-      
-      if (success) {
-        this.cmdInputControl.setValue(''); // Clear input on success
-      } else {
-        this.error = `Failed to run command in terminal.`;
-      }
-    } catch (err) {
-      this.error = 'Error running command.';
-      console.error(err);
-    }
+    await this.api.runCmdsInTerminal(
+      undefined,
+      this.currentActiveTerminalId!,
+      cmd!
+    );
+
+    this.cmdInputControl.setValue('');
   }
 }

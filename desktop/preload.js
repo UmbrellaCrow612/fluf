@@ -17,25 +17,19 @@ const api = {
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
   normalize: (_event, path) => ipcRenderer.invoke("path:normalize", path),
 
+  onTerminalChange: (cb) => {
+    /** @type {onTerminalChangeListner} */
+    let listener = (_, data) => {
+      cb(data);
+    };
+
+    ipcRenderer.on("terminal-data", listener);
+
+    return () => ipcRenderer.removeListener("terminal-data", listener);
+  },
+
   createTerminal: (_event, directory) =>
     ipcRenderer.invoke("terminal:create", directory),
-
-  onTerminalData: (callback) => {
-    const handler = (_event, data) => callback(data);
-    ipcRenderer.on("terminal-data", handler);
-    return () => {
-      ipcRenderer.removeListener("terminal-data", handler);
-    };
-  },
-
-  onTerminalExit: (callback) => {
-    const handler = (_event, data) => callback(data);
-    ipcRenderer.on("terminal-exit", handler);
-    return () => {
-      ipcRenderer.removeListener("terminal-exit", handler);
-    };
-  },
-
   killTerminal: (_event, termId) => ipcRenderer.invoke("terminal:kill", termId),
   runCmdsInTerminal: (_event, termId, cmd) =>
     ipcRenderer.invoke("terminal:cmds:run", termId, cmd),
