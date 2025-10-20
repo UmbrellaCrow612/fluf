@@ -75,9 +75,9 @@ export type AppContext = {
   terminals: terminalInformation[] | null
 
   /**
-   * The current active terminal to display output and accept input from
+   * The current active terminal to see output and input cmds in
    */
-  currentActiveTerminal:terminalInformation | null;
+  currentActiveTerminald:string | null;
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -108,7 +108,7 @@ export class ContextService {
     displayFileEditorBottom: null,
     fileEditorBottomActiveElement: null,
     terminals: null,
-    currentActiveTerminal:null
+    currentActiveTerminald:null
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

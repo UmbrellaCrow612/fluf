@@ -22,7 +22,6 @@ export class OpenFileContainerComponent implements OnInit {
 
   openBottomHotKey: HotKey = {
     callback: (ctx) => {
-      console.log("ran hot key")
       if (!ctx.displayFileEditorBottom) {
         this.appContext.update('displayFileEditorBottom', true);
         this.fileEditorContainerFlex = 1;

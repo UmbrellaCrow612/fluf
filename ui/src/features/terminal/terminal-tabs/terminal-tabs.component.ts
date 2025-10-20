@@ -50,12 +50,12 @@ export class TerminalTabsComponent implements OnInit {
       ctx.selectedDirectoryPath!
     );
 
-    if(newTerm){
+    if (newTerm) {
       let terms = ctx.terminals ?? [];
-      terms.push(newTerm);
+      terms.unshift(newTerm);
 
       this.appContext.update('terminals', terms);
-      this.appContext.update('currentActiveTerminal', newTerm);
+      this.appContext.update('currentActiveTerminald', newTerm.id);
     }
   }
 }

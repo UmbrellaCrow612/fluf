@@ -21,7 +21,6 @@ const {
   cleanupTerminals,
   createTerminalImpl,
   killTerminalImpl,
-  onTerminalDataChangeImpl,
   runCommandInTerminalImpl,
 } = require("./ipcFuncs");
 
@@ -73,7 +72,6 @@ app.whenReady().then(() => {
 
   ipcMain.handle("terminal:create", createTerminalImpl);
   ipcMain.handle("terminal:kill", killTerminalImpl);
-  ipcMain.handle("terminal:change:data", onTerminalDataChangeImpl);
   ipcMain.handle("terminal:cmds:run", runCommandInTerminalImpl)
 
   ipcMain.on("window:minimize", minimizeImpl);

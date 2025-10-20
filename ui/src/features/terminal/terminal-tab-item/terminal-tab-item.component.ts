@@ -27,18 +27,18 @@ export class TerminalTabItemComponent implements OnInit {
   ngOnInit(): void {
     let init = this.appContext.getSnapshot();
 
-    this.isActive = init.currentActiveTerminal?.id === this.terminal().id;
+    this.isActive = init.currentActiveTerminald === this.terminal().id;
 
     this.appContext.autoSub(
-      'currentActiveTerminal',
+      'currentActiveTerminald',
       (ctx) => {
-        this.isActive = ctx.currentActiveTerminal?.id === this.terminal().id;
+        this.isActive = ctx.currentActiveTerminald === this.terminal().id;
       },
       this.destroyRef
     );
   }
 
   terminalClicked() {
-    this.appContext.update('currentActiveTerminal', this.terminal());
+    this.appContext.update('currentActiveTerminald', this.terminal().id);
   }
 }

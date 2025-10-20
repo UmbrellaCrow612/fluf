@@ -19,9 +19,24 @@ const api = {
 
   createTerminal: (_event, directory) =>
     ipcRenderer.invoke("terminal:create", directory),
+
+  onTerminalData: (callback) => {
+    const handler = (_event, data) => callback(data);
+    ipcRenderer.on("terminal-data", handler);
+    return () => {
+      ipcRenderer.removeListener("terminal-data", handler);
+    };
+  },
+
+  onTerminalExit: (callback) => {
+    const handler = (_event, data) => callback(data);
+    ipcRenderer.on("terminal-exit", handler);
+    return () => {
+      ipcRenderer.removeListener("terminal-exit", handler);
+    };
+  },
+
   killTerminal: (_event, termId) => ipcRenderer.invoke("terminal:kill", termId),
-  onTerminalDataChange: (_event, termId, cb) =>
-    ipcRenderer.invoke("terminal:change:data", termId, cb),
   runCmdsInTerminal: (_event, termId, cmd) =>
     ipcRenderer.invoke("terminal:cmds:run", termId, cmd),
 

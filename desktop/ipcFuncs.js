@@ -221,23 +221,21 @@ const deletDirectoryImpl = async (_event = undefined, dp) => {
  */
 const terminalStore = new Map();
 
-/**
- * Contains all active terminal callbacks
- * @type {Map<string, Set<onTerminalChangeCallback>>}
- */
-const terminalSubs = new Map();
-
 const cleanupTerminals = () => {
   Array.from(terminalStore.entries()).forEach(([id, term]) => {
     try {
       console.log("Killing term " + term.id);
       term.process.kill();
       console.log("Term " + term.id + " Killed");
+
+      if (term.webContents && !term.webContents.isDestroyed()) {
+        term.webContents.send("terminal-exit", { id: term.id });
+      }
+
     } catch (err) {
       console.error(`Failed to kill terminal ${id}:`, err);
     } finally {
       terminalStore.delete(id);
-      terminalSubs.delete(id);
     }
   });
 };
@@ -253,6 +251,8 @@ const createTerminalImpl = async (_event = undefined, dir) => {
         ? "cmd.exe"
         : process.env.SHELL || "/bin/bash";
 
+    const webContents = _event.sender;
+
     const termProcess = spawn(shell, [], {
       cwd: dir,
       env: process.env,
@@ -267,6 +267,7 @@ const createTerminalImpl = async (_event = undefined, dir) => {
       history: [],
       output: "",
       process: termProcess,
+      webContents: webContents, 
     };
 
     termProcess.stdout.on("data", (data) => {
@@ -277,21 +278,22 @@ const createTerminalImpl = async (_event = undefined, dir) => {
       } else {
         term.output += text;
       }
-      term.output += text;
 
-      if (!terminalSubs.has(term.id)) {
-        terminalSubs.set(term.id, new Set());
-      } else {
-        let callbacks = Array.from(terminalSubs.get(term.id));
-        for (let cb of callbacks) {
-          cb(term.output);
-        }
+      if (term.webContents && !term.webContents.isDestroyed()) {
+        term.webContents.send("terminal-data", {
+          id: term.id,
+          output: term.output, 
+        });
       }
     });
 
     termProcess.on("exit", () => {
       terminalStore.delete(term.id);
-      terminalSubs.delete(term.id);
+      
+     
+      if (term.webContents && !term.webContents.isDestroyed()) {
+        term.webContents.send("terminal-exit", { id: term.id });
+      }
     });
 
     terminalStore.set(term.id, term);
@@ -346,36 +348,15 @@ const killTerminalImpl = async (_event = undefined, termId) => {
 
     t.process.kill();
     terminalStore.delete(t.id);
-    terminalSubs.delete(t.id);
+
+    if (t.webContents && !t.webContents.isDestroyed()) {
+      t.webContents.send("terminal-exit", { id: t.id });
+    }
 
     return true;
   } catch (error) {
     console.log(error);
     return false;
-  }
-};
-
-/**
- * @type {onTerminalDataChange}
- */
-const onTerminalDataChangeImpl = async (
-  _event = undefined,
-  termId,
-  callback
-) => {
-  try {
-    if (!terminalStore.has(termId)) {
-      console.log("Terminal not found " + termId);
-      return undefined;
-    }
-
-    let set = terminalSubs.get(termId);
-    set.add(callback);
-
-    return () => set.delete(callback);
-  } catch (error) {
-    console.log(error);
-    return undefined;
   }
 };
 
@@ -400,5 +381,4 @@ module.exports = {
   createTerminalImpl,
   cleanupTerminals,
   killTerminalImpl,
-  onTerminalDataChangeImpl,
 };

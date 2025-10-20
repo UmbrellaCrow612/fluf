@@ -131,6 +131,10 @@ type terminal = {
      * - The spawned shell process - ignore in main world
      */
     process: import("child_process").ChildProcessWithoutNullStreams;
+    /**
+     * - Electron web
+     */
+    webContents: import("electron").WebContents;
 };
 /**
  * Represents information about a terminal instace
@@ -170,17 +174,18 @@ type runCmdInTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, termin
  */
 type killTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => any;
 /**
- * A anonymous function that returns nothing and takes nothing
+ * Subscribes to data events from any terminal.
  */
-type anonCallback = () => void;
+type onTerminalData = (callback: (arg0: {
+    id: string;
+    output: string;
+}) => any) => Function;
 /**
- * Callback you want to run when terminal data changes your given the new terminal data
+ * Subscribes to exit events from any terminal.
  */
-type onTerminalChangeCallback = (output: string) => any;
-/**
- * Subscribe to a specific terminal data output and run some logic
- */
-type onTerminalDataChange = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string, callback: onTerminalChangeCallback) => Promise<anonCallback | undefined>;
+type onTerminalExit = (callback: (arg0: {
+    id: string;
+}) => any) => Function;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
@@ -262,9 +267,13 @@ type ElectronApi = {
      */
     killTerminal: killTerminal;
     /**
-     * - Sub to a specific terminal and run some custom logic callback returns a unsub function
+     * - Sub to terminal data changes
      */
-    onTerminalDataChange: onTerminalDataChange;
+    onTerminalData: onTerminalData;
+    /**
+     * - Sub to exit of a terminal
+     */
+    onTerminalExit: onTerminalExit;
 };
 /**
  * Extends the global `window` object to include the Electron API.

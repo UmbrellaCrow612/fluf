@@ -152,6 +152,7 @@
  * @property {string[]} history - List of cmds ran in the terminal
  * @property {string} output - The output string in the terminal
  * @property {import("child_process").ChildProcessWithoutNullStreams} process - The spawned shell process - ignore in main world
+ * @property {import("electron").WebContents} webContents - Electron web
  */
 
 /**
@@ -189,24 +190,17 @@
  */
 
 /**
- * A anonymous function that returns nothing and takes nothing
- * @callback anonCallback
- * @returns {void}
+ * Subscribes to data events from any terminal.
+ * @callback onTerminalData
+ * @param {function({id: string, output: string})} callback - The function to call with terminal data.
+ * @returns {function} - A function to call to unsubscribe from the event.
  */
 
 /**
- * Callback you want to run when terminal data changes your given the new terminal data
- * @callback onTerminalChangeCallback
- * @param {string} output - The new output of the terminal content
- */
-
-/**
- * Subscribe to a specific terminal data output and run some logic
- * @callback onTerminalDataChange
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} terminalId - The specific terminal to subscribe to for change
- * @param {onTerminalChangeCallback} callback - The callback logic to run that recieves the new terminal output str
- * @returns {Promise<anonCallback | undefined>} - Unsub function if suc or undefined if not
+ * Subscribes to exit events from any terminal.
+ * @callback onTerminalExit
+ * @param {function({id: string})} callback - The function to call when a terminal exits.
+ * @returns {function} - A function to call to unsubscribe from the event.
  */
 
 /**
@@ -232,7 +226,8 @@
  * @property {createTerminal} createTerminal - Create a terminal to run cmds in
  * @property {runCmdInTerminal} runCmdsInTerminal - Run cmds in a given terminal
  * @property {killTerminal} killTerminal - Kill a terminal processes
- * @property {onTerminalDataChange} onTerminalDataChange - Sub to a specific terminal and run some custom logic callback returns a unsub function
+ * @property {onTerminalData} onTerminalData - Sub to terminal data changes
+ * @property {onTerminalExit} onTerminalExit - Sub to exit of a terminal
  */
 
 /**
