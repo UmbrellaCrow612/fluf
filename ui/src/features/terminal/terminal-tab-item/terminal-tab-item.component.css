@@ -12,8 +12,8 @@
   padding: 0 2px;
 }
 
-.active {
-  background-color: rgb(31, 30, 30);
+.tab_active {
+  background-color: rgb(48, 46, 46);
 }
 
 .tab_text {

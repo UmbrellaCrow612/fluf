@@ -296,7 +296,13 @@ const createTerminalImpl = async (_event = undefined, dir) => {
 
     terminalStore.set(term.id, term);
 
-    return term;
+    return {
+      directory: term.directory,
+      history: term.history,
+      id: term.id,
+      output: term.output,
+      shell: term.shell,
+    };
   } catch (error) {
     console.log(error);
     return undefined;

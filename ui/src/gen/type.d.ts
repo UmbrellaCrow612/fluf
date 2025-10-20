@@ -104,6 +104,84 @@ type deleteFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: st
  */
 type deleteDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
+ * Internal to desktop api - Represents a terminal where cmds can be run - ignore process in main world
+ */
+type terminal = {
+    /**
+     * - A unique ID
+     */
+    id: string;
+    /**
+     * - The shell type to run it in
+     */
+    shell: string;
+    /**
+     * - The directory folder to run the cmds in
+     */
+    directory: string;
+    /**
+     * - List of cmds ran in the terminal
+     */
+    history: string[];
+    /**
+     * - The output string in the terminal
+     */
+    output: string;
+    /**
+     * - The spawned shell process - ignore in main world
+     */
+    process: import("child_process").ChildProcessWithoutNullStreams;
+};
+/**
+ * Represents information about a terminal instace
+ */
+type terminalInformation = {
+    /**
+     * - A unique ID
+     */
+    id: string;
+    /**
+     * - The shell type to run it in
+     */
+    shell: string;
+    /**
+     * - The directory folder to run the cmds in
+     */
+    directory: string;
+    /**
+     * - List of cmds ran in the terminal
+     */
+    history: string[];
+    /**
+     * - The output string in the terminal
+     */
+    output: string;
+};
+/**
+ * Create a terminal insatce and run cmds agaisnt
+ */
+type createTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<terminalInformation | undefined>;
+/**
+ * Run cmds agaisnt a existing terminal
+ */
+type runCmdInTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string, cmd: string) => Promise<boolean>;
+/**
+ * Kill a terminal processes manually
+ */
+type killTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => any;
+/**
+ * A anonymous function that returns nothing and takes nothing
+ */
+type anonCallback = () => void;
+/**
+ * Callback you want to run when terminal data changes your given the new terminal data
+ */
+type onTerminalChangeCallback = (output: string) => any;
+/**
+ * Subscribe to a specific terminal data output and run some logic
+ */
+type onTerminalDataChange = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string, callback: onTerminalChangeCallback) => Promise<anonCallback | undefined>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -171,6 +249,22 @@ type ElectronApi = {
      * - Delete a folder directory by it's path is recursive
      */
     deleteDirectory: deleteDirectory;
+    /**
+     * - Create a terminal to run cmds in
+     */
+    createTerminal: createTerminal;
+    /**
+     * - Run cmds in a given terminal
+     */
+    runCmdsInTerminal: runCmdInTerminal;
+    /**
+     * - Kill a terminal processes
+     */
+    killTerminal: killTerminal;
+    /**
+     * - Sub to a specific terminal and run some custom logic callback returns a unsub function
+     */
+    onTerminalDataChange: onTerminalDataChange;
 };
 /**
  * Extends the global `window` object to include the Electron API.

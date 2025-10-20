@@ -144,7 +144,7 @@
  */
 
 /**
- * Represents a terminal where cmds can be run - ignore process in main world
+ * Internal to desktop api - Represents a terminal where cmds can be run - ignore process in main world
  * @typedef {Object} terminal
  * @property {string} id - A unique ID
  * @property {string} shell - The shell type to run it in
@@ -155,11 +155,21 @@
  */
 
 /**
+ * Represents information about a terminal instace
+ * @typedef {Object} terminalInformation
+ * @property {string} id - A unique ID
+ * @property {string} shell - The shell type to run it in
+ * @property {string} directory - The directory folder to run the cmds in
+ * @property {string[]} history - List of cmds ran in the terminal
+ * @property {string} output - The output string in the terminal
+ */
+
+/**
  * Create a terminal insatce and run cmds agaisnt
  * @callback createTerminal
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} directory - The directory to create the terminal in
- * @returns {Promise<terminal | undefined>} The terminal created or undefined if it could not
+ * @returns {Promise<terminalInformation | undefined>} The terminal information or undefined if it could not
  */
 
 /**
