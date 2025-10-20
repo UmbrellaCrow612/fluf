@@ -10,23 +10,11 @@
 
   <!---->
   @if (!isLoading && !error) {
-  <form class="top" (submit)="onSubmit($event)">
-    <span class="directory">{{ currentActiveTerminal?.directory }} </span>
-    <input
-      type="text"
-      class="terminal-input"
-      autocomplete="off"
-      name="command"
-      [formControl]="cmdInputControl"
-    />
-  </form>
-
   <div class="content scroll_bar">
     @for (line of outputStr; track $index) {
-    <span>
-      {{ line }}
-    </span>
+    <span>{{ line }}</span>
     }
+    <!--todo add input bottom -->
   </div>
   }
 </div>

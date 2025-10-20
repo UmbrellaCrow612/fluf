@@ -250,7 +250,7 @@ const createTerminalImpl = async (_event = undefined, dir) => {
         ? "cmd.exe"
         : process.env.SHELL || "/bin/bash";
 
-    const webContents = _event.sender;
+    const webContents = _event?.sender;
 
     const termProcess = spawn(shell, [], {
       cwd: dir,
@@ -268,16 +268,25 @@ const createTerminalImpl = async (_event = undefined, dir) => {
       webContents: webContents,
     };
 
-    termProcess.stdout.on("data", (data) => {
-      /** @type {terminalChangeData} */
-      const termDataPassed = {
-        id: term.id,
-        chunk: data.toString(),
-      };
-
+    const sendToTerminal = (chunk) => {
       if (term.webContents && !term.webContents.isDestroyed()) {
-        term.webContents.send("terminal-data", termDataPassed);
+        term.webContents.send("terminal-data", {
+          id: term.id,
+          chunk: chunk.toString(),
+        });
       }
+    };
+
+    termProcess.stdout.on("data", sendToTerminal);
+
+    termProcess.stderr.on("data", sendToTerminal);
+
+    termProcess.on("exit", (code, signal) => {
+      sendToTerminal(
+        `\nProcess exited with code ${code}${
+          signal ? `, signal ${signal}` : ""
+        }\n`
+      );
     });
 
     terminalStore.set(term.id, term);

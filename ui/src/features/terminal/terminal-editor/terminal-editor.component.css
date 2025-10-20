@@ -15,44 +15,19 @@
   color: white;
 }
 
-.top {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-}
-
-.directory {
-  color: #6cf;
-  margin-right: 10px;
-  white-space: nowrap;
-}
-
-.terminal-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: white;
-  font-family: inherit;
-  font-size: 1rem;
-  caret-color: #6cf;
-}
-
-.terminal-input::placeholder {
-  color: transparent;
-}
-
 .content {
   flex: 1;
+
   overflow-y: auto;
   padding: 20px;
 
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+
+  flex-direction: column;
+  gap: 2px;
+
   background: #1e1e1e;
-  color: #d4d4d4;
-  font-family: monospace;
-  padding: 8px;
-  height: 300px;
-  overflow-y: auto;
-  white-space: pre-wrap;
 }
+
