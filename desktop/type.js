@@ -159,7 +159,7 @@
  * @callback createTerminal
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} directory - The directory to create the terminal in
- * @returns {Promise<boolean>} True if it could create a terminal session or false
+ * @returns {Promise<terminal | undefined>} The terminal created or undefined if it could not
  */
 
 /**
@@ -179,17 +179,24 @@
  */
 
 /**
- * Terminal data passed whewn data changes for a given terminal
- * @typedef {Object} terminalData
- * @property {string} id - The id of the terminal who's data changes
- * @property {string} output - The new output string
+ * A anonymous function that returns nothing and takes nothing
+ * @callback anonCallback
+ * @returns {void}
  */
 
 /**
- * Data send out on exit of a termianl
- * @typedef {Object} terminalExit
- * @property {string} id - The id of the termianl
- * @property {number} code - The exit code
+ * Callback you want to run when terminal data changes your given the new terminal data
+ * @callback onTerminalChangeCallback
+ * @param {string} output - The new output of the terminal content
+ */
+
+/**
+ * Subscribe to a specific terminal data output and run some logic
+ * @callback onTerminalDataChange
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} terminalId - The specific terminal to subscribe to for change
+ * @param {onTerminalChangeCallback} callback - The callback logic to run that recieves the new terminal output str
+ * @returns {Promise<anonCallback | undefined>} - Unsub function if suc or undefined if not
  */
 
 /**
@@ -215,6 +222,7 @@
  * @property {createTerminal} createTerminal - Create a terminal to run cmds in
  * @property {runCmdInTerminal} runCmdsInTerminal - Run cmds in a given terminal
  * @property {killTerminal} killTerminal - Kill a terminal processes
+ * @property {onTerminalDataChange} onTerminalDataChange - Sub to a specific terminal and run some custom logic callback returns a unsub function
  */
 
 /**

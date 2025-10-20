@@ -17,6 +17,14 @@ const api = {
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
   normalize: (_event, path) => ipcRenderer.invoke("path:normalize", path),
 
+  createTerminal: (_event, directory) =>
+    ipcRenderer.invoke("terminal:create", directory),
+  killTerminal: (_event, termId) => ipcRenderer.invoke("terminal:kill", termId),
+  onTerminalDataChange: (_event, termId, cb) =>
+    ipcRenderer.invoke("terminal:change:data", termId, cb),
+  runCmdsInTerminal: (_event, termId, cmd) =>
+    ipcRenderer.invoke("terminal:cmds:run", termId, cmd),
+
   minimize: (_event) => ipcRenderer.send("window:minimize"),
   maximize: (_event) => ipcRenderer.send("window:maximize"),
   close: (_event) => ipcRenderer.send("window:close"),

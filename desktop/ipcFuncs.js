@@ -221,17 +221,23 @@ const deletDirectoryImpl = async (_event = undefined, dp) => {
  */
 const terminalStore = new Map();
 
+/**
+ * Contains all active terminal callbacks
+ * @type {Map<string, Set<onTerminalChangeCallback>>}
+ */
+const terminalSubs = new Map();
+
 const cleanupTerminals = () => {
   Array.from(terminalStore.entries()).forEach(([id, term]) => {
     try {
-      if (term.process) {
-        console.log("Killed term " + term.id);
-        term.process.kill();
-      }
+      console.log("Killing term " + term.id);
+      term.process.kill();
+      console.log("Term " + term.id + " Killed");
     } catch (err) {
       console.error(`Failed to kill terminal ${id}:`, err);
     } finally {
       terminalStore.delete(id);
+      terminalSubs.delete(id);
     }
   });
 };
@@ -256,7 +262,7 @@ const createTerminalImpl = async (_event = undefined, dir) => {
     /** @type {terminal} */
     const term = {
       id: crypto.randomUUID(),
-      shell,
+      shell: shell,
       directory: dir,
       history: [],
       output: "",
@@ -265,44 +271,35 @@ const createTerminalImpl = async (_event = undefined, dir) => {
 
     termProcess.stdout.on("data", (data) => {
       const text = data.toString();
-      if (term.output.length > 1000) {
-        term.output = "";
+
+      if (term.output.length > 2000) {
+        term.output = term.output.slice(-1000) + text;
+      } else {
+        term.output += text;
       }
       term.output += text;
 
-      /**
-       * @type {terminalData}
-       */
-      let termData = {
-        id: term.id,
-        output: text,
-      };
-
-      let channel = `terminal:data:${term.id}`;
-      _event?.sender?.send(channel, termData);
+      if (!terminalSubs.has(term.id)) {
+        terminalSubs.set(term.id, new Set());
+      } else {
+        let callbacks = Array.from(terminalSubs.get(term.id));
+        for (let cb of callbacks) {
+          cb(term.output);
+        }
+      }
     });
 
-    termProcess.on("exit", (code) => {
-      /**
-       * @type {terminalExit}
-       */
-      let termData = {
-        id: term.id,
-        code: code,
-      };
-
-      let channel = `terminal:exit:${term.id}`;
-      _event?.sender?.send(channel, termData);
-
+    termProcess.on("exit", () => {
       terminalStore.delete(term.id);
+      terminalSubs.delete(term.id);
     });
 
     terminalStore.set(term.id, term);
 
-    return true;
+    return term;
   } catch (error) {
     console.log(error);
-    return false;
+    return undefined;
   }
 };
 
@@ -342,10 +339,37 @@ const killTerminalImpl = async (_event = undefined, termId) => {
     }
 
     t.process.kill();
+    terminalStore.delete(t.id);
+    terminalSubs.delete(t.id);
+
     return true;
   } catch (error) {
     console.log(error);
     return false;
+  }
+};
+
+/**
+ * @type {onTerminalDataChange}
+ */
+const onTerminalDataChangeImpl = async (
+  _event = undefined,
+  termId,
+  callback
+) => {
+  try {
+    if (!terminalStore.has(termId)) {
+      console.log("Terminal not found " + termId);
+      return undefined;
+    }
+
+    let set = terminalSubs.get(termId);
+    set.add(callback);
+
+    return () => set.delete(callback);
+  } catch (error) {
+    console.log(error);
+    return undefined;
   }
 };
 
@@ -369,5 +393,6 @@ module.exports = {
   runCommandInTerminalImpl,
   createTerminalImpl,
   cleanupTerminals,
-  killTerminalImpl
+  killTerminalImpl,
+  onTerminalDataChangeImpl,
 };

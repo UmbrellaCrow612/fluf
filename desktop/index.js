@@ -19,6 +19,10 @@ const {
   deleteFileImpl,
   deletDirectoryImpl,
   cleanupTerminals,
+  createTerminalImpl,
+  killTerminalImpl,
+  onTerminalDataChangeImpl,
+  runCommandInTerminalImpl,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -66,6 +70,11 @@ app.whenReady().then(() => {
   ipcMain.handle("path:normalize", normalizeImpl);
 
   ipcMain.handle("window:isMaximized", isMaximizedImpl);
+
+  ipcMain.handle("terminal:create", createTerminalImpl);
+  ipcMain.handle("terminal:kill", killTerminalImpl);
+  ipcMain.handle("terminal:change:data", onTerminalDataChangeImpl);
+  ipcMain.handle("terminal:cmds:run", runCommandInTerminalImpl)
 
   ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);
