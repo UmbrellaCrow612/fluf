@@ -18,6 +18,7 @@ const {
   createDirectoryImpl,
   deleteFileImpl,
   deletDirectoryImpl,
+  cleanupTerminals,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -72,4 +73,8 @@ app.whenReady().then(() => {
   ipcMain.on("window:restore", restoreImpl);
 
   createWindow();
+});
+
+app.on("before-quit", () => {
+  cleanupTerminals();
 });

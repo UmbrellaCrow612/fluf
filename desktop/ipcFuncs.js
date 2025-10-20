@@ -6,6 +6,7 @@ const { dialog, BrowserWindow } = require("electron");
 const fsp = require("fs/promises");
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
 
 /**
  * @type {readFile}
@@ -214,6 +215,140 @@ const deletDirectoryImpl = async (_event = undefined, dp) => {
   }
 };
 
+/**
+ * Contains all active terminals
+ * @type {Map<string, terminal>}
+ */
+const terminalStore = new Map();
+
+const cleanupTerminals = () => {
+  Array.from(terminalStore.entries()).forEach(([id, term]) => {
+    try {
+      if (term.process) {
+        console.log("Killed term " + term.id);
+        term.process.kill();
+      }
+    } catch (err) {
+      console.error(`Failed to kill terminal ${id}:`, err);
+    } finally {
+      terminalStore.delete(id);
+    }
+  });
+};
+
+/**
+ * Creates a new terminal instance
+ * @type {createTerminal}
+ */
+const createTerminalImpl = async (_event = undefined, dir) => {
+  try {
+    const shell =
+      process.platform === "win32"
+        ? "cmd.exe"
+        : process.env.SHELL || "/bin/bash";
+
+    const termProcess = spawn(shell, [], {
+      cwd: dir,
+      env: process.env,
+      shell: true,
+    });
+
+    /** @type {terminal} */
+    const term = {
+      id: crypto.randomUUID(),
+      shell,
+      directory: dir,
+      history: [],
+      output: "",
+      process: termProcess,
+    };
+
+    termProcess.stdout.on("data", (data) => {
+      const text = data.toString();
+      if (term.output.length > 1000) {
+        term.output = "";
+      }
+      term.output += text;
+
+      /**
+       * @type {terminalData}
+       */
+      let termData = {
+        id: term.id,
+        output: text,
+      };
+
+      let channel = `terminal:data:${term.id}`;
+      _event?.sender?.send(channel, termData);
+    });
+
+    termProcess.on("exit", (code) => {
+      /**
+       * @type {terminalExit}
+       */
+      let termData = {
+        id: term.id,
+        code: code,
+      };
+
+      let channel = `terminal:exit:${term.id}`;
+      _event?.sender?.send(channel, termData);
+
+      terminalStore.delete(term.id);
+    });
+
+    terminalStore.set(term.id, term);
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+/**
+ * Run a command inside an existing terminal\
+ * @type {runCmdInTerminal}
+ */
+const runCommandInTerminalImpl = async (_event = undefined, id, cmd) => {
+  try {
+    if (!cmd?.trim()) return false;
+
+    const term = terminalStore.get(id);
+    if (!term) {
+      console.log("Could not find term " + id);
+      return false;
+    }
+
+    term.history.push(cmd);
+    term.process.stdin.write(`${cmd}\n`);
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+/**
+ * @type {killTerminal}
+ */
+const killTerminalImpl = async (_event = undefined, termId) => {
+  try {
+    let t = terminalStore.get(termId);
+    if (!t) {
+      console.log("Terminal not found");
+      return false;
+    }
+
+    t.process.kill();
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
@@ -231,4 +366,8 @@ module.exports = {
   createDirectoryImpl,
   deleteFileImpl,
   deletDirectoryImpl,
+  runCommandInTerminalImpl,
+  createTerminalImpl,
+  cleanupTerminals,
+  killTerminalImpl
 };
