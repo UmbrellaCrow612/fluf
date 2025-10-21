@@ -244,6 +244,8 @@ const cleanupTerminals = () => {
  * @type {createTerminal}
  */
 const createTerminalImpl = async (_event = undefined, dir) => {
+  const MAX_OUTPUT_LINES = 70; // max number of output lines to keep
+
   try {
     const shell =
       process.platform === "win32"
@@ -271,11 +273,17 @@ const createTerminalImpl = async (_event = undefined, dir) => {
 
     const sendToTerminal = (chunk) => {
       if (term.webContents && !term.webContents.isDestroyed()) {
-        term.output.push(chunk.toString());
+        const chunkStr = chunk.toString();
+
+        term.output.push(chunkStr);
+
+        if (term.output.length > MAX_OUTPUT_LINES) {
+          term.output = term.output.slice(-MAX_OUTPUT_LINES);
+        }
 
         term.webContents.send("terminal-data", {
           id: term.id,
-          chunk: chunk.toString(),
+          chunk: chunkStr,
         });
       }
     };
@@ -375,6 +383,8 @@ const getTerminalInformationImpl = async (_event = undefined, termId) => {
 
 /** @type {restoreTerminals} */
 const restoreTerminalsImpl = async (_event = undefined, terms) => {
+  const MAX_OUTPUT_LINES = 70; // max number of output lines to keep
+
   /** @type {string[]} */
   let unsuc = [];
 
@@ -405,11 +415,17 @@ const restoreTerminalsImpl = async (_event = undefined, terms) => {
 
     const sendToTerminal = (chunk) => {
       if (terminal.webContents && !terminal.webContents.isDestroyed()) {
-        terminal.output.push(chunk.toString());
+        const chunkStr = chunk.toString();
+
+        terminal.output.push(chunkStr);
+
+        if (terminal.output.length > MAX_OUTPUT_LINES) {
+          terminal.output = terminal.output.slice(-MAX_OUTPUT_LINES);
+        }
 
         terminal.webContents.send("terminal-data", {
           id: term.id,
-          chunk: chunk.toString(),
+          chunk: chunkStr,
         });
       }
     };

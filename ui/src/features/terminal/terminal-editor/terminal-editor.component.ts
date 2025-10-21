@@ -24,6 +24,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly api = getElectronApi();
   private readonly zone = inject(NgZone);
 
+  fullOutput: string = '';
   currentActiveTerminal: terminalInformation | null = null;
   currentActiveTerminalId: string | null = null;
 
@@ -34,7 +35,6 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     validators: [Validators.required],
   });
 
-  outputStr: string[] = [];
   unSub: anonCallback | null = null;
 
   async ngOnInit() {
@@ -76,7 +76,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     if (!this.currentActiveTerminal) {
       this.error = 'No terminal found';
       this.isLoading = false;
-      this.outputStr = [];
+      this.fullOutput = '';
       return;
     }
 
@@ -87,9 +87,19 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.unSub = this.api.onTerminalChange((data) => {
       if (data.id == this.currentActiveTerminalId) {
         this.zone.run(() => {
-          this.outputStr.push(data.chunk);
-          this.currentActiveTerminal?.output.push(data.chunk)
-          this.updateCurrentActiveTerminalState()
+          const chunk = data.chunk;
+          this.fullOutput += chunk;
+
+          const lines = this.fullOutput.split(/\r?\n/);
+          if (lines.length > 70) {
+            this.fullOutput = lines.slice(-70).join('\n');
+          }
+
+          if (this.currentActiveTerminal) {
+            this.currentActiveTerminal.output = lines.slice(-70);
+          }
+
+          this.updateCurrentActiveTerminalState();
         });
       }
     });
@@ -101,28 +111,31 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     if (!term) {
       this.error = 'No terminal found';
       this.isLoading = false;
-      this.outputStr = [];
+      this.fullOutput = '';
       return;
     }
-    this.outputStr = term.output;
+    this.fullOutput = term.output.join('\n');
+
+    this.currentActiveTerminal!.output = term.output.slice(-70);
 
     this.isLoading = false;
   }
 
   private updateCurrentActiveTerminalState() {
     const terms = this.appContext.getSnapshot().terminals;
-  
+
     if (!terms || !this.currentActiveTerminal) return;
-  
-    const index = terms.findIndex(x => x.id === this.currentActiveTerminal?.id);
-  
+
+    const index = terms.findIndex(
+      (x) => x.id === this.currentActiveTerminal?.id
+    );
+
     if (index !== -1) {
       terms[index] = this.currentActiveTerminal;
     }
 
-    this.appContext.update("terminals", terms)
+    this.appContext.update('terminals', terms);
   }
-  
 
   /**
    * Runs a custom cmd wants to be run
@@ -142,8 +155,8 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       cmd!
     );
 
-    this.currentActiveTerminal?.history.push(cmd!)
-    this.updateCurrentActiveTerminalState()
+    this.currentActiveTerminal?.history.push(cmd!);
+    this.updateCurrentActiveTerminalState();
 
     this.cmdInputControl.setValue('');
   }

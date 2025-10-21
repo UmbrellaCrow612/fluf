@@ -10,10 +10,8 @@
 
   <!---->
   @if (!isLoading && !error) {
-  <div class="content scroll_bar">
-    @for (line of outputStr; track $index) {
-    <span>{{ line }}</span>
-    }
+  <div class="content">
+    <pre class="terminal-output scroll_bar">{{ fullOutput }}</pre>
     <input
       type="text"
       [formControl]="cmdInputControl"

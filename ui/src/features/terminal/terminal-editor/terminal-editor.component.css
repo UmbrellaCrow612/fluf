@@ -17,17 +17,22 @@
 
 .content {
   flex: 1;
-
-  overflow-y: auto;
   padding: 20px;
-
   display: flex;
-  min-height: 0;
-  min-width: 0;
-
   flex-direction: column;
   gap: 2px;
 
   background: #1e1e1e;
+  min-height: 0;
+  min-width: 0;
 }
 
+.terminal-output {
+  white-space: pre-wrap; 
+  word-wrap: break-word; 
+  overflow-wrap: break-word;
+  overflow-x: auto;      
+  color: white;
+  font-family: monospace; 
+  margin: 0;
+}
