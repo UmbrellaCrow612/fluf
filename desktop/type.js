@@ -144,7 +144,7 @@
  */
 
 /**
- * Internal to desktop api - Represents a terminal where cmds can be run - ignore process in main world
+ * Internal to desktop api - Represents a terminal where cmds can be run - ignore in main world
  * @typedef {Object} terminal
  * @property {string} id - A unique ID
  * @property {string} shell - The shell type to run it in
@@ -226,12 +226,52 @@
  */
 
 /**
- * Takes a list of terminal information and re spawns the procsses for these - used typically when the application closes and UI holds state of terminals spawend in the 
+ * Takes a list of terminal information and re spawns the procsses for these - used typically when the application closes and UI holds state of terminals spawend in the
  * lifetime and then re spawn those with the stored historyu and state
  * @callback restoreTerminals
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {terminalInformation[]} terminals - List of terminals to respawn
- * @returns {Promise<string[]>} List of terminals id's it was not able to restore if empty then all where resapwend 
+ * @returns {Promise<string[]>} List of terminals id's it was not able to restore if empty then all where resapwend
+ */
+
+/**
+ * Data passed to the callback when a directory changes
+ * @typedef {Object} directoryChangedData
+ * @property {string} dirPath - The directory being watched
+ * @property {"rename" | "change"} eventType - The type of change (rename = added/deleted)
+ * @property {string|null} filename - The file that changed (may be null)
+ */
+
+/**
+ * The specific callback logic you want to run when a directory changes.
+ * @callback onDirectoryChangeCallback
+ * @param {directoryChangedData} data - Information about the change
+ * @returns {void}
+ */
+
+/**
+ * Listen to a specific directory and fire off custom logic when the directory changes,
+ * either when a file is added, removed, or modified.
+ * @callback onDirectoryChange
+ * @param {string} directoryPath - The path to the directory you want to listen to
+ * @param {onDirectoryChangeCallback} callback - The logic to run when the directory changes
+ * @returns {Promise<() => Promise<void>>} - A function to unsubscribe from the directory watcher is async
+ */
+
+/**
+ * Watches a specific directory and emits change events
+ * @callback watchDirectory
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directoryPath - The path to the directory to watch
+ * @returns {Promise<boolean>} True or false if it was watched
+ */
+
+/**
+ * Unwatches a directory
+ * @callback unwatchDirectory
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directoryPath - The directory to unwatch if it has been watched
+ * @returns {Promise<boolean>} True or flase if it was un watched
  */
 
 /**
@@ -260,6 +300,7 @@
  * @property {onTerminalChange} onTerminalChange - Listen to when a terminal changes and react , returns a unsub function for the callback
  * @property {getTerminalInformation} getTerminalInformation - Geta specific terminals information by it's ID
  * @property {restoreTerminals} restoreTerminals - Pass a list of terminals from previous state to respawn
+ * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  */
 
 /**

@@ -24,6 +24,9 @@ const {
   runCommandInTerminalImpl,
   getTerminalInformationImpl,
   restoreTerminalsImpl,
+  watchDirectoryImpl,
+  unwatchDirectoryImpl,
+  cleanUpWatchers,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -78,6 +81,9 @@ app.whenReady().then(() => {
   ipcMain.handle("terminal:id", getTerminalInformationImpl);
   ipcMain.handle("terminal:restore", restoreTerminalsImpl);
 
+  ipcMain.handle("dir:watch", watchDirectoryImpl);
+  ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
+
   ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);
   ipcMain.on("window:close", closeImpl);
@@ -88,4 +94,5 @@ app.whenReady().then(() => {
 
 app.on("before-quit", () => {
   cleanupTerminals();
+  cleanUpWatchers();
 });

@@ -38,6 +38,24 @@ const api = {
   restoreTerminals: (_event, terms) =>
     ipcRenderer.invoke("terminal:restore", terms),
 
+  onDirectoryChange: async (dirPath, cb) => {
+    await ipcRenderer.invoke("dir:watch", dirPath);
+
+    /**
+     * @param {directoryChangedData} data 
+     */
+    const listener = (_, data) => {
+      if (data.dirPath === dirPath) cb(data);
+    };
+
+    ipcRenderer.on("dir:changed", listener);
+
+    return async () => {
+      ipcRenderer.removeListener("dir:changed", listener);
+      await ipcRenderer.invoke("dir:unwatch", dirPath);
+    };
+  },
+
   minimize: (_event) => ipcRenderer.send("window:minimize"),
   maximize: (_event) => ipcRenderer.send("window:maximize"),
   close: (_event) => ipcRenderer.send("window:close"),

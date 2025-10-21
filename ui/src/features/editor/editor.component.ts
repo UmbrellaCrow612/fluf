@@ -1,5 +1,11 @@
 import { sideBarActiveElement } from './../app-context/type';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
 import { ContextService } from '../app-context/app-context.service';
@@ -7,6 +13,8 @@ import { FileExplorerComponent } from '../file-explorer/file-explorer.component'
 import { FileExplorerContextMenuComponent } from '../file-explorer/file-explorer-context-menu/file-explorer-context-menu.component';
 import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
 import { getElectronApi } from '../../utils';
+
+type unSub = () => Promise<void>;
 
 @Component({
   selector: 'app-editor',
@@ -20,10 +28,13 @@ import { getElectronApi } from '../../utils';
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
-export class EditorComponent implements OnInit {
+export class EditorComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
+
+  private isDirectoryBeingWatched = false;
+  private unSub: unSub | null = null;
 
   leftFlex = 1;
   rightFlex = 1;
@@ -97,7 +108,18 @@ export class EditorComponent implements OnInit {
     if (count.length > 0) {
       console.warn('Failed to restore terminal session ' + count[0]);
     }
-    
+
+    // if dir selected watch it
+    if (init.selectedDirectoryPath) {
+      this.isDirectoryBeingWatched = true;
+      this.unSub = await this.api.onDirectoryChange(
+        init.selectedDirectoryPath,
+        (_) => {
+          this.appContext.update('refreshDirectory', true);
+        }
+      );
+    }
+
     // subs
     this.appContext.autoSub(
       'sideBarActiveElement',
@@ -115,5 +137,26 @@ export class EditorComponent implements OnInit {
       },
       this.destroyRef
     );
+    this.appContext.autoSub(
+      'selectedDirectoryPath',
+      async (ctx) => {
+        if (!this.isDirectoryBeingWatched && ctx.selectedDirectoryPath) {
+          this.isDirectoryBeingWatched = true;
+          this.unSub = await this.api.onDirectoryChange(
+            ctx.selectedDirectoryPath,
+            (_) => {
+              this.appContext.update('refreshDirectory', true);
+            }
+          );
+        }
+      },
+      this.destroyRef
+    );
+  }
+
+  async ngOnDestroy() {
+    if (this.unSub) {
+      await this.unSub();
+    }
   }
 }

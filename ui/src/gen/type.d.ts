@@ -104,7 +104,7 @@ type deleteFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: st
  */
 type deleteDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
- * Internal to desktop api - Represents a terminal where cmds can be run - ignore process in main world
+ * Internal to desktop api - Represents a terminal where cmds can be run - ignore in main world
  */
 type terminal = {
     /**
@@ -205,6 +205,40 @@ type getTerminalInformation = (event?: Electron.IpcMainInvokeEvent | undefined, 
  */
 type restoreTerminals = (event?: Electron.IpcMainInvokeEvent | undefined, terminals: terminalInformation[]) => Promise<string[]>;
 /**
+ * Data passed to the callback when a directory changes
+ */
+type directoryChangedData = {
+    /**
+     * - The directory being watched
+     */
+    dirPath: string;
+    /**
+     * - The type of change (rename = added/deleted)
+     */
+    eventType: "rename" | "change";
+    /**
+     * - The file that changed (may be null)
+     */
+    filename: string | null;
+};
+/**
+ * The specific callback logic you want to run when a directory changes.
+ */
+type onDirectoryChangeCallback = (data: directoryChangedData) => void;
+/**
+ * Listen to a specific directory and fire off custom logic when the directory changes,
+ * either when a file is added, removed, or modified.
+ */
+type onDirectoryChange = (directoryPath: string, callback: onDirectoryChangeCallback) => Promise<() => Promise<void>>;
+/**
+ * Watches a specific directory and emits change events
+ */
+type watchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+/**
+ * Unwatches a directory
+ */
+type unwatchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -296,6 +330,10 @@ type ElectronApi = {
      * - Pass a list of terminals from previous state to respawn
      */
     restoreTerminals: restoreTerminals;
+    /**
+     * - Listen to a specific directory change and run custom logic
+     */
+    onDirectoryChange: onDirectoryChange;
 };
 /**
  * Extends the global `window` object to include the Electron API.

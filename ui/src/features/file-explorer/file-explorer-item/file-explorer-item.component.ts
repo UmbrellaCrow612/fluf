@@ -181,7 +181,6 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
         const suc = await this.api.createFile(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.update('refreshDirectory', true);
           this.appContext.update('fileExplorerActiveFileOrFolder', {
             children: [],
             expanded: false,
@@ -214,7 +213,6 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
         const suc = await this.api.createDirectory(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.update('refreshDirectory', true);
           this.appContext.update('fileExplorerActiveFileOrFolder', {
             children: [],
             expanded: false,

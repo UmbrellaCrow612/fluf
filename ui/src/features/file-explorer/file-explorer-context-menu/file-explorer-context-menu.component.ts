@@ -76,7 +76,6 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
     if (this.fileNode?.isDirectory) {
       let suc = await this.api.deleteDirectory(undefined, this.fileNode.path);
       if (suc) {
-        this.appContext.update('refreshDirectory', true);
         this.closeDialog();
       } else {
         this.operationError = 'Failed to delete folder';
@@ -86,7 +85,6 @@ export class FileExplorerContextMenuComponent implements OnInit, OnDestroy {
     if (!this.fileNode?.isDirectory && this.fileNode) {
       let suc = await this.api.deleteFile(undefined, this.fileNode.path);
       if (suc) {
-        this.appContext.update('refreshDirectory', true);
         this.closeDialog();
       } else {
         this.operationError = 'Failed to delete file';
