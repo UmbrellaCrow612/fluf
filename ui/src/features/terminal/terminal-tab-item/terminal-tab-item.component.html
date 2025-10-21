@@ -6,7 +6,7 @@
   <span class="tab_text">
     {{ terminal().shell }}
   </span>
-  <button class="close_btn" matTooltip="Close terminal session">
+  <button class="close_btn" matTooltip="Close terminal session" (click)="killTerminal($event)">
     <mat-icon>close</mat-icon>
   </button>
 </div>

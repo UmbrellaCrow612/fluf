@@ -172,7 +172,7 @@ type runCmdInTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, termin
 /**
  * Kill a terminal processes manually
  */
-type killTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => any;
+type killTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => Promise<boolean>;
 /**
  * Shape of data passed to callback when data changes
  */

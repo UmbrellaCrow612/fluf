@@ -187,6 +187,7 @@
  * @callback killTerminal
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} terminalId - The terminal to kill
+ * @returns {Promise<boolean>} True if it was killed else false
  */
 
 /**

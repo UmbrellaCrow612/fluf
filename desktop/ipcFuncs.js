@@ -353,10 +353,6 @@ const killTerminalImpl = async (_event = undefined, termId) => {
     t.process.kill();
     terminalStore.delete(t.id);
 
-    if (t.webContents && !t.webContents.isDestroyed()) {
-      t.webContents.send("terminal-exit", { id: t.id });
-    }
-
     return true;
   } catch (error) {
     console.log(error);
