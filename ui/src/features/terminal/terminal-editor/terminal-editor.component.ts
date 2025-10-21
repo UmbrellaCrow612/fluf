@@ -84,8 +84,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.unSub();
     }
 
-    this.unSub = this.api.onTerminalChange((data) => {
-      if (data.id == this.currentActiveTerminalId) {
+    this.unSub = this.api.onTerminalChange(
+      this.currentActiveTerminalId!,
+      (data) => {
         this.zone.run(() => {
           const chunk = data.chunk;
           this.fullOutput += chunk;
@@ -102,7 +103,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
           this.updateCurrentActiveTerminalState();
         });
       }
-    });
+    );
 
     let term = await this.api.getTerminalInformation(
       undefined,

@@ -193,28 +193,23 @@
 /**
  * Shape of data passed to callback when data changes
  * @typedef {Object} terminalChangeData
- * @property {string }id - The id of the terminal emitting event
+ * @property {string } id - The id of the terminal emitting event
  * @property {string} chunk - The chunk string sent across
  */
 
 /**
+ * The logic to run when a terminal changes
  * @callback onTerminalChangeCallBack
  * @param {terminalChangeData} data
  * @return {void}
  */
 
 /**
- * Listen to when a terminal changes and run custom logic through a callback function
+ * Listen to a specific terminal and when it changes it's output run custom callback function
  * @callback onTerminalChange
+ * @param {string} terminalId - The id of the terminal to subscribe to
  * @param {onTerminalChangeCallBack} callback - The callback to run
  * @returns {() => void} - Method to unsub the callback
- */
-
-/**
- * A listner to register callbacks passed in for terminal change - internal
- * @callback onTerminalChangeListner
- * @param {import("electron").IpcRendererEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {terminalChangeData} data
  */
 
 /**

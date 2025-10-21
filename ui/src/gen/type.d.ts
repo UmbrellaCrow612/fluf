@@ -186,15 +186,14 @@ type terminalChangeData = {
      */
     chunk: string;
 };
+/**
+ * The logic to run when a terminal changes
+ */
 type onTerminalChangeCallBack = (data: terminalChangeData) => void;
 /**
- * Listen to when a terminal changes and run custom logic through a callback function
+ * Listen to a specific terminal and when it changes it's output run custom callback function
  */
-type onTerminalChange = (callback: onTerminalChangeCallBack) => () => void;
-/**
- * A listner to register callbacks passed in for terminal change - internal
- */
-type onTerminalChangeListner = (event?: Electron.IpcRendererEvent | undefined, data: terminalChangeData) => any;
+type onTerminalChange = (terminalId: string, callback: onTerminalChangeCallBack) => () => void;
 /**
  * Get a specific terminals data by it's id
  */

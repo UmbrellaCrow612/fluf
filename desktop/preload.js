@@ -17,10 +17,15 @@ const api = {
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
   normalize: (_event, path) => ipcRenderer.invoke("path:normalize", path),
 
-  onTerminalChange: (cb) => {
-    /** @type {onTerminalChangeListner} */
+  onTerminalChange: (termId, cb) => {
+    /**
+     * @param {any} _
+     * @param {terminalChangeData} data
+     */
     let listener = (_, data) => {
-      cb(data);
+      if (data.id == termId) {
+        cb(data);
+      }
     };
 
     ipcRenderer.on("terminal-data", listener);
@@ -42,7 +47,7 @@ const api = {
     await ipcRenderer.invoke("dir:watch", dirPath);
 
     /**
-     * @param {directoryChangedData} data 
+     * @param {directoryChangedData} data
      */
     const listener = (_, data) => {
       if (data.dirPath === dirPath) cb(data);

@@ -6,14 +6,24 @@ const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
-const chalk = require("chalk").default; // Colored console output
+const chalk = require("chalk").default;
 
 // Logging helper
 const log = {
-  info: (msg) => console.log(`${chalk.blue("[INFO]")} [${new Date().toISOString()}] ${msg}`),
-  success: (msg) => console.log(`${chalk.green("[SUCCESS]")} [${new Date().toISOString()}] ${msg}`),
-  warn: (msg) => console.warn(`${chalk.yellow("[WARN]")} [${new Date().toISOString()}] ${msg}`),
-  error: (msg) => console.error(`${chalk.red("[ERROR]")} [${new Date().toISOString()}] ${msg}`),
+  info: (msg) =>
+    console.log(`${chalk.blue("[INFO]")} [${new Date().toISOString()}] ${msg}`),
+  success: (msg) =>
+    console.log(
+      `${chalk.green("[SUCCESS]")} [${new Date().toISOString()}] ${msg}`
+    ),
+  warn: (msg) =>
+    console.warn(
+      `${chalk.yellow("[WARN]")} [${new Date().toISOString()}] ${msg}`
+    ),
+  error: (msg) =>
+    console.error(
+      `${chalk.red("[ERROR]")} [${new Date().toISOString()}] ${msg}`
+    ),
 };
 
 // Paths
@@ -28,6 +38,22 @@ const entryPoints = {
   preload: path.resolve(__dirname, "preload.js"),
 };
 
+// Clean and recreate dist folder
+if (fs.existsSync(distFolder)) {
+  log.warn(`Deleting existing dist folder at ${distFolder}`);
+  fs.rmSync(distFolder, { recursive: true });
+}
+
+// Run ESLint first
+try {
+  log.info("Running ESLint...");
+  execSync("npx eslint . --ext .js", { stdio: "inherit" });
+  log.success("ESLint completed successfully. No linting errors found.");
+} catch (error) {
+  log.error("ESLint found errors. Build stopped. " + error);
+  process.exit(1);
+}
+
 // Run TypeScript compilation
 try {
   log.info("Running TypeScript compiler...");
@@ -39,11 +65,6 @@ try {
   process.exit(1);
 }
 
-// Clean and recreate dist folder
-if (fs.existsSync(distFolder)) {
-  log.warn(`Deleting existing dist folder at ${distFolder}`);
-  fs.rmSync(distFolder, { recursive: true });
-}
 fs.mkdirSync(distFolder);
 log.info(`Created new dist folder at ${distFolder}`);
 
