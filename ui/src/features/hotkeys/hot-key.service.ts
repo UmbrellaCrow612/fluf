@@ -101,7 +101,6 @@ export class HotKeyService {
    * Check if an item's keys match the current keys being pressed
    */
   private arrayMatchesSet(arr: string[], set: Set<string>): boolean {
-    if (arr.length !== set.size) return false;
     return arr.every((key) => set.has(key));
   }
 }

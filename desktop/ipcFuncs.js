@@ -2,10 +2,11 @@
  * File contains all our impl of electron api funcs to be exposed in the electron api to render
  */
 
-const { dialog, BrowserWindow } = require("electron");
+const { dialog, BrowserWindow, ipcRenderer } = require("electron");
 const fsp = require("fs/promises");
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
 
 /**
  * @type {readFile}
@@ -214,6 +215,235 @@ const deletDirectoryImpl = async (_event = undefined, dp) => {
   }
 };
 
+/**
+ * Contains all active terminals
+ * @type {Map<string, terminal>}
+ */
+const terminalStore = new Map();
+
+const cleanupTerminals = () => {
+  Array.from(terminalStore.entries()).forEach(([id, term]) => {
+    try {
+      console.log("Killing term " + term.id);
+      term.process.kill();
+      console.log("Term " + term.id + " Killed");
+
+      if (term.webContents && !term.webContents.isDestroyed()) {
+        term.webContents.send("terminal-exit", { id: term.id });
+      }
+    } catch (err) {
+      console.error(`Failed to kill terminal ${id}:`, err);
+    } finally {
+      terminalStore.delete(id);
+    }
+  });
+};
+
+/**
+ * Creates a new terminal instance
+ * @type {createTerminal}
+ */
+const createTerminalImpl = async (_event = undefined, dir) => {
+  const MAX_OUTPUT_LINES = 70; // max number of output lines to keep
+
+  try {
+    const shell =
+      process.platform === "win32"
+        ? "cmd.exe"
+        : process.env.SHELL || "/bin/bash";
+
+    const webContents = _event?.sender;
+
+    const termProcess = spawn(shell, [], {
+      cwd: dir,
+      env: process.env,
+      shell: true,
+    });
+
+    /** @type {terminal} */
+    const term = {
+      id: crypto.randomUUID(),
+      shell: shell,
+      directory: dir,
+      history: [],
+      output: [],
+      process: termProcess,
+      webContents: webContents,
+    };
+
+    const sendToTerminal = (chunk) => {
+      if (term.webContents && !term.webContents.isDestroyed()) {
+        const chunkStr = chunk.toString();
+
+        term.output.push(chunkStr);
+
+        if (term.output.length > MAX_OUTPUT_LINES) {
+          term.output = term.output.slice(-MAX_OUTPUT_LINES);
+        }
+
+        term.webContents.send("terminal-data", {
+          id: term.id,
+          chunk: chunkStr,
+        });
+      }
+    };
+
+    termProcess.stdout.on("data", sendToTerminal);
+
+    termProcess.stderr.on("data", sendToTerminal);
+
+    termProcess.on("exit", (code, signal) => {
+      sendToTerminal(
+        `\nProcess exited with code ${code}${
+          signal ? `, signal ${signal}` : ""
+        }\n`
+      );
+    });
+
+    terminalStore.set(term.id, term);
+
+    return {
+      directory: term.directory,
+      history: term.history,
+      id: term.id,
+      shell: term.shell,
+      output: term.output,
+    };
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
+};
+
+/**
+ * Run a command inside an existing terminal\
+ * @type {runCmdInTerminal}
+ */
+const runCommandInTerminalImpl = async (_event = undefined, id, cmd) => {
+  try {
+    if (!cmd?.trim()) return false;
+
+    const term = terminalStore.get(id);
+    if (!term) {
+      console.log("Could not find term " + id);
+      return false;
+    }
+
+    term.history.push(cmd);
+    term.process.stdin.write(`${cmd}\n`);
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+/**
+ * @type {killTerminal}
+ */
+const killTerminalImpl = async (_event = undefined, termId) => {
+  try {
+    let t = terminalStore.get(termId);
+    if (!t) {
+      console.log("Terminal not found");
+      return false;
+    }
+
+    t.process.kill();
+    terminalStore.delete(t.id);
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+/** @type {getTerminalInformation} */
+const getTerminalInformationImpl = async (_event = undefined, termId) => {
+  let term = terminalStore.get(termId);
+
+  /** @type {terminalInformation | undefined} */
+  let info = term
+    ? {
+        directory: term.directory,
+        history: term.history,
+        id: term.id,
+        shell: term.shell,
+        output: term.output,
+      }
+    : undefined;
+  return info;
+};
+
+/** @type {restoreTerminals} */
+const restoreTerminalsImpl = async (_event = undefined, terms) => {
+  const MAX_OUTPUT_LINES = 70; // max number of output lines to keep
+
+  /** @type {string[]} */
+  let unsuc = [];
+
+  for (let term of terms) {
+    if (terminalStore.has(term.id)) {
+      unsuc.push(term.id);
+      continue;
+    }
+
+    const webContents = _event?.sender;
+
+    const termProcess = spawn(term.shell, [], {
+      cwd: term.directory,
+      env: process.env,
+      shell: true,
+    });
+
+    /** @type {terminal} */
+    const terminal = {
+      id: term.id,
+      shell: term.shell,
+      directory: term.directory,
+      history: term.history,
+      output: term.output,
+      process: termProcess,
+      webContents: webContents,
+    };
+
+    const sendToTerminal = (chunk) => {
+      if (terminal.webContents && !terminal.webContents.isDestroyed()) {
+        const chunkStr = chunk.toString();
+
+        terminal.output.push(chunkStr);
+
+        if (terminal.output.length > MAX_OUTPUT_LINES) {
+          terminal.output = terminal.output.slice(-MAX_OUTPUT_LINES);
+        }
+
+        terminal.webContents.send("terminal-data", {
+          id: term.id,
+          chunk: chunkStr,
+        });
+      }
+    };
+
+    termProcess.stdout.on("data", sendToTerminal);
+
+    termProcess.stderr.on("data", sendToTerminal);
+
+    termProcess.on("exit", (code, signal) => {
+      sendToTerminal(
+        `\nProcess exited with code ${code}${
+          signal ? `, signal ${signal}` : ""
+        }\n`
+      );
+    });
+
+    terminalStore.set(terminal.id, terminal);
+  }
+
+  return unsuc;
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
@@ -231,4 +461,10 @@ module.exports = {
   createDirectoryImpl,
   deleteFileImpl,
   deletDirectoryImpl,
+  runCommandInTerminalImpl,
+  createTerminalImpl,
+  cleanupTerminals,
+  killTerminalImpl,
+  getTerminalInformationImpl,
+  restoreTerminalsImpl,
 };

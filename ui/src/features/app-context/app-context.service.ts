@@ -68,6 +68,16 @@ export type AppContext = {
    * The current active element in the file editor bottom container
    */
   fileEditorBottomActiveElement: fileEditorBottomActiveElement | null;
+
+  /**
+   * List of all terminals
+   */
+  terminals: terminalInformation[] | null
+
+  /**
+   * The current active terminal to see output and input cmds in
+   */
+  currentActiveTerminald:string | null;
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -97,6 +107,8 @@ export class ContextService {
     currentOpenFileInEditor: null,
     displayFileEditorBottom: null,
     fileEditorBottomActiveElement: null,
+    terminals: null,
+    currentActiveTerminald:null
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

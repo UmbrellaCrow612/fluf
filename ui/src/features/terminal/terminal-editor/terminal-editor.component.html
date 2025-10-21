@@ -1,1 +1,22 @@
-<p>terminal-editor works!</p>
+<div class="container">
+  @if (error) {
+  <div>Error {{ error }}</div>
+  }
+
+  <!---->
+  @if (!error && isLoading) {
+  <div>Loading</div>
+  }
+
+  <!---->
+  @if (!isLoading && !error) {
+  <div class="content">
+    <pre class="terminal-output scroll_bar">{{ fullOutput }}</pre>
+    <input
+      type="text"
+      [formControl]="cmdInputControl"
+      (keyup.enter)="onSubmit($event)"
+    />
+  </div>
+  }
+</div>
