@@ -22,6 +22,8 @@ const {
   createTerminalImpl,
   killTerminalImpl,
   runCommandInTerminalImpl,
+  getTerminalInformationImpl,
+  restoreTerminalsImpl,
 } = require("./ipcFuncs");
 
 loadEnv();
@@ -72,7 +74,9 @@ app.whenReady().then(() => {
 
   ipcMain.handle("terminal:create", createTerminalImpl);
   ipcMain.handle("terminal:kill", killTerminalImpl);
-  ipcMain.handle("terminal:cmds:run", runCommandInTerminalImpl)
+  ipcMain.handle("terminal:cmds:run", runCommandInTerminalImpl);
+  ipcMain.handle("terminal:id", getTerminalInformationImpl);
+  ipcMain.handle("terminal:restore", restoreTerminalsImpl);
 
   ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);

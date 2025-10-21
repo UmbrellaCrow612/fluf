@@ -14,7 +14,11 @@
     @for (line of outputStr; track $index) {
     <span>{{ line }}</span>
     }
-    <!--todo add input bottom -->
+    <input
+      type="text"
+      [formControl]="cmdInputControl"
+      (keyup.enter)="onSubmit($event)"
+    />
   </div>
   }
 </div>

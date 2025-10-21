@@ -150,6 +150,7 @@
  * @property {string} shell - The shell type to run it in
  * @property {string} directory - The directory folder to run the cmds in
  * @property {string[]} history - List of cmds ran in the terminal
+ * @property {string[]} output - List of output
  * @property {import("child_process").ChildProcessWithoutNullStreams} process - The spawned shell process - ignore in main world
  * @property {import("electron").WebContents} webContents - Electron web
  */
@@ -161,6 +162,7 @@
  * @property {string} shell - The shell type to run it in
  * @property {string} directory - The directory folder to run the cmds in
  * @property {string[]} history - List of cmds ran in the terminal
+ * @property {string[]} output - List of chunk outputs
  */
 
 /**
@@ -215,6 +217,23 @@
  */
 
 /**
+ * Get a specific terminals data by it's id
+ * @callback getTerminalInformation
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} terminalId - The ID of the terminal to fetch
+ * @returns {Promise<terminalInformation | undefined>} The terminal or nothing
+ */
+
+/**
+ * Takes a list of terminal information and re spawns the procsses for these - used typically when the application closes and UI holds state of terminals spawend in the 
+ * lifetime and then re spawn those with the stored historyu and state
+ * @callback restoreTerminals
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {terminalInformation[]} terminals - List of terminals to respawn
+ * @returns {Promise<string[]>} List of terminals id's it was not able to restore if empty then all where resapwend 
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -238,6 +257,8 @@
  * @property {runCmdInTerminal} runCmdsInTerminal - Run cmds in a given terminal
  * @property {killTerminal} killTerminal - Kill a terminal processes
  * @property {onTerminalChange} onTerminalChange - Listen to when a terminal changes and react , returns a unsub function for the callback
+ * @property {getTerminalInformation} getTerminalInformation - Geta specific terminals information by it's ID
+ * @property {restoreTerminals} restoreTerminals - Pass a list of terminals from previous state to respawn
  */
 
 /**

@@ -2,6 +2,7 @@ import {
   Component,
   DestroyRef,
   inject,
+  NgZone,
   OnDestroy,
   OnInit,
 } from '@angular/core';
@@ -21,6 +22,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
+  private readonly zone = inject(NgZone);
 
   currentActiveTerminal: terminalInformation | null = null;
   currentActiveTerminalId: string | null = null;
@@ -42,7 +44,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.currentActiveTerminal =
       init.terminals?.find((x) => x.id == this.currentActiveTerminalId) ?? null;
 
-    this.initTerm();
+    await this.initTerm();
 
     this.appContext.autoSub(
       'currentActiveTerminald',
@@ -52,7 +54,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
           ctx.terminals?.find((x) => x.id == this.currentActiveTerminalId) ??
           null;
 
-        this.initTerm();
+        await this.initTerm();
       },
       this.destroyRef
     );
@@ -67,7 +69,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   /**
    * Loads and binds ui to the terminal thats active and other state
    */
-  initTerm() {
+  async initTerm() {
     this.error = null;
     this.isLoading = true;
 
@@ -84,13 +86,43 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.unSub = this.api.onTerminalChange((data) => {
       if (data.id == this.currentActiveTerminalId) {
-        this.outputStr.push(data.chunk);
+        this.zone.run(() => {
+          this.outputStr.push(data.chunk);
+          this.currentActiveTerminal?.output.push(data.chunk)
+          this.updateCurrentActiveTerminalState()
+        });
       }
-      console.log(data);
     });
+
+    let term = await this.api.getTerminalInformation(
+      undefined,
+      this.currentActiveTerminalId!
+    );
+    if (!term) {
+      this.error = 'No terminal found';
+      this.isLoading = false;
+      this.outputStr = [];
+      return;
+    }
+    this.outputStr = term.output;
 
     this.isLoading = false;
   }
+
+  private updateCurrentActiveTerminalState() {
+    const terms = this.appContext.getSnapshot().terminals;
+  
+    if (!terms || !this.currentActiveTerminal) return;
+  
+    const index = terms.findIndex(x => x.id === this.currentActiveTerminal?.id);
+  
+    if (index !== -1) {
+      terms[index] = this.currentActiveTerminal;
+    }
+
+    this.appContext.update("terminals", terms)
+  }
+  
 
   /**
    * Runs a custom cmd wants to be run
@@ -109,6 +141,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.currentActiveTerminalId!,
       cmd!
     );
+
+    this.currentActiveTerminal?.history.push(cmd!)
+    this.updateCurrentActiveTerminalState()
 
     this.cmdInputControl.setValue('');
   }

@@ -124,6 +124,10 @@ type terminal = {
      */
     history: string[];
     /**
+     * - List of output
+     */
+    output: string[];
+    /**
      * - The spawned shell process - ignore in main world
      */
     process: import("child_process").ChildProcessWithoutNullStreams;
@@ -152,6 +156,10 @@ type terminalInformation = {
      * - List of cmds ran in the terminal
      */
     history: string[];
+    /**
+     * - List of chunk outputs
+     */
+    output: string[];
 };
 /**
  * Create a terminal insatce and run cmds agaisnt
@@ -187,6 +195,15 @@ type onTerminalChange = (callback: onTerminalChangeCallBack) => () => void;
  * A listner to register callbacks passed in for terminal change - internal
  */
 type onTerminalChangeListner = (event?: Electron.IpcRendererEvent | undefined, data: terminalChangeData) => any;
+/**
+ * Get a specific terminals data by it's id
+ */
+type getTerminalInformation = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => Promise<terminalInformation | undefined>;
+/**
+ * Takes a list of terminal information and re spawns the procsses for these - used typically when the application closes and UI holds state of terminals spawend in the
+ * lifetime and then re spawn those with the stored historyu and state
+ */
+type restoreTerminals = (event?: Electron.IpcMainInvokeEvent | undefined, terminals: terminalInformation[]) => Promise<string[]>;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
@@ -271,6 +288,14 @@ type ElectronApi = {
      * - Listen to when a terminal changes and react , returns a unsub function for the callback
      */
     onTerminalChange: onTerminalChange;
+    /**
+     * - Geta specific terminals information by it's ID
+     */
+    getTerminalInformation: getTerminalInformation;
+    /**
+     * - Pass a list of terminals from previous state to respawn
+     */
+    restoreTerminals: restoreTerminals;
 };
 /**
  * Extends the global `window` object to include the Electron API.

@@ -33,6 +33,10 @@ const api = {
   killTerminal: (_event, termId) => ipcRenderer.invoke("terminal:kill", termId),
   runCmdsInTerminal: (_event, termId, cmd) =>
     ipcRenderer.invoke("terminal:cmds:run", termId, cmd),
+  getTerminalInformation: (_event, termId) =>
+    ipcRenderer.invoke("terminal:id", termId),
+  restoreTerminals: (_event, terms) =>
+    ipcRenderer.invoke("terminal:restore", terms),
 
   minimize: (_event) => ipcRenderer.send("window:minimize"),
   maximize: (_event) => ipcRenderer.send("window:maximize"),

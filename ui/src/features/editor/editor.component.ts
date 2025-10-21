@@ -6,6 +6,7 @@ import { ContextService } from '../app-context/app-context.service';
 import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
 import { FileExplorerContextMenuComponent } from '../file-explorer/file-explorer-context-menu/file-explorer-context-menu.component';
 import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
+import { getElectronApi } from '../../utils';
 
 @Component({
   selector: 'app-editor',
@@ -22,6 +23,7 @@ import { OpenFileContainerComponent } from '../open-file-container/open-file-con
 export class EditorComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly api = getElectronApi();
 
   leftFlex = 1;
   rightFlex = 1;
@@ -80,13 +82,22 @@ export class EditorComponent implements OnInit {
 
   isFileExplorerContextMenuActive: boolean | null = null;
 
-  ngOnInit(): void {
-    let ctx = this.appContext.getSnapshot();
+  async ngOnInit() {
+    let init = this.appContext.getSnapshot();
 
     // set stored state
-    this.isLeftActive = ctx.sideBarActiveElement != null;
-    this.sideBarActivateElement = ctx.sideBarActiveElement;
+    this.isLeftActive = init.sideBarActiveElement != null;
+    this.sideBarActivateElement = init.sideBarActiveElement;
 
+    // restore previous lost terminals states based on stored state
+    let count = await this.api.restoreTerminals(
+      undefined,
+      init.terminals ?? []
+    );
+    if (count.length > 0) {
+      console.warn('Failed to restore terminal session ' + count[0]);
+    }
+    
     // subs
     this.appContext.autoSub(
       'sideBarActiveElement',

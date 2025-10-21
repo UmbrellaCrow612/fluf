@@ -264,12 +264,15 @@ const createTerminalImpl = async (_event = undefined, dir) => {
       shell: shell,
       directory: dir,
       history: [],
+      output: [],
       process: termProcess,
       webContents: webContents,
     };
 
     const sendToTerminal = (chunk) => {
       if (term.webContents && !term.webContents.isDestroyed()) {
+        term.output.push(chunk.toString());
+
         term.webContents.send("terminal-data", {
           id: term.id,
           chunk: chunk.toString(),
@@ -296,6 +299,7 @@ const createTerminalImpl = async (_event = undefined, dir) => {
       history: term.history,
       id: term.id,
       shell: term.shell,
+      output: term.output,
     };
   } catch (error) {
     console.log(error);
@@ -352,6 +356,82 @@ const killTerminalImpl = async (_event = undefined, termId) => {
   }
 };
 
+/** @type {getTerminalInformation} */
+const getTerminalInformationImpl = async (_event = undefined, termId) => {
+  let term = terminalStore.get(termId);
+
+  /** @type {terminalInformation | undefined} */
+  let info = term
+    ? {
+        directory: term.directory,
+        history: term.history,
+        id: term.id,
+        shell: term.shell,
+        output: term.output,
+      }
+    : undefined;
+  return info;
+};
+
+/** @type {restoreTerminals} */
+const restoreTerminalsImpl = async (_event = undefined, terms) => {
+  /** @type {string[]} */
+  let unsuc = [];
+
+  for (let term of terms) {
+    if (terminalStore.has(term.id)) {
+      unsuc.push(term.id);
+      continue;
+    }
+
+    const webContents = _event?.sender;
+
+    const termProcess = spawn(term.shell, [], {
+      cwd: term.directory,
+      env: process.env,
+      shell: true,
+    });
+
+    /** @type {terminal} */
+    const terminal = {
+      id: term.id,
+      shell: term.shell,
+      directory: term.directory,
+      history: term.history,
+      output: term.output,
+      process: termProcess,
+      webContents: webContents,
+    };
+
+    const sendToTerminal = (chunk) => {
+      if (terminal.webContents && !terminal.webContents.isDestroyed()) {
+        terminal.output.push(chunk.toString());
+
+        terminal.webContents.send("terminal-data", {
+          id: term.id,
+          chunk: chunk.toString(),
+        });
+      }
+    };
+
+    termProcess.stdout.on("data", sendToTerminal);
+
+    termProcess.stderr.on("data", sendToTerminal);
+
+    termProcess.on("exit", (code, signal) => {
+      sendToTerminal(
+        `\nProcess exited with code ${code}${
+          signal ? `, signal ${signal}` : ""
+        }\n`
+      );
+    });
+
+    terminalStore.set(terminal.id, terminal);
+  }
+
+  return unsuc;
+};
+
 module.exports = {
   readFileImpl,
   readDirImpl,
@@ -373,4 +453,6 @@ module.exports = {
   createTerminalImpl,
   cleanupTerminals,
   killTerminalImpl,
+  getTerminalInformationImpl,
+  restoreTerminalsImpl,
 };
