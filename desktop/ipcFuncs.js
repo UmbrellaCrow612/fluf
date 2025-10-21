@@ -2,7 +2,7 @@
  * File contains all our impl of electron api funcs to be exposed in the electron api to render
  */
 
-const { dialog, BrowserWindow, ipcRenderer } = require("electron");
+const { dialog, BrowserWindow } = require("electron");
 const fsp = require("fs/promises");
 const fs = require("fs");
 const path = require("path");
@@ -11,7 +11,7 @@ const { spawn } = require("child_process");
 /**
  * @type {readFile}
  */
-const readFileImpl = async (event = undefined, filePath) => {
+const readFileImpl = async (_event = undefined, filePath) => {
   if (!filePath) {
     console.log("File path not passed");
     return "";
@@ -29,7 +29,7 @@ const readFileImpl = async (event = undefined, filePath) => {
 /**
  * @type {readDir}
  */
-const readDirImpl = async (event = undefined, directoryPath) => {
+const readDirImpl = async (_event = undefined, directoryPath) => {
   let items = await fsp.readdir(directoryPath, { withFileTypes: true });
 
   // Map to include metadata
@@ -59,8 +59,8 @@ const readDirImpl = async (event = undefined, directoryPath) => {
 /**
  * @type {selectFolder}
  */
-const selectFolderImpl = async (event = undefined) => {
-  return await dialog.showOpenDialog({ properties: ["openDirectory"] });
+const selectFolderImpl = async (_event = undefined) => {
+  return await dialog.showOpenDialog({ properties: ["openDirectory"] }); /** no await */
 };
 
 /**
@@ -70,7 +70,7 @@ const existsImpl = async (_event = undefined, path) => {
   try {
     return fs.existsSync(path);
   } catch (error) {
-    console.log("Error with exists function");
+    console.log("Error with exists function " + error);
     return false;
   }
 };

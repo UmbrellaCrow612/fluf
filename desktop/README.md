@@ -28,6 +28,7 @@ const readFileImpl = async (event = undefined, filePath) => {
 cmd
 
 run `npx tsc` to see for any errors and generating frontend ts types to use and generate types for ui
+and `npx eslint .` for errors
 
 
 # Info 
