@@ -33,6 +33,8 @@ const api = {
     return () => ipcRenderer.removeListener("terminal-data", listener);
   },
 
+  stopTerminal: (_event, termid) => ipcRenderer.invoke("terminal:stop", termid),
+
   createTerminal: (_event, directory) =>
     ipcRenderer.invoke("terminal:create", directory),
   killTerminal: (_event, termId) => ipcRenderer.invoke("terminal:kill", termId),
@@ -49,7 +51,7 @@ const api = {
     /**
      * @param {directoryChangedData} data
      */
-    const listener = (_, data) => {
+    const listener = (/** @type {any} */ _, data) => {
       if (data.dirPath === dirPath) cb(data);
     };
 

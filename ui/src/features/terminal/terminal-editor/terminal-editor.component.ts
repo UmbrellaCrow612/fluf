@@ -9,6 +9,7 @@ import {
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
+import { HotKey, HotKeyService } from '../../hotkeys/hot-key.service';
 
 type anonCallback = () => void;
 
@@ -23,6 +24,19 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly zone = inject(NgZone);
+  private readonly hotKeyService = inject(HotKeyService);
+
+  graceStopTermHotKey: HotKey = {
+    callback: async (ctx) => {
+      console.log('Hot key ran ctrl c');
+      let suc = await this.api.stopTerminal(
+        undefined,
+        this.currentActiveTerminalId!
+      );
+      console.log(suc);
+    },
+    keys: ['Control', 'c'],
+  };
 
   fullOutput: string = '';
   currentActiveTerminal: terminalInformation | null = null;
@@ -43,6 +57,8 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.currentActiveTerminalId = init.currentActiveTerminald;
     this.currentActiveTerminal =
       init.terminals?.find((x) => x.id == this.currentActiveTerminalId) ?? null;
+
+    this.hotKeyService.autoSub(this.graceStopTermHotKey, this.destroyRef);
 
     await this.initTerm();
 

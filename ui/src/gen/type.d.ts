@@ -204,6 +204,10 @@ type getTerminalInformation = (event?: Electron.IpcMainInvokeEvent | undefined, 
  */
 type restoreTerminals = (event?: Electron.IpcMainInvokeEvent | undefined, terminals: terminalInformation[]) => Promise<string[]>;
 /**
+ * Stops a terminal running cmds inside of it like long running procsses
+ */
+type stopTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => Promise<boolean>;
+/**
  * Data passed to the callback when a directory changes
  */
 type directoryChangedData = {
@@ -333,6 +337,10 @@ type ElectronApi = {
      * - Listen to a specific directory change and run custom logic
      */
     onDirectoryChange: onDirectoryChange;
+    /**
+     * - Attempt to gracefully stop a terminal processes
+     */
+    stopTerminal: stopTerminal;
 };
 /**
  * Extends the global `window` object to include the Electron API.

@@ -13,9 +13,10 @@ export interface HotKey {
 
   /**
    * A callback function to run when the keys are pressed
+   * Can be async
    * @param ctx The application context at the time of running it
    */
-  callback: (ctx: AppContext) => void;
+  callback: (ctx: AppContext) => void | Promise<void>;
 }
 
 @Injectable({
@@ -88,11 +89,11 @@ export class HotKeyService {
   /**
    * Run all hot keys registered
    */
-  private runSubs(): void {
+  private async runSubs(): Promise<void> {
     const ctx = this._context.getSnapshot();
     for (const item of this._subs) {
       if (this.arrayMatchesSet(item.keys, this._keys)) {
-        item.callback(ctx);
+        await item.callback(ctx);
       }
     }
   }
