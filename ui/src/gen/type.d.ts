@@ -104,110 +104,6 @@ type deleteFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: st
  */
 type deleteDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
- * Internal to desktop api - Represents a terminal where cmds can be run - ignore in main world
- */
-type terminal = {
-    /**
-     * - A unique ID
-     */
-    id: string;
-    /**
-     * - The shell type to run it in
-     */
-    shell: string;
-    /**
-     * - The directory folder to run the cmds in
-     */
-    directory: string;
-    /**
-     * - List of cmds ran in the terminal
-     */
-    history: string[];
-    /**
-     * - List of output
-     */
-    output: string[];
-    /**
-     * - The spawned shell process - ignore in main world
-     */
-    process: import("child_process").ChildProcessWithoutNullStreams;
-    /**
-     * - Electron web
-     */
-    webContents: import("electron").WebContents;
-};
-/**
- * Represents information about a terminal instace
- */
-type terminalInformation = {
-    /**
-     * - A unique ID
-     */
-    id: string;
-    /**
-     * - The shell type to run it in
-     */
-    shell: string;
-    /**
-     * - The directory folder to run the cmds in
-     */
-    directory: string;
-    /**
-     * - List of cmds ran in the terminal
-     */
-    history: string[];
-    /**
-     * - List of chunk outputs
-     */
-    output: string[];
-};
-/**
- * Create a terminal insatce and run cmds agaisnt
- */
-type createTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<terminalInformation | undefined>;
-/**
- * Run cmds agaisnt a existing terminal
- */
-type runCmdInTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string, cmd: string) => Promise<boolean>;
-/**
- * Kill a terminal processes manually
- */
-type killTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => Promise<boolean>;
-/**
- * Shape of data passed to callback when data changes
- */
-type terminalChangeData = {
-    /**
-     * - The id of the terminal emitting event
-     */
-    id: string;
-    /**
-     * - The chunk string sent across
-     */
-    chunk: string;
-};
-/**
- * The logic to run when a terminal changes
- */
-type onTerminalChangeCallBack = (data: terminalChangeData) => void;
-/**
- * Listen to a specific terminal and when it changes it's output run custom callback function
- */
-type onTerminalChange = (terminalId: string, callback: onTerminalChangeCallBack) => () => void;
-/**
- * Get a specific terminals data by it's id
- */
-type getTerminalInformation = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => Promise<terminalInformation | undefined>;
-/**
- * Takes a list of terminal information and re spawns the procsses for these - used typically when the application closes and UI holds state of terminals spawend in the
- * lifetime and then re spawn those with the stored historyu and state
- */
-type restoreTerminals = (event?: Electron.IpcMainInvokeEvent | undefined, terminals: terminalInformation[]) => Promise<string[]>;
-/**
- * Stops a terminal running cmds inside of it like long running procsses
- */
-type stopTerminal = (event?: Electron.IpcMainInvokeEvent | undefined, terminalId: string) => Promise<boolean>;
-/**
  * Data passed to the callback when a directory changes
  */
 type directoryChangedData = {
@@ -241,6 +137,108 @@ type watchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, director
  * Unwatches a directory
  */
 type unwatchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+/**
+ * Data passed when shell out stream changes
+ */
+type shellChangeData = {
+    /**
+     * - The chunk of new information
+     */
+    chunk: string;
+    /**
+     * - If the chunk is error message
+     */
+    isError: boolean;
+    /**
+     * - The id of the shell
+     */
+    id: string;
+};
+/**
+ * Custom callback logic you want to run when a shell changes it's data
+ */
+type onShellChangeCallback = (data: shellChangeData) => void;
+/**
+ * Listen to when a shell changes it data either with output stream data or error data
+ */
+type onShellChange = (shellId: string, callback: onShellChangeCallback) => () => void;
+/**
+ * Shape of data when shell closes
+ */
+type shellCloseData = {
+    /**
+     * - The code
+     */
+    code: number;
+    /**
+     * - The signal
+     */
+    signal: NodeJS.Signals;
+    /**
+     * - The ID of the shell
+     */
+    id: string;
+};
+/**
+ * The custom callback you want to run when a shell closes
+ */
+type onShellCloseCallback = (data: shellCloseData) => void;
+/**
+ * Run logic when shell closes
+ */
+type onShellClose = (shellId: string, callback: onShellCloseCallback) => () => void;
+type shellErrorData = {
+    /**
+     * - The error
+     */
+    error: Error;
+    /**
+     * - The id of the shell
+     */
+    id: string;
+};
+/**
+ * Custom logic you want to run when shell errors
+ */
+type onShellErrorCallback = (data: shellErrorData) => void;
+/**
+ * Run logic when shell errors
+ */
+type onShellError = (shellId: string, callback: onShellErrorCallback) => () => void;
+/**
+ * Information about a given shell
+ */
+type shellInformation = {
+    /**
+     * - The id of the shell
+     */
+    id: string;
+    /**
+     * - The shell spawned
+     */
+    shell: "powershell.exe" | "bash";
+    /**
+     * - List of previous output data chunks
+     */
+    history: string[];
+};
+type createShell = (event?: Electron.IpcMainInvokeEvent | undefined, dir: string) => Promise<shellInformation | undefined>;
+/**
+ * Run cmds in a specific shell
+ */
+type runCmdsInShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, cmd: string) => Promise<boolean>;
+/**
+ * Sends a Ctrl+C (interrupt) signal to the shell.
+ */
+type stopCmdInShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
+/**
+ * Finds and kills a shell by its ID.
+ */
+type killShellById = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
+/**
+ * Check if a shell is still alive and running
+ */
+type isShellActive = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
@@ -310,37 +308,41 @@ type ElectronApi = {
      */
     deleteDirectory: deleteDirectory;
     /**
-     * - Create a terminal to run cmds in
-     */
-    createTerminal: createTerminal;
-    /**
-     * - Run cmds in a given terminal
-     */
-    runCmdsInTerminal: runCmdInTerminal;
-    /**
-     * - Kill a terminal processes
-     */
-    killTerminal: killTerminal;
-    /**
-     * - Listen to when a terminal changes and react , returns a unsub function for the callback
-     */
-    onTerminalChange: onTerminalChange;
-    /**
-     * - Geta specific terminals information by it's ID
-     */
-    getTerminalInformation: getTerminalInformation;
-    /**
-     * - Pass a list of terminals from previous state to respawn
-     */
-    restoreTerminals: restoreTerminals;
-    /**
      * - Listen to a specific directory change and run custom logic
      */
     onDirectoryChange: onDirectoryChange;
     /**
-     * - Attempt to gracefully stop a terminal processes
+     * - Kill a specific shell by it's ID
      */
-    stopTerminal: stopTerminal;
+    killShellById: killShellById;
+    /**
+     * - Runs Ctrl+C in the shell
+     */
+    stopCmdInShell: stopCmdInShell;
+    /**
+     * - Run a specific cmd in a shell
+     */
+    runCmdsInShell: runCmdsInShell;
+    /**
+     * - Create a shell
+     */
+    createShell: createShell;
+    /**
+     * - Run logic when a shell errors
+     */
+    onShellError: onShellError;
+    /**
+     * - Run logic when a shell closes
+     */
+    onShellClose: onShellClose;
+    /**
+     * - Run logic when data in the shell stream changes either regular data or error output
+     */
+    onShellChange: onShellChange;
+    /**
+     * - Check if a shell is still alive
+     */
+    isShellActive: isShellActive;
 };
 /**
  * Extends the global `window` object to include the Electron API.

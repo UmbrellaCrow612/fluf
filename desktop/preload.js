@@ -66,6 +66,8 @@ const api = {
     return () => ipcRenderer.removeListener("shell:error", listner);
   },
 
+  isShellActive: (_event, shellId) => ipcRenderer.invoke("shell:alive", shellId),
+
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);
 

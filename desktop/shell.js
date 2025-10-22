@@ -2,7 +2,7 @@
  * Contains api to create shells for terminal to use
  */
 
-const { spawn, exec, ChildProcess } = require("child_process");
+const { spawn, exec } = require("child_process");
 const os = require("os");
 
 /**
@@ -12,7 +12,7 @@ const shellStore = new Map();
 
 /**
  * Kills a spawned shell process. Returns a promise that resolves on success or rejects on failure.
- * @param {ChildProcess} shellProcess - The shell process to kill
+ * @param {import("child_process").ChildProcess} shellProcess - The shell process to kill
  * @returns {Promise<void>}
  */
 function killShell(shellProcess) {
@@ -124,7 +124,7 @@ const createShellImpl = async (_event = undefined, dir) => {
     _event.sender.send("shell:error", shellErrorData);
   });
 
-  return { id, shell };
+  return { id, shell, history: [] };
 };
 
 /** @type {runCmdsInShell} */
@@ -163,11 +163,17 @@ const stopCommandInShell = async (_event = undefined, shellId) => {
   return true;
 };
 
+/** @type {isShellActive} */
+const isShellActiveImpl = async (_event = undefined, shellId) => {
+  return shellStore.has(shellId);
+};
+
 module.exports = {
   killShellById,
   runCommandInShellImpl,
   createShellImpl,
   stopCommandInShell,
+  isShellActiveImpl,
 
   cleanUpShells,
 };

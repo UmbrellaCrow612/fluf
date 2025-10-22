@@ -11,7 +11,7 @@ import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { HotKey, HotKeyService } from '../../hotkeys/hot-key.service';
 
-type anonCallback = () => void;
+type UnsubscribeCallback = () => void;
 
 @Component({
   selector: 'app-terminal-editor',
@@ -27,153 +27,178 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly hotKeyService = inject(HotKeyService);
 
   graceStopTermHotKey: HotKey = {
-    callback: async (ctx) => {
-      console.log('Hot key ran ctrl c');
-      let suc = await this.api.stopTerminal(
-        undefined,
-        this.currentActiveTerminalId!
-      );
-      console.log(suc);
+    callback: async () => {
+      if (this.currentActiveShellId) {
+        await this.api.stopCmdInShell(undefined, this.currentActiveShellId);
+      }
     },
     keys: ['Control', 'c'],
   };
 
   fullOutput: string = '';
-  currentActiveTerminal: terminalInformation | null = null;
-  currentActiveTerminalId: string | null = null;
+  currentActiveShell: shellInformation | null = null;
+  currentActiveShellId: string | null = null;
 
   error: string | null = null;
   isLoading = false;
 
   cmdInputControl = new FormControl('', {
     validators: [Validators.required],
+    nonNullable: true,
   });
 
-  unSub: anonCallback | null = null;
+  // Use an array to hold multiple unsubscribe functions
+  private shellListeners: UnsubscribeCallback[] = [];
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
-
-    this.currentActiveTerminalId = init.currentActiveTerminald;
-    this.currentActiveTerminal =
-      init.terminals?.find((x) => x.id == this.currentActiveTerminalId) ?? null;
+    const init = this.appContext.getSnapshot();
 
     this.hotKeyService.autoSub(this.graceStopTermHotKey, this.destroyRef);
 
-    await this.initTerm();
+    // Initial setup
+    this.currentActiveShellId = init.currentActiveShellId;
+    this.currentActiveShell =
+      init.shells?.find((x) => x.id == this.currentActiveShellId) ?? null;
+    await this.initShell();
 
+    // Subscribe to changes in the active shell
     this.appContext.autoSub(
-      'currentActiveTerminald',
+      'currentActiveShellId',
       async (ctx) => {
-        this.currentActiveTerminalId = ctx.currentActiveTerminald;
-        this.currentActiveTerminal =
-          ctx.terminals?.find((x) => x.id == this.currentActiveTerminalId) ??
-          null;
-
-        await this.initTerm();
+        this.currentActiveShellId = ctx.currentActiveShellId;
+        this.currentActiveShell =
+          ctx.shells?.find((x) => x.id == this.currentActiveShellId) ?? null;
+        await this.initShell();
       },
       this.destroyRef
     );
   }
 
   ngOnDestroy() {
-    if (this.unSub) {
-      this.unSub();
-    }
+    // Cleanup all listeners when the component is destroyed
+    this.cleanupShellListeners();
+  }
+
+  /**
+   * Cleans up all active shell event listeners.
+   */
+  private cleanupShellListeners() {
+    this.shellListeners.forEach((unsub) => unsub());
+    this.shellListeners = [];
+  }
+
+  /**
+   * Handles the shell closing unexpectedly.
+   * @param data - The close or error data from the backend.
+   */
+  private handleShellClose(
+    data: shellCloseData | shellErrorData,
+    reason: 'closed' | 'errored'
+  ) {
+    this.zone.run(() => {
+      let message = '';
+      if (reason === 'closed') {
+        const closeData = data as shellCloseData;
+        message = `Terminal process exited with code ${closeData.code}.`;
+      } else {
+        const errorData = data as shellErrorData;
+        message = `Terminal process exited with an error: ${errorData.error.message}`;
+      }
+
+      console.warn(`Shell ${data.id} has closed. Reason: ${reason}`);
+      this.error = `${message} Please create a new terminal.`;
+
+      // Disable the input to prevent sending commands to a dead shell
+      this.cmdInputControl.disable();
+
+      this.currentActiveShell = null;
+      // It's also a good idea to remove the dead shell from the global context
+      // this.appContext.removeShell(data.id);
+
+      // Clean up the listeners for this dead shell
+      this.cleanupShellListeners();
+    });
   }
 
   /**
    * Loads and binds ui to the terminal thats active and other state
    */
-  async initTerm() {
+  async initShell() {
+    // Always clean up previous listeners before setting up new ones
+    this.cleanupShellListeners();
+
     this.error = null;
     this.isLoading = true;
+    this.fullOutput = '';
+    this.cmdInputControl.enable(); // Re-enable input for the new shell
 
-    if (!this.currentActiveTerminal) {
-      this.error = 'No terminal found';
+    if (!this.currentActiveShell || !this.currentActiveShellId) {
+      this.error = 'No active terminal selected.';
       this.isLoading = false;
-      this.fullOutput = '';
+      this.cmdInputControl.disable();
       return;
     }
 
-    if (this.unSub) {
-      this.unSub();
+    // Check if the shell process still exists on the backend
+    const alive = await this.api.isShellActive(
+      undefined,
+      this.currentActiveShellId
+    );
+    if (!alive) {
+      this.error =
+        'The selected terminal process is no longer running. Please create a new one.';
+      this.isLoading = false;
+      this.cmdInputControl.disable();
+      // this.appContext.removeShell(this.currentActiveShellId);
+      return;
     }
 
-    this.unSub = this.api.onTerminalChange(
-      this.currentActiveTerminalId!,
+    // --- SETUP NEW LISTENERS ---
+
+    // 1. Listen for standard output/error
+    const unSubChange = this.api.onShellChange(
+      this.currentActiveShellId,
       (data) => {
         this.zone.run(() => {
-          const chunk = data.chunk;
-          this.fullOutput += chunk;
-
+          this.fullOutput += data.chunk;
           const lines = this.fullOutput.split(/\r?\n/);
-          if (lines.length > 70) {
-            this.fullOutput = lines.slice(-70).join('\n');
+          const maxLines = 100; // Increased buffer for better context
+          if (lines.length > maxLines) {
+            this.fullOutput = lines.slice(-maxLines).join('\n');
           }
-
-          if (this.currentActiveTerminal) {
-            this.currentActiveTerminal.output = lines.slice(-70);
-          }
-
-          this.updateCurrentActiveTerminalState();
         });
       }
     );
 
-    let term = await this.api.getTerminalInformation(
-      undefined,
-      this.currentActiveTerminalId!
+    // 2. Listen for the shell closing (CRITICAL FOR THE FIX)
+    const unSubClose = this.api.onShellClose(
+      this.currentActiveShellId,
+      (data) => this.handleShellClose(data, 'closed')
     );
-    if (!term) {
-      this.error = 'No terminal found';
-      this.isLoading = false;
-      this.fullOutput = '';
-      return;
-    }
-    this.fullOutput = term.output.join('\n');
 
-    this.currentActiveTerminal!.output = term.output.slice(-70);
+    // 3. Listen for a spawn error
+    const unSubError = this.api.onShellError(
+      this.currentActiveShellId,
+      (data) => this.handleShellClose(data, 'errored')
+    );
+
+    // Store the unsubscribe functions to be called later
+    this.shellListeners.push(unSubChange, unSubClose, unSubError);
 
     this.isLoading = false;
   }
 
-  private updateCurrentActiveTerminalState() {
-    const terms = this.appContext.getSnapshot().terminals;
-
-    if (!terms || !this.currentActiveTerminal) return;
-
-    const index = terms.findIndex(
-      (x) => x.id === this.currentActiveTerminal?.id
-    );
-
-    if (index !== -1) {
-      terms[index] = this.currentActiveTerminal;
-    }
-
-    this.appContext.update('terminals', terms);
-  }
-
   /**
-   * Runs a custom cmd wants to be run
+   * Runs a command that the user wants to run.
    */
   async onSubmit(event: Event) {
     event.preventDefault();
-
-    if (!this.cmdInputControl.valid) {
+    if (!this.cmdInputControl.valid || !this.currentActiveShellId) {
       return;
     }
 
-    let cmd = this.cmdInputControl.value;
-
-    await this.api.runCmdsInTerminal(
-      undefined,
-      this.currentActiveTerminalId!,
-      cmd!
-    );
-
-    this.currentActiveTerminal?.history.push(cmd!);
-    this.updateCurrentActiveTerminalState();
+    const cmd = this.cmdInputControl.value;
+    await this.api.runCmdsInShell(undefined, this.currentActiveShellId, cmd);
 
     this.cmdInputControl.setValue('');
   }

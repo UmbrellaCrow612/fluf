@@ -19,13 +19,13 @@ export class TerminalComponent implements OnInit {
     let init = this.appContext.getSnapshot();
 
     this.showTerminalEditor =
-      init.terminals?.find((x) => x.id == init.currentActiveTerminald) != null;
+      init.shells?.find((x) => x.id == init.currentActiveShellId) != null;
 
     this.appContext.autoSub(
-      'currentActiveTerminald',
+      'currentActiveShellId',
       (ctx) => {
         this.showTerminalEditor =
-          ctx.terminals?.find((x) => x.id == ctx.currentActiveTerminald) !=
+          ctx.shells?.find((x) => x.id == ctx.currentActiveShellId) !=
           null;
       },
       this.destroyRef

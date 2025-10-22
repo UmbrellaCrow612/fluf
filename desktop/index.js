@@ -22,7 +22,14 @@ const {
   unwatchDirectoryImpl,
   cleanUpWatchers,
 } = require("./ipcFuncs");
-const { cleanUpShells, createShellImpl, killShellById, runCommandInShellImpl, stopCommandInShell } = require("./shell");
+const {
+  cleanUpShells,
+  createShellImpl,
+  killShellById,
+  runCommandInShellImpl,
+  stopCommandInShell,
+  isShellActiveImpl,
+} = require("./shell");
 
 loadEnv();
 
@@ -80,8 +87,9 @@ app.whenReady().then(() => {
 
   ipcMain.handle("shell:create", createShellImpl);
   ipcMain.handle("shell:kill", killShellById);
-  ipcMain.handle("shell:cmd", runCommandInShellImpl)
-  ipcMain.handle("shell:stop", stopCommandInShell)
+  ipcMain.handle("shell:cmd", runCommandInShellImpl);
+  ipcMain.handle("shell:stop", stopCommandInShell);
+  ipcMain.handle("shell:alive", isShellActiveImpl);
 
   createWindow();
 });

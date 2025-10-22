@@ -255,6 +255,7 @@
  * @typedef {Object} shellInformation
  * @property {string} id - The id of the shell
  * @property {"powershell.exe" | "bash"} shell - The shell spawned
+ * @property {string[]} history - List of previous output data chunks
  */
 
 /**
@@ -290,6 +291,14 @@
  */
 
 /**
+ * Check if a shell is still alive and running
+ * @callback isShellActive
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} shellId - The id of the shell to check
+ * @returns {Promise<boolean>} True if the shell is still alive or false if not or dose not exist
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -318,6 +327,7 @@
  * @property {onShellError} onShellError - Run logic when a shell errors
  * @property {onShellClose} onShellClose - Run logic when a shell closes
  * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
+ * @property {isShellActive} isShellActive - Check if a shell is still alive
  */
 
 /**

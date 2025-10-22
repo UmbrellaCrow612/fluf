@@ -19,7 +19,7 @@ export class TerminalTabItemComponent implements OnInit {
   /**
    * Label of the terminal session
    */
-  terminal = input.required<terminalInformation>();
+  shell = input.required<shellInformation>();
 
   /**
    * Indicates if the current terminal is the active one
@@ -29,36 +29,38 @@ export class TerminalTabItemComponent implements OnInit {
   ngOnInit(): void {
     let init = this.appContext.getSnapshot();
 
-    this.isActive = init.currentActiveTerminald === this.terminal().id;
+    this.isActive = init.currentActiveShellId === this.shell().id;
 
     this.appContext.autoSub(
-      'currentActiveTerminald',
+      'currentActiveShellId',
       (ctx) => {
-        this.isActive = ctx.currentActiveTerminald === this.terminal().id;
+        this.isActive = ctx.currentActiveShellId === this.shell().id;
       },
       this.destroyRef
     );
   }
 
-  terminalClicked() {
-    this.appContext.update('currentActiveTerminald', this.terminal().id);
+  shellClicked() {
+    this.appContext.update('currentActiveShellId', this.shell().id);
   }
 
-  async killTerminal(event: Event) {
+  async killShell(event: Event) {
     event.stopPropagation();
 
-    await this.api.killTerminal(undefined, this.terminal().id);
+    let res = await this.api.killShellById(undefined, this.shell().id);
+    console.log(res);
+
     let init = this.appContext.getSnapshot();
 
-    let updatedTerminals =
-      init?.terminals?.filter((t) => t.id !== this.terminal().id) ?? [];
+    let updatedShells =
+      init?.shells?.filter((t) => t.id !== this.shell().id) ?? [];
 
-    if (updatedTerminals.length > 0) {
-      let newActiveTerminalId = updatedTerminals[0].id;
-      this.appContext.update('currentActiveTerminald', newActiveTerminalId);
+    if (updatedShells.length > 0) {
+      let newActiveTerminalId = updatedShells[0].id;
+      this.appContext.update('currentActiveShellId', newActiveTerminalId);
     } else {
-      this.appContext.update('currentActiveTerminald', null);
+      this.appContext.update('currentActiveShellId', null);
     }
-    this.appContext.update('terminals', updatedTerminals);
+    this.appContext.update('shells', updatedShells);
   }
 }
