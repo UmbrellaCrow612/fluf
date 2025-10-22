@@ -91,18 +91,12 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
    * Handles the shell closing unexpectedly.
    * @param data - The close or error data from the backend.
    */
-  private handleShellClose(
-    data: shellCloseData | shellErrorData,
-    reason: 'closed' | 'errored'
-  ) {
+  private handleShellClose(data: shellCloseData, reason: 'closed' | 'errored') {
     this.zone.run(() => {
       let message = '';
       if (reason === 'closed') {
         const closeData = data as shellCloseData;
         message = `Terminal process exited with code ${closeData.code}.`;
-      } else {
-        const errorData = data as shellErrorData;
-        message = `Terminal process exited with an error: ${errorData.error.message}`;
       }
 
       console.warn(`Shell ${data.id} has closed. Reason: ${reason}`);
@@ -176,14 +170,8 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       (data) => this.handleShellClose(data, 'closed')
     );
 
-    // 3. Listen for a spawn error
-    const unSubError = this.api.onShellError(
-      this.currentActiveShellId,
-      (data) => this.handleShellClose(data, 'errored')
-    );
-
     // Store the unsubscribe functions to be called later
-    this.shellListeners.push(unSubChange, unSubClose, unSubError);
+    this.shellListeners.push(unSubChange, unSubClose);
 
     this.isLoading = false;
   }

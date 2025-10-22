@@ -187,7 +187,6 @@
  * Data passed when shell out stream changes
  * @typedef {Object} shellChangeData
  * @property {string} chunk - The chunk of new information
- * @property {boolean} isError - If the chunk is error message
  * @property {string} id - The id of the shell
  */
 
@@ -210,7 +209,7 @@
  * Shape of data when shell closes
  * @typedef {Object} shellCloseData
  * @property {number} code - The code
- * @property {NodeJS.Signals} signal - The signal
+ * @property {number} signal - The signal
  * @property {string} id - The ID of the shell
  */
 
@@ -226,27 +225,6 @@
  * @callback onShellClose
  * @param {string} shellId - The specific shell to subscribe to
  * @param {onShellCloseCallback} callback - The custom logic you want to run
- * @returns {() => void} UnSubscribe method
- */
-
-/**
- * @typedef {Object} shellErrorData
- * @property {Error} error - The error
- * @property {string} id - The id of the shell
- */
-
-/**
- * Custom logic you want to run when shell errors
- * @callback onShellErrorCallback
- * @param {shellErrorData} data - The data
- * @returns {void} Nothing
- */
-
-/**
- * Run logic when shell errors
- * @callback onShellError
- * @param {string} shellId - The specific shell to subscribe to
- * @param {onShellErrorCallback} callback - The custom logic you want to run =
  * @returns {() => void} UnSubscribe method
  */
 
@@ -324,7 +302,6 @@
  * @property {stopCmdInShell} stopCmdInShell - Runs Ctrl+C in the shell
  * @property {runCmdsInShell} runCmdsInShell - Run a specific cmd in a shell
  * @property {createShell} createShell - Create a shell
- * @property {onShellError} onShellError - Run logic when a shell errors
  * @property {onShellClose} onShellClose - Run logic when a shell closes
  * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
  * @property {isShellActive} isShellActive - Check if a shell is still alive

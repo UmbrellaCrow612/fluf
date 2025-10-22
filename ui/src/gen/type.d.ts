@@ -146,10 +146,6 @@ type shellChangeData = {
      */
     chunk: string;
     /**
-     * - If the chunk is error message
-     */
-    isError: boolean;
-    /**
      * - The id of the shell
      */
     id: string;
@@ -173,7 +169,7 @@ type shellCloseData = {
     /**
      * - The signal
      */
-    signal: NodeJS.Signals;
+    signal: number;
     /**
      * - The ID of the shell
      */
@@ -187,24 +183,6 @@ type onShellCloseCallback = (data: shellCloseData) => void;
  * Run logic when shell closes
  */
 type onShellClose = (shellId: string, callback: onShellCloseCallback) => () => void;
-type shellErrorData = {
-    /**
-     * - The error
-     */
-    error: Error;
-    /**
-     * - The id of the shell
-     */
-    id: string;
-};
-/**
- * Custom logic you want to run when shell errors
- */
-type onShellErrorCallback = (data: shellErrorData) => void;
-/**
- * Run logic when shell errors
- */
-type onShellError = (shellId: string, callback: onShellErrorCallback) => () => void;
 /**
  * Information about a given shell
  */
@@ -327,10 +305,6 @@ type ElectronApi = {
      * - Create a shell
      */
     createShell: createShell;
-    /**
-     * - Run logic when a shell errors
-     */
-    onShellError: onShellError;
     /**
      * - Run logic when a shell closes
      */
