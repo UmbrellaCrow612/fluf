@@ -22,7 +22,7 @@ const {
   unwatchDirectoryImpl,
   cleanUpWatchers,
 } = require("./ipcFuncs");
-const { cleanUpShells } = require("./shell");
+const { cleanUpShells, createShellImpl, killShellById, runCommandInShellImpl, stopCommandInShell } = require("./shell");
 
 loadEnv();
 
@@ -77,6 +77,11 @@ app.whenReady().then(() => {
   ipcMain.on("window:maximize", maximizeImpl);
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
+
+  ipcMain.handle("shell:create", createShellImpl);
+  ipcMain.handle("shell:kill", killShellById);
+  ipcMain.handle("shell:cmd", runCommandInShellImpl)
+  ipcMain.handle("shell:stop", stopCommandInShell)
 
   createWindow();
 });

@@ -17,33 +17,54 @@ const api = {
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
   normalize: (_event, path) => ipcRenderer.invoke("path:normalize", path),
 
-  onTerminalChange: (termId, cb) => {
+  createShell: (_event, dir) => ipcRenderer.invoke("shell:create", dir),
+  killShellById: (_event, shellId) => ipcRenderer.invoke("shell:kill", shellId),
+  runCmdsInShell: (_event, shellId, cmd) =>
+    ipcRenderer.invoke("shell:cmd", shellId, cmd),
+  stopCmdInShell: (_event, shellId) =>
+    ipcRenderer.invoke("shell:stop", shellId),
+
+  onShellChange: (shellId, cb) => {
     /**
-     * @param {any} _
-     * @param {terminalChangeData} data
+     * @param {import("electron").IpcRendererEvent} _
+     * @param {shellChangeData} data
      */
-    let listener = (_, data) => {
-      if (data.id == termId) {
-        cb(data);
-      }
+    let listner = (_, data) => {
+      if (data.id == shellId) cb(data);
     };
 
-    ipcRenderer.on("terminal-data", listener);
+    ipcRenderer.on("shell:change", listner);
 
-    return () => ipcRenderer.removeListener("terminal-data", listener);
+    return () => ipcRenderer.removeListener("shell:change", listner);
   },
 
-  stopTerminal: (_event, termid) => ipcRenderer.invoke("terminal:stop", termid),
+  onShellClose: (shellId, cb) => {
+    /**
+     * @param {import("electron").IpcRendererEvent} _
+     * @param {shellCloseData} data
+     */
+    let listner = (_, data) => {
+      if (data.id == shellId) cb(data);
+    };
 
-  createTerminal: (_event, directory) =>
-    ipcRenderer.invoke("terminal:create", directory),
-  killTerminal: (_event, termId) => ipcRenderer.invoke("terminal:kill", termId),
-  runCmdsInTerminal: (_event, termId, cmd) =>
-    ipcRenderer.invoke("terminal:cmds:run", termId, cmd),
-  getTerminalInformation: (_event, termId) =>
-    ipcRenderer.invoke("terminal:id", termId),
-  restoreTerminals: (_event, terms) =>
-    ipcRenderer.invoke("terminal:restore", terms),
+    ipcRenderer.on("shell:close", listner);
+
+    return () => ipcRenderer.removeListener("shell:close", listner);
+  },
+
+  onShellError: (shellId, cb) => {
+    /**
+     * @param {import("electron").IpcRendererEvent} _
+     * @param {shellErrorData} data
+     */
+    let listner = (_, data) => {
+      if (data.id == shellId) cb(data);
+    };
+
+    ipcRenderer.on("shell:error", listner);
+
+    return () => ipcRenderer.removeListener("shell:error", listner);
+  },
 
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);

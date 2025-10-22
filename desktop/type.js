@@ -188,6 +188,7 @@
  * @typedef {Object} shellChangeData
  * @property {string} chunk - The chunk of new information
  * @property {boolean} isError - If the chunk is error message
+ * @property {string} id - The id of the shell
  */
 
 /**
@@ -202,7 +203,7 @@
  * @callback onShellChange
  * @param {string} shellId - The specific shell to subscribe to
  * @param {onShellChangeCallback} callback - The custom logic you want to run
- * @returns {Promise<() => Promise<void>>} - Unsubscribe method
+ * @returns {() => void} - Unsubscribe method
  */
 
 /**
@@ -210,6 +211,7 @@
  * @typedef {Object} shellCloseData
  * @property {number} code - The code
  * @property {NodeJS.Signals} signal - The signal
+ * @property {string} id - The ID of the shell
  */
 
 /**
@@ -224,13 +226,19 @@
  * @callback onShellClose
  * @param {string} shellId - The specific shell to subscribe to
  * @param {onShellCloseCallback} callback - The custom logic you want to run
- * @returns {Promise<() => Promise<void>>} UnSubscribe method
+ * @returns {() => void} UnSubscribe method
+ */
+
+/**
+ * @typedef {Object} shellErrorData
+ * @property {Error} error - The error
+ * @property {string} id - The id of the shell
  */
 
 /**
  * Custom logic you want to run when shell errors
  * @callback onShellErrorCallback
- * @param {Error} error - The error
+ * @param {shellErrorData} data - The data
  * @returns {void} Nothing
  */
 
@@ -239,7 +247,7 @@
  * @callback onShellError
  * @param {string} shellId - The specific shell to subscribe to
  * @param {onShellErrorCallback} callback - The custom logic you want to run =
- * @returns {Promise<() => Promise<void>>} UnSubscribe method
+ * @returns {() => void} UnSubscribe method
  */
 
 /**
@@ -270,12 +278,13 @@
  * @callback stopCmdInShell
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} shellId
- * @returns {boolean}
+ * @returns {Promise<boolean>} True or false if it could
  */
 
 /**
  * Finds and kills a shell by its ID.
  * @callback killShellById
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} shellId
  * @returns {Promise<boolean>} True if the shell was found and the kill command was sent, false otherwise.
  */
@@ -301,6 +310,14 @@
  * @property {deleteFile} deleteFile - Delete a file by it's file path
  * @property {deleteDirectory} deleteDirectory - Delete a folder directory by it's path is recursive
  * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
+ *
+ * @property {killShellById} killShellById - Kill a specific shell by it's ID
+ * @property {stopCmdInShell} stopCmdInShell - Runs Ctrl+C in the shell
+ * @property {runCmdsInShell} runCmdsInShell - Run a specific cmd in a shell
+ * @property {createShell} createShell - Create a shell
+ * @property {onShellError} onShellError - Run logic when a shell errors
+ * @property {onShellClose} onShellClose - Run logic when a shell closes
+ * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
  */
 
 /**

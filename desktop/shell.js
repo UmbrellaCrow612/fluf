@@ -83,11 +83,10 @@ const createShellImpl = async (_event = undefined, dir) => {
     let shellData = {
       chunk: data.toString(),
       isError: false,
+      id,
     };
 
-    // send via emit
-
-    console.log(data.toString());
+    _event.sender.send("shell:change", shellData);
   });
 
   shellProcess.stderr.on("data", (data) => {
@@ -95,28 +94,34 @@ const createShellImpl = async (_event = undefined, dir) => {
     let shellData = {
       chunk: data.toString(),
       isError: true,
+      id,
     };
 
-    // send via emit
-    // offer a onShellChange pipes both regular data and error to
-
-    console.log(data.toString());
+    _event.sender.send("shell:change", shellData);
   });
 
   shellProcess.on("close", (code, signal) => {
-    console.log(`Shell [${id}] exited with code ${code} ${signal}`);
+    /** @type {shellCloseData} */
+    let shellCloseData = {
+      code,
+      signal,
+      id,
+    };
     shellStore.delete(id);
 
-    // offer a onShellClose cb
-    console.log(code);
+    _event.sender.send("shell:close", shellCloseData);
   });
 
   shellProcess.on("error", (err) => {
-    console.error(`Shell [${id}] encountered an error:`, err);
+    /** @type {shellErrorData} */
+    let shellErrorData = {
+      error: err,
+      id,
+    };
+
     shellStore.delete(id);
 
-    // offer a onShellError cb
-    console.log(err);
+    _event.sender.send("shell:error", shellErrorData);
   });
 
   return { id, shell };
@@ -135,7 +140,7 @@ const runCommandInShellImpl = async (_event, shellId, cmd) => {
 };
 
 /** @type {killShellById} */
-const killShellById = async (shellId) => {
+const killShellById = async (_event = undefined, shellId) => {
   const shell = shellStore.get(shellId);
   if (!shell) return false;
 
@@ -150,7 +155,7 @@ const killShellById = async (shellId) => {
 };
 
 /** @type {stopCmdInShell} */
-const stopCommandInShell = (_event = undefined, shellId) => {
+const stopCommandInShell = async (_event = undefined, shellId) => {
   const shell = shellStore.get(shellId);
   if (!shell) return false;
 
