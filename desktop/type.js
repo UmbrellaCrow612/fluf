@@ -144,92 +144,6 @@
  */
 
 /**
- * Internal to desktop api - Represents a terminal where cmds can be run - ignore in main world
- * @typedef {Object} terminal
- * @property {string} id - A unique ID
- * @property {string} shell - The shell type to run it in
- * @property {string} directory - The directory folder to run the cmds in
- * @property {string[]} history - List of cmds ran in the terminal
- * @property {string[]} output - List of output
- * @property {import("child_process").ChildProcessWithoutNullStreams} process - The spawned shell process - ignore in main world
- * @property {import("electron").WebContents} webContents - Electron web
- */
-
-/**
- * Represents information about a terminal instace
- * @typedef {Object} terminalInformation
- * @property {string} id - A unique ID
- * @property {string} shell - The shell type to run it in
- * @property {string} directory - The directory folder to run the cmds in
- * @property {string[]} history - List of cmds ran in the terminal
- * @property {string[]} output - List of chunk outputs
- */
-
-/**
- * Create a terminal insatce and run cmds agaisnt
- * @callback createTerminal
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directory - The directory to create the terminal in
- * @returns {Promise<terminalInformation | undefined>} The terminal information or undefined if it could not
- */
-
-/**
- * Run cmds agaisnt a existing terminal
- * @callback runCmdInTerminal
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} terminalId - The ID of the terminal to run cmds agaisnt
- * @param {string} cmd - The string cmd to run for example `node myfile.js`
- * @returns {Promise<boolean>} - True if it could run cmds in the terminal or false
- */
-
-/**
- * Kill a terminal processes manually
- * @callback killTerminal
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} terminalId - The terminal to kill
- * @returns {Promise<boolean>} True if it was killed else false
- */
-
-/**
- * Shape of data passed to callback when data changes
- * @typedef {Object} terminalChangeData
- * @property {string } id - The id of the terminal emitting event
- * @property {string} chunk - The chunk string sent across
- */
-
-/**
- * The logic to run when a terminal changes
- * @callback onTerminalChangeCallBack
- * @param {terminalChangeData} data
- * @return {void}
- */
-
-/**
- * Listen to a specific terminal and when it changes it's output run custom callback function
- * @callback onTerminalChange
- * @param {string} terminalId - The id of the terminal to subscribe to
- * @param {onTerminalChangeCallBack} callback - The callback to run
- * @returns {() => void} - Method to unsub the callback
- */
-
-/**
- * Get a specific terminals data by it's id
- * @callback getTerminalInformation
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} terminalId - The ID of the terminal to fetch
- * @returns {Promise<terminalInformation | undefined>} The terminal or nothing
- */
-
-/**
- * Takes a list of terminal information and re spawns the procsses for these - used typically when the application closes and UI holds state of terminals spawend in the
- * lifetime and then re spawn those with the stored historyu and state
- * @callback restoreTerminals
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {terminalInformation[]} terminals - List of terminals to respawn
- * @returns {Promise<string[]>} List of terminals id's it was not able to restore if empty then all where resapwend
- */
-
-/**
  * Data passed to the callback when a directory changes
  * @typedef {Object} directoryChangedData
  * @property {string} dirPath - The directory being watched
@@ -270,6 +184,76 @@
  */
 
 /**
+ * Data passed when shell out stream changes
+ * @typedef {Object} shellChangeData
+ * @property {string} chunk - The chunk of new information
+ * @property {string} id - The id of the shell
+ */
+
+/**
+ * Custom callback logic you want to run when a shell changes it's data
+ * @callback onShellChangeCallback
+ * @param {shellChangeData} data - The new data
+ * @returns {void} - Should not return enything
+ */
+
+/**
+ * Listen to when a shell changes it data either with output stream data or error data
+ * @callback onShellChange
+ * @param {string} shellId - The specific shell to subscribe to
+ * @param {onShellChangeCallback} callback - The custom logic you want to run
+ * @returns {() => void} - Unsubscribe method
+ */
+
+/**
+ * Information about a given shell
+ * @typedef {Object} shellInformation
+ * @property {string} id - The id of the shell
+ * @property {"powershell.exe" | "bash"} shell - The shell spawned
+ * @property {string[]} history - List of previous output data chunks
+ */
+
+/**
+ * @callback createShell
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} dir - The cwd to spawn it in
+ * @returns {Promise<shellInformation | undefined>} Create a shell to run cmds in or nothing if it could not
+ */
+
+/**
+ * Run cmds in a specific shell
+ * @callback runCmdsInShell
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} shellId - The shell to run the cmd in
+ * @param {string} cmd - The cmd to run
+ * @returns {Promise<boolean>} If it could or could not run the cmd
+ */
+
+/**
+ * Sends a Ctrl+C (interrupt) signal to the shell.
+ * @callback stopCmdInShell
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} shellId
+ * @returns {Promise<boolean>} True or false if it could
+ */
+
+/**
+ * Finds and kills a shell by its ID.
+ * @callback killShellById
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} shellId
+ * @returns {Promise<boolean>} True if the shell was found and the kill command was sent, false otherwise.
+ */
+
+/**
+ * Check if a shell is still alive and running
+ * @callback isShellActive
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} shellId - The id of the shell to check
+ * @returns {Promise<boolean>} True if the shell is still alive or false if not or dose not exist
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -289,13 +273,14 @@
  * @property {createDirectory} createDirectory - Create a directory folder at a given path
  * @property {deleteFile} deleteFile - Delete a file by it's file path
  * @property {deleteDirectory} deleteDirectory - Delete a folder directory by it's path is recursive
- * @property {createTerminal} createTerminal - Create a terminal to run cmds in
- * @property {runCmdInTerminal} runCmdsInTerminal - Run cmds in a given terminal
- * @property {killTerminal} killTerminal - Kill a terminal processes
- * @property {onTerminalChange} onTerminalChange - Listen to when a terminal changes and react , returns a unsub function for the callback
- * @property {getTerminalInformation} getTerminalInformation - Geta specific terminals information by it's ID
- * @property {restoreTerminals} restoreTerminals - Pass a list of terminals from previous state to respawn
  * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
+ *
+ * @property {killShellById} killShellById - Kill a specific shell by it's ID
+ * @property {stopCmdInShell} stopCmdInShell - Runs Ctrl+C in the shell
+ * @property {runCmdsInShell} runCmdsInShell - Run a specific cmd in a shell
+ * @property {createShell} createShell - Create a shell
+ * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
+ * @property {isShellActive} isShellActive - Check if a shell is still alive
  */
 
 /**

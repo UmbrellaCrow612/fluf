@@ -100,15 +100,6 @@ export class EditorComponent implements OnInit, OnDestroy {
     this.isLeftActive = init.sideBarActiveElement != null;
     this.sideBarActivateElement = init.sideBarActiveElement;
 
-    // restore previous lost terminals states based on stored state
-    let count = await this.api.restoreTerminals(
-      undefined,
-      init.terminals ?? []
-    );
-    if (count.length > 0) {
-      console.warn('Failed to restore terminal session ' + count[0]);
-    }
-
     // if dir selected watch it
     if (init.selectedDirectoryPath) {
       this.isDirectoryBeingWatched = true;

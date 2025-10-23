@@ -2,12 +2,31 @@
 
 Contains all our desktop specific code built with electron and esbuild
 
-# Running
 
-- Install deps `npm ci`
-- For dev make sure the `.env` mode is in `dev`
-- Make sure the front end is running in dev as well
-- run `npm start`
+# Before 
+
+- Extra component - MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest) - based the version my vs version
+- visual studio and desktop c++ component visual studio component
+- NVM https://github.com/coreybutler/nvm-windows/releases
+- nvm install 16
+- nvm use nvm use 16.20.2
+- Stick to node 16 and electron 19 for node pty to work any deps downloaded or installed need to be with node 16
+- Have python installed
+
+
+# Running / re run steps
+
+```bash
+nvm use 16
+rm -rf node_modules
+rm package-lock.json 
+remove "electron-rebuild": "^3.2.9", from package json
+npm install
+npm install electron-rebuild -- save dev
+.\node_modules\.bin\electron-rebuild.cmd
+```
+
+Run the `node install.js` then `npm run start` for dev make sure .env is dev mode and points to UI
 
 
 # Style guide

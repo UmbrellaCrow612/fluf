@@ -17,31 +17,29 @@ const api = {
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
   normalize: (_event, path) => ipcRenderer.invoke("path:normalize", path),
 
-  onTerminalChange: (termId, cb) => {
+  createShell: (_event, dir) => ipcRenderer.invoke("shell:create", dir),
+  killShellById: (_event, shellId) => ipcRenderer.invoke("shell:kill", shellId),
+  runCmdsInShell: (_event, shellId, cmd) =>
+    ipcRenderer.invoke("shell:cmd", shellId, cmd),
+  stopCmdInShell: (_event, shellId) =>
+    ipcRenderer.invoke("shell:stop", shellId),
+
+  onShellChange: (shellId, cb) => {
     /**
-     * @param {any} _
-     * @param {terminalChangeData} data
+     * @param {import("electron").IpcRendererEvent} _
+     * @param {shellChangeData} data
      */
-    let listener = (_, data) => {
-      if (data.id == termId) {
-        cb(data);
-      }
+    let listner = (_, data) => {
+      if (data.id == shellId) cb(data);
     };
 
-    ipcRenderer.on("terminal-data", listener);
+    ipcRenderer.on("shell:change", listner);
 
-    return () => ipcRenderer.removeListener("terminal-data", listener);
+    return () => ipcRenderer.removeListener("shell:change", listner);
   },
 
-  createTerminal: (_event, directory) =>
-    ipcRenderer.invoke("terminal:create", directory),
-  killTerminal: (_event, termId) => ipcRenderer.invoke("terminal:kill", termId),
-  runCmdsInTerminal: (_event, termId, cmd) =>
-    ipcRenderer.invoke("terminal:cmds:run", termId, cmd),
-  getTerminalInformation: (_event, termId) =>
-    ipcRenderer.invoke("terminal:id", termId),
-  restoreTerminals: (_event, terms) =>
-    ipcRenderer.invoke("terminal:restore", terms),
+  isShellActive: (_event, shellId) =>
+    ipcRenderer.invoke("shell:alive", shellId),
 
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);
@@ -49,7 +47,7 @@ const api = {
     /**
      * @param {directoryChangedData} data
      */
-    const listener = (_, data) => {
+    const listener = (/** @type {any} */ _, data) => {
       if (data.dirPath === dirPath) cb(data);
     };
 

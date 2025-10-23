@@ -18,16 +18,18 @@ const {
   createDirectoryImpl,
   deleteFileImpl,
   deletDirectoryImpl,
-  cleanupTerminals,
-  createTerminalImpl,
-  killTerminalImpl,
-  runCommandInTerminalImpl,
-  getTerminalInformationImpl,
-  restoreTerminalsImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
 } = require("./ipcFuncs");
+const {
+  cleanUpShells,
+  createShellImpl,
+  killShellById,
+  runCommandInShellImpl,
+  stopCommandInShell,
+  isShellActiveImpl,
+} = require("./shell");
 
 loadEnv();
 
@@ -75,12 +77,6 @@ app.whenReady().then(() => {
 
   ipcMain.handle("window:isMaximized", isMaximizedImpl);
 
-  ipcMain.handle("terminal:create", createTerminalImpl);
-  ipcMain.handle("terminal:kill", killTerminalImpl);
-  ipcMain.handle("terminal:cmds:run", runCommandInTerminalImpl);
-  ipcMain.handle("terminal:id", getTerminalInformationImpl);
-  ipcMain.handle("terminal:restore", restoreTerminalsImpl);
-
   ipcMain.handle("dir:watch", watchDirectoryImpl);
   ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
 
@@ -89,10 +85,16 @@ app.whenReady().then(() => {
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
 
+  ipcMain.handle("shell:create", createShellImpl);
+  ipcMain.handle("shell:kill", killShellById);
+  ipcMain.handle("shell:cmd", runCommandInShellImpl);
+  ipcMain.handle("shell:stop", stopCommandInShell);
+  ipcMain.handle("shell:alive", isShellActiveImpl);
+
   createWindow();
 });
 
 app.on("before-quit", () => {
-  cleanupTerminals();
+  cleanUpShells();
   cleanUpWatchers();
 });

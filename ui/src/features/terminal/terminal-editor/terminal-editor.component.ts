@@ -8,13 +8,19 @@ import {
 } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
-import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormControl,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
+import { HotKey, HotKeyService } from '../../hotkeys/hot-key.service';
 
-type anonCallback = () => void;
+type UnsubscribeCallback = () => void;
 
 @Component({
   selector: 'app-terminal-editor',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, FormsModule],
   templateUrl: './terminal-editor.component.html',
   styleUrl: './terminal-editor.component.css',
 })
@@ -23,142 +29,173 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly zone = inject(NgZone);
+  private readonly hotKeyService = inject(HotKeyService);
+
+  graceStopTermHotKey: HotKey = {
+    callback: async () => {
+      if (this.currentActiveShellId) {
+        await this.api.stopCmdInShell(undefined, this.currentActiveShellId);
+      }
+    },
+    keys: ['Control', 'c'],
+  };
 
   fullOutput: string = '';
-  currentActiveTerminal: terminalInformation | null = null;
-  currentActiveTerminalId: string | null = null;
+  currentActiveShell: shellInformation | null = null;
+  currentActiveShellId: string | null = null;
 
   error: string | null = null;
   isLoading = false;
 
   cmdInputControl = new FormControl('', {
     validators: [Validators.required],
+    nonNullable: true,
   });
 
-  unSub: anonCallback | null = null;
+  unsSub: UnsubscribeCallback | null = null;
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
+    const init = this.appContext.getSnapshot();
 
-    this.currentActiveTerminalId = init.currentActiveTerminald;
-    this.currentActiveTerminal =
-      init.terminals?.find((x) => x.id == this.currentActiveTerminalId) ?? null;
+    this.hotKeyService.autoSub(this.graceStopTermHotKey, this.destroyRef);
 
-    await this.initTerm();
+    // Initial setup
+    this.currentActiveShellId = init.currentActiveShellId;
+    this.currentActiveShell =
+      init.shells?.find((x) => x.id == this.currentActiveShellId) ?? null;
+
+    await this.initShell();
 
     this.appContext.autoSub(
-      'currentActiveTerminald',
+      'currentActiveShellId',
       async (ctx) => {
-        this.currentActiveTerminalId = ctx.currentActiveTerminald;
-        this.currentActiveTerminal =
-          ctx.terminals?.find((x) => x.id == this.currentActiveTerminalId) ??
-          null;
+        this.currentActiveShellId = ctx.currentActiveShellId;
+        this.currentActiveShell =
+          ctx.shells?.find((x) => x.id == this.currentActiveShellId) ?? null;
 
-        await this.initTerm();
+        await this.initShell();
       },
       this.destroyRef
     );
   }
 
   ngOnDestroy() {
-    if (this.unSub) {
-      this.unSub();
+    if (this.unsSub) {
+      this.unsSub();
     }
   }
 
   /**
    * Loads and binds ui to the terminal thats active and other state
    */
-  async initTerm() {
+  async initShell() {
     this.error = null;
     this.isLoading = true;
+    this.fullOutput = '';
 
-    if (!this.currentActiveTerminal) {
-      this.error = 'No terminal found';
+    if (this.unsSub) {
+      this.unsSub();
+    }
+
+    if (!this.currentActiveShell || !this.currentActiveShellId) {
+      this.error = 'No active terminal selected.';
       this.isLoading = false;
-      this.fullOutput = '';
       return;
     }
 
-    if (this.unSub) {
-      this.unSub();
-    }
-
-    this.unSub = this.api.onTerminalChange(
-      this.currentActiveTerminalId!,
-      (data) => {
-        this.zone.run(() => {
-          const chunk = data.chunk;
-          this.fullOutput += chunk;
-
-          const lines = this.fullOutput.split(/\r?\n/);
-          if (lines.length > 70) {
-            this.fullOutput = lines.slice(-70).join('\n');
-          }
-
-          if (this.currentActiveTerminal) {
-            this.currentActiveTerminal.output = lines.slice(-70);
-          }
-
-          this.updateCurrentActiveTerminalState();
-        });
-      }
-    );
-
-    let term = await this.api.getTerminalInformation(
+    const alive = await this.api.isShellActive(
       undefined,
-      this.currentActiveTerminalId!
+      this.currentActiveShellId
     );
-    if (!term) {
-      this.error = 'No terminal found';
+
+    if (!alive) {
+      this.error =
+        'The selected terminal process is no longer running. Please create a new one.';
       this.isLoading = false;
-      this.fullOutput = '';
+      this.cmdInputControl.disable();
+      this.removeCurrentFromCtx();
       return;
     }
-    this.fullOutput = term.output.join('\n');
 
-    this.currentActiveTerminal!.output = term.output.slice(-70);
+    this.unsSub = this.api.onShellChange(this.currentActiveShellId, (data) => {
+      this.zone.run(() => {
+        this.currentActiveShell?.history.push(data.chunk);
+
+        this.fullOutput += data.chunk;
+        const lines = this.fullOutput.split(/\r?\n/);
+        const maxLines = 100; // Increased buffer for better context
+        if (lines.length > maxLines) {
+          this.fullOutput = lines.slice(-maxLines).join('\n');
+        }
+
+        this.updateCurrentInCtxDebounced();
+      });
+    });
+
+    this.fullOutput = this.currentActiveShell?.history.join('\n');
 
     this.isLoading = false;
   }
 
-  private updateCurrentActiveTerminalState() {
-    const terms = this.appContext.getSnapshot().terminals;
-
-    if (!terms || !this.currentActiveTerminal) return;
-
-    const index = terms.findIndex(
-      (x) => x.id === this.currentActiveTerminal?.id
-    );
-
-    if (index !== -1) {
-      terms[index] = this.currentActiveTerminal;
-    }
-
-    this.appContext.update('terminals', terms);
-  }
-
   /**
-   * Runs a custom cmd wants to be run
+   * Runs a command that the user wants to run.
    */
   async onSubmit(event: Event) {
     event.preventDefault();
 
-    if (!this.cmdInputControl.valid) {
+    if (!this.cmdInputControl.valid || !this.currentActiveShellId) {
       return;
     }
 
-    let cmd = this.cmdInputControl.value;
-
-    await this.api.runCmdsInTerminal(
-      undefined,
-      this.currentActiveTerminalId!,
-      cmd!
-    );
-
-    this.currentActiveTerminal?.history.push(cmd!);
-    this.updateCurrentActiveTerminalState();
+    const cmd = this.cmdInputControl.value;
+    await this.api.runCmdsInShell(undefined, this.currentActiveShellId, cmd);
 
     this.cmdInputControl.setValue('');
+
+    this.updateCurrentInCtx();
+  }
+
+  /**
+   * Remove the current shell from ctx and render next one
+   */
+  private removeCurrentFromCtx() {
+    let init = this.appContext.getSnapshot();
+
+    let updated =
+      init.shells?.filter((x) => x.id != this.currentActiveShellId) ?? [];
+    let nextActiveId =
+      init.shells?.length != undefined && init.shells.length > 0
+        ? init.shells[0].id
+        : null;
+
+    this.appContext.update('shells', updated);
+    this.appContext.update('currentActiveShellId', nextActiveId);
+  }
+
+  /**
+   * Update glob state of current shell when it changes
+   */
+  private updateCurrentInCtx() {
+    let shells = this.appContext.getSnapshot().shells;
+
+    if (!shells) return;
+
+    let indexOf = shells.findIndex((x) => x.id == this.currentActiveShellId);
+
+    if (indexOf >= 0) {
+      shells[indexOf] = this.currentActiveShell!;
+      this.appContext.update('shells', shells);
+    }
+  }
+
+  private updateCurrentInCtxDebouncedTimeout: any = null;
+  private updateCurrentInCtxDebounced(delay = 200) {
+    if (this.updateCurrentInCtxDebouncedTimeout) {
+      clearTimeout(this.updateCurrentInCtxDebouncedTimeout);
+    }
+    this.updateCurrentInCtxDebouncedTimeout = setTimeout(() => {
+      this.updateCurrentInCtx();
+      console.log("Debouce ran")
+    }, delay);
   }
 }

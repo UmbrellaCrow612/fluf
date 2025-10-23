@@ -28,15 +28,15 @@ export class TerminalTabsComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly api = getElectronApi();
 
-  terminals: terminalInformation[] | null = null;
+  shells: shellInformation[] | null = null;
 
   ngOnInit(): void {
-    this.terminals = this.appContext.getSnapshot().terminals;
+    this.shells = this.appContext.getSnapshot().shells;
 
     this.appContext.autoSub(
-      'terminals',
+      'shells',
       (ctx) => {
-        this.terminals = ctx.terminals;
+        this.shells = ctx.shells;
       },
       this.destroyRef
     );
@@ -45,17 +45,17 @@ export class TerminalTabsComponent implements OnInit {
   async createNewTerminal() {
     let ctx = this.appContext.getSnapshot();
 
-    let newTerm = await this.api.createTerminal(
+    let newTerm = await this.api.createShell(
       undefined,
       ctx.selectedDirectoryPath!
     );
 
     if (newTerm) {
-      let terms = ctx.terminals ?? [];
-      terms.unshift(newTerm);
+      let shells = ctx.shells ?? [];
+      shells.unshift(newTerm);
 
-      this.appContext.update('terminals', terms);
-      this.appContext.update('currentActiveTerminald', newTerm.id);
+      this.appContext.update('shells', shells);
+      this.appContext.update('currentActiveShellId', newTerm.id);
     }
   }
 }
