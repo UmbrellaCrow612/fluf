@@ -25,6 +25,8 @@ const cleanUpShells = () => {
     shellDisposes.delete(id);
 
     shell.kill();
+
+    console.log("Clean up shell " + id)
   });
 };
 

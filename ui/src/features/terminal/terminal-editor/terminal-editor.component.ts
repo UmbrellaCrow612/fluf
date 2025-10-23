@@ -8,7 +8,12 @@ import {
 } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
-import { ReactiveFormsModule, FormControl, Validators, FormsModule } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormControl,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import { HotKey, HotKeyService } from '../../hotkeys/hot-key.service';
 
 type UnsubscribeCallback = () => void;
@@ -91,7 +96,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     if (this.unsSub) {
       this.unsSub();
     }
-  
+
     if (!this.currentActiveShell || !this.currentActiveShellId) {
       this.error = 'No active terminal selected.';
       this.isLoading = false;
@@ -108,20 +113,26 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
         'The selected terminal process is no longer running. Please create a new one.';
       this.isLoading = false;
       this.cmdInputControl.disable();
-      // this.appContext.removeShell(this.currentActiveShellId);
+      this.removeCurrentFromCtx();
       return;
     }
 
     this.unsSub = this.api.onShellChange(this.currentActiveShellId, (data) => {
       this.zone.run(() => {
+        this.currentActiveShell?.history.push(data.chunk);
+
         this.fullOutput += data.chunk;
         const lines = this.fullOutput.split(/\r?\n/);
         const maxLines = 100; // Increased buffer for better context
         if (lines.length > maxLines) {
           this.fullOutput = lines.slice(-maxLines).join('\n');
         }
+
+        this.updateCurrentInCtxDebounced();
       });
     });
+
+    this.fullOutput = this.currentActiveShell?.history.join('\n');
 
     this.isLoading = false;
   }
@@ -140,5 +151,51 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     await this.api.runCmdsInShell(undefined, this.currentActiveShellId, cmd);
 
     this.cmdInputControl.setValue('');
+
+    this.updateCurrentInCtx();
+  }
+
+  /**
+   * Remove the current shell from ctx and render next one
+   */
+  private removeCurrentFromCtx() {
+    let init = this.appContext.getSnapshot();
+
+    let updated =
+      init.shells?.filter((x) => x.id != this.currentActiveShellId) ?? [];
+    let nextActiveId =
+      init.shells?.length != undefined && init.shells.length > 0
+        ? init.shells[0].id
+        : null;
+
+    this.appContext.update('shells', updated);
+    this.appContext.update('currentActiveShellId', nextActiveId);
+  }
+
+  /**
+   * Update glob state of current shell when it changes
+   */
+  private updateCurrentInCtx() {
+    let shells = this.appContext.getSnapshot().shells;
+
+    if (!shells) return;
+
+    let indexOf = shells.findIndex((x) => x.id == this.currentActiveShellId);
+
+    if (indexOf >= 0) {
+      shells[indexOf] = this.currentActiveShell!;
+      this.appContext.update('shells', shells);
+    }
+  }
+
+  private updateCurrentInCtxDebouncedTimeout: any = null;
+  private updateCurrentInCtxDebounced(delay = 200) {
+    if (this.updateCurrentInCtxDebouncedTimeout) {
+      clearTimeout(this.updateCurrentInCtxDebouncedTimeout);
+    }
+    this.updateCurrentInCtxDebouncedTimeout = setTimeout(() => {
+      this.updateCurrentInCtx();
+      console.log("Debouce ran")
+    }, delay);
   }
 }

@@ -47,8 +47,7 @@ export class TerminalTabItemComponent implements OnInit {
   async killShell(event: Event) {
     event.stopPropagation();
 
-    let res = await this.api.killShellById(undefined, this.shell().id);
-    console.log(res);
+    await this.api.killShellById(undefined, this.shell().id);
 
     let init = this.appContext.getSnapshot();
 
