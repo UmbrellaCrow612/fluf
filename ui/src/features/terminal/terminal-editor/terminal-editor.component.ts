@@ -58,6 +58,16 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       },
       this.destroyRef
     );
+
+    this.appContext.autoSub(
+      'isFileExplorerResize',
+      (ctx) => {
+        if (ctx.isFileExplorerResize) {
+          this.fitAddon.fit();
+        }
+      },
+      this.destroyRef
+    );
   }
 
   ngOnDestroy() {
@@ -76,8 +86,8 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     if (this.unsSub) {
       this.unsSub();
     }
-    if(this.dispose){
-      this.dispose.dispose()
+    if (this.dispose) {
+      this.dispose.dispose();
     }
 
     if (!this.currentActiveShell || !this.currentActiveShellId) {
@@ -114,29 +124,26 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Call after shell dose exist
+   * Call this when shell exists and is alive to render xterm
    */
   private renderXterm() {
-    // wait a bit for div to appear after angular dose condtional @if checks
-    setTimeout(() => {
-      let container = document.getElementById('xterm_container');
-      if (!container) {
-        this.error = 'Could not find terminal container';
-        return;
-      }
-      this.terminal.loadAddon(this.fitAddon);
+    let container = document.getElementById('xterm_container');
+    if (!container) {
+      this.error = 'Could not find terminal container';
+      return;
+    }
+    this.terminal.loadAddon(this.fitAddon);
 
-      this.terminal.open(container);
-      this.fitAddon.fit();
+    this.terminal.open(container);
+    this.fitAddon.fit();
 
-      this.terminal.write(this.currentActiveShell?.history.join('\n') ?? '');
+    this.terminal.write(this.currentActiveShell?.history.join('\n') ?? '');
 
-      this.dispose = this.terminal.onData(async (data) => {
-        if (!this.currentActiveShellId) return;
+    this.dispose = this.terminal.onData(async (data) => {
+      if (!this.currentActiveShellId) return;
 
-        await this.api.writeToShell(undefined, this.currentActiveShellId, data);
-      });
-    }, 200);
+      await this.api.writeToShell(undefined, this.currentActiveShellId, data);
+    });
   }
 
   /**
