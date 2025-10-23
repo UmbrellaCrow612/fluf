@@ -206,29 +206,6 @@
  */
 
 /**
- * Shape of data when shell closes
- * @typedef {Object} shellCloseData
- * @property {number} code - The code
- * @property {number} signal - The signal
- * @property {string} id - The ID of the shell
- */
-
-/**
- * The custom callback you want to run when a shell closes
- * @callback onShellCloseCallback
- * @param {shellCloseData} data - The data passed to the callback
- * @returns {void} Nothing
- */
-
-/**
- * Run logic when shell closes
- * @callback onShellClose
- * @param {string} shellId - The specific shell to subscribe to
- * @param {onShellCloseCallback} callback - The custom logic you want to run
- * @returns {() => void} UnSubscribe method
- */
-
-/**
  * Information about a given shell
  * @typedef {Object} shellInformation
  * @property {string} id - The id of the shell
@@ -302,7 +279,6 @@
  * @property {stopCmdInShell} stopCmdInShell - Runs Ctrl+C in the shell
  * @property {runCmdsInShell} runCmdsInShell - Run a specific cmd in a shell
  * @property {createShell} createShell - Create a shell
- * @property {onShellClose} onShellClose - Run logic when a shell closes
  * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
  * @property {isShellActive} isShellActive - Check if a shell is still alive
  */

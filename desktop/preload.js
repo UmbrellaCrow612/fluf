@@ -38,21 +38,8 @@ const api = {
     return () => ipcRenderer.removeListener("shell:change", listner);
   },
 
-  onShellClose: (shellId, cb) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param {shellCloseData} data
-     */
-    let listner = (_, data) => {
-      if (data.id == shellId) cb(data);
-    };
-
-    ipcRenderer.on("shell:close", listner);
-
-    return () => ipcRenderer.removeListener("shell:close", listner);
-  },
-
-  isShellActive: (_event, shellId) => ipcRenderer.invoke("shell:alive", shellId),
+  isShellActive: (_event, shellId) =>
+    ipcRenderer.invoke("shell:alive", shellId),
 
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);

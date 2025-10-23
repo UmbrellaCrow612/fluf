@@ -12,11 +12,9 @@
   @if (!isLoading && !error) {
   <div class="content">
     <pre class="terminal-output scroll_bar">{{ fullOutput }}</pre>
-    <input
-      type="text"
-      [formControl]="cmdInputControl"
-      (keyup.enter)="onSubmit($event)"
-    />
+    <form (ngSubmit)="onSubmit($event)">
+      <input type="text" [formControl]="cmdInputControl" />
+    </form>
   </div>
   }
 </div>

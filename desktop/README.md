@@ -11,23 +11,18 @@ Contains all our desktop specific code built with electron and esbuild
 - nvm install 16
 - nvm use nvm use 16.20.2
 
+
+# Running / re run steps
+
 ```bash
+nvm use 16
 rm -rf node_modules
-rm package-lock.json # or yarn.lock if using yarn
-npm install
+rm package-lock.json 
+remove "electron-rebuild": "^3.2.9", from package json
+npm install regular deps
+npm install electron-rebuild -- save dev
 .\node_modules\.bin\electron-rebuild.cmd
 ```
-
-# Running
-
-- Download nvm https://github.com/coreybutler/nvm-windows/releases
-- Download `nvm install 16`
-- Use `nvm use nvm use 16.20.2`
-- Install deps `npm ci`
-- `.\node_modules\.bin\electron-rebuild.cmd`
-- For dev make sure the `.env` mode is in `dev`
-- Make sure the front end is running in dev as well
-- run `npm run start`
 
 
 # Style guide

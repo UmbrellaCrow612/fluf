@@ -159,31 +159,6 @@ type onShellChangeCallback = (data: shellChangeData) => void;
  */
 type onShellChange = (shellId: string, callback: onShellChangeCallback) => () => void;
 /**
- * Shape of data when shell closes
- */
-type shellCloseData = {
-    /**
-     * - The code
-     */
-    code: number;
-    /**
-     * - The signal
-     */
-    signal: number;
-    /**
-     * - The ID of the shell
-     */
-    id: string;
-};
-/**
- * The custom callback you want to run when a shell closes
- */
-type onShellCloseCallback = (data: shellCloseData) => void;
-/**
- * Run logic when shell closes
- */
-type onShellClose = (shellId: string, callback: onShellCloseCallback) => () => void;
-/**
  * Information about a given shell
  */
 type shellInformation = {
@@ -305,10 +280,6 @@ type ElectronApi = {
      * - Create a shell
      */
     createShell: createShell;
-    /**
-     * - Run logic when a shell closes
-     */
-    onShellClose: onShellClose;
     /**
      * - Run logic when data in the shell stream changes either regular data or error output
      */
