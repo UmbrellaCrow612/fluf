@@ -69,12 +69,21 @@ export type AppContext = {
    */
   fileEditorBottomActiveElement: fileEditorBottomActiveElement | null;
 
-  shells: shellInformation[] | null,
+  /**
+   * List of active shells
+   */
+  shells: shellInformation[] | null;
 
   /**
    * The current active shell to see output and input cmds in
    */
   currentActiveShellId: string | null;
+
+  /**
+   * Use as a source of subs when you want to now when the file explorer resize is triggered and keeps fireing off
+   * when it dose
+   */
+  isFileExplorerResize: boolean | null;
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -106,6 +115,7 @@ export class ContextService {
     fileEditorBottomActiveElement: null,
     shells: null,
     currentActiveShellId: null,
+    isFileExplorerResize:null
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

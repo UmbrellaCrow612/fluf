@@ -221,11 +221,11 @@
  */
 
 /**
- * Run cmds in a specific shell
- * @callback runCmdsInShell
+ * Write user input directly to ther shell input stream
+ * @callback writeToShell
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} shellId - The shell to run the cmd in
- * @param {string} cmd - The cmd to run
+ * @param {string} content - The content  to write to the shell buffer
  * @returns {Promise<boolean>} If it could or could not run the cmd
  */
 
@@ -277,7 +277,7 @@
  *
  * @property {killShellById} killShellById - Kill a specific shell by it's ID
  * @property {stopCmdInShell} stopCmdInShell - Runs Ctrl+C in the shell
- * @property {runCmdsInShell} runCmdsInShell - Run a specific cmd in a shell
+ * @property {writeToShell} writeToShell - Write to a specific shells input stream
  * @property {createShell} createShell - Create a shell
  * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
  * @property {isShellActive} isShellActive - Check if a shell is still alive

@@ -65,14 +65,14 @@ const createShellImpl = async (_event = undefined, dir) => {
   return { id, shell, history: [] };
 };
 
-/** @type {runCmdsInShell} */
-const runCommandInShellImpl = async (_event, shellId, cmd) => {
+/** @type {writeToShell} */
+const writeToShellImpl = async (_event, shellId, cmd) => {
   const shell = shellStore.get(shellId);
   if (!shell) {
     return false;
   }
 
-  shell.write(cmd + os.EOL);
+  shell.write(cmd);
   return true;
 };
 
@@ -111,7 +111,7 @@ const isShellActiveImpl = async (_event = undefined, shellId) => {
 
 module.exports = {
   killShellById,
-  runCommandInShellImpl,
+  writeToShellImpl,
   createShellImpl,
   stopCommandInShell,
   isShellActiveImpl,

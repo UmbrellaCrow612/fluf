@@ -177,9 +177,9 @@ type shellInformation = {
 };
 type createShell = (event?: Electron.IpcMainInvokeEvent | undefined, dir: string) => Promise<shellInformation | undefined>;
 /**
- * Run cmds in a specific shell
+ * Write user input directly to ther shell input stream
  */
-type runCmdsInShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, cmd: string) => Promise<boolean>;
+type writeToShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, content: string) => Promise<boolean>;
 /**
  * Sends a Ctrl+C (interrupt) signal to the shell.
  */
@@ -273,9 +273,9 @@ type ElectronApi = {
      */
     stopCmdInShell: stopCmdInShell;
     /**
-     * - Run a specific cmd in a shell
+     * - Write to a specific shells input stream
      */
-    runCmdsInShell: runCmdsInShell;
+    writeToShell: writeToShell;
     /**
      * - Create a shell
      */

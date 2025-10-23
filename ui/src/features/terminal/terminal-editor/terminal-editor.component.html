@@ -8,13 +8,5 @@
   <div>Loading</div>
   }
 
-  <!---->
-  @if (!isLoading && !error) {
-  <div class="content">
-    <pre class="terminal-output scroll_bar">{{ fullOutput }}</pre>
-    <form (ngSubmit)="onSubmit($event)">
-      <input type="text" [formControl]="cmdInputControl" />
-    </form>
-  </div>
-  }
+  <div id="xterm_container" class="scroll_bar"></div>
 </div>
