@@ -79,24 +79,12 @@ const killShellById = async (_event = undefined, shellId) => {
   const shell = shellStore.get(shellId);
   if (!shell) return false;
 
-  // 1. Ask shell to exit gracefully first
-  try {
-    shell.write("exit" + os.EOL);
-  } catch (err) {
-    if (err.code !== "EPIPE") console.warn(err);
-  }
+  shell.write("exit" + os.EOL);
 
-  // 2. Wait a little so it can close normally
   await new Promise((r) => setTimeout(r, 300));
 
-  // 3. Kill only if still alive
-  try {
-    shell.kill();
-  } catch (err) {
-    if (err.code !== "EPIPE") console.warn(err);
-  }
+  shell.kill();
 
-  // 4. Clean up
   shellStore.delete(shellId);
   shellDisposes.get(shellId)?.forEach((d) => d.dispose());
   shellDisposes.delete(shellId);
