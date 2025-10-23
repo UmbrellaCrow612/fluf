@@ -41,6 +41,9 @@ const api = {
   isShellActive: (_event, shellId) =>
     ipcRenderer.invoke("shell:alive", shellId),
 
+  resizeShell: (_, shellId, data) =>
+    ipcRenderer.invoke("shell:resize", shellId, data),
+
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);
 

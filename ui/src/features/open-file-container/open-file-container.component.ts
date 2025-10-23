@@ -87,6 +87,12 @@ export class OpenFileContainerComponent implements OnInit {
     const totalFlex = this.fileEditorContainerFlex + this.bottomFlex;
 
     const onMouseMove = (mouseMoveEvent: MouseEvent) => {
+      if(!this.isResizing){
+        return;
+      }
+
+      this.appContext.update("isEditorResize", true)
+      
       const deltaY = mouseMoveEvent.movementY;
 
       const deltaFlex = (deltaY / totalHeight) * totalFlex;

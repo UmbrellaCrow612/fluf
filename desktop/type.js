@@ -254,6 +254,15 @@
  */
 
 /**
+ * Resize the backend shell col and width
+ * @callback resizeShell
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} shellId - The ID of the shell to change
+ * @param {{cols:number, rows:number}} data - The new cols and rows
+ * @returns {Promise<boolean>} If it could or could not resize the shell
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -281,6 +290,7 @@
  * @property {createShell} createShell - Create a shell
  * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
  * @property {isShellActive} isShellActive - Check if a shell is still alive
+ * @property {resizeShell} resizeShell - Resize the backend shell col and width
  */
 
 /**

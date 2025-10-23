@@ -2,7 +2,6 @@ import {
   Component,
   DestroyRef,
   inject,
-  NgZone,
   OnDestroy,
   OnInit,
 } from '@angular/core';
@@ -24,9 +23,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
-  private readonly zone = inject(NgZone);
-  private readonly terminal = new Terminal();
-  private readonly fitAddon = new FitAddon();
+
+  private terminal: Terminal | null = null;
+  private fitAddon: FitAddon | null = null;
   private dispose: IDisposable | null = null;
 
   currentActiveShell: shellInformation | null = null;
@@ -60,10 +59,14 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     );
 
     this.appContext.autoSub(
-      'isFileExplorerResize',
-      (ctx) => {
-        if (ctx.isFileExplorerResize) {
+      'isEditorResize',
+      async (ctx) => {
+        if (ctx.isEditorResize && this.fitAddon && this.terminal) {
           this.fitAddon.fit();
+          await this.api.resizeShell(undefined, this.currentActiveShellId!, {
+            cols: this.terminal.cols,
+            rows: this.terminal.rows,
+          });
         }
       },
       this.destroyRef
@@ -71,12 +74,23 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.cleanupTerminal();
+  }
+
+  private cleanupTerminal() {
     if (this.unsSub) {
       this.unsSub();
+      this.unsSub = null;
     }
     if (this.dispose) {
       this.dispose.dispose();
+      this.dispose = null;
     }
+    if (this.terminal) {
+      this.terminal.dispose();
+      this.terminal = null;
+    }
+    this.fitAddon = null;
   }
 
   /**
@@ -86,12 +100,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.error = null;
     this.isLoading = true;
 
-    if (this.unsSub) {
-      this.unsSub();
-    }
-    if (this.dispose) {
-      this.dispose.dispose();
-    }
+    this.cleanupTerminal();
 
     if (!this.currentActiveShell || !this.currentActiveShellId) {
       this.error = 'No active terminal selected.';
@@ -113,12 +122,10 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     }
 
     this.unsSub = this.api.onShellChange(this.currentActiveShellId, (data) => {
-      this.zone.run(() => {
-        this.currentActiveShell?.history.push(data.chunk);
-        this.terminal.write(data.chunk);
+      this.currentActiveShell?.history.push(data.chunk);
+      this.terminal?.write(data.chunk);
 
-        this.updateCurrentInCtxDebounced();
-      });
+      this.updateCurrentInCtxDebounced();
     });
 
     this.isLoading = false;
@@ -135,12 +142,20 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.error = 'Could not find terminal container';
       return;
     }
+
+    container.innerHTML = '';
+
+    this.terminal = new Terminal();
+    this.fitAddon = new FitAddon();
+
     this.terminal.loadAddon(this.fitAddon);
-
     this.terminal.open(container);
-    this.fitAddon.fit();
 
-    this.terminal.write(this.currentActiveShell?.history.join('\n') ?? '');
+    requestAnimationFrame(() => {
+      this.fitAddon?.fit();
+    });
+
+    this.terminal.write(this.currentActiveShell?.history.join('') ?? '');
 
     this.dispose = this.terminal.onData(async (data) => {
       if (!this.currentActiveShellId) return;

@@ -12,4 +12,17 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  background-color: black;
+}
+
+#xterm_container {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#xterm_container :deep(.xterm) {
+  height: 100%;
+  width: 100%;
 }

@@ -193,6 +193,13 @@ type killShellById = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: 
  */
 type isShellActive = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
 /**
+ * Resize the backend shell col and width
+ */
+type resizeShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, data: {
+    cols: number;
+    rows: number;
+}) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -288,6 +295,10 @@ type ElectronApi = {
      * - Check if a shell is still alive
      */
     isShellActive: isShellActive;
+    /**
+     * - Resize the backend shell col and width
+     */
+    resizeShell: resizeShell;
 };
 /**
  * Extends the global `window` object to include the Electron API.

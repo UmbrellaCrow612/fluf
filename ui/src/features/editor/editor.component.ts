@@ -50,7 +50,7 @@ export class EditorComponent implements OnInit, OnDestroy {
 
     const mouseMove = (mouseMove: MouseEvent) => {
       if (!this.isResizing) return;
-      this.appContext.update('isFileExplorerResize', true);
+      this.appContext.update('isEditorResize', true);
 
       const currentX = mouseMove.clientX;
       const deltaX = currentX - previousX;

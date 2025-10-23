@@ -26,7 +26,7 @@ const cleanUpShells = () => {
 
     shell.kill();
 
-    console.log("Clean up shell " + id)
+    console.log("Clean up shell " + id);
   });
 };
 
@@ -56,7 +56,7 @@ const createShellImpl = async (_event = undefined, dir) => {
         id,
       };
 
-      _event.sender.send("shell:change", shellData);
+      _event?.sender.send("shell:change", shellData);
     })
   );
 
@@ -109,12 +109,26 @@ const isShellActiveImpl = async (_event = undefined, shellId) => {
   return shellStore.has(shellId);
 };
 
+/**
+ * @type {resizeShell}
+ */
+const resizeShellImpl = async (_event = undefined, shellId, data) => {
+  let shell = shellStore.get(shellId);
+  if (!shell) {
+    return false;
+  }
+
+  shell.resize(data.cols, data.rows);
+  return true;
+};
+
 module.exports = {
   killShellById,
   writeToShellImpl,
   createShellImpl,
   stopCommandInShell,
   isShellActiveImpl,
+  resizeShellImpl,
 
   cleanUpShells,
 };

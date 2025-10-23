@@ -29,6 +29,7 @@ const {
   stopCommandInShell,
   isShellActiveImpl,
   writeToShellImpl,
+  resizeShellImpl,
 } = require("./shell");
 
 loadEnv();
@@ -90,6 +91,7 @@ app.whenReady().then(() => {
   ipcMain.handle("shell:write", writeToShellImpl);
   ipcMain.handle("shell:stop", stopCommandInShell);
   ipcMain.handle("shell:alive", isShellActiveImpl);
+  ipcMain.handle("shell:resize", resizeShellImpl)
 
   createWindow();
 });

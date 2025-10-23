@@ -80,10 +80,9 @@ export type AppContext = {
   currentActiveShellId: string | null;
 
   /**
-   * Use as a source of subs when you want to now when the file explorer resize is triggered and keeps fireing off
-   * when it dose
+   * Use a sub to listen when this is fired off - used when file explorer is resized or open file bottom is resized
    */
-  isFileExplorerResize: boolean | null;
+  isEditorResize: boolean | null;
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -115,7 +114,7 @@ export class ContextService {
     fileEditorBottomActiveElement: null,
     shells: null,
     currentActiveShellId: null,
-    isFileExplorerResize:null
+    isEditorResize:null
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();
