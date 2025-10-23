@@ -161,6 +161,15 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       if (!this.currentActiveShellId) return;
 
       await this.api.writeToShell(undefined, this.currentActiveShellId, data);
+
+      // Detect clear screen escape codes
+      if (
+        data.includes('\x1b[2J') ||
+        data.includes('\x1b[3J') ||
+        data.includes('\x1b[H\x1b[2J')
+      ) {
+        await this.api.writeToShell(undefined, this.currentActiveShellId, '\r');
+      }
     });
   }
 
