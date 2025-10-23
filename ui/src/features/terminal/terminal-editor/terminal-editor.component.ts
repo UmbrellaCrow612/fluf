@@ -8,13 +8,9 @@ import {
 } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
-import {
-  ReactiveFormsModule,
-  FormControl,
-  Validators,
-  FormsModule,
-} from '@angular/forms';
-import { HotKey, HotKeyService } from '../../hotkeys/hot-key.service';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { IDisposable, Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
 
 type UnsubscribeCallback = () => void;
 
@@ -29,35 +25,20 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly zone = inject(NgZone);
-  private readonly hotKeyService = inject(HotKeyService);
+  private readonly terminal = new Terminal();
+  private readonly fitAddon = new FitAddon();
+  private dispose: IDisposable | null = null;
 
-  graceStopTermHotKey: HotKey = {
-    callback: async () => {
-      if (this.currentActiveShellId) {
-        await this.api.stopCmdInShell(undefined, this.currentActiveShellId);
-      }
-    },
-    keys: ['Control', 'c'],
-  };
-
-  fullOutput: string = '';
   currentActiveShell: shellInformation | null = null;
   currentActiveShellId: string | null = null;
 
   error: string | null = null;
   isLoading = false;
 
-  cmdInputControl = new FormControl('', {
-    validators: [Validators.required],
-    nonNullable: true,
-  });
-
   unsSub: UnsubscribeCallback | null = null;
 
   async ngOnInit() {
     const init = this.appContext.getSnapshot();
-
-    this.hotKeyService.autoSub(this.graceStopTermHotKey, this.destroyRef);
 
     // Initial setup
     this.currentActiveShellId = init.currentActiveShellId;
@@ -91,10 +72,12 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   async initShell() {
     this.error = null;
     this.isLoading = true;
-    this.fullOutput = '';
 
     if (this.unsSub) {
       this.unsSub();
+    }
+    if(this.dispose){
+      this.dispose.dispose()
     }
 
     if (!this.currentActiveShell || !this.currentActiveShellId) {
@@ -112,7 +95,6 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.error =
         'The selected terminal process is no longer running. Please create a new one.';
       this.isLoading = false;
-      this.cmdInputControl.disable();
       this.removeCurrentFromCtx();
       return;
     }
@@ -120,39 +102,41 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.unsSub = this.api.onShellChange(this.currentActiveShellId, (data) => {
       this.zone.run(() => {
         this.currentActiveShell?.history.push(data.chunk);
-
-        this.fullOutput += data.chunk;
-        const lines = this.fullOutput.split(/\r?\n/);
-        const maxLines = 100; // Increased buffer for better context
-        if (lines.length > maxLines) {
-          this.fullOutput = lines.slice(-maxLines).join('\n');
-        }
+        this.terminal.write(data.chunk);
 
         this.updateCurrentInCtxDebounced();
       });
     });
 
-    this.fullOutput = this.currentActiveShell?.history.join('\n');
-
     this.isLoading = false;
+
+    this.renderXterm();
   }
 
   /**
-   * Runs a command that the user wants to run.
+   * Call after shell dose exist
    */
-  async onSubmit(event: Event) {
-    event.preventDefault();
+  private renderXterm() {
+    // wait a bit for div to appear after angular dose condtional @if checks
+    setTimeout(() => {
+      let container = document.getElementById('xterm_container');
+      if (!container) {
+        this.error = 'Could not find terminal container';
+        return;
+      }
+      this.terminal.loadAddon(this.fitAddon);
 
-    if (!this.cmdInputControl.valid || !this.currentActiveShellId) {
-      return;
-    }
+      this.terminal.open(container);
+      this.fitAddon.fit();
 
-    const cmd = this.cmdInputControl.value;
-    await this.api.runCmdsInShell(undefined, this.currentActiveShellId, cmd);
+      this.terminal.write(this.currentActiveShell?.history.join('\n') ?? '');
 
-    this.cmdInputControl.setValue('');
+      this.dispose = this.terminal.onData(async (data) => {
+        if (!this.currentActiveShellId) return;
 
-    this.updateCurrentInCtx();
+        await this.api.writeToShell(undefined, this.currentActiveShellId, data);
+      });
+    }, 200);
   }
 
   /**
@@ -195,7 +179,6 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     }
     this.updateCurrentInCtxDebouncedTimeout = setTimeout(() => {
       this.updateCurrentInCtx();
-      console.log("Debouce ran")
     }, delay);
   }
 }

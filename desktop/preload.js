@@ -19,8 +19,8 @@ const api = {
 
   createShell: (_event, dir) => ipcRenderer.invoke("shell:create", dir),
   killShellById: (_event, shellId) => ipcRenderer.invoke("shell:kill", shellId),
-  runCmdsInShell: (_event, shellId, cmd) =>
-    ipcRenderer.invoke("shell:cmd", shellId, cmd),
+  writeToShell: (_event, shellId, cmd) =>
+    ipcRenderer.invoke("shell:write", shellId, cmd),
   stopCmdInShell: (_event, shellId) =>
     ipcRenderer.invoke("shell:stop", shellId),
 

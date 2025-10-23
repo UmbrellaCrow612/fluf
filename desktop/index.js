@@ -26,9 +26,9 @@ const {
   cleanUpShells,
   createShellImpl,
   killShellById,
-  runCommandInShellImpl,
   stopCommandInShell,
   isShellActiveImpl,
+  writeToShellImpl,
 } = require("./shell");
 
 loadEnv();
@@ -87,7 +87,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle("shell:create", createShellImpl);
   ipcMain.handle("shell:kill", killShellById);
-  ipcMain.handle("shell:cmd", runCommandInShellImpl);
+  ipcMain.handle("shell:write", writeToShellImpl);
   ipcMain.handle("shell:stop", stopCommandInShell);
   ipcMain.handle("shell:alive", isShellActiveImpl);
 
