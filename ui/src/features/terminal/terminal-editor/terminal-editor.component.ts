@@ -74,6 +74,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     if (this.unsSub) {
       this.unsSub();
     }
+    if (this.dispose) {
+      this.dispose.dispose();
+    }
   }
 
   /**
