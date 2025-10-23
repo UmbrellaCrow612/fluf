@@ -20,6 +20,10 @@ const shellDisposes = new Map();
 const cleanUpShells = () => {
   Array.from(shellStore.entries()).forEach(([id, shell]) => {
     shell.write("exit" + os.EOL);
+    shellStore.delete(id);
+    shellDisposes.get(id)?.forEach((d) => d.dispose());
+    shellDisposes.delete(id);
+
     shell.kill();
   });
 };
