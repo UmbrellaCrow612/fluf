@@ -11,4 +11,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class SideSearchItemComponent {
 
+
+  showChildren = true;
+  toggleChildren(){
+    this.showChildren = !this.showChildren
+  }
 }

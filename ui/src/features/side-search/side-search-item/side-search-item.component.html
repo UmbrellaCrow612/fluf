@@ -1,17 +1,30 @@
-<div class="item">
+<div class="item" (click)="toggleChildren()">
   <span class="parent">
+    @if (showChildren) {
     <mat-icon>keyboard_arrow_down</mat-icon>
+    } @else {
+    <mat-icon>keyboard_arrow_right</mat-icon>
+    }
     <mat-icon>javascript</mat-icon>
 
     <span class="file_name">
-      <span class="main_text"
-        >Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit,
-        tempore?</span
-      >
-      <span class="folder_name">lorem10</span>
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit,
+      tempore?
     </span>
     <button mat-icon-button matTooltip="Close result">
       <mat-icon>close</mat-icon>
     </button>
   </span>
+
+  @if (showChildren) {
+  <span class="child">
+    <span class="match_str">
+      Lorem ipsum <span class="match_str_highlight">dolor</span> sit amet
+      consectetur adipisicing elit. Est, culpa.
+    </span>
+    <button mat-icon-button matTooltip="Close result">
+      <mat-icon>close</mat-icon>
+    </button>
+  </span>
+  }
 </div>
