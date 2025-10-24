@@ -18,6 +18,8 @@
   display: flex;
   min-width: 0;
   min-height: 0;
+  
+  overflow-y: hidden;
   overflow-x: auto;
 
   align-items: center;

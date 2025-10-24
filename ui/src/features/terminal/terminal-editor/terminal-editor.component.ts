@@ -151,8 +151,12 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.terminal.loadAddon(this.fitAddon);
     this.terminal.open(container);
 
-    requestAnimationFrame(() => {
+    requestAnimationFrame(async () => {
       this.fitAddon?.fit();
+      await this.api.resizeShell(undefined, this.currentActiveShellId!, {
+        cols: this.terminal?.cols ?? 80,
+        rows: this.terminal?.rows ?? 24,
+      });
     });
 
     this.terminal.write(this.currentActiveShell?.history.join('') ?? '');

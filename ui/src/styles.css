@@ -23,22 +23,22 @@ body {
   scrollbar-color: #555 #222;
 }
 
-/* Chrome, Edge, Safari */
 .scroll_bar::-webkit-scrollbar {
-  width: 6px; /* Thin scrollbar */
+  width: 6px;
+  height: 6px;
 }
 
 .scroll_bar::-webkit-scrollbar-track {
-  background: #222; /* Dark track */
+  background: #222;
   border-radius: 3px;
 }
 
 .scroll_bar::-webkit-scrollbar-thumb {
-  background-color: #555; /* Dark thumb */
+  background-color: #555;
   border-radius: 3px;
-  border: 1px solid #333; /* Slight border for definition */
+  border: 1px solid #333;
 }
 
 .scroll_bar::-webkit-scrollbar-thumb:hover {
-  background-color: #777; /* Slightly lighter on hover */
+  background-color: #777;
 }
