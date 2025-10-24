@@ -28,19 +28,8 @@
   gap: 5px;
 }
 
-.input_form {
-  flex: 1;
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-}
-
-.input_form input {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-
-  background-color: #252526; 
+.input {
+  background-color: #252526;
   color: #d4d4d4;
   border: 1px solid #3c3c3c;
   border-radius: 4px;
@@ -48,31 +37,50 @@
   font-size: 14px;
   font-family: Consolas, monospace;
 
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+
   transition: border-color 0.2s, background-color 0.2s;
 }
 
-.input_form input:focus {
+.result_container {
+  padding: 6px 12px;
+  border-bottom: 1px solid #333;
+}
+
+.result_container span {
+  color: #cccccc;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+.input:focus {
   outline: none;
-  border-color: #007acc; /* VSCode blue highlight */
+  border-color: #007acc;
   background-color: #1e1e1e;
 }
 
-/* Optional: make the icon button match */
-.search_input_container button {
-  color: #cccccc;
-  transition: color 0.2s;
+.input_form {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
 }
 
-.search_input_container button:hover {
-  color: #ffffff;
+.extra_search_options {
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .search_results_container {
-  background-color: blue;
   flex: 1;
   overflow-y: auto;
 
   display: flex;
   flex-direction: column;
   gap: 3px;
+  padding: 5px;
 }

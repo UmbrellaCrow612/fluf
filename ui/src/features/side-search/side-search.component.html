@@ -1,18 +1,38 @@
 <div class="container">
   <div class="search_input_container">
-    <button mat-icon-button matTooltip="Extra search options">
+    <button
+      mat-icon-button
+      matTooltip="Extra search options"
+      (click)="toggleExtraSearchOptions()"
+    >
+      @if (showExtraSearchOptions) {
+      <mat-icon>keyboard_arrow_down</mat-icon>
+      } @else {
       <mat-icon>keyboard_arrow_right</mat-icon>
+      }
     </button>
     <form class="input_form">
-      <input type="text" placeholder="Search files"/>
+      <input type="text" placeholder="Search files" class="input" />
     </form>
   </div>
 
   <!---->
   @if (showExtraSearchOptions) {
-  <div>options</div>
+  <div class="extra_search_options">
+    <input type="text" placeholder="Include *ts,src/*" class="input" />
+    <input type="text" placeholder="Exclude *ts,src/*" class="input" />
+  </div>
   }
   <!---->
 
-  <div class="search_results_container scroll_bar">lorem1000</div>
+  @if (showExtraSearchOptions) {
+  <div class="result_container">
+    <span>12 results in 76 files</span>
+  </div>
+  }
+
+  <div class="search_results_container scroll_bar">
+    <app-side-search-item />
+    <app-side-search-item />
+  </div>
 </div>

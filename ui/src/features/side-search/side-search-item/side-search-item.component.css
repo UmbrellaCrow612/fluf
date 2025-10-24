@@ -1,0 +1,50 @@
+:host {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.parent {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  min-width: 0;
+  min-height: 0;
+}
+
+.parent:hover {
+  background-color: rgba(48, 47, 47, 0.562);
+}
+
+.file_name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.9em;
+  min-width: 0;
+  min-height: 0;
+}
+
+.main_text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.folder_name {
+  font-size: 0.7em;
+  color: rgba(112, 111, 111, 0.932);
+  flex-shrink: 0;
+}
