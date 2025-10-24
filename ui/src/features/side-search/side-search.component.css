@@ -1,0 +1,78 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+
+  flex-direction: column;
+  background-color: rgb(20, 20, 20);
+  color: white;
+  padding: 10px;
+}
+
+.search_input_container {
+  padding: 5px;
+
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+
+  align-items: center;
+  gap: 5px;
+}
+
+.input_form {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.input_form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+
+  background-color: #252526; 
+  color: #d4d4d4;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: Consolas, monospace;
+
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.input_form input:focus {
+  outline: none;
+  border-color: #007acc; /* VSCode blue highlight */
+  background-color: #1e1e1e;
+}
+
+/* Optional: make the icon button match */
+.search_input_container button {
+  color: #cccccc;
+  transition: color 0.2s;
+}
+
+.search_input_container button:hover {
+  color: #ffffff;
+}
+
+.search_results_container {
+  background-color: blue;
+  flex: 1;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
