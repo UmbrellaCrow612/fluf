@@ -263,6 +263,40 @@
  */
 
 /**
+ * List of options to pass when refining the search term results
+ * @typedef {Object} ripgGrepOptions
+ * @property {string} include - String contaning the include string, these are files or folders for example *ts,src/ stc regex style serpated by commas
+ * @property {string} exclude - String contaning the exclude string, these are file or folders to avoid searching by default .ignore will be but it is the same style as include
+ */
+
+/**
+ * Represents a line searched and matched the term
+ * @typedef {Object} ripGrepLine
+ * @property {string} content - The full content of the line
+ * @property {number} startIndex - The start index of the matched term in the line
+ * @property {number} endIndex - The end index of the matched term
+ */
+
+/**
+ * File content and lines matched by the search term
+ * @typedef {Object} ripGrepResult
+ * @property {string} filePath - The path to the matched file
+ * @property {string} fileName - The name of the file
+ * @property {string} directoryName - The name of the folder it is in
+ * @property {ripGrepLine[]} lines - List of lines contain the match term
+ */
+
+/**
+ * Search a directory's files recursivley for a given string content match
+ * @callback ripGrep
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} searchDirectory - The directory to search
+ * @param {string} term - The search term to match file content to
+ * @param {ripgGrepOptions} options - AQddtional option to refine the search parameters
+ * @returns {Promise<ripGrepResult[]>} List of matching files and there content
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -291,6 +325,8 @@
  * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
  * @property {isShellActive} isShellActive - Check if a shell is still alive
  * @property {resizeShell} resizeShell - Resize the backend shell col and width
+ *
+ * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
  */
 
 /**
