@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class SideSearchItemComponent {
 
+  result = input.required<ripGrepResult>();
 
   showChildren = true;
   toggleChildren(){

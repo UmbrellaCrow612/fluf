@@ -200,6 +200,61 @@ type resizeShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: st
     rows: number;
 }) => Promise<boolean>;
 /**
+ * List of options to pass when refining the search term results
+ */
+type ripgGrepOptions = {
+    /**
+     * - String contaning the include string, these are files or folders for example *ts,src/ stc regex style serpated by commas
+     */
+    include: string;
+    /**
+     * - String contaning the exclude string, these are file or folders to avoid searching by default .ignore will be but it is the same style as include
+     */
+    exclude: string;
+};
+/**
+ * Represents a line searched and matched the term
+ */
+type ripGrepLine = {
+    /**
+     * - The full content of the line
+     */
+    content: string;
+    /**
+     * - The start index of the matched term in the line
+     */
+    startIndex: number;
+    /**
+     * - The end index of the matched term
+     */
+    endIndex: number;
+};
+/**
+ * File content and lines matched by the search term
+ */
+type ripGrepResult = {
+    /**
+     * - The path to the matched file
+     */
+    filePath: string;
+    /**
+     * - The name of the file
+     */
+    fileName: string;
+    /**
+     * - The name of the folder it is in
+     */
+    directoryName: string;
+    /**
+     * - List of lines contain the match term
+     */
+    lines: ripGrepLine[];
+};
+/**
+ * Search a directory's files recursivley for a given string content match
+ */
+type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, searchDirectory: string, term: string, options: ripgGrepOptions) => Promise<ripGrepResult[]>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -299,6 +354,10 @@ type ElectronApi = {
      * - Resize the backend shell col and width
      */
     resizeShell: resizeShell;
+    /**
+     * - Search a folder files for a specific search term and get a list of matching results
+     */
+    ripGrep: ripGrep;
 };
 /**
  * Extends the global `window` object to include the Electron API.

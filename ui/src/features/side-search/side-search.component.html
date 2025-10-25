@@ -11,8 +11,13 @@
       <mat-icon>keyboard_arrow_right</mat-icon>
       }
     </button>
-    <form class="input_form">
-      <input type="text" placeholder="Search files" class="input" />
+    <form class="input_form" (ngSubmit)="search($event)">
+      <input
+        type="text"
+        placeholder="Search files"
+        class="input"
+        [formControl]="searchTermInputControl"
+      />
     </form>
   </div>
 
@@ -25,14 +30,17 @@
   }
   <!---->
 
-  @if (showExtraSearchOptions) {
+  @if (ripGrepResult.length > 0) {
   <div class="result_container">
-    <span>12 results in 76 files</span>
+    <span>todo results in {{ ripGrepResult.length }} files</span>
   </div>
   }
 
   <div class="search_results_container scroll_bar">
-    <app-side-search-item />
-    <app-side-search-item />
+    @for (result of ripGrepResult; track $index) {
+    <!-- <app-side-search-item [result]="exanplkeReuslt" /> --> fix styling
+    } @empty {
+    <div>Nothing found of term</div>
+    }
   </div>
 </div>

@@ -8,23 +8,25 @@
     <mat-icon>javascript</mat-icon>
 
     <span class="file_name">
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit,
-      tempore?
+      {{ result().fileName }}
     </span>
     <button mat-icon-button matTooltip="Close result">
       <mat-icon>close</mat-icon>
     </button>
   </span>
-
-  @if (showChildren) {
-  <span class="child">
-    <span class="match_str">
-      Lorem ipsum <span class="match_str_highlight">dolor</span> sit amet
-      consectetur adipisicing elit. Est, culpa.
-    </span>
-    <button mat-icon-button matTooltip="Close result">
-      <mat-icon>close</mat-icon>
-    </button>
-  </span>
-  }
 </div>
+
+@if (showChildren) {
+<!---->
+@for (child of result().lines; track $index) {
+<span class="child">
+  <span class="match_str">
+    {{ child.content }}
+  </span>
+  <button mat-icon-button matTooltip="Close result">
+    <mat-icon>close</mat-icon>
+  </button>
+</span>
+}
+<!---->
+}
