@@ -18,7 +18,6 @@ import {
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    SideSearchItemComponent,
     FormsModule,
     ReactiveFormsModule,
   ],
@@ -69,15 +68,11 @@ export class SideSearchComponent implements OnInit {
 
     let term = this.searchTermInputControl.value!;
 
-    this.ripGrepResult = await this.api.ripGrep(
-      undefined,
-      this.searchDir!,
-      term,
-      {
-        exclude: '',
-        include: '',
-      }
-    );
+    this.ripGrepResult = await this.api.ripGrep(undefined, {
+      searchTerm: term,
+      searchPath: this.searchDir!,
+      caseInsensitive: true,
+    });
 
     console.log(this.ripGrepResult);
   }

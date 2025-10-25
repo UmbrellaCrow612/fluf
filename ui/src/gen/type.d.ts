@@ -200,17 +200,37 @@ type resizeShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: st
     rows: number;
 }) => Promise<boolean>;
 /**
- * List of options to pass when refining the search term results
+ * List of args to pass to ripgrep to search
  */
-type ripgGrepOptions = {
+type ripgrepArgsOptions = {
     /**
-     * - String contaning the include string, these are files or folders for example *ts,src/ stc regex style serpated by commas
+     * - The search term to look for
      */
-    include: string;
+    searchTerm: string;
     /**
-     * - String contaning the exclude string, these are file or folders to avoid searching by default .ignore will be but it is the same style as include
+     * - The path to the directory to search
      */
-    exclude: string;
+    searchPath: string;
+    /**
+     * - List of pattern of files  / folders to include `(e.g. "src/,*ts)`
+     */
+    includes?: string | undefined;
+    /**
+     * - List of files / folders to exclude in the search `(e.g. "src/,*ts)`
+     */
+    excludes?: string | undefined;
+    /**
+     * - To pass the `--hidden` arg
+     */
+    hidden?: boolean | undefined;
+    /**
+     * - To ignore `.gitignore` files and search them as well
+     */
+    noIgnore?: boolean | undefined;
+    /**
+     * - To pass sensitivity arg
+     */
+    caseInsensitive?: boolean | undefined;
 };
 /**
  * Represents a line searched and matched the term
@@ -253,7 +273,7 @@ type ripGrepResult = {
 /**
  * Search a directory's files recursivley for a given string content match
  */
-type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, searchDirectory: string, term: string, options: ripgGrepOptions) => Promise<ripGrepResult[]>;
+type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */

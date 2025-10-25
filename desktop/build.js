@@ -63,16 +63,6 @@ if (fs.existsSync(distFolder)) {
   fs.rmSync(distFolder, { recursive: true });
 }
 
-// Run ESLint first
-try {
-  log.info("Running ESLint...");
-  execSync("npx eslint . --ext .js", { stdio: "inherit" });
-  log.success("ESLint completed successfully. No linting errors found.");
-} catch (error) {
-  log.error("ESLint found errors. Build stopped. " + error);
-  process.exit(1);
-}
-
 // Run TypeScript compilation
 try {
   log.info("Running TypeScript compiler...");

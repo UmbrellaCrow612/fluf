@@ -19,204 +19,164 @@ function getRipGrepPath() {
 }
 
 /**
- * Parse ripgrep JSON output into structured results
- * @param {string} jsonOutput - The JSON output from ripgrep
- * @returns {ripGrepResult[]}
+ * Parses ripgrep stdout and converts it to structured objects with match indices
+ * @param {string} stdout - Full stdout returned by ripgrep
+ * @param {string} searchTerm - The term that was searched
+ * @returns {ripGrepResult[]} Array of structured results
  */
-function parseRipGrepOutput(jsonOutput) {
-  const lines = jsonOutput
-    .trim()
-    .split("\n")
-    .filter((line) => line);
-  const fileMap = new Map();
+function parseRipgrepOutput(stdout, searchTerm) {
+  const resultsMap = new Map();
+  const lines = stdout.split(/\r?\n/).filter(Boolean);
 
-  for (const line of lines) {
-    try {
-      const entry = JSON.parse(line);
+  lines.forEach((line) => {
+    // ripgrep default format: filePath:lineNumber:content
+    const match = line.match(/^(.+?):\d+:(.*)$/);
+    if (!match) return;
 
-      // Only process match entries
-      if (entry.type === "match") {
-        const filePath = entry.data.path.text;
-        const fileName = path.basename(filePath);
-        const directoryName = path.basename(path.dirname(filePath));
+    const [_, filePath, content] = match;
+    const startIndex = content.indexOf(searchTerm);
+    if (startIndex === -1) return; // skip if searchTerm not found
 
-        if (!fileMap.has(filePath)) {
-          fileMap.set(filePath, {
-            filePath,
-            fileName,
-            directoryName,
-            lines: [],
-          });
-        }
+    const endIndex = startIndex + searchTerm.length;
 
-        const fileResult = fileMap.get(filePath);
-        const lineText = entry.data.lines.text;
-
-        // Extract match positions from submatches
-        if (entry.data.submatches && entry.data.submatches.length > 0) {
-          for (const submatch of entry.data.submatches) {
-            fileResult.lines.push({
-              content: lineText,
-              startIndex: submatch.start,
-              endIndex: submatch.end,
-            });
-          }
-        }
-      }
-    } catch (err) {
-      // Skip malformed JSON lines
-      console.error("Failed to parse ripgrep output line:", err);
+    if (!resultsMap.has(filePath)) {
+      const fileName = path.basename(filePath);
+      const directoryName = path.dirname(filePath);
+      resultsMap.set(filePath, {
+        filePath,
+        fileName,
+        directoryName,
+        lines: [],
+      });
     }
+
+    resultsMap.get(filePath).lines.push({
+      content,
+      startIndex,
+      endIndex,
+    });
+  });
+
+  return Array.from(resultsMap.values());
+}
+/**
+ * Builds an array of arguments to pass to ripgrep based on options
+ * @param {ripgrepArgsOptions} options
+ * @returns {string[]} Array of arguments for ripgrep
+ */
+function buildRipgrepArgs(options) {
+  if (!options || !options.searchTerm || !options.searchPath) {
+    throw new Error("Both searchTerm and searchPath are required.");
   }
 
-  return Array.from(fileMap.values());
+  const args = [];
+
+  // Add hidden files flag
+  if (options.hidden) {
+    args.push("--hidden");
+  }
+
+  // Add ignore files flag
+  if (options.noIgnore) {
+    args.push("--no-ignore");
+  }
+
+  // Case insensitive search
+  if (options.caseInsensitive) {
+    args.push("-i");
+  }
+
+  // Include patterns
+  if (options.includes) {
+    const includePatterns = options.includes.split(",");
+    includePatterns.forEach((pattern) => {
+      if (pattern.trim()) args.push("--glob", pattern.trim());
+    });
+  }
+
+  // Exclude patterns
+  if (options.excludes) {
+    const excludePatterns = options.excludes.split(",");
+    excludePatterns.forEach((pattern) => {
+      if (pattern.trim()) args.push("--glob", "!" + pattern.trim());
+    });
+  }
+
+  // Search term
+  args.push(options.searchTerm);
+
+  // Search path
+  args.push(options.searchPath);
+
+  args.unshift("--vimgrep");
+
+  console.log("args " + args);
+  return args;
 }
 
 /**
- * Execute ripgrep search with given parameters
- * @param {string} regex - The regex pattern to look for
- * @param {string} searchPath - The path to the file or folder to search in
- * @param {ripgGrepOptions} options - Search refinement options
- * @param {string} args - Any additional args to pass to ripgrep like --case or something from it like `--case-sensitive,--hidden`
- * @param {number} timeout - The timeout in milliseconds to stop if it exceeds it
+ * Search with ripgrep
+ * @param {ripgrepArgsOptions} options
  * @returns {Promise<ripGrepResult[]>}
  */
-function searchWithRipGrep(
-  regex,
-  searchPath,
-  options = { exclude: "", include: "" },
-  args = "",
-  timeout = 30000
-) {
+function searchWithRipGrep(options) {
   return new Promise((resolve, reject) => {
-    const rgPath = getRipGrepPath();
+    const ripGrepPath = getRipGrepPath();
 
-    if (!rgPath) {
-      return reject(new Error("ripgrep executable not found"));
-    }
+    if (!ripGrepPath) return reject(new Error("Ripgrep path is undefined"));
+    if (!fs.existsSync(options.searchPath))
+      return reject(new Error("Search path does not exist"));
 
-    if (!fs.existsSync(searchPath)) {
-      return reject(new Error(`Search path does not exist: ${searchPath}`));
-    }
+    let args = buildRipgrepArgs(options);
 
-    // Build ripgrep arguments
-    const rgArgs = [
-      "--json", // Output as JSON for easier parsing
-      "--no-heading", // Don't group matches by file
-      "--line-number", // Include line numbers
-    ];
-
-    // Add include patterns
-    if (options.include) {
-      const includes = options.include.split(",").map((p) => p.trim());
-      includes.forEach((pattern) => {
-        if (pattern) {
-          rgArgs.push("--glob", pattern);
-        }
-      });
-    }
-
-    // Add exclude patterns
-    if (options.exclude) {
-      const excludes = options.exclude.split(",").map((p) => p.trim());
-      excludes.forEach((pattern) => {
-        if (pattern) {
-          rgArgs.push("--glob", `!${pattern}`);
-        }
-      });
-    }
-
-    // Parse and add additional args
-    if (args) {
-      const additionalArgs = args.split(",").map((arg) => arg.trim());
-      additionalArgs.forEach((arg) => {
-        if (arg.startsWith("--")) {
-          const [flag, value] = arg.split("=");
-          if (value) {
-            rgArgs.push(flag, value);
-          } else {
-            rgArgs.push(flag);
-          }
-        }
-      });
-    }
-
-    // Add the search pattern and path
-    rgArgs.push(regex, searchPath);
-
-    // Spawn ripgrep process
-    const rg = spawn(rgPath, rgArgs);
+    const ripGrep = spawn(ripGrepPath, args);
 
     let stdout = "";
     let stderr = "";
-    let isTimedOut = false;
+    let settled = false;
 
-    // Set timeout
-    const timeoutId = setTimeout(() => {
-      isTimedOut = true;
-      rg.kill();
-      reject(new Error(`Search timed out after ${timeout}ms`));
-    }, timeout);
-
-    rg.stdout.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    rg.stderr.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    rg.on("close", (code) => {
-      console.log("Rip grep killed")
-      clearTimeout(timeoutId);
-
-      if (isTimedOut) {
-        return; // Already rejected
+    function safeResolve(/** @type {ripGrepResult[]}*/ val) {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timeOutId);
+        resolve(val);
       }
+    }
 
-      // ripgrep returns:
-      // 0 - matches found
-      // 1 - no matches found (not an error)
-      // 2+ - error occurred
-      if (code === 0 || code === 1) {
-        try {
-          const results = code === 0 ? parseRipGrepOutput(stdout) : [];
-          resolve(results);
-        } catch (err) {
-          reject(new Error(`Failed to parse ripgrep output: ${err.message}`));
-        }
+    function safeReject(/** @type {Error}*/ err) {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timeOutId);
+        reject(err);
+      }
+    }
+
+    const timeOutId = setTimeout(() => {
+      ripGrep.kill();
+      safeReject(new Error("Ripgrep timeout exceeded"));
+    }, 30000);
+
+    ripGrep.stdout.on("data", (data) => (stdout += data.toString()));
+    ripGrep.stderr.on("data", (data) => (stderr += data.toString()));
+
+    ripGrep.on("error", () => safeReject(new Error("Failed to spawn ripgrep")));
+
+    ripGrep.on("close", (code) => {
+      if (code === 0) {
+        let data = parseRipgrepOutput(stdout, options.searchTerm);
+        safeResolve(data);
       } else {
-        reject(new Error(`ripgrep exited with code ${code}: ${stderr}`));
+        safeReject(new Error(`Ripgrep exited with code ${code}: ${stderr}`));
       }
-    });
-
-    rg.on("error", (err) => {
-      clearTimeout(timeoutId);
-      reject(new Error(`Failed to spawn ripgrep: ${err.message}`));
     });
   });
 }
 
-/**
- * @type {ripGrep}
- */
-const ripGrepImpl = async (
-  _event = undefined,
-  searchDirectory,
-  term,
-  options
-) => {
-  const results = await searchWithRipGrep(
-    term,
-    searchDirectory,
-    options,
-    "--case-sensitive,--hidden",
-    30000
-  );
-
-  return results;
+/** @type {ripGrep} */
+const ripGrepImpl = async (_event = undefined, options) => {
+  return await searchWithRipGrep(options);
 };
 
 module.exports = {
-  ripGrepImpl
+  ripGrepImpl,
 };

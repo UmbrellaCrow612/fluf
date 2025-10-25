@@ -263,10 +263,15 @@
  */
 
 /**
- * List of options to pass when refining the search term results
- * @typedef {Object} ripgGrepOptions
- * @property {string} include - String contaning the include string, these are files or folders for example *ts,src/ stc regex style serpated by commas
- * @property {string} exclude - String contaning the exclude string, these are file or folders to avoid searching by default .ignore will be but it is the same style as include
+ * List of args to pass to ripgrep to search
+ * @typedef {Object} ripgrepArgsOptions
+ * @property {string} searchTerm - The search term to look for
+ * @property {string} searchPath - The path to the directory to search
+ * @property {string} [includes] - List of pattern of files  / folders to include `(e.g. "src/,*ts)`
+ * @property {string} [excludes] - List of files / folders to exclude in the search `(e.g. "src/,*ts)`
+ * @property {boolean} [hidden] - To pass the `--hidden` arg
+ * @property {boolean} [noIgnore] - To ignore `.gitignore` files and search them as well
+ * @property {boolean} [caseInsensitive] - To pass sensitivity arg
  */
 
 /**
@@ -290,10 +295,8 @@
  * Search a directory's files recursivley for a given string content match
  * @callback ripGrep
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} searchDirectory - The directory to search
- * @param {string} term - The search term to match file content to
- * @param {ripgGrepOptions} options - AQddtional option to refine the search parameters
- * @returns {Promise<ripGrepResult[]>} List of matching files and there content
+ * @param {ripgrepArgsOptions} options - Options to refine search results
+ * @returns {Promise<ripGrepResult[]>}
  */
 
 /**
