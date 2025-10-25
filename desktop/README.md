@@ -26,7 +26,7 @@ npm install electron-rebuild -- save dev
 .\node_modules\.bin\electron-rebuild.cmd
 ```
 
-Run the `node install.js` then `npm run start` for dev make sure .env is dev mode and points to UI
+Run the in `c/desktop folder` `node scripts/install.js` then `npm run start` for dev make sure .env is dev mode and points to UI
 
 
 # Style guide
@@ -52,9 +52,22 @@ and `npx eslint .` for errors
 
 # Info 
 
-Build script:
+Build script: putpose - make a dist folder contaning nceecary file like preload and index js and no electron or other deps like node pty
+
+- use specific install steps for deps to work use node 16 delete deps reinstall specific order
 - copys .env file
 - copys pack json
-- es builds index.js and preload js - note should only minify and exclude electron
+- es builds index.js and preload js - note should only minify and exclude electron and not pty
 - puts into a dist folder
 - end
+
+bin:
+anbother folder wich will contain all third party external binarys needed to extra functionality 
+
+dist:
+will contain electron bundled files like pack, preload and index as well as .env exclude electron and node in compliation
+
+Ripgrep:
+
+- We download the ripgrep binary for now windows but future specific for the build bundle where gonna make and then spawn that
+- Use the local bin ripgrep version to spawn and use ripgrep

@@ -8,6 +8,10 @@
       <div class="left" [style.flex]="leftFlex">
         @if (sideBarActivateElement === "file-explorer") {
         <app-file-explorer />
+        } @else if (sideBarActivateElement === "search") {
+        <app-side-search />
+        } @else {
+        <div>Unkown state</div>
         }
       </div>
       <div class="resizer" (mousedown)="initResizer($event)"></div>

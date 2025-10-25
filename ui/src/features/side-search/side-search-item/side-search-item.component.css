@@ -1,0 +1,66 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  user-select: none
+}
+
+.parent {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.parent:hover {
+  background-color: rgba(48, 47, 47, 0.562);
+}
+
+.file_name {
+  flex: 1;
+  font-size: 0.9em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.child {
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  min-width: 0;
+  min-height: 0;
+}
+
+.child:hover {
+  background-color: rgba(48, 47, 47, 0.562);
+}
+
+.match_str {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.match_str_highlight {
+  background-color: grey;
+}

@@ -12,6 +12,7 @@
   flex: 1;
   height: 100%;
   min-height: 0;
+  min-width: 0;
 
   display: flex;
 }
@@ -30,6 +31,8 @@
   /* flex: 1; set via angular */
   min-height: 0; /*Make sure all flex containers have min height to allow overflow to work within them */
   min-width: 0;
+  
+  display: flex;
 }
 
 .right {
@@ -37,6 +40,8 @@
   min-height: 0;
   min-width: 0;
   /* flex: 1;  set via angular */
+
+  display: flex;
 }
 
 .resizer {

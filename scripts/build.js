@@ -27,10 +27,12 @@ const uiDistPath = path.join(uiPath, "dist", "ui", "browser");
 
 const desktopPath = path.join(__dirname, "..", "desktop");
 const desktopDistPath = path.join(desktopPath, "dist");
+const desktopBinPath = path.join(desktopPath, "bin");
 
 // change based on platform - these are for windows
 const distAppPath = path.join(distPath, "resources", "app");
 const asarFilePath = path.join(distPath, "resources", "app.asar");
+const resourceBinPath = path.join(distAppPath, "resources", "bin");
 
 const electronZipDownloadPath = path.join(distPath, "electron_binarys.zip");
 
@@ -98,9 +100,6 @@ if (!fs.existsSync(distAppPath)) {
 
 logInfo("Building Desktop source code");
 try {
-  logInfo("Running npm ci");
-  execSync("npm ci", { cwd: uiPath, stdio: "inherit" });
-
   logInfo("Running npm run build at " + desktopDistPath);
   execSync("npm run build", { cwd: desktopPath, stdio: "inherit" });
 } catch (err) {
@@ -113,6 +112,13 @@ if (!fs.existsSync(desktopDistPath)) {
   exit(1);
 } else {
   logInfo("Desktop build dist found at " + desktopDistPath);
+}
+
+if (!fs.existsSync(desktopBinPath)) {
+  logError("Desktop build bin not found at " + desktopBinPath);
+  exit(1);
+} else {
+  logInfo("Desktop bin found at " + desktopBinPath);
 }
 
 logInfo("Building UI source code");
@@ -149,6 +155,12 @@ fs.cpSync(uiDistPath, distAppPath, { recursive: true });
 
   logInfo("Removing " + distAppPath);
   fs.rmSync(distAppPath, { recursive: true });
+
+  logInfo("Creating resources bin folder");
+  fs.mkdirSync(resourceBinPath, { recursive: true });
+
+  logInfo("Copying desktop bin files to " + resourceBinPath);
+  fs.cpSync(desktopBinPath, resourceBinPath, { recursive: true });
 
   logInfo("Downloading electron zip folder to " + electronZipDownloadPath);
   await donwloadAndExtractZip(downloadUrl, electronZipDownloadPath, distPath);

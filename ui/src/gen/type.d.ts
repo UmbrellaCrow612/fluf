@@ -200,6 +200,81 @@ type resizeShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: st
     rows: number;
 }) => Promise<boolean>;
 /**
+ * List of args to pass to ripgrep to search
+ */
+type ripgrepArgsOptions = {
+    /**
+     * - The search term to look for
+     */
+    searchTerm: string;
+    /**
+     * - The path to the directory to search
+     */
+    searchPath: string;
+    /**
+     * - List of pattern of files  / folders to include `(e.g. "src/,*ts)`
+     */
+    includes?: string | undefined;
+    /**
+     * - List of files / folders to exclude in the search `(e.g. "src/,*ts)`
+     */
+    excludes?: string | undefined;
+    /**
+     * - To pass the `--hidden` arg
+     */
+    hidden?: boolean | undefined;
+    /**
+     * - To ignore `.gitignore` files and search them as well
+     */
+    noIgnore?: boolean | undefined;
+    /**
+     * - To pass sensitivity arg
+     */
+    caseInsensitive?: boolean | undefined;
+};
+/**
+ * Represents a line searched and matched the term
+ */
+type ripGrepLine = {
+    /**
+     * - The full content of the line
+     */
+    content: string;
+    /**
+     * - The start index of the matched term in the line
+     */
+    startIndex: number;
+    /**
+     * - The end index of the matched term
+     */
+    endIndex: number;
+};
+/**
+ * File content and lines matched by the search term
+ */
+type ripGrepResult = {
+    /**
+     * - The path to the matched file
+     */
+    filePath: string;
+    /**
+     * - The name of the file
+     */
+    fileName: string;
+    /**
+     * - The name of the folder it is in
+     */
+    directoryName: string;
+    /**
+     * - List of lines contain the match term
+     */
+    lines: ripGrepLine[];
+};
+/**
+ * Search a directory's files recursivley for a given string content match
+ */
+type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -299,6 +374,10 @@ type ElectronApi = {
      * - Resize the backend shell col and width
      */
     resizeShell: resizeShell;
+    /**
+     * - Search a folder files for a specific search term and get a list of matching results
+     */
+    ripGrep: ripGrep;
 };
 /**
  * Extends the global `window` object to include the Electron API.

@@ -13,6 +13,7 @@ import { FileExplorerComponent } from '../file-explorer/file-explorer.component'
 import { FileExplorerContextMenuComponent } from '../file-explorer/file-explorer-context-menu/file-explorer-context-menu.component';
 import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
 import { getElectronApi } from '../../utils';
+import { SideSearchComponent } from '../side-search/side-search.component';
 
 type unSub = () => Promise<void>;
 
@@ -24,6 +25,7 @@ type unSub = () => Promise<void>;
     FileExplorerComponent,
     FileExplorerContextMenuComponent,
     OpenFileContainerComponent,
+    SideSearchComponent,
   ],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',

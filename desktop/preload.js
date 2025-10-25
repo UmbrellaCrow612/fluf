@@ -66,6 +66,9 @@ const api = {
   maximize: (_event) => ipcRenderer.send("window:maximize"),
   close: (_event) => ipcRenderer.send("window:close"),
   restore: (_event) => ipcRenderer.send("window:restore"),
+
+  ripGrep: (_event, searchDirectory, term, options) =>
+    ipcRenderer.invoke("ripgrep:search", searchDirectory, term, options),
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
