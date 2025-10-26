@@ -1,0 +1,91 @@
+.search-result-container {
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.side_search_item {
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.side_search_item:hover {
+  background-color: rgba(90, 93, 94, 0.31);
+}
+
+.chevron-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  color: #cccccc;
+}
+
+.file-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  opacity: 0.8;
+}
+
+.text-container {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.file-name {
+  color: #cccccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+}
+
+.directory-path {
+  color: #888888;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 2;
+}
+
+.match-count {
+  flex-shrink: 0;
+  color: #888888;
+  font-size: 11px;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+/* Lines container */
+.lines-container {
+  padding-left: 28px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.line-item {
+  padding: 2px 8px;
+  display: flex;
+  cursor: pointer;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 12px;
+}
+
+.line-item:hover {
+  background-color: rgba(90, 93, 94, 0.31);
+}
+
+.line-content {
+  color: #cccccc;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

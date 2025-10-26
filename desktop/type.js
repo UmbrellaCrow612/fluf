@@ -263,6 +263,43 @@
  */
 
 /**
+ * List of args to pass to ripgrep to search
+ * @typedef {Object} ripgrepArgsOptions
+ * @property {string} searchTerm - The search term to look for
+ * @property {string} searchPath - The path to the directory to search
+ * @property {string} [includes] - List of pattern of files  / folders to include `(e.g. "src/,*ts)`
+ * @property {string} [excludes] - List of files / folders to exclude in the search `(e.g. "src/,*ts)`
+ * @property {boolean} [hidden] - To pass the `--hidden` arg
+ * @property {boolean} [noIgnore] - To ignore `.gitignore` files and search them as well
+ * @property {boolean} [caseInsensitive] - To pass sensitivity arg
+ */
+
+/**
+ * Represents a line searched and matched the term
+ * @typedef {Object} ripGrepLine
+ * @property {string} content - The full content of the line
+ * @property {number} startIndex - The start index of the matched term in the line
+ * @property {number} endIndex - The end index of the matched term
+ */
+
+/**
+ * File content and lines matched by the search term
+ * @typedef {Object} ripGrepResult
+ * @property {string} filePath - The path to the matched file
+ * @property {string} fileName - The name of the file
+ * @property {string} directoryName - The name of the folder it is in
+ * @property {ripGrepLine[]} lines - List of lines contain the match term
+ */
+
+/**
+ * Search a directory's files recursivley for a given string content match
+ * @callback ripGrep
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {ripgrepArgsOptions} options - Options to refine search results
+ * @returns {Promise<ripGrepResult[]>}
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -291,6 +328,8 @@
  * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
  * @property {isShellActive} isShellActive - Check if a shell is still alive
  * @property {resizeShell} resizeShell - Resize the backend shell col and width
+ *
+ * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
  */
 
 /**

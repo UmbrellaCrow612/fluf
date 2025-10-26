@@ -1,16 +1,32 @@
+/**
+ * Script used to install the deps needed to run the app properly
+ */
+
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-// Get the directory where the script is located
-const scriptDir = __dirname;
+const rootDir = path.join(__dirname, "..");
+
+console.log("\n[0/8] Getting current Node version...");
+let initialNodeVersion = null;
+try {
+  const nodeVersion = execSync("node -v", {
+    cwd: rootDir,
+    encoding: "utf8",
+  }).trim();
+  initialNodeVersion = nodeVersion;
+  console.log(`✓ Current Node version: ${nodeVersion}`);
+} catch (error) {
+  console.warn("⚠ Failed to get current Node version:", error.message);
+  console.warn("  Will skip switching back at the end");
+}
 
 console.log("Starting reinstall process...");
-console.log("Working directory:", scriptDir);
+console.log("Working directory:", rootDir);
 
-// Step 1: Delete node_modules
 console.log("\n[1/7] Deleting node_modules...");
-const nodeModulesPath = path.join(scriptDir, "node_modules");
+const nodeModulesPath = path.join(rootDir, "node_modules");
 if (fs.existsSync(nodeModulesPath)) {
   fs.rmSync(nodeModulesPath, { recursive: true, force: true });
   console.log("✓ node_modules deleted");
@@ -20,7 +36,7 @@ if (fs.existsSync(nodeModulesPath)) {
 
 // Step 2: Delete package-lock.json
 console.log("\n[2/7] Deleting package-lock.json...");
-const packageLockPath = path.join(scriptDir, "package-lock.json");
+const packageLockPath = path.join(rootDir, "package-lock.json");
 if (fs.existsSync(packageLockPath)) {
   fs.unlinkSync(packageLockPath);
   console.log("✓ package-lock.json deleted");
@@ -31,7 +47,7 @@ if (fs.existsSync(packageLockPath)) {
 // Step 3: Run nvm use 16
 console.log("\n[3/7] Running nvm use 16...");
 try {
-  execSync("nvm use 16", { cwd: scriptDir, stdio: "inherit" });
+  execSync("nvm use 16", { cwd: rootDir, stdio: "inherit" });
   console.log("✓ Switched to Node 16");
 } catch (error) {
   console.error("✗ Failed to run nvm use 16:", error.message);
@@ -40,7 +56,7 @@ try {
 
 // Step 4: Remove electron-rebuild from package.json
 console.log("\n[4/7] Removing electron-rebuild from package.json...");
-const packageJsonPath = path.join(scriptDir, "package.json");
+const packageJsonPath = path.join(rootDir, "package.json");
 try {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 
@@ -74,7 +90,7 @@ try {
 // Step 5: Run npm install
 console.log("\n[5/7] Running npm install...");
 try {
-  execSync("npm i", { cwd: scriptDir, stdio: "inherit" });
+  execSync("npm i", { cwd: rootDir, stdio: "inherit" });
   console.log("✓ npm install completed");
 } catch (error) {
   console.error("✗ Failed to run npm install:", error.message);
@@ -85,7 +101,7 @@ try {
 console.log("\n[6/7] Installing electron-rebuild --save-dev...");
 try {
   execSync("npm install electron-rebuild --save-dev", {
-    cwd: scriptDir,
+    cwd: rootDir,
     stdio: "inherit",
   });
   console.log("✓ electron-rebuild installed");
@@ -97,14 +113,14 @@ try {
 // Step 7: Run electron-rebuild
 console.log("\n[7/7] Running electron-rebuild...");
 const electronRebuildPath = path.join(
-  scriptDir,
+  rootDir,
   "node_modules",
   ".bin",
   "electron-rebuild.cmd"
 );
 try {
   execSync(`"${electronRebuildPath}"`, {
-    cwd: scriptDir,
+    cwd: rootDir,
     stdio: "inherit",
   });
   console.log("✓ electron-rebuild completed");
@@ -113,4 +129,26 @@ try {
   process.exit(1);
 }
 
+console.log("\n[8/8] Restoring original Node version...");
+if (initialNodeVersion) {
+  try {
+    // Extract just the version number (e.g., "16.20.0" from "v16.20.0")
+    const versionNumber = initialNodeVersion.replace(/^v/, "");
+    execSync(`nvm use ${versionNumber}`, { cwd: rootDir, stdio: "inherit" });
+    console.log(`✓ Switched back to Node ${initialNodeVersion}`);
+  } catch (error) {
+    console.warn(
+      "⚠ Failed to switch back to original Node version:",
+      error.message
+    );
+    console.warn(
+      `  You may need to manually run: nvm use ${initialNodeVersion}`
+    );
+  }
+} else {
+  console.log("✓ Skipping (initial version not captured)");
+}
+
 console.log("\n✓ All steps completed successfully!");
+
+process.exit();

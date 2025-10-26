@@ -1,0 +1,46 @@
+<div class="container">
+  <div class="search_input_container">
+    <button
+      mat-icon-button
+      matTooltip="Extra search options"
+      (click)="toggleExtraSearchOptions()"
+    >
+      @if (showExtraSearchOptions) {
+      <mat-icon>keyboard_arrow_down</mat-icon>
+      } @else {
+      <mat-icon>keyboard_arrow_right</mat-icon>
+      }
+    </button>
+    <form class="input_form" (ngSubmit)="search($event)">
+      <input
+        type="text"
+        placeholder="Search files"
+        class="input"
+        [formControl]="searchTermInputControl"
+      />
+    </form>
+  </div>
+
+  <!---->
+  @if (showExtraSearchOptions) {
+  <div class="extra_search_options">
+    <input type="text" placeholder="Include *ts,src/*" class="input" [formControl]="includeTermInputControl"/>
+    <input type="text" placeholder="Exclude *ts,src/*" class="input" [formControl]="excludeTermInputControl"/>
+  </div>
+  }
+  <!---->
+
+  @if (ripGrepResult.length > 0) {
+  <div class="result_container">
+    <span>{{ totalResults }} results in {{ totalFiles }} files</span>
+  </div>
+  }
+  <!---->
+  <div class="search_results_container scroll_bar">
+    @for (result of ripGrepResult; track $index) {
+    <app-side-search-item [result]="result" />
+    } @empty {
+    <div>Nothing found of term</div>
+    }
+  </div>
+</div>
