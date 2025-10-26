@@ -20,6 +20,7 @@ import {
     MatTooltipModule,
     FormsModule,
     ReactiveFormsModule,
+    SideSearchItemComponent,
   ],
   templateUrl: './side-search.component.html',
   styleUrl: './side-search.component.css',
@@ -30,23 +31,22 @@ export class SideSearchComponent implements OnInit {
   private searchDir: string | null = null;
 
   showExtraSearchOptions = false;
+
   searchTermInputControl = new FormControl('', {
     validators: [Validators.required],
   });
+  includeTermInputControl = new FormControl(null);
+  excludeTermInputControl = new FormControl(null);
+
   ripGrepResult: ripGrepResult[] = [];
 
-  exanplkeReuslt: ripGrepResult = {
-    directoryName: 'dir name',
-    fileName: 'file name',
-    filePath: 'fil epath',
-    lines: [
-      {
-        content: 'ikenfkefnkfenkefn',
-        endIndex: 1,
-        startIndex: 1,
-      },
-    ],
-  };
+  get totalResults(): number {
+    return this.ripGrepResult.reduce((sum, file) => sum + file.lines.length, 0);
+  }
+
+  get totalFiles(): number {
+    return this.ripGrepResult.length;
+  }
 
   toggleExtraSearchOptions() {
     this.showExtraSearchOptions = !this.showExtraSearchOptions;
@@ -67,11 +67,15 @@ export class SideSearchComponent implements OnInit {
     }
 
     let term = this.searchTermInputControl.value!;
+    let exclude = this.excludeTermInputControl.value ?? undefined;
+    let include = this.includeTermInputControl.value ?? undefined;
 
     this.ripGrepResult = await this.api.ripGrep(undefined, {
       searchTerm: term,
       searchPath: this.searchDir!,
       caseInsensitive: true,
+      excludes: exclude,
+      includes: include,
     });
 
     console.log(this.ripGrepResult);

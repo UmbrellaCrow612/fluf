@@ -10,7 +10,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrl: './side-search-item.component.css'
 })
 export class SideSearchItemComponent {
-
   result = input.required<ripGrepResult>();
 
   showChildren = true;

@@ -162,7 +162,7 @@ function searchWithRipGrep(options) {
     ripGrep.on("error", () => safeReject(new Error("Failed to spawn ripgrep")));
 
     ripGrep.on("close", (code) => {
-      if (code === 0) {
+      if (code === 0 || code === 1) {
         let data = parseRipgrepOutput(stdout, options.searchTerm);
         safeResolve(data);
       } else {

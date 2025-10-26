@@ -24,21 +24,21 @@
   <!---->
   @if (showExtraSearchOptions) {
   <div class="extra_search_options">
-    <input type="text" placeholder="Include *ts,src/*" class="input" />
-    <input type="text" placeholder="Exclude *ts,src/*" class="input" />
+    <input type="text" placeholder="Include *ts,src/*" class="input" [formControl]="includeTermInputControl"/>
+    <input type="text" placeholder="Exclude *ts,src/*" class="input" [formControl]="excludeTermInputControl"/>
   </div>
   }
   <!---->
 
   @if (ripGrepResult.length > 0) {
   <div class="result_container">
-    <span>todo results in {{ ripGrepResult.length }} files</span>
+    <span>{{ totalResults }} results in {{ totalFiles }} files</span>
   </div>
   }
-
+  <!---->
   <div class="search_results_container scroll_bar">
     @for (result of ripGrepResult; track $index) {
-    <!-- <app-side-search-item [result]="exanplkeReuslt" /> --> fix styling
+    <app-side-search-item [result]="result" />
     } @empty {
     <div>Nothing found of term</div>
     }
