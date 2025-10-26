@@ -89,3 +89,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.line-match {
+  background-color: grey;
+}

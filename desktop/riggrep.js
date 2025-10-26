@@ -19,30 +19,36 @@ function getRipGrepPath() {
 }
 
 /**
- * Parses ripgrep stdout and converts it to structured objects with match indices
- * @param {string} stdout - Full stdout returned by ripgrep
- * @param {string} searchTerm - The term that was searched
+ * Parses ripgrep --vimgrep stdout and converts it to structured objects
+ * @param {string} stdout - Full stdout returned by ripgrep (with --vimgrep)
+ * @param {string} searchTerm - The search term
  * @returns {ripGrepResult[]} Array of structured results
  */
 function parseRipgrepOutput(stdout, searchTerm) {
-  const resultsMap = new Map();
-  const lines = stdout.split(/\r?\n/).filter(Boolean);
+  /**
+   * Contains the file path i.e file and the ripgrep result for it
+   * @type {Map<string, ripGrepResult>}
+   */
+  const map = new Map();
 
-  lines.forEach((line) => {
-    // ripgrep default format: filePath:lineNumber:content
-    const match = line.match(/^(.+?):\d+:(.*)$/);
-    if (!match) return;
+  const lines = stdout.split(/\r?\n/);
+  const lineRegex = /^(.+?):(\d+):(\d+):(.*)$/; // file:line:column:text
 
-    const [_, filePath, content] = match;
-    const startIndex = content.indexOf(searchTerm);
-    if (startIndex === -1) return; // skip if searchTerm not found
+  for (const line of lines) {
+    if (!line.trim()) continue;
 
-    const endIndex = startIndex + searchTerm.length;
+    const match = lineRegex.exec(line);
+    if (!match) continue;
 
-    if (!resultsMap.has(filePath)) {
-      const fileName = path.basename(filePath);
-      const directoryName = path.dirname(filePath);
-      resultsMap.set(filePath, {
+    const [, filePath, lineNumberStr, , content] = match;
+    const lineNumber = parseInt(lineNumberStr, 10);
+
+    // Initialize entry for this file
+    if (!map.has(filePath)) {
+      const parts = filePath.split(/[/\\]/);
+      const fileName = parts.pop();
+      const directoryName = parts.pop() || "";
+      map.set(filePath, {
         filePath,
         fileName,
         directoryName,
@@ -50,15 +56,26 @@ function parseRipgrepOutput(stdout, searchTerm) {
       });
     }
 
-    resultsMap.get(filePath).lines.push({
-      content,
-      startIndex,
-      endIndex,
-    });
-  });
+    // Extract before, match, after for the found term
+    const regex = new RegExp(searchTerm, "i");
+    const found = regex.exec(content);
+    if (!found) continue;
 
-  return Array.from(resultsMap.values());
+    const before = content.slice(0, found.index);
+    const matchText = found[0];
+    const after = content.slice(found.index + matchText.length);
+
+    map.get(filePath).lines.push({
+      before,
+      match: matchText,
+      after,
+      linenumber: lineNumber,
+    });
+  }
+
+  return Array.from(map.values());
 }
+
 /**
  * Builds an array of arguments to pass to ripgrep based on options
  * @param {ripgrepArgsOptions} options

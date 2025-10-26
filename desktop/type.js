@@ -277,13 +277,14 @@
 /**
  * Represents a line searched and matched the term
  * @typedef {Object} ripGrepLine
- * @property {string} content - The full content of the line
- * @property {number} startIndex - The start index of the matched term in the line
- * @property {number} endIndex - The end index of the matched term
+ * @property {string} before - The content before the match
+ * @property {string} match - The matched content
+ * @property {string} after - The content after the matched term
+ * @property {number} linenumber - The line number it appeared on
  */
 
 /**
- * File content and lines matched by the search term
+ * File content and lines matched by the search term for a given file result
  * @typedef {Object} ripGrepResult
  * @property {string} filePath - The path to the matched file
  * @property {string} fileName - The name of the file

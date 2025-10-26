@@ -237,20 +237,24 @@ type ripgrepArgsOptions = {
  */
 type ripGrepLine = {
     /**
-     * - The full content of the line
+     * - The content before the match
      */
-    content: string;
+    before: string;
     /**
-     * - The start index of the matched term in the line
+     * - The matched content
      */
-    startIndex: number;
+    match: string;
     /**
-     * - The end index of the matched term
+     * - The content after the matched term
      */
-    endIndex: number;
+    after: string;
+    /**
+     * - The line number it appeared on
+     */
+    linenumber: number;
 };
 /**
- * File content and lines matched by the search term
+ * File content and lines matched by the search term for a given file result
  */
 type ripGrepResult = {
     /**
