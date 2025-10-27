@@ -1,7 +1,8 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
-import * as monaco from 'monaco-editor';
+
+import * as monaco from 'monaco-editor'
 
 @Component({
   selector: 'app-open-file-editor',
@@ -58,25 +59,24 @@ export class OpenFileEditorComponent implements OnInit {
 
     this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
 
+    this.isLoading = false;
+
     this.renderMonacoEditor();
   }
 
   private renderMonacoEditor() {
+
     const container = document.getElementById('editor_container');
     if (!container) {
       this.error = 'Could not find editor element';
-      this.isLoading = false;
       return;
     }
-
-    this.isLoading = false;
 
     container.style.width = '100%';
     container.style.height = '100%';
 
     if (this.editor) {
-      this.editor.setValue(this.stringContent);
-      return;
+      this.disposeEditor();
     }
 
     this.editor = monaco.editor.create(container, {
@@ -97,8 +97,8 @@ export class OpenFileEditorComponent implements OnInit {
 
     const container = document.getElementById('editor_container');
     if (container) {
-      container.innerHTML = ''; // clear DOM
-      container.style.width = ''; // remove editor styles
+      container.innerHTML = ''; 
+      container.style.width = ''; 
       container.style.height = '';
     }
   }
