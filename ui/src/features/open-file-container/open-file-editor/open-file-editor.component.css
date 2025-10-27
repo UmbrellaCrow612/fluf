@@ -6,19 +6,13 @@
 }
 
 .container {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
   flex: 1;
-  overflow-y: auto;
   background-color: #1e1e1e;
-  padding: 16px;
   color: #ffffff;
   font-family: "Consolas", "Courier New", monospace;
-}
-
-.content {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-size: 14px;
-  line-height: 1.5;
 }
 
 .loading,
@@ -36,7 +30,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  flex: 1;
   text-align: center;
 }
 

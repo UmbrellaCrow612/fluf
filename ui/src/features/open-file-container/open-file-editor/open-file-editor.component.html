@@ -8,10 +8,8 @@
   <div>Loading file</div>
   }
 
-  <!---->
-  @if (!error && !isLoading && openFileNode) {
-  <pre class="content"><code>{{ stringContent }}</code></pre>
-  }
+  <!--Acts as the entry point to render the editor -->
+  <div id="editor_container" style="width: 100%; height: 100%;"></div>
 
   <!---->
   @if (!openFileNode && !error && !isLoading) {

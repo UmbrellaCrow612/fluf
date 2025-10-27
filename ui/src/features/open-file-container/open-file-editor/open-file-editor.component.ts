@@ -1,26 +1,25 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
+import * as monaco from 'monaco-editor';
 
 @Component({
   selector: 'app-open-file-editor',
-  imports: [],
   templateUrl: './open-file-editor.component.html',
-  styleUrl: './open-file-editor.component.css',
+  styleUrls: ['./open-file-editor.component.css'],
 })
 export class OpenFileEditorComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
-  /**
-   * The current file to show in the editor
-   */
   openFileNode: fileNode | null = null;
   error: string | null = null;
   isLoading = false;
 
   stringContent = '';
+
+  private editor: monaco.editor.IStandaloneCodeEditor | null = null;
 
   async ngOnInit() {
     this.openFileNode = this.appContext.getSnapshot().currentOpenFileInEditor;
@@ -34,6 +33,8 @@ export class OpenFileEditorComponent implements OnInit {
         this.openFileNode = ctx.currentOpenFileInEditor;
         if (this.openFileNode) {
           await this.displayFile();
+        } else {
+          this.disposeEditor();
         }
       },
       this.destroyRef
@@ -52,10 +53,66 @@ export class OpenFileEditorComponent implements OnInit {
 
     this.stringContent = await this.api.readFile(
       undefined,
-      this.openFileNode?.path
+      this.openFileNode.path
     );
-    this.appContext.update("fileExplorerActiveFileOrFolder", this.openFileNode)
+
+    this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
+
+    this.renderMonacoEditor();
+  }
+
+  private renderMonacoEditor() {
+    const container = document.getElementById('editor_container');
+    if (!container) {
+      this.error = 'Could not find editor element';
+      this.isLoading = false;
+      return;
+    }
 
     this.isLoading = false;
+
+    container.style.width = '100%';
+    container.style.height = '100%';
+
+    if (this.editor) {
+      this.editor.setValue(this.stringContent);
+      return;
+    }
+
+    this.editor = monaco.editor.create(container, {
+      value: this.stringContent,
+      language: this.detectLanguage(this.openFileNode?.path),
+      theme: 'vs-dark',
+      automaticLayout: true,
+    });
+  }
+
+  private disposeEditor() {
+    if (this.editor) {
+      this.editor.dispose(); // dispose Monaco instance
+      this.editor = null;
+    }
+
+    this.stringContent = '';
+
+    const container = document.getElementById('editor_container');
+    if (container) {
+      container.innerHTML = ''; // clear DOM
+      container.style.width = ''; // remove editor styles
+      container.style.height = '';
+    }
+  }
+
+  /**
+   * Simple language detection based on file extension
+   */
+  private detectLanguage(filePath?: string): string {
+    if (!filePath) return 'plaintext';
+    if (filePath.endsWith('.ts')) return 'typescript';
+    if (filePath.endsWith('.js')) return 'javascript';
+    if (filePath.endsWith('.cs')) return 'csharp';
+    if (filePath.endsWith('.html')) return 'html';
+    if (filePath.endsWith('.css')) return 'css';
+    return 'plaintext';
   }
 }
