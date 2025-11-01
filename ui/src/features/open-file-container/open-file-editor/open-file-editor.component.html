@@ -1,4 +1,4 @@
-<div class="container scroll_bar">
+<div class="container">
   @if (error) {
   <div>Error occured {{ error }}</div>
   }
@@ -9,9 +9,11 @@
   }
 
   <!---->
-  @if (!error && !isLoading && openFileNode) {
-  <pre class="content"><code>{{ stringContent }}</code></pre>
-  }
+  <div
+    id="code_mirror_container"
+    #code_mirror_container
+    [class.code_mirrow_wrapper]="codeMirrorView !== null"
+  ></div>
 
   <!---->
   @if (!openFileNode && !error && !isLoading) {
