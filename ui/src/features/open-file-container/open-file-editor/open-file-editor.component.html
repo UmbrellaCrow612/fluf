@@ -9,7 +9,12 @@
   }
 
   <!--set false to true bool based condition-->
-  <div id="code_mirror_container" #code_mirror_container [class.code_mirrow_wrapper]="codeMirrorView !== null"></div>
+  <div
+    id="code_mirror_container"
+    #code_mirror_container
+    [class.code_mirrow_wrapper]="codeMirrorView !== null"
+    class="scroll_bar"
+  ></div>
 
   <!---->
   @if (!openFileNode && !error && !isLoading) {
