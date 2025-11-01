@@ -9,7 +9,8 @@ import {
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { basicSetup } from 'codemirror';
-import { EditorView } from '@codemirror/view';
+import { EditorView, ViewPlugin } from '@codemirror/view';
+import { StateField } from '@codemirror/state';
 
 @Component({
   selector: 'app-open-file-editor',
@@ -25,7 +26,22 @@ export class OpenFileEditorComponent implements OnInit {
     'code_mirror_container'
   );
 
+  /**
+   * The code mirrow view instace
+   */
   codeMirrorView: EditorView | null = null;
+
+  /**
+   * Runs when code mirrow view changes 
+   */
+  updateListner = EditorView.updateListener.of((x) => {
+
+    // todo add debouce 
+    // after debouce add it to new doc state
+    // on ctrl s
+    // call save
+    console.log(x.state.changes.toString())
+  });
 
   /**
    * The current file to show in the editor
@@ -61,6 +77,7 @@ export class OpenFileEditorComponent implements OnInit {
       parent: this.codeMirrorContainer()?.nativeElement,
       extensions: [
         basicSetup,
+        this.updateListner,
         EditorView.theme(
           {
             /* ====== Root Editor ====== */
