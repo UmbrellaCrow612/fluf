@@ -28,10 +28,10 @@
 
 .left {
   height: 100%;
-  /* flex: 1; set via angular */
+  flex: 1; /* Value changed by resizer */
   min-height: 0; /*Make sure all flex containers have min height to allow overflow to work within them */
   min-width: 0;
-  
+
   display: flex;
 }
 
@@ -39,7 +39,7 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  /* flex: 1;  set via angular */
+  flex: 1; /* Changed via resizer */
 
   display: flex;
 }

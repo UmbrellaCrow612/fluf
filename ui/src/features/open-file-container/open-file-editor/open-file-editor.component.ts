@@ -9,8 +9,7 @@ import {
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { basicSetup } from 'codemirror';
-import { EditorView, ViewPlugin } from '@codemirror/view';
-import { StateField } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 
 @Component({
   selector: 'app-open-file-editor',
