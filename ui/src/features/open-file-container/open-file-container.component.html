@@ -2,9 +2,12 @@
   @if (showTabBar) {
   <app-open-file-container-tabs />
   }
-  <app-open-file-editor [style.flex]="fileEditorContainerFlex" />
-  @if (showBottom) {
-  <div class="resizer" (mousedown)="initResize($event)"></div>
-  <app-open-file-container-bottom [style.flex]="bottomFlex" />
-  }
+  <!---->
+
+  <div id="open_file_container_resize_wrapper" class="wrapper">
+    <app-open-file-editor />
+    @if (showBottom) {
+    <app-open-file-container-bottom />
+    }
+  </div>
 </div>

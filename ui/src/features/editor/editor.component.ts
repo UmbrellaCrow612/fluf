@@ -1,8 +1,12 @@
+import { ResizerTwo } from 'umbr-resizer-two';
 import { sideBarActiveElement } from './../app-context/type';
 import {
+  afterNextRender,
+  AfterViewInit,
   Component,
   DestroyRef,
   inject,
+  Injector,
   OnDestroy,
   OnInit,
 } from '@angular/core';
@@ -14,7 +18,6 @@ import { FileExplorerContextMenuComponent } from '../file-explorer/file-explorer
 import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
 import { getElectronApi } from '../../utils';
 import { SideSearchComponent } from '../side-search/side-search.component';
-
 type unSub = () => Promise<void>;
 
 @Component({
@@ -30,66 +33,24 @@ type unSub = () => Promise<void>;
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
-export class EditorComponent implements OnInit, OnDestroy {
+export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
+  private readonly injector = inject(Injector);
 
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
 
-  leftFlex = 1;
-  rightFlex = 1;
-  isResizing = false;
-  initResizer(event: MouseEvent) {
-    event.preventDefault();
-    this.isResizing = true;
-    let previousX = event.clientX;
-    const container = document.getElementById('resizer_container')!;
-
-    const MIN_FLEX = 0.4;
-    const sensitivity = (1 / container?.clientWidth) * 2;
-
-    const mouseMove = (mouseMove: MouseEvent) => {
-      if (!this.isResizing) return;
-      this.appContext.update('isEditorResize', true);
-
-      const currentX = mouseMove.clientX;
-      const deltaX = currentX - previousX;
-
-      const total = this.leftFlex + this.rightFlex;
-
-      if (deltaX > 0) {
-        // moved right -> shrink RIGHT, grow LEFT
-        const change = deltaX * sensitivity;
-        this.rightFlex = Math.max(MIN_FLEX, this.rightFlex - change);
-        this.leftFlex = Math.max(MIN_FLEX, this.leftFlex + change);
-      } else if (deltaX < 0) {
-        // moved left -> shrink LEFT, grow RIGHT
-        const change = Math.abs(deltaX) * sensitivity;
-        this.leftFlex = Math.max(MIN_FLEX, this.leftFlex - change);
-        this.rightFlex = Math.max(MIN_FLEX, this.rightFlex + change);
-      }
-
-      // Re-normalise so leftFlex + rightFlex === total (keeps overall ratio consistent)
-      const currentTotal = this.leftFlex + this.rightFlex;
-      if (currentTotal !== 0) {
-        this.leftFlex = (this.leftFlex / currentTotal) * total;
-        this.rightFlex = (this.rightFlex / currentTotal) * total;
-      }
-
-      previousX = currentX;
-    };
-
-    const mouseUp = () => {
-      this.isResizing = false;
-      document.removeEventListener('mousemove', mouseMove);
-      document.removeEventListener('mouseup', mouseUp);
-    };
-
-    document.addEventListener('mousemove', mouseMove);
-    document.addEventListener('mouseup', mouseUp);
-  }
+  private resizer = new ResizerTwo({
+    direction: 'horizontal',
+    minFlex: 0.2,
+    handleStyles: {
+      width: '6px',
+      background: 'linear-gradient(to bottom,rgb(19, 18, 18),rgb(20, 20, 20))',
+      boxShadow: 'inset 0 0 2px #000, 0 0 4px rgba(0,0,0,0.4)',
+    },
+  });
 
   isLeftActive = false;
   sideBarActivateElement: sideBarActiveElement = null;
@@ -120,6 +81,13 @@ export class EditorComponent implements OnInit, OnDestroy {
       (ctx) => {
         this.isLeftActive = ctx.sideBarActiveElement != null;
         this.sideBarActivateElement = ctx.sideBarActiveElement;
+
+        afterNextRender(
+          () => {
+            this.updateResizer();
+          },
+          { injector: this.injector }
+        );
       },
       this.destroyRef
     );
@@ -148,7 +116,28 @@ export class EditorComponent implements OnInit, OnDestroy {
     );
   }
 
+  ngAfterViewInit(): void {
+    this.updateResizer();
+  }
+
+  private updateResizer(): void {
+    const target = document.getElementById('editor_resize_container');
+
+    if (!target) {
+      console.error('Could not find editor_resize_container');
+      return;
+    }
+
+    if (this.isLeftActive) {
+      this.resizer.add(target);
+    } else {
+      this.resizer.remove();
+    }
+  }
+
   async ngOnDestroy() {
+    this.resizer.remove();
+
     if (this.unSub) {
       await this.unSub();
     }

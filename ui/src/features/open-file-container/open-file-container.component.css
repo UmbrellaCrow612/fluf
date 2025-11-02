@@ -14,12 +14,10 @@
   flex: 1;
 }
 
-.resizer {
-  height: 10px;
-  background-color: rgb(51, 49, 49);
-  cursor: row-resize;
-}
-
-.resizer:hover {
-  background-color: rgb(78, 76, 76);
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
 }

@@ -3,9 +3,9 @@
   <div class="bottom">
     <app-side-bar />
 
-    <div class="side" id="resizer_container">
+    <div class="side" id="editor_resize_container">
       @if (isLeftActive) {
-      <div class="left" [style.flex]="leftFlex">
+      <div class="left">
         @if (sideBarActivateElement === "file-explorer") {
         <app-file-explorer />
         } @else if (sideBarActivateElement === "search") {
@@ -14,9 +14,8 @@
         <div>Unkown state</div>
         }
       </div>
-      <div class="resizer" (mousedown)="initResizer($event)"></div>
       }
-      <div class="right" [style.flex]="rightFlex">
+      <div class="right">
         <app-open-file-container />
       </div>
     </div>

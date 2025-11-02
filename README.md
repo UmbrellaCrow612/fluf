@@ -63,3 +63,10 @@ A simple text editor with desktop packaging support using Electron.
      .\electron.exe
      ```
    * The app should open successfully.
+
+
+# External libs maintained by me
+
+Libarys that i wrote to use in flufy and are generic 
+
+- `umbr-resizer-two`
