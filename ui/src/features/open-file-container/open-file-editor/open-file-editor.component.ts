@@ -39,7 +39,7 @@ export class OpenFileEditorComponent implements OnInit {
     // after debouce add it to new doc state
     // on ctrl s
     // call save
-    console.log(x.state.changes.toString())
+    // console.log(x.state.changes.toString())
   });
 
   /**

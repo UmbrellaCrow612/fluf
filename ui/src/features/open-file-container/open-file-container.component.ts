@@ -1,9 +1,18 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import {
+  afterNextRender,
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  inject,
+  Injector,
+  OnInit,
+} from '@angular/core';
 import { OpenFileContainerTabsComponent } from './open-file-container-tabs/open-file-container-tabs.component';
 import { OpenFileEditorComponent } from './open-file-editor/open-file-editor.component';
 import { ContextService } from '../app-context/app-context.service';
 import { OpenFileContainerBottomComponent } from './open-file-container-bottom/open-file-container-bottom.component';
 import { HotKey, HotKeyService } from '../hotkeys/hot-key.service';
+import ResizerTwo from 'umbr-resizer-two';
 
 @Component({
   selector: 'app-open-file-container',
@@ -15,21 +24,32 @@ import { HotKey, HotKeyService } from '../hotkeys/hot-key.service';
   templateUrl: './open-file-container.component.html',
   styleUrl: './open-file-container.component.css',
 })
-export class OpenFileContainerComponent implements OnInit {
+export class OpenFileContainerComponent implements OnInit, AfterViewInit {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly hotKeyService = inject(HotKeyService);
+  private readonly injector = inject(Injector);
+
+  private resizer = new ResizerTwo({
+    direction: 'vertical',
+    minFlex: 0.2,
+    handleStyles: {
+      width: '6px',
+      background: 'linear-gradient(to bottom,rgb(19, 18, 18),rgb(20, 20, 20))',
+      boxShadow: 'inset 0 0 2px #000, 0 0 4px rgba(0,0,0,0.4)',
+    },
+  });
 
   openBottomHotKey: HotKey = {
     callback: (ctx) => {
       if (!ctx.displayFileEditorBottom) {
         this.appContext.update('displayFileEditorBottom', true);
         this.fileEditorContainerFlex = 1;
-        this.bottomFlex = 1
+        this.bottomFlex = 1;
       } else {
         this.appContext.update('displayFileEditorBottom', false);
         this.fileEditorContainerFlex = 1;
-        this.bottomFlex = 1
+        this.bottomFlex = 1;
       }
     },
     keys: ['Control', 'j'],
@@ -70,56 +90,40 @@ export class OpenFileContainerComponent implements OnInit {
         } else {
           this.showBottom = false;
         }
+
+        afterNextRender(
+          () => {
+            this.updateResizer();
+          },
+          { injector: this.injector }
+        );
       },
       this.destroyRef
     );
   }
 
-  isResizing = false;
-  initResize(event: MouseEvent) {
-    event.preventDefault();
-    this.isResizing = true;
+  ngAfterViewInit(): void {
+    this.updateResizer();
+  }
 
-    const container = (event.target as HTMLElement).parentElement;
-    if (!container) return;
+  private updateResizer(): void {
+    const target = document.getElementById(
+      'open_file_container_resize_wrapper'
+    );
 
-    const totalHeight = container.offsetHeight;
-    const totalFlex = this.fileEditorContainerFlex + this.bottomFlex;
+    if (!target) {
+      console.error('Could not find editor_resize_container');
+      return;
+    }
 
-    const onMouseMove = (mouseMoveEvent: MouseEvent) => {
-      if(!this.isResizing){
-        return;
-      }
+    if (this.showBottom) {
+      this.resizer.add(target);
+    } else {
+      this.resizer.remove();
+    }
+  }
 
-      this.appContext.update("isEditorResize", true)
-      
-      const deltaY = mouseMoveEvent.movementY;
-
-      const deltaFlex = (deltaY / totalHeight) * totalFlex;
-
-      let newTopFlex = this.fileEditorContainerFlex + deltaFlex;
-      let newBottomFlex = this.bottomFlex - deltaFlex;
-
-      if (newTopFlex < this.minFlex) {
-        newTopFlex = this.minFlex;
-        newBottomFlex = totalFlex - this.minFlex;
-      } else if (newBottomFlex < this.minFlex) {
-        newBottomFlex = this.minFlex;
-        newTopFlex = totalFlex - this.minFlex;
-      }
-
-      this.fileEditorContainerFlex = newTopFlex;
-      this.bottomFlex = newBottomFlex;
-    };
-
-    const onMouseUp = () => {
-      this.isResizing = false;
-
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+  async ngOnDestroy() {
+    this.resizer.remove();
   }
 }

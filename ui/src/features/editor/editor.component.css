@@ -43,13 +43,3 @@
 
   display: flex;
 }
-
-.resizer {
-  width: 5px;
-  background-color: rgb(36, 34, 34);
-}
-
-.resizer:hover {
-  background-color: rgb(36, 35, 35);
-  cursor: col-resize;
-}
