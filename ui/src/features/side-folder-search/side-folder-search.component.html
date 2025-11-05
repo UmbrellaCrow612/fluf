@@ -1,13 +1,60 @@
 <div class="side_folder_search_container">
   <form class="search_form" (ngSubmit)="submit($event)">
-    <input
-      type="text"
-      placeholder="Search for folders"
-      [formControl]="searchInputControl"
-    />
+    <div class="flex_wrapper">
+      <input
+        type="text"
+        placeholder="Search for folders"
+        [formControl]="searchInputControl"
+        class="input"
+      />
+      <button (click)="toggleOptions()" mat-icon-button type="button">
+        <mat-icon>
+          @if(expandOptions){arrow_upward } @else { arrow_downward }
+        </mat-icon>
+      </button>
+    </div>
 
-    @if(expandOptions){ }
+    @if(expandOptions){
+    <mat-checkbox
+      [(ngModel)]="fosOptions.caseInsensitive"
+      [ngModelOptions]="{ standalone: true }"
+    >
+      Case insensitive
+    </mat-checkbox>
+
+    <mat-checkbox
+      [(ngModel)]="fosOptions.partial"
+      [ngModelOptions]="{ standalone: true }"
+    >
+      Partial match
+    </mat-checkbox>
+
+    <mat-checkbox
+      [(ngModel)]="fosOptions.includeHidden"
+      [ngModelOptions]="{ standalone: true }"
+    >
+      Include hidden folders
+    </mat-checkbox>
+
+    <mat-checkbox
+      [(ngModel)]="fosOptions.open"
+      [ngModelOptions]="{ standalone: true }"
+    >
+      Open folder
+    </mat-checkbox>
+    }
   </form>
 
-  <div class="results_container scroll_bar">lorem1000</div>
+  <div class="results_container scroll_bar">
+    @if(results.length > 0) {
+    <!---->
+    @for (result of results; track result.path) {
+    <div class="result_item">
+      <div class="result_name">{{ result.name }}</div>
+      <div class="result_path">{{ result.path }}</div>
+    </div>
+    } } @else {
+    <div class="no_results">No matches found</div>
+    }
+  </div>
 </div>

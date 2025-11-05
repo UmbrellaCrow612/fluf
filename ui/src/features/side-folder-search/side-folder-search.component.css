@@ -23,8 +23,17 @@
   padding: 20px;
 }
 
-.search_form input {
-  flex: 1;
+.flex_wrapper {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 6px 10px;
   border: 1px solid #3c3c3c;
   border-radius: 4px;
@@ -35,13 +44,17 @@
   transition: border 0.1s, box-shadow 0.1s;
 }
 
-.search_form input::placeholder {
+.input::placeholder {
   color: #6a6a6a;
 }
 
-.search_form input:focus {
+.input:focus {
   border-color: #007acc;
   box-shadow: 0 0 0 1px #007acc;
+}
+
+button[mat-icon-button] {
+  flex-shrink: 0;
 }
 
 .results_container {
@@ -51,5 +64,48 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
+  padding: 10px;
   overflow: auto;
+}
+
+/* Each result item (like VS Code search results) */
+.result_item {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  background-color: transparent;
+}
+
+.result_item:hover {
+  background-color: #2a2d2e;
+}
+
+/* Folder name */
+.result_name {
+  font-size: 14px;
+  color: #dcdcdc;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Folder path (smaller, grayed out) */
+.result_path {
+  font-size: 12px;
+  color: #858585;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* “No results” text */
+.no_results {
+  text-align: center;
+  color: #808080;
+  font-size: 13px;
+  padding: 10px 0;
 }

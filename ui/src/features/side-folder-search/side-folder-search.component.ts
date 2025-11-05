@@ -7,10 +7,21 @@ import {
 } from '@angular/forms';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-side-folder-search',
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule,
+    CommonModule,
+  ],
   templateUrl: './side-folder-search.component.html',
   styleUrl: './side-folder-search.component.css',
 })
@@ -24,7 +35,10 @@ export class SideFolderSearchComponent {
     validators: [Validators.required],
   });
 
-  expandOptions = true;
+  expandOptions = false;
+  toggleOptions() {
+    this.expandOptions = !this.expandOptions;
+  }
 
   /**
    * Object used as two way binding
@@ -43,6 +57,8 @@ export class SideFolderSearchComponent {
     sort: 'name',
   };
 
+  results: fosResult[] = [];
+
   async submit(event: Event) {
     event.preventDefault();
 
@@ -50,16 +66,11 @@ export class SideFolderSearchComponent {
       return;
     }
 
-    let results = await this.api.fos(
+    this.results = await this.api.fos(
       undefined,
       this.searchInputControl.value!,
       this.selectedDir!,
-      {
-        caseInsensitive: true,
-        partial: true,
-      }
+      this.fosOptions
     );
-
-    console.log(results);
   }
 }
