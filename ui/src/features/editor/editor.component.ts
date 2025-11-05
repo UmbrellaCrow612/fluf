@@ -18,6 +18,7 @@ import { FileExplorerContextMenuComponent } from '../file-explorer/file-explorer
 import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
 import { getElectronApi } from '../../utils';
 import { SideSearchComponent } from '../side-search/side-search.component';
+import { SideFolderSearchComponent } from '../side-folder-search/side-folder-search.component';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -29,6 +30,7 @@ type unSub = () => Promise<void>;
     FileExplorerContextMenuComponent,
     OpenFileContainerComponent,
     SideSearchComponent,
+    SideFolderSearchComponent,
   ],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
@@ -38,6 +40,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly injector = inject(Injector);
+  private addedResizer = false;
 
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
@@ -128,10 +131,16 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    if (this.addedResizer) {
+      this.resizer.remove()
+    }
+
     if (this.isLeftActive) {
       this.resizer.add(target);
+      this.addedResizer = true;
     } else {
       this.resizer.remove();
+      this.addedResizer = false;
     }
   }
 

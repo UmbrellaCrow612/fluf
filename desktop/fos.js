@@ -10,7 +10,7 @@ const { spawn } = require("child_process");
  * Gets the path to the fos exe binary
  */
 function getExePath() {
-  let p = path.join(__dirname, "bin", "rg.exe");
+  let p = path.join(__dirname, "bin", "fos.exe");
   if (!fs.existsSync(p)) {
     return undefined;
   }
@@ -49,6 +49,8 @@ function buildFosArgs(term, path, options) {
 
   // final arg is awlays the search path
   args.push(path);
+
+  console.log(args);
 
   return args;
 }

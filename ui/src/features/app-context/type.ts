@@ -7,9 +7,15 @@ export type sideBarActiveElement =
   | 'source-control'
   | 'run-and-debug'
   | 'extensions'
+  | 'search-folders'
   | null;
 
 /**
  * The current active element to be rendered in the bottom editor pop up
  */
-export type fileEditorBottomActiveElement = 'terminal' | "debug-console" | "ports" | "output" | "problems";
+export type fileEditorBottomActiveElement =
+  | 'terminal'
+  | 'debug-console'
+  | 'ports'
+  | 'output'
+  | 'problems';

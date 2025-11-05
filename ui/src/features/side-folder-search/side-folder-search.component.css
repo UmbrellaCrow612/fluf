@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  background-color: rgb(20, 20, 20);
+}
+
+.side_folder_search_container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
