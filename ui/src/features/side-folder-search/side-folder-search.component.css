@@ -7,8 +7,49 @@
 }
 
 .side_folder_search_container {
+  flex-direction: column;
   display: flex;
   flex: 1;
   min-height: 0;
   min-width: 0;
+
+  color: white;
+}
+
+.search_form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 20px;
+}
+
+.search_form input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.1s, box-shadow 0.1s;
+}
+
+.search_form input::placeholder {
+  color: #6a6a6a;
+}
+
+.search_form input:focus {
+  border-color: #007acc;
+  box-shadow: 0 0 0 1px #007acc;
+}
+
+.results_container {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: auto;
 }

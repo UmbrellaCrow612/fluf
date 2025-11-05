@@ -1,3 +1,13 @@
 <div class="side_folder_search_container">
+  <form class="search_form" (ngSubmit)="submit($event)">
+    <input
+      type="text"
+      placeholder="Search for folders"
+      [formControl]="searchInputControl"
+    />
 
+    @if(expandOptions){ }
+  </form>
+
+  <div class="results_container scroll_bar">lorem1000</div>
 </div>
