@@ -20,6 +20,15 @@
 
     <button
       mat-icon-button
+      matTooltip="Search folders"
+      [class.active]="activeElement == 'search-folders'"
+      (click)="toggleSearchFolders()"
+    >
+      <mat-icon>tab_search</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
       matTooltip="Source control"
       [class.active]="activeElement == 'source-control'"
       (click)="toggleSourceControl()"

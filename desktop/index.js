@@ -32,6 +32,7 @@ const {
   resizeShellImpl,
 } = require("./shell");
 const { ripGrepImpl } = require("./riggrep");
+const { fosSearchImpl } = require("./fos");
 
 loadEnv();
 
@@ -96,6 +97,7 @@ app.whenReady().then(() => {
 
 
   ipcMain.handle("ripgrep:search", ripGrepImpl)
+  ipcMain.handle("fos:search", fosSearchImpl)
 
   createWindow();
 });

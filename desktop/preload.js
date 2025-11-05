@@ -67,8 +67,10 @@ const api = {
   close: (_event) => ipcRenderer.send("window:close"),
   restore: (_event) => ipcRenderer.send("window:restore"),
 
-  ripGrep: (_event, searchDirectory, term, options) =>
-    ipcRenderer.invoke("ripgrep:search", searchDirectory, term, options),
+  ripGrep: (_event, options) => ipcRenderer.invoke("ripgrep:search", options),
+
+  fos: (_event, term, path, options) =>
+    ipcRenderer.invoke("fos:search", term, path, options),
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
