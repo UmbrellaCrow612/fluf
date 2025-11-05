@@ -303,7 +303,6 @@
 /**
  * Options passed to fos folder search
  * @typedef {Object} fosOptions
- * @property {string} path - The absolute or relative path to search in
  * @property {boolean} [partial] - To search for folder names that contain the given term partially
  * @property {boolean} [caseInsensitive] - Whether to ignore case (uppercase or lowercase) when matching
  * @property {string[]} [exclude] - List of folder names to exclude from the search
@@ -329,6 +328,7 @@
  * @callback fos
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} term - The folder search term i.e the name of the folder
+ * @param {string} path - The absolute or relative path to search in
  * @param {fosOptions} options - Options passed to folder search
  * @returns {Promise<fosResult[]>}
  */

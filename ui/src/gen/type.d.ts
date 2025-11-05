@@ -279,6 +279,72 @@ type ripGrepResult = {
  */
 type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
 /**
+ * Options passed to fos folder search
+ */
+type fosOptions = {
+    /**
+     * - To search for folder names that contain the given term partially
+     */
+    partial?: boolean | undefined;
+    /**
+     * - Whether to ignore case (uppercase or lowercase) when matching
+     */
+    caseInsensitive?: boolean | undefined;
+    /**
+     * - List of folder names to exclude from the search
+     */
+    exclude?: string[] | undefined;
+    /**
+     * - How deep it will search in the given folder, e.g., stop at the first layer, etc.
+     */
+    depth?: number | undefined;
+    /**
+     * - Whether to include hidden folders (those starting with `.` such as `.git`)
+     */
+    includeHidden?: boolean | undefined;
+    /**
+     * - If a given match is found, stop and open the folder in the explorer
+     */
+    open?: boolean | undefined;
+    /**
+     * - If passed, will provide a simple tree view of matches and their contents
+     */
+    preview?: boolean | undefined;
+    /**
+     * - If passed, will simply print the number of matches found
+     */
+    countOnly?: boolean | undefined;
+    /**
+     * - Stop at a given limit when a specified number of matches have been found
+     */
+    limit?: number | undefined;
+    /**
+     * - Sorting criteria for output results
+     */
+    sort?: "name" | "size" | "modified" | undefined;
+    /**
+     * - If passed, will not run the logic but simply print out the arguments passed and their values
+     */
+    debug?: boolean | undefined;
+};
+/**
+ * Result object for s fos search item
+ */
+type fosResult = {
+    /**
+     * - The name of the folder
+     */
+    name: string;
+    /**
+     * - The path to the folder
+     */
+    path: string;
+};
+/**
+ * Search for a specific folder really fast
+ */
+type fos = (event?: Electron.IpcMainInvokeEvent | undefined, term: string, path: string, options: fosOptions) => Promise<fosResult[]>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -382,6 +448,10 @@ type ElectronApi = {
      * - Search a folder files for a specific search term and get a list of matching results
      */
     ripGrep: ripGrep;
+    /**
+     * - Search for a specific folder.
+     */
+    fos: fos;
 };
 /**
  * Extends the global `window` object to include the Electron API.
