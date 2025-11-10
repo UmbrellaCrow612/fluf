@@ -337,7 +337,7 @@
  * Checks if the OS has git installed
  * @callback hasGit
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @returns {boolean} If the OS has git or not
+ * @returns {Promise<boolean>} If the OS has git or not
  */
 
 /**
@@ -345,7 +345,7 @@
  * @callback isGitInitialized
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} directory - The folder to check
- * @returns {boolean} If it has it or not
+ * @returns {Promise<boolean>} If it has it or not
  */
 
 /**
@@ -353,7 +353,7 @@
  * @callback initializeGit
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} directory - The folder to init git in
- * @returns {{success:boolean, error:string | null}} Success or failure
+ * @returns {Promise<{success:boolean, error:string | null}>} Success or failure
  */
 
 /**

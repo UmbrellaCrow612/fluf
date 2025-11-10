@@ -1,6 +1,15 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {gitApi}
+ */
+const gitApi = {
+  hasGit: (_event) => ipcRenderer.invoke("has:git"),
+  isGitInitialized: (_event, dir) => ipcRenderer.invoke("git:is:init", dir),
+  initializeGit: (_event, dir) => ipcRenderer.invoke("git:init", dir),
+};
+
+/**
  * @type {ElectronApi}
  */
 const api = {
@@ -72,9 +81,7 @@ const api = {
   fos: (_event, term, path, options) =>
     ipcRenderer.invoke("fos:search", term, path, options),
 
-  gitApi: {
-    hasGit: () => {}
-  }
+  gitApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
