@@ -334,6 +334,37 @@
  */
 
 /**
+ * Checks if the OS has git installed
+ * @callback hasGit
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @returns {boolean} If the OS has git or not
+ */
+
+/**
+ * Checks if the given folder has git Initialized
+ * @callback isGitInitialized
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The folder to check
+ * @returns {boolean} If it has it or not
+ */
+
+/**
+ * Initialize git into a given folder
+ * @callback initializeGit
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The folder to init git in
+ * @returns {{success:boolean, error:string | null}} Success or failure
+ */
+
+/**
+ * Object that contains all the git helper functions
+ * @typedef {Object} gitApi
+ * @property {hasGit} hasGit - Checks if the OS has GIT
+ * @property {isGitInitialized} isGitInitialized - Checks if a folder has git tracking
+ * @property {initializeGit} initializeGit - Init git inot a folder
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -365,6 +396,8 @@
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
  * @property {fos} fos - Search for a specific folder.
+ *
+ * @property {gitApi} gitApi - Offers all the git func
  */
 
 /**

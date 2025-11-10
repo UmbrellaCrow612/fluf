@@ -76,8 +76,6 @@ export class SideSearchComponent implements OnInit {
       caseInsensitive: true,
       excludes: exclude,
       includes: include,
-    });
-
-    console.log(this.ripGrepResult);
+    }); 
   }
 }

@@ -71,6 +71,10 @@ const api = {
 
   fos: (_event, term, path, options) =>
     ipcRenderer.invoke("fos:search", term, path, options),
+
+  gitApi: {
+    hasGit: () => {}
+  }
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
