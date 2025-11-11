@@ -35,4 +35,11 @@
     </button>
   </div>
   }
+
+  <!---->
+  @if( !isLoading && !errorMessage && isGitInit){
+    <div>
+      {{gitStatusResult | json}}
+    </div>
+  }
 </div>

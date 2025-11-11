@@ -24,6 +24,8 @@ const gitApi = {
   },
 
   watchGitRepo: (_event, dir) => ipcRenderer.invoke("git:watch", dir),
+
+  gitStatus: (_event, dir) => ipcRenderer.invoke("git:status", dir),
 };
 
 /**

@@ -2,10 +2,11 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
 import { MatButtonModule } from '@angular/material/button';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-side-git',
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, JsonPipe],
   templateUrl: './side-git.component.html',
   styleUrl: './side-git.component.css',
 })
@@ -19,6 +20,8 @@ export class SideGitComponent implements OnInit, OnDestroy {
   isLoading = false;
 
   isGitInit = false;
+
+  gitStatusResult: gitStatusResult | null = null;
 
   unSub: voidCallback | null = null;
 
@@ -48,9 +51,13 @@ export class SideGitComponent implements OnInit, OnDestroy {
     }
 
     await this.api.gitApi.watchGitRepo(undefined, this.selectedDir!);
+    this.gitStatusResult = await this.api.gitApi.gitStatus(
+      undefined,
+      this.selectedDir!
+    );
 
     this.unSub = this.api.gitApi.onGitChange((data) => {
-      console.log('From UI yo git ' + JSON.stringify(data));
+      this.gitStatusResult = data;
     });
 
     this.isLoading = false;
@@ -68,9 +75,12 @@ export class SideGitComponent implements OnInit, OnDestroy {
     }
 
     this.isCreatingGitRepo = false;
-   await this.api.gitApi.watchGitRepo(undefined, this.selectedDir!);
-
-    // call load git changes and render component
+    this.isGitInit = true;
+    await this.api.gitApi.watchGitRepo(undefined, this.selectedDir!);
+    this.gitStatusResult = await this.api.gitApi.gitStatus(
+      undefined,
+      this.selectedDir!
+    );
   }
 
   ngOnDestroy(): void {

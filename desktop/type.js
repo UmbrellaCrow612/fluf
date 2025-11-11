@@ -410,6 +410,14 @@
  */
 
 /**
+ * Runs git status in the current project and returns the result
+ * @callback gitStatus
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The folder to run `git status` in
+ * @returns {Promise<gitStatusResult | null>} Result or null if it could not
+ */
+
+/**
  * Object that contains all the git helper functions
  * @typedef {Object} gitApi
  * @property {hasGit} hasGit - Checks if the OS has GIT
@@ -417,6 +425,7 @@
  * @property {initializeGit} initializeGit - Init git inot a folder
  * @property {onGitChange} onGitChange - Listen to changes and run custom logic
  * @property {watchGitRepo} watchGitRepo - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
+ * @property {gitStatus} gitStatus - Run git status in a folder and get the result
  */
 
 /**

@@ -14,7 +14,7 @@ const path = require("path");
  */
 function parseGitStatus(stdout) {
   const lines = stdout.split(/\r?\n/);
-  /** @type {gitStatusResult} */ 
+  /** @type {gitStatusResult} */
   const result = {
     branch: null,
     branchStatus: null,
@@ -247,6 +247,18 @@ const watchGitRepoImpl = async (_event, dir) => {
   return true;
 };
 
+/** @type {gitStatus} */
+const gitStatusImpl = async (_event, dir) => {
+  try {
+    const stdout = await runGitCommand(["status"], dir);
+
+    return parseGitStatus(stdout);
+  } catch (err) {
+    console.error("Error checking git status:", err);
+    return null;
+  }
+};
+
 /**
  * Stops watching files
  */
@@ -270,6 +282,7 @@ const registerGitListeners = (ipcMain) => {
   ipcMain.handle("git:init", initializeGitImpl);
   ipcMain.handle("git:is:init", isGitInitializedImpl);
   ipcMain.handle("git:watch", watchGitRepoImpl);
+  ipcMain.handle("git:status", gitStatusImpl);
 };
 
 module.exports = {

@@ -418,6 +418,10 @@ type onGitChange = (callback: onGitChangeCallback) => voidCallback;
  */
 type watchGitRepo = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
 /**
+ * Runs git status in the current project and returns the result
+ */
+type gitStatus = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<gitStatusResult | null>;
+/**
  * Object that contains all the git helper functions
  */
 type gitApi = {
@@ -441,6 +445,10 @@ type gitApi = {
      * - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
      */
     watchGitRepo: watchGitRepo;
+    /**
+     * - Run git status in a folder and get the result
+     */
+    gitStatus: gitStatus;
 };
 /**
  * APIs exposed to the renderer process for using Electron functions.
