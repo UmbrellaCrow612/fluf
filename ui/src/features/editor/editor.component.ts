@@ -19,6 +19,7 @@ import { OpenFileContainerComponent } from '../open-file-container/open-file-con
 import { getElectronApi } from '../../utils';
 import { SideSearchComponent } from '../side-search/side-search.component';
 import { SideFolderSearchComponent } from '../side-folder-search/side-folder-search.component';
+import { SideGitComponent } from "../side-git/side-git.component";
 type unSub = () => Promise<void>;
 
 @Component({
@@ -31,7 +32,8 @@ type unSub = () => Promise<void>;
     OpenFileContainerComponent,
     SideSearchComponent,
     SideFolderSearchComponent,
-  ],
+    SideGitComponent
+],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })

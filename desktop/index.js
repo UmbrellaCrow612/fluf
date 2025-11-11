@@ -33,6 +33,7 @@ const {
 } = require("./shell");
 const { ripGrepImpl } = require("./riggrep");
 const { fosSearchImpl } = require("./fos");
+const { registerGitListeners, stopWatchingGitRepo } = require("./git");
 
 loadEnv();
 
@@ -93,11 +94,12 @@ app.whenReady().then(() => {
   ipcMain.handle("shell:write", writeToShellImpl);
   ipcMain.handle("shell:stop", stopCommandInShell);
   ipcMain.handle("shell:alive", isShellActiveImpl);
-  ipcMain.handle("shell:resize", resizeShellImpl)
+  ipcMain.handle("shell:resize", resizeShellImpl);
 
+  ipcMain.handle("ripgrep:search", ripGrepImpl);
+  ipcMain.handle("fos:search", fosSearchImpl);
 
-  ipcMain.handle("ripgrep:search", ripGrepImpl)
-  ipcMain.handle("fos:search", fosSearchImpl)
+  registerGitListeners(ipcMain);
 
   createWindow();
 });
@@ -105,4 +107,5 @@ app.whenReady().then(() => {
 app.on("before-quit", () => {
   cleanUpShells();
   cleanUpWatchers();
+  stopWatchingGitRepo();
 });

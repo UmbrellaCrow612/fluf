@@ -345,6 +345,112 @@ type fosResult = {
  */
 type fos = (event?: Electron.IpcMainInvokeEvent | undefined, term: string, path: string, options: fosOptions) => Promise<fosResult[]>;
 /**
+ * Checks if the OS has git installed
+ */
+type hasGit = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
+/**
+ * Checks if the given folder has git Initialized
+ */
+type isGitInitialized = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
+/**
+ * Initialize git into a given folder
+ */
+type initializeGit = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<{
+    success: boolean;
+    error: string | null;
+}>;
+/**
+ * Callback structure for callback
+ */
+type voidCallback = () => void;
+type gitFileStatus = "modified" | "deleted" | "new file" | "renamed" | "untracked" | "unknown";
+type gitFileEntry = {
+    /**
+     * - The status of the file (e.g., modified, deleted, untracked, etc.)
+     */
+    status: gitFileStatus;
+    /**
+     * - The file path affected
+     */
+    file: string;
+};
+type gitSection = "staged" | "unstaged" | "untracked" | "ignored" | null;
+type gitStatusResult = {
+    /**
+     * - The current branch name
+     */
+    branch: string | null;
+    /**
+     * - The descriptive status of the branch (ahead/behind/diverged)
+     */
+    branchStatus: string | null;
+    /**
+     * - Files staged for commit
+     */
+    staged: gitFileEntry[];
+    /**
+     * - Files modified but not staged
+     */
+    unstaged: gitFileEntry[];
+    /**
+     * - Untracked files
+     */
+    untracked: gitFileEntry[];
+    /**
+     * - Ignored files (only if shown with `--ignored`)
+     */
+    ignored: gitFileEntry[];
+    /**
+     * - Whether the working directory is clean
+     */
+    clean: boolean;
+};
+/**
+ * Callback to run when git changes
+ */
+type onGitChangeCallback = (data: gitStatusResult) => void;
+/**
+ * Listen to when git changes i.e files modified and run custom logic
+ */
+type onGitChange = (callback: onGitChangeCallback) => voidCallback;
+/**
+ * Begins watching the git reppo if there is one, can be called multiple times safeley
+ */
+type watchGitRepo = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
+/**
+ * Runs git status in the current project and returns the result
+ */
+type gitStatus = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<gitStatusResult | null>;
+/**
+ * Object that contains all the git helper functions
+ */
+type gitApi = {
+    /**
+     * - Checks if the OS has GIT
+     */
+    hasGit: hasGit;
+    /**
+     * - Checks if a folder has git tracking
+     */
+    isGitInitialized: isGitInitialized;
+    /**
+     * - Init git inot a folder
+     */
+    initializeGit: initializeGit;
+    /**
+     * - Listen to changes and run custom logic
+     */
+    onGitChange: onGitChange;
+    /**
+     * - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
+     */
+    watchGitRepo: watchGitRepo;
+    /**
+     * - Run git status in a folder and get the result
+     */
+    gitStatus: gitStatus;
+};
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -452,6 +558,10 @@ type ElectronApi = {
      * - Search for a specific folder.
      */
     fos: fos;
+    /**
+     * - Offers all the git func
+     */
+    gitApi: gitApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

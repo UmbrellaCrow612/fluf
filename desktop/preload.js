@@ -1,6 +1,34 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {gitApi}
+ */
+const gitApi = {
+  hasGit: (_event) => ipcRenderer.invoke("has:git"),
+  isGitInitialized: (_event, dir) => ipcRenderer.invoke("git:is:init", dir),
+  initializeGit: (_event, dir) => ipcRenderer.invoke("git:init", dir),
+
+  onGitChange: (callback) => {
+    /**
+     * Runs when ipc send is sent to `git:change`
+     * @param {import("electron").IpcRendererEvent} _event
+     * @param {gitStatusResult} data
+     */
+    let listener = (_event, data) => {
+      callback(data);
+    };
+
+    ipcRenderer.on("git:change", listener);
+
+    return () => ipcRenderer.removeListener("git:change", listener);
+  },
+
+  watchGitRepo: (_event, dir) => ipcRenderer.invoke("git:watch", dir),
+
+  gitStatus: (_event, dir) => ipcRenderer.invoke("git:status", dir),
+};
+
+/**
  * @type {ElectronApi}
  */
 const api = {
@@ -71,6 +99,8 @@ const api = {
 
   fos: (_event, term, path, options) =>
     ipcRenderer.invoke("fos:search", term, path, options),
+
+  gitApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

@@ -334,6 +334,101 @@
  */
 
 /**
+ * Checks if the OS has git installed
+ * @callback hasGit
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @returns {Promise<boolean>} If the OS has git or not
+ */
+
+/**
+ * Checks if the given folder has git Initialized
+ * @callback isGitInitialized
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The folder to check
+ * @returns {Promise<boolean>} If it has it or not
+ */
+
+/**
+ * Initialize git into a given folder
+ * @callback initializeGit
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The folder to init git in
+ * @returns {Promise<{success:boolean, error:string | null}>} Success or failure
+ */
+
+/**
+ * Callback structure for callback
+ * @callback voidCallback
+ * @returns {void}
+ */
+
+/**
+ * @typedef {"modified" | "deleted" | "new file" | "renamed" | "untracked" | "unknown"} gitFileStatus
+ */
+
+/**
+ * @typedef {Object} gitFileEntry
+ * @property {gitFileStatus} status - The status of the file (e.g., modified, deleted, untracked, etc.)
+ * @property {string} file - The file path affected
+ */
+
+/**
+ * @typedef {"staged" | "unstaged" | "untracked" | "ignored" | null} gitSection
+ */
+
+/**
+ * @typedef {Object} gitStatusResult
+ * @property {string|null} branch - The current branch name
+ * @property {string|null} branchStatus - The descriptive status of the branch (ahead/behind/diverged)
+ * @property {gitFileEntry[]} staged - Files staged for commit
+ * @property {gitFileEntry[]} unstaged - Files modified but not staged
+ * @property {gitFileEntry[]} untracked - Untracked files
+ * @property {gitFileEntry[]} ignored - Ignored files (only if shown with `--ignored`)
+ * @property {boolean} clean - Whether the working directory is clean
+ */
+
+/**
+ * Callback to run when git changes
+ * @callback onGitChangeCallback
+ * @param {gitStatusResult} data - The new data from git
+ * @returns {void}
+ */
+
+/**
+ * Listen to when git changes i.e files modified and run custom logic
+ * @callback onGitChange
+ * @param {onGitChangeCallback} callback - The callback to run
+ * @returns {voidCallback} Unsub to changes
+ */
+
+/**
+ * Begins watching the git reppo if there is one, can be called multiple times safeley
+ * @callback watchGitRepo
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The directory that contaisn the git
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Runs git status in the current project and returns the result
+ * @callback gitStatus
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The folder to run `git status` in
+ * @returns {Promise<gitStatusResult | null>} Result or null if it could not
+ */
+
+/**
+ * Object that contains all the git helper functions
+ * @typedef {Object} gitApi
+ * @property {hasGit} hasGit - Checks if the OS has GIT
+ * @property {isGitInitialized} isGitInitialized - Checks if a folder has git tracking
+ * @property {initializeGit} initializeGit - Init git inot a folder
+ * @property {onGitChange} onGitChange - Listen to changes and run custom logic
+ * @property {watchGitRepo} watchGitRepo - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
+ * @property {gitStatus} gitStatus - Run git status in a folder and get the result
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -365,6 +460,8 @@
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
  * @property {fos} fos - Search for a specific folder.
+ *
+ * @property {gitApi} gitApi - Offers all the git func
  */
 
 /**
