@@ -357,11 +357,55 @@
  */
 
 /**
+ * Callback structure for callback
+ * @callback voidCallback
+ * @returns {void}
+ */
+
+/**
+ * Data passed from git
+ * @typedef {Object} gitData
+ * @property {gitFileChange[]} staged - List of staged files
+ * @property {gitFileChange[]} unstaged - List of unstaged files
+ */
+
+/**
+ * Represents a file change in a git repository
+ * @typedef {Object} gitFileChange
+ * @property {string} path - File path relative to repo root
+ * @property {"staged"|"unstaged"} status - Type of change
+ */
+
+/**
+ * Callback to run when git changes
+ * @callback onGitChangeCallback
+ * @param {gitData} data - The new data from git
+ * @returns {void}
+ */
+
+/**
+ * Listen to when git changes i.e files modified and run custom logic
+ * @callback onGitChange
+ * @param {onGitChangeCallback} callback - The callback to run
+ * @returns {voidCallback} Unsub to changes
+ */
+
+/**
+ * Begins watching the git reppo if there is one, can be called multiple times safeley
+ * @callback watchGitRepo
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} directory - The directory that contaisn the git
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
  * Object that contains all the git helper functions
  * @typedef {Object} gitApi
  * @property {hasGit} hasGit - Checks if the OS has GIT
  * @property {isGitInitialized} isGitInitialized - Checks if a folder has git tracking
  * @property {initializeGit} initializeGit - Init git inot a folder
+ * @property {onGitChange} onGitChange - Listen to changes and run custom logic
+ * @property {watchGitRepo} watchGitRepo - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
  */
 
 /**

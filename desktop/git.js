@@ -92,6 +92,94 @@ const isGitInitializedImpl = async (_event, dir) => {
 };
 
 /**
+ * Unsub watcher logic
+ * @type {voidCallback | null}
+ */
+let gitWatcher = null;
+/** Flag to track if watch logic has been run  */
+let isWatchingGitRepo = false;
+
+/** @type {watchGitRepo} */
+const watchGitRepoImpl = async (_event, dir) => {
+  if (isWatchingGitRepo) {
+    console.log("Already watching git repo");
+    return true;
+  }
+
+  if (!dir || !fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
+    console.log("Invalid directory:", dir);
+    return false;
+  }
+
+  const sender = _event?.sender;
+
+  /** @type {NodeJS.Timeout | null} */
+  let debounceTimer = null;
+  const debounceDelay = 500;
+
+  const notifyChange = async () => {
+    try {
+      const stdout = await runGitCommand(["status", "--porcelain"], dir);
+      /** @type {gitFileChange[]} */
+      const staged = [];
+      /** @type {gitFileChange[]} */
+      const unstaged = [];
+
+      stdout.split("\n").forEach((line) => {
+        if (!line) return;
+        const status = line.slice(0, 2);
+        const file = line.slice(3).trim();
+
+        if (status[0] !== " ") staged.push({ path: file, status: "staged" });
+        if (status[1] !== " ")
+          unstaged.push({ path: file, status: "unstaged" });
+      });
+
+      const data = { staged, unstaged };
+      sender?.send("git:change", data);
+    } catch (err) {
+      console.error("Error checking git status:", err);
+    }
+  };
+
+  const throttledNotify = () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => notifyChange(), debounceDelay);
+  };
+
+  const watcher = fs.watch(dir, { recursive: true }, (_, filename) => {
+    if (
+      filename &&
+      (filename.startsWith(".git") || filename.includes(path.sep + ".git"))
+    ) {
+      return;
+    }
+    throttledNotify();
+  });
+
+  gitWatcher = () => watcher.close();
+  isWatchingGitRepo = true;
+
+  console.log("Watching repository for changes:", dir);
+
+  return true;
+};
+
+/**
+ * Stops watching files
+ */
+function stopWatchingGitRepo() {
+  if (gitWatcher) {
+    gitWatcher();
+    gitWatcher = null;
+    isWatchingGitRepo = false;
+    console.log("Stopped watching repository");
+    return true;
+  }
+  return false;
+}
+
+/**
  * Registers all listeners and handlers for git
  * @param {import("electron").IpcMain} ipcMain
  */
@@ -99,8 +187,10 @@ const registerGitListeners = (ipcMain) => {
   ipcMain.handle("has:git", hasGitImpl);
   ipcMain.handle("git:init", initializeGitImpl);
   ipcMain.handle("git:is:init", isGitInitializedImpl);
+  ipcMain.handle("git:watch", watchGitRepoImpl);
 };
 
 module.exports = {
   registerGitListeners,
+  stopWatchingGitRepo,
 };

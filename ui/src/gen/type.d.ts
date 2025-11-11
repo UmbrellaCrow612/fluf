@@ -360,6 +360,48 @@ type initializeGit = (event?: Electron.IpcMainInvokeEvent | undefined, directory
     error: string | null;
 }>;
 /**
+ * Callback structure for callback
+ */
+type voidCallback = () => void;
+/**
+ * Data passed from git
+ */
+type gitData = {
+    /**
+     * - List of staged files
+     */
+    staged: gitFileChange[];
+    /**
+     * - List of unstaged files
+     */
+    unstaged: gitFileChange[];
+};
+/**
+ * Represents a file change in a git repository
+ */
+type gitFileChange = {
+    /**
+     * - File path relative to repo root
+     */
+    path: string;
+    /**
+     * - Type of change
+     */
+    status: "staged" | "unstaged";
+};
+/**
+ * Callback to run when git changes
+ */
+type onGitChangeCallback = (data: gitData) => void;
+/**
+ * Listen to when git changes i.e files modified and run custom logic
+ */
+type onGitChange = (callback: onGitChangeCallback) => voidCallback;
+/**
+ * Begins watching the git reppo if there is one, can be called multiple times safeley
+ */
+type watchGitRepo = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
+/**
  * Object that contains all the git helper functions
  */
 type gitApi = {
@@ -375,6 +417,14 @@ type gitApi = {
      * - Init git inot a folder
      */
     initializeGit: initializeGit;
+    /**
+     * - Listen to changes and run custom logic
+     */
+    onGitChange: onGitChange;
+    /**
+     * - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
+     */
+    watchGitRepo: watchGitRepo;
 };
 /**
  * APIs exposed to the renderer process for using Electron functions.

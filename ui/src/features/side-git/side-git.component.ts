@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './side-git.component.html',
   styleUrl: './side-git.component.css',
 })
-export class SideGitComponent implements OnInit {
+export class SideGitComponent implements OnInit, OnDestroy {
   private readonly api = getElectronApi();
   private readonly contextService = inject(ContextService);
 
@@ -19,6 +19,8 @@ export class SideGitComponent implements OnInit {
   isLoading = false;
 
   isGitInit = false;
+
+  unSub: voidCallback | null = null;
 
   async ngOnInit() {
     await this.loadState();
@@ -41,9 +43,16 @@ export class SideGitComponent implements OnInit {
       this.selectedDir!
     );
     if (!this.isGitInit) {
+      await this.api.gitApi.watchGitRepo(undefined, this.selectedDir!);
       this.isLoading = false;
       return;
     }
+
+    await this.api.gitApi.watchGitRepo(undefined, this.selectedDir!);
+
+    this.unSub = this.api.gitApi.onGitChange((data) => {
+      console.log('From UI yo git ' + JSON.stringify(data));
+    });
 
     this.isLoading = false;
   }
@@ -60,6 +69,14 @@ export class SideGitComponent implements OnInit {
     }
 
     this.isCreatingGitRepo = false;
+   await this.api.gitApi.watchGitRepo(undefined, this.selectedDir!);
+
     // call load git changes and render component
+  }
+
+  ngOnDestroy(): void {
+    if (this.unSub) {
+      this.unSub();
+    }
   }
 }

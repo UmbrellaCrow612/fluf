@@ -33,7 +33,7 @@ const {
 } = require("./shell");
 const { ripGrepImpl } = require("./riggrep");
 const { fosSearchImpl } = require("./fos");
-const { registerGitListeners } = require("./git");
+const { registerGitListeners, stopWatchingGitRepo } = require("./git");
 
 loadEnv();
 
@@ -107,4 +107,5 @@ app.whenReady().then(() => {
 app.on("before-quit", () => {
   cleanUpShells();
   cleanUpWatchers();
+  stopWatchingGitRepo();
 });
