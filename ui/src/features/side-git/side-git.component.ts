@@ -2,11 +2,10 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
 import { MatButtonModule } from '@angular/material/button';
-import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-side-git',
-  imports: [MatButtonModule, JsonPipe],
+  imports: [MatButtonModule],
   templateUrl: './side-git.component.html',
   styleUrl: './side-git.component.css',
 })
