@@ -7,6 +7,102 @@ const fs = require("fs");
 const path = require("path");
 
 /**
+ * Parses the stdout from `git status` and returns a structured JSON object.
+ *
+ * @param {string} stdout - The raw stdout string from `git status`
+ * @returns {gitStatusResult} A structured representation of the git status
+ */
+function parseGitStatus(stdout) {
+  const lines = stdout.split(/\r?\n/);
+  /** @type {gitStatusResult} */ 
+  const result = {
+    branch: null,
+    branchStatus: null,
+    staged: [],
+    unstaged: [],
+    untracked: [],
+    ignored: [],
+    clean: false,
+  };
+
+  /** @type {gitSection} */
+  let section = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Skip git hint lines
+    if (trimmed.startsWith("(use ")) continue;
+    if (trimmed.startsWith("(all conflicts")) continue;
+    if (trimmed.startsWith("(fix conflicts")) continue;
+    if (trimmed.startsWith("no changes added")) continue;
+
+    // --- Branch info ---
+    if (trimmed.startsWith("On branch")) {
+      result.branch = trimmed.replace("On branch ", "").trim();
+      continue;
+    }
+
+    if (trimmed.startsWith("Your branch")) {
+      result.branchStatus = trimmed;
+      continue;
+    }
+
+    // --- Section markers ---
+    if (trimmed.startsWith("Changes to be committed:")) {
+      section = "staged";
+      continue;
+    }
+    if (trimmed.startsWith("Changes not staged for commit:")) {
+      section = "unstaged";
+      continue;
+    }
+    if (trimmed.startsWith("Untracked files:")) {
+      section = "untracked";
+      continue;
+    }
+    if (trimmed.startsWith("Ignored files:")) {
+      section = "ignored";
+      continue;
+    }
+
+    if (trimmed.includes("nothing to commit, working tree clean")) {
+      result.clean = true;
+      continue;
+    }
+
+    // --- Parse file lines within known sections ---
+    if (
+      section &&
+      ["staged", "unstaged", "untracked", "ignored"].includes(section)
+    ) {
+      const match = trimmed.match(
+        /^(modified:|deleted:|new file:|renamed:|.+->.+)?\s*(.+)$/
+      );
+      if (match) {
+        let status = match[1] ? match[1].replace(":", "").trim() : null;
+        let file = match[2] ? match[2].trim() : null;
+
+        if (file) {
+          /** @type {gitFileEntry} */
+          const entry = {
+            status: /** @type {gitFileStatus} */ (status || "untracked"),
+            file,
+          };
+
+          result[
+            /** @type {"staged"|"unstaged"|"untracked"|"ignored"} */ (section)
+          ].push(entry);
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Spawn a Git command and return structured output
  * @param {string[]} args - List of args to run ["init"]
  * @param {string} cwd - The directory to run the cmds in
@@ -119,42 +215,28 @@ const watchGitRepoImpl = async (_event, dir) => {
 
   const notifyChange = async () => {
     try {
-      const stdout = await runGitCommand(["status", "--porcelain"], dir);
-      /** @type {gitFileChange[]} */
-      const staged = [];
-      /** @type {gitFileChange[]} */
-      const unstaged = [];
+      const stdout = await runGitCommand(["status"], dir);
 
-      stdout.split("\n").forEach((line) => {
-        if (!line) return;
-        const status = line.slice(0, 2);
-        const file = line.slice(3).trim();
-
-        if (status[0] !== " ") staged.push({ path: file, status: "staged" });
-        if (status[1] !== " ")
-          unstaged.push({ path: file, status: "unstaged" });
-      });
-
-      const data = { staged, unstaged };
+      let data = parseGitStatus(stdout);
       sender?.send("git:change", data);
     } catch (err) {
       console.error("Error checking git status:", err);
     }
   };
 
-  const throttledNotify = () => {
+  const debounceNotify = () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => notifyChange(), debounceDelay);
   };
 
   const watcher = fs.watch(dir, { recursive: true }, (_, filename) => {
-    if (
-      filename &&
-      (filename.startsWith(".git") || filename.includes(path.sep + ".git"))
-    ) {
-      return;
+    if (filename) {
+      const parts = filename.split(path.sep);
+      if (parts.some((part) => part.startsWith("."))) {
+        return;
+      }
+      debounceNotify();
     }
-    throttledNotify();
   });
 
   gitWatcher = () => watcher.close();

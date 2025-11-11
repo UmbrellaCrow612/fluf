@@ -12,7 +12,7 @@ const gitApi = {
     /**
      * Runs when ipc send is sent to `git:change`
      * @param {import("electron").IpcRendererEvent} _event
-     * @param {gitData} data
+     * @param {gitStatusResult} data
      */
     let listener = (_event, data) => {
       callback(data);

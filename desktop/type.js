@@ -363,23 +363,34 @@
  */
 
 /**
- * Data passed from git
- * @typedef {Object} gitData
- * @property {gitFileChange[]} staged - List of staged files
- * @property {gitFileChange[]} unstaged - List of unstaged files
+ * @typedef {"modified" | "deleted" | "new file" | "renamed" | "untracked" | "unknown"} gitFileStatus
  */
 
 /**
- * Represents a file change in a git repository
- * @typedef {Object} gitFileChange
- * @property {string} path - File path relative to repo root
- * @property {"staged"|"unstaged"} status - Type of change
+ * @typedef {Object} gitFileEntry
+ * @property {gitFileStatus} status - The status of the file (e.g., modified, deleted, untracked, etc.)
+ * @property {string} file - The file path affected
+ */
+
+/**
+ * @typedef {"staged" | "unstaged" | "untracked" | "ignored" | null} gitSection
+ */
+
+/**
+ * @typedef {Object} gitStatusResult
+ * @property {string|null} branch - The current branch name
+ * @property {string|null} branchStatus - The descriptive status of the branch (ahead/behind/diverged)
+ * @property {gitFileEntry[]} staged - Files staged for commit
+ * @property {gitFileEntry[]} unstaged - Files modified but not staged
+ * @property {gitFileEntry[]} untracked - Untracked files
+ * @property {gitFileEntry[]} ignored - Ignored files (only if shown with `--ignored`)
+ * @property {boolean} clean - Whether the working directory is clean
  */
 
 /**
  * Callback to run when git changes
  * @callback onGitChangeCallback
- * @param {gitData} data - The new data from git
+ * @param {gitStatusResult} data - The new data from git
  * @returns {void}
  */
 

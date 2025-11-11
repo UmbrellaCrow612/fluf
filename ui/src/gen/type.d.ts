@@ -363,36 +363,52 @@ type initializeGit = (event?: Electron.IpcMainInvokeEvent | undefined, directory
  * Callback structure for callback
  */
 type voidCallback = () => void;
-/**
- * Data passed from git
- */
-type gitData = {
+type gitFileStatus = "modified" | "deleted" | "new file" | "renamed" | "untracked" | "unknown";
+type gitFileEntry = {
     /**
-     * - List of staged files
+     * - The status of the file (e.g., modified, deleted, untracked, etc.)
      */
-    staged: gitFileChange[];
+    status: gitFileStatus;
     /**
-     * - List of unstaged files
+     * - The file path affected
      */
-    unstaged: gitFileChange[];
+    file: string;
 };
-/**
- * Represents a file change in a git repository
- */
-type gitFileChange = {
+type gitSection = "staged" | "unstaged" | "untracked" | "ignored" | null;
+type gitStatusResult = {
     /**
-     * - File path relative to repo root
+     * - The current branch name
      */
-    path: string;
+    branch: string | null;
     /**
-     * - Type of change
+     * - The descriptive status of the branch (ahead/behind/diverged)
      */
-    status: "staged" | "unstaged";
+    branchStatus: string | null;
+    /**
+     * - Files staged for commit
+     */
+    staged: gitFileEntry[];
+    /**
+     * - Files modified but not staged
+     */
+    unstaged: gitFileEntry[];
+    /**
+     * - Untracked files
+     */
+    untracked: gitFileEntry[];
+    /**
+     * - Ignored files (only if shown with `--ignored`)
+     */
+    ignored: gitFileEntry[];
+    /**
+     * - Whether the working directory is clean
+     */
+    clean: boolean;
 };
 /**
  * Callback to run when git changes
  */
-type onGitChangeCallback = (data: gitData) => void;
+type onGitChangeCallback = (data: gitStatusResult) => void;
 /**
  * Listen to when git changes i.e files modified and run custom logic
  */
