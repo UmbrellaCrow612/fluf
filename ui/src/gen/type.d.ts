@@ -345,6 +345,38 @@ type fosResult = {
  */
 type fos = (event?: Electron.IpcMainInvokeEvent | undefined, term: string, path: string, options: fosOptions) => Promise<fosResult[]>;
 /**
+ * Checks if the OS has git installed
+ */
+type hasGit = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
+/**
+ * Checks if the given folder has git Initialized
+ */
+type isGitInitialized = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
+/**
+ * Initialize git into a given folder
+ */
+type initializeGit = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<{
+    success: boolean;
+    error: string | null;
+}>;
+/**
+ * Object that contains all the git helper functions
+ */
+type gitApi = {
+    /**
+     * - Checks if the OS has GIT
+     */
+    hasGit: hasGit;
+    /**
+     * - Checks if a folder has git tracking
+     */
+    isGitInitialized: isGitInitialized;
+    /**
+     * - Init git inot a folder
+     */
+    initializeGit: initializeGit;
+};
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -452,6 +484,10 @@ type ElectronApi = {
      * - Search for a specific folder.
      */
     fos: fos;
+    /**
+     * - Offers all the git func
+     */
+    gitApi: gitApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

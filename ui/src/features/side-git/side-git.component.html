@@ -1,0 +1,38 @@
+<div class="container">
+  @if (isLoading) {
+  <div class="loading">Loading</div>
+  }
+
+  <!---->
+  @if (errorMessage && !isLoading) {
+  <div class="error_state">
+    <p>
+      {{ errorMessage }}
+    </p>
+  </div>
+  }
+
+  <!---->
+
+  @if (!isLoading && !errorMessage && !isGitInit) {
+  <div class="init_git">
+    <p>Initialize git</p>
+    @if (creatingGitError) {
+    <p>
+      {{ creatingGitError }}
+    </p>
+    }
+    <button
+      mat-raised-button
+      (click)="createGitRepo()"
+      [disabled]="isCreatingGitRepo"
+    >
+      @if (isCreatingGitRepo) {
+      <span>Creating...</span>
+      } @else {
+      <span>Create git repo</span>
+      }
+    </button>
+  </div>
+  }
+</div>

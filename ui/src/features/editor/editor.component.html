@@ -12,6 +12,8 @@
         <app-side-search />
         } @else if(sideBarActivateElement === "search-folders"){
         <app-side-folder-search />
+        } @else if(sideBarActivateElement === "source-control"){
+        <app-side-git />
         } @else {
         <div>Unkown state</div>
         }
