@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron . --trace-warnings",
     "build": "node build.js",
-    "binman": "npx binman ."
+    "binman": "npx binman .",
+    "binman:linux": "npx binman . linux"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +19,7 @@
     "esbuild": "^0.25.10",
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
-    "umbr-binman": "^1.0.0"
+    "umbr-binman": "^1.0.4"
   },
   "dependencies": {
     "node-pty": "^1.0.0"
