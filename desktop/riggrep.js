@@ -10,7 +10,8 @@ const { spawn } = require("child_process");
  * Returns the path to the exe in dev or prod
  */
 function getRipGrepPath() {
-  let p = path.join(__dirname, "bin", "rg.exe");
+  // also based on OS for now windows
+  let p = path.join(__dirname, "bin", "ripgrep", "windows", "rg.exe");
   if (!fs.existsSync(p)) {
     return undefined;
   }

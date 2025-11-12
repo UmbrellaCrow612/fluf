@@ -10,6 +10,7 @@ const { spawn } = require("child_process");
  * Gets the path to the fos exe binary
  */
 function getExePath() {
+  // TODO Fos migratre from fos to fsearch and hen relase that and then add it to binman as well as check sum sha then fix logic and path here for now it will be broken
   let p = path.join(__dirname, "bin", "fos.exe");
   if (!fs.existsSync(p)) {
     return undefined;
