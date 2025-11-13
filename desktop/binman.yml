@@ -9,3 +9,8 @@ binaries:
       linux: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
       darwin: 64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882
       windows: 124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a
+  - name: fsearch
+    url:
+      windows: https://github.com/user-attachments/files/23531420/fsearch_2261fc5_windows_amd64.zip
+    sha256:
+      windows: a407be5a7665e7cb020dc8442d95089599574c3029a23f66fc3f9278cd14441e
