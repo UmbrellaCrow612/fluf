@@ -32,7 +32,6 @@ const envFile = path.resolve(__dirname, ".env");
 const packageFile = path.resolve(__dirname, "package.json");
 const distEnvFile = path.join(distFolder, ".env");
 const distPackageFile = path.join(distFolder, "package.json");
-const binPath = path.join(__dirname, "bin");
 
 const entryPoints = {
   index: path.resolve(__dirname, "index.js"),
@@ -118,25 +117,3 @@ esbuild
     log.error(err.message);
     process.exit(1);
   });
-
-// Then doewnload all external binarys into bin
-
-if (!fs.existsSync(binPath)) {
-  log.info("Removing previous bin folder.");
-  fs.rmSync(binPath, { recursive: true });
-}
-
-fs.mkdirSync(binPath, { recursive: true });
-log.info("Making bin folder");
-
-// download ripgrep deps into bin
-try {
-  log.info("Downloading ripgrep...");
-  execSync("node scripts/install-ripgrep.js", { stdio: "inherit" }); // todo pass args from parent future for platform
-  log.info("ripgrep binarys downloaded");
-} catch (error) {
-  log.error("Failed to download ripgrep binarys " + error);
-  process.exit(1);
-}
-
-process.exit();

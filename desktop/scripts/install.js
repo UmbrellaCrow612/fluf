@@ -18,7 +18,7 @@ try {
   initialNodeVersion = nodeVersion;
   console.log(`✓ Current Node version: ${nodeVersion}`);
 } catch (error) {
-  console.warn("⚠ Failed to get current Node version:", error.message);
+  console.warn("⚠ Failed to get current Node version:");
   console.warn("  Will skip switching back at the end");
 }
 
@@ -147,6 +147,14 @@ if (initialNodeVersion) {
   }
 } else {
   console.log("✓ Skipping (initial version not captured)");
+}
+
+console.info("Download bin deps");
+try {
+  execSync("npm run binman", { stdio: "inherit" });
+} catch (err) {
+  console.error("Failed to download bin deps: ");
+  process.exit(1);
 }
 
 console.log("\n✓ All steps completed successfully!");

@@ -219,7 +219,7 @@ const searchWithFSearch = (options) => {
 };
 
 /** @type {fsearch} */
-const fsearchImpl = async (event, options) => {
+const fsearchImpl = async (_, options) => {
   let newOptions = { ...defaultSearchOptions, ...options };
   return await searchWithFSearch(newOptions);
 };
