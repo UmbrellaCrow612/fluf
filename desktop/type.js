@@ -301,39 +301,6 @@
  */
 
 /**
- * Options passed to fos folder search
- * @typedef {Object} fosOptions
- * @property {boolean} [partial] - To search for folder names that contain the given term partially
- * @property {boolean} [caseInsensitive] - Whether to ignore case (uppercase or lowercase) when matching
- * @property {string[]} [exclude] - List of folder names to exclude from the search
- * @property {number} [depth] - How deep it will search in the given folder, e.g., stop at the first layer, etc.
- * @property {boolean} [includeHidden] - Whether to include hidden folders (those starting with `.` such as `.git`)
- * @property {boolean} [open] - If a given match is found, stop and open the folder in the explorer
- * @property {boolean} [preview] - If passed, will provide a simple tree view of matches and their contents
- * @property {boolean} [countOnly] - If passed, will simply print the number of matches found
- * @property {number} [limit] - Stop at a given limit when a specified number of matches have been found
- * @property {"name" | "size" | "modified"} [sort] - Sorting criteria for output results
- * @property {boolean} [debug] - If passed, will not run the logic but simply print out the arguments passed and their values
- */
-
-/**
- * Result object for s fos search item
- * @typedef {Object} fosResult
- * @property {string} name - The name of the folder
- * @property {string} path - The path to the folder
- */
-
-/**
- * Search for a specific folder really fast
- * @callback fos
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} term - The folder search term i.e the name of the folder
- * @param {string} path - The absolute or relative path to search in
- * @param {fosOptions} options - Options passed to folder search
- * @returns {Promise<fosResult[]>}
- */
-
-/**
  * Checks if the OS has git installed
  * @callback hasGit
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
@@ -429,6 +396,48 @@
  */
 
 /**
+ * Result object returned from fsearch
+ * @typedef {Object} fsearchResult
+ * @property {string} path - The absolute path to the file or folder
+ * @property {string} name - The name of the file or folder
+ */
+
+/**
+ * List of options to change the behaviour of the search
+ * @typedef {Object} fsearchOptions
+ * @property {string} term - The search term to look for
+ * @property {string} directory - The folder to look in
+ *
+ * @property {boolean} [partial] - Match files whose names contain the search term
+ * @property {boolean} [ignoreCase] - Perform a case-insensitive search
+ * @property {boolean} [open] - Open the first matched file in the system’s default program
+ * @property {number} [lines=0] - Number of lines to show in preview if type is file and number is greater than 0
+ * @property {number} [limit] - Maximum number of matches to return
+ * @property {number} [depth] - Maximum folder depth to search
+ * @property {string[]} [ext] - List of file extensions to include
+ * @property {string[]} [excludeExt] - List of file extensions to exclude
+ * @property {string[]} [excludeDir] - List of directories to exclude
+ * @property {number} [minSize] - Minimum file size number
+ * @property {number} [maxSize] - Maximum file size number
+ * @property {"B" | "KB"} [sizeType] - The type format used in size comparisons
+ * @property {string} [modifiedBefore] - Include files modified before date (YYYY-MM-DD)
+ * @property {string} [modifiedAfter] - Include files modified after date (YYYY-MM-DD)
+ * @property {boolean} [hidden=false] - Include hidden files and folders in search
+ * @property {boolean} [count=false] - Display only the count of matches (no file details)
+ * @property {boolean} [regex=false] - Treat the search term as a regular expression pattern
+ * @property {boolean} [debug=false] - Show all passed flag values and environment info without performing a search
+ * @property {"file"|"folder"} [type] - Type of item to search for
+ */
+
+/**
+ * Search for a given file or folder with options
+ * @callback fsearch
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {fsearchOptions} options Options to narrow search
+ * @returns {Promise<fsearchResult[]>}
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -459,9 +468,10 @@
  * @property {resizeShell} resizeShell - Resize the backend shell col and width
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
- * @property {fos} fos - Search for a specific folder.
  *
  * @property {gitApi} gitApi - Offers all the git func
+ *
+ * @property {fsearch} fsearch - Search for files or folders really fast
  */
 
 /**

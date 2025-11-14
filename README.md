@@ -69,6 +69,6 @@ A simple text editor with desktop packaging support using Electron.
 
 Libarys that i wrote to use in flufy and are generic 
 
-- `umbr-resizer-two`
-- `folder-search fos` TODO repl;ace with `fsearch`
+- `umbr-resizer-two` - Simple resize plain js libary
+- `fsearch` CLI tool to search for files or folders
 - `binman` CLI tool to install external binarys and NPM package `umbr-binman`

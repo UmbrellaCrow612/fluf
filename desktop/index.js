@@ -32,7 +32,7 @@ const {
   resizeShellImpl,
 } = require("./shell");
 const { ripGrepImpl } = require("./riggrep");
-const { fosSearchImpl } = require("./fos");
+const { fosSearchImpl } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
 
 loadEnv();
