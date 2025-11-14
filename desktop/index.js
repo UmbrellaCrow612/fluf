@@ -32,7 +32,7 @@ const {
   resizeShellImpl,
 } = require("./shell");
 const { ripGrepImpl } = require("./riggrep");
-const { fosSearchImpl } = require("./fsearch");
+const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
 
 loadEnv();
@@ -97,9 +97,9 @@ app.whenReady().then(() => {
   ipcMain.handle("shell:resize", resizeShellImpl);
 
   ipcMain.handle("ripgrep:search", ripGrepImpl);
-  ipcMain.handle("fos:search", fosSearchImpl);
 
   registerGitListeners(ipcMain);
+  registerFsearchListeners(ipcMain)
 
   createWindow();
 });
