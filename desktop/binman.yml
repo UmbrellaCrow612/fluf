@@ -9,6 +9,11 @@ binaries:
       linux: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
       darwin: 64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882
       windows: 124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a
+    pattern:
+      linux: "^rg$"
+      darwin: "^rg$"
+      windows: "^rg\\.exe$"
+
   - name: fsearch
     url:
       windows: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_windows_amd64.zip
