@@ -405,32 +405,35 @@
 /**
  * List of options to change the behaviour of the search
  * @typedef {Object} fsearchOptions
- * @property {boolean} [partial=false] - Match files whose names contain the search term
- * @property {boolean} [ignoreCase=false] - Perform a case-insensitive search
- * @property {boolean} [open=false] - Open the first matched file in the system’s default program
+ * @property {string} term - The search term to look for
+ * @property {string} directory - The folder to look in
+ *
+ * @property {boolean} [partial] - Match files whose names contain the search term
+ * @property {boolean} [ignoreCase] - Perform a case-insensitive search
+ * @property {boolean} [open] - Open the first matched file in the system’s default program
  * @property {number} [lines=0] - Number of lines to show in preview if type is file and number is greater than 0
  * @property {number} [limit] - Maximum number of matches to return
  * @property {number} [depth] - Maximum folder depth to search
  * @property {string[]} [ext] - List of file extensions to include
  * @property {string[]} [excludeExt] - List of file extensions to exclude
  * @property {string[]} [excludeDir] - List of directories to exclude
- * @property {string} [minSize] - Minimum file size number
- * @property {string} [maxSize] - Maximum file size number
- * @property {string} [sizeType="B"] - The type format used in size comparisons
+ * @property {number} [minSize] - Minimum file size number
+ * @property {number} [maxSize] - Maximum file size number
+ * @property {"B" | "KB"} [sizeType] - The type format used in size comparisons
  * @property {string} [modifiedBefore] - Include files modified before date (YYYY-MM-DD)
  * @property {string} [modifiedAfter] - Include files modified after date (YYYY-MM-DD)
  * @property {boolean} [hidden=false] - Include hidden files and folders in search
  * @property {boolean} [count=false] - Display only the count of matches (no file details)
  * @property {boolean} [regex=false] - Treat the search term as a regular expression pattern
  * @property {boolean} [debug=false] - Show all passed flag values and environment info without performing a search
- * @property {"file"|"folder"} [type="file"] - Type of item to search for
+ * @property {"file"|"folder"} [type] - Type of item to search for
  */
 
 /**
  * Search for a given file or folder with options
  * @callback fsearch
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {fsearchOptions} [options={}] Options to narrow search
+ * @param {fsearchOptions} options Options to narrow search
  * @returns {Promise<fsearchResult[]>}
  */
 
