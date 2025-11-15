@@ -22,15 +22,6 @@ const {
   unwatchDirectoryImpl,
   cleanUpWatchers,
 } = require("./ipcFuncs");
-const {
-  cleanUpShells,
-  createShellImpl,
-  killShellById,
-  stopCommandInShell,
-  isShellActiveImpl,
-  writeToShellImpl,
-  resizeShellImpl,
-} = require("./shell");
 const { ripGrepImpl } = require("./riggrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
@@ -89,12 +80,6 @@ app.whenReady().then(() => {
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
 
-  ipcMain.handle("shell:create", createShellImpl);
-  ipcMain.handle("shell:kill", killShellById);
-  ipcMain.handle("shell:write", writeToShellImpl);
-  ipcMain.handle("shell:stop", stopCommandInShell);
-  ipcMain.handle("shell:alive", isShellActiveImpl);
-  ipcMain.handle("shell:resize", resizeShellImpl);
 
   ipcMain.handle("ripgrep:search", ripGrepImpl);
 
@@ -105,7 +90,6 @@ app.whenReady().then(() => {
 });
 
 app.on("before-quit", () => {
-  cleanUpShells();
   cleanUpWatchers();
   stopWatchingGitRepo();
 });
