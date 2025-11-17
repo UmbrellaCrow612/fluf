@@ -5,14 +5,28 @@
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
+const { isPackaged } = require("./packing");
 
 /**
  * Returns the path to the exe in dev or prod
  */
 function getRipGrepPath() {
-  // also based on OS for now windows
-  let p = path.join(__dirname, "bin", "ripgrep", "windows", "rg.exe");
+  const isPackagedManual = isPackaged()
+
+  let p;
+
+  if (isPackagedManual) {
+    // Packaged: use process.resourcesPath
+    p = path.join(process.resourcesPath, "bin", "ripgrep", "windows", "rg.exe");
+  } else {
+    // Development: use __dirname
+    p = path.join(__dirname, "bin", "ripgrep", "windows", "rg.exe");
+  }
+
+  console.log("Using ripgrep path:", p);
+
   if (!fs.existsSync(p)) {
+    console.error("Ripgrep path not found:", p);
     return undefined;
   }
 

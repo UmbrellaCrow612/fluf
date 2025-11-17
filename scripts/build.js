@@ -1,9 +1,14 @@
 /**
- * Script builds the final dist folder for the electron desktop app
+ * Script builds the final dist folder for the Electron desktop app
+ * Binaries (bin) are copied outside the ASAR to allow execution.
  */
 
 const path = require("path");
 const fs = require("fs");
+const { execSync } = require("child_process");
+const { exit } = require("process");
+const { createPackage } = require("@electron/asar");
+
 const {
   logError,
   logInfo,
@@ -13,157 +18,140 @@ const {
   printPlatforms,
   donwloadAndExtractZip,
 } = require("./helper");
-const { execSync } = require("child_process");
-const { exit } = require("process");
-const { createPackage } = require("@electron/asar");
 
-logInfo("Starting build");
-let argsMap = getArgsMap();
+async function main() {
+  logInfo("Starting build");
+  const argsMap = getArgsMap();
 
-const distPath = path.join(__dirname, "..", "dist");
+  const distPath = path.join(__dirname, "..", "dist");
+  const uiPath = path.join(__dirname, "..", "ui");
+  const uiDistPath = path.join(uiPath, "dist", "ui", "browser");
+  const desktopPath = path.join(__dirname, "..", "desktop");
+  const desktopDistPath = path.join(desktopPath, "dist");
+  const desktopBinPath = path.join(desktopPath, "bin");
 
-const uiPath = path.join(__dirname, "..", "ui");
-const uiDistPath = path.join(uiPath, "dist", "ui", "browser");
+  const distAppPath = path.join(distPath, "resources", "app");
+  const asarFilePath = path.join(distPath, "resources", "app.asar");
 
-const desktopPath = path.join(__dirname, "..", "desktop");
-const desktopDistPath = path.join(desktopPath, "dist");
-const desktopBinPath = path.join(desktopPath, "bin");
+  const extraResourcesPath = path.join(distPath, "resources", "bin");
+  const electronZipDownloadPath = path.join(distPath, "electron_binarys.zip");
 
-// change based on platform - these are for windows
-const distAppPath = path.join(distPath, "resources", "app");
-const asarFilePath = path.join(distPath, "resources", "app.asar");
-const resourceBinPath = path.join(distAppPath, "resources", "bin");
+  const basePackageUrl = "https://github.com/electron/electron/releases/download";
 
-const electronZipDownloadPath = path.join(distPath, "electron_binarys.zip");
+  // Clean previous dist
+  if (fs.existsSync(distPath)) {
+    logInfo("Removing previous dist build");
+    fs.rmSync(distPath, { recursive: true });
+  }
 
-const basePackageUrl = "https://github.com/electron/electron/releases/download";
-let downloadUrl = basePackageUrl;
+  // Validate platform
+  const platform = argsMap.get("platform");
+  if (!platform || !isSuportedPlatform(platform)) {
+    logError("--platform not passed or unsupported");
+    printPlatforms();
+    exit(1);
+  }
 
-if (fs.existsSync(distPath)) {
-  logInfo("Removing previous dist build");
-  fs.rmSync(distPath, { recursive: true });
-}
+  // Validate Electron version
+  const electronVersion = argsMap.get("electronVersion");
+  if (!electronVersion || typeof electronVersion !== "string") {
+    logError("--electronVersion not passed or invalid");
+    exit(1);
+  }
 
-let platform = argsMap.get("platform");
-if (!platform || !isSuportedPlatform(platform)) {
-  logError("--platform not passed");
-  printPlatforms();
-  exit(1);
-}
+  logInfo("Building with Electron version " + electronVersion);
 
-let argElectronVersion = argsMap.get("electronVersion");
-if (!argElectronVersion || typeof argElectronVersion !== "string") {
-  logError(
-    "--electronVersion not passed or valid string value " + argElectronVersion
-  );
-  exit(1);
-} else {
-  logInfo("Building with electron version " + argElectronVersion);
-  downloadUrl += `/${argElectronVersion}`;
-}
+  // Validate platform package version
+  const platformPackageVersion = argsMap.get("platformPackage");
+  if (!platformPackageVersion || typeof platformPackageVersion !== "string") {
+    logError("--platformPackage not passed or invalid");
+    exit(1);
+  }
 
-let platformPackageVersion = argsMap.get("platformPackage");
-if (!platformPackageVersion || typeof platformPackageVersion !== "string") {
-  logError(
-    "--platformPackage not passed or valid string value " +
-      platformPackageVersion
-  );
-  exit(1);
-} else {
   logInfo("Building with platform package " + platformPackageVersion);
-  downloadUrl += `/${platformPackageVersion}`;
-}
 
-if (!fs.existsSync(uiPath)) {
-  logError("UI path not found");
-  exit(1);
-} else {
-  logInfo("UI path found at " + uiPath);
-}
+  const downloadUrl = `${basePackageUrl}/${electronVersion}/${platformPackageVersion}`;
 
-if (!fs.existsSync(desktopPath)) {
-  logError("Desktop path not found");
-  exit(1);
-} else {
-  logInfo("Desktop path found at " + desktopPath);
-}
+  // Validate paths
+  [uiPath, desktopPath].forEach((p) => {
+    if (!fs.existsSync(p)) {
+      logError(`${p} not found`);
+      exit(1);
+    } else {
+      logInfo(`${p} found`);
+    }
+  });
 
-if (!fs.existsSync(distPath)) {
-  logInfo("Creating dist folder at " + distPath);
-  fs.mkdirSync(distPath, { recursive: true });
-}
+  // Create dist and app folders
+  [distPath, distAppPath].forEach((p) => {
+    if (!fs.existsSync(p)) {
+      logInfo("Creating folder: " + p);
+      fs.mkdirSync(p, { recursive: true });
+    }
+  });
 
-if (!fs.existsSync(distAppPath)) {
-  logInfo("Creating app folder at " + distAppPath);
-  fs.mkdirSync(distAppPath, { recursive: true });
-}
+  // Build Desktop
+  logInfo("Building Desktop source code");
+  try {
+    logInfo("Running npm run build at " + desktopPath);
+    execSync("npm run build", { cwd: desktopPath, stdio: "inherit" });
+  } catch {
+    logError("Desktop build failed");
+    exit(1);
+  }
 
-logInfo("Building Desktop source code");
-try {
-  logInfo("Running npm run build at " + desktopDistPath);
-  execSync("npm run build", { cwd: desktopPath, stdio: "inherit" });
-} catch (err) {
-  logError("Desktop build failed");
-  exit(1);
-}
+  if (!fs.existsSync(desktopDistPath) || !fs.existsSync(desktopBinPath)) {
+    logError("Desktop dist or bin not found");
+    exit(1);
+  }
 
-if (!fs.existsSync(desktopDistPath)) {
-  logError("Desktop build dist not found at " + desktopDistPath);
-  exit(1);
-} else {
-  logInfo("Desktop build dist found at " + desktopDistPath);
-}
+  logInfo("Desktop build completed successfully");
 
-if (!fs.existsSync(desktopBinPath)) {
-  logError("Desktop build bin not found at " + desktopBinPath);
-  exit(1);
-} else {
-  logInfo("Desktop bin found at " + desktopBinPath);
-}
+  // Build UI
+  logInfo("Building UI source code");
+  try {
+    execSync("npm ci", { cwd: uiPath, stdio: "inherit" });
+    execSync("npm run build", { cwd: uiPath, stdio: "inherit" });
+    logInfo("UI build completed successfully");
+  } catch {
+    logError("UI build failed");
+    exit(1);
+  }
 
-logInfo("Building UI source code");
+  if (!fs.existsSync(uiDistPath)) {
+    logError("UI dist path not found");
+    exit(1);
+  }
 
-try {
-  logInfo("Running npm ci");
-  execSync("npm ci", { cwd: uiPath, stdio: "inherit" });
+  // Copy Desktop & UI into app folder for ASAR
+  logInfo("Copying Desktop dist into " + distAppPath);
+  fs.cpSync(desktopDistPath, distAppPath, { recursive: true });
 
-  logInfo("Running npm run build");
-  execSync("npm run build", { cwd: uiPath, stdio: "inherit" });
+  logInfo("Copying UI dist into " + distAppPath);
+  fs.cpSync(uiDistPath, distAppPath, { recursive: true });
 
-  logInfo("UI build completed successfully");
-} catch (err) {
-  logError("UI build failed");
-  exit(1);
-}
+  // Copy Desktop binaries outside ASAR
+  fs.mkdirSync(extraResourcesPath, { recursive: true });
+  logInfo("Copying Desktop bin into " + extraResourcesPath);
+  fs.cpSync(desktopBinPath, extraResourcesPath, { recursive: true });
 
-if (!fs.existsSync(uiDistPath)) {
-  logError("UI dist path not found at " + uiDistPath);
-  exit(1);
-} else {
-  logInfo("UI dist path found at " + uiDistPath);
-}
-
-logInfo("Copying desktop dist into " + distAppPath);
-fs.cpSync(desktopDistPath, distAppPath, { recursive: true });
-
-logInfo("Copying UI source dist files into " + distAppPath);
-fs.cpSync(uiDistPath, distAppPath, { recursive: true });
-
-(async () => {
-  logInfo("Packing desktop files into asar format");
+  // Pack app folder into ASAR (without binaries)
+  logInfo("Packing desktop files into ASAR format");
   await createPackage(distAppPath, asarFilePath);
 
-  logInfo("Removing " + distAppPath);
+  // Remove uncompressed app folder
+  logInfo("Removing uncompressed app folder");
   fs.rmSync(distAppPath, { recursive: true });
 
-  logInfo("Creating resources bin folder");
-  fs.mkdirSync(resourceBinPath, { recursive: true });
-
-  logInfo("Copying desktop bin files to " + resourceBinPath);
-  fs.cpSync(desktopBinPath, resourceBinPath, { recursive: true });
-
-  logInfo("Downloading electron zip folder to " + electronZipDownloadPath);
+  // Download Electron binaries
+  logInfo("Downloading Electron binaries from " + downloadUrl);
   await donwloadAndExtractZip(downloadUrl, electronZipDownloadPath, distPath);
 
   logInfo("Build completed successfully!");
-})();
+}
+
+// Run main
+main().catch((err) => {
+  logError("Build script failed: " + err);
+  exit(1);
+});
