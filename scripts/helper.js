@@ -5,10 +5,8 @@
 const chalk = require("chalk").default;
 const fs = require("fs");
 const { exit } = require("process");
-const { finished } = require("stream/promises");
-const { Readable } = require("stream");
-const unzipper = require("unzipper");
 const path = require("path");
+const { unzip } = require("umbr-zip");
 
 /**
  * Logs an error message to the console with timestamp and optional details.
@@ -106,47 +104,32 @@ function printPlatforms() {
 }
 
 /**
- * Download and extract a ZIP file from a URL.
+ * Download and extract a ZIP file from a URL directly into the `dist` folder.
  * @param {string} url - The URL to fetch the ZIP file from.
- * @param {string} downloadPath - The full path to save the ZIP file (e.g., C:/dev/fluf/dist/electron.zip).
- * @param {string} extractPath - The directory where the ZIP file will be extracted.
+ * @param {string} distFolder - The folder where the contents will be extracted (e.g., C:/dev/fluf/dist).
  */
-async function donwloadAndExtractZip(url, downloadPath, extractPath) {
+async function downloadAndExtractZipToDist(url, distFolder) {
   try {
-    // Ensure parent folders exist
-    const parentDir = path.dirname(downloadPath);
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true });
-    }
+    if (!fs.existsSync(distFolder)) fs.mkdirSync(distFolder, { recursive: true });
 
-    if (!fs.existsSync(extractPath)) {
-      fs.mkdirSync(extractPath, { recursive: true });
-    }
+    const tempZipPath = path.join(distFolder, "temp_download.zip");
 
     logInfo(`Downloading zip from ${url}`);
     const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to download: ${res.status} ${res.statusText}`);
 
-    if (!res.ok) {
-      throw new Error(`Failed to download: ${res.status} ${res.statusText}`);
-    }
+    const buffer = Buffer.from(await res.arrayBuffer());
+    fs.writeFileSync(tempZipPath, buffer);
+    logInfo(`Downloaded zip to ${tempZipPath}`);
 
-    // Stream the file to disk
-    const fileStream = fs.createWriteStream(downloadPath);
-    // @ts-ignore
-    await finished(Readable.fromWeb(res.body).pipe(fileStream));
+    logInfo(`Extracting zip into dist folder: ${distFolder}`);
+    await unzip(tempZipPath, distFolder, { timeout: 60000 }); // extract directly into dist
 
-    logInfo(`Extracting zip to ${extractPath}...`);
-    await fs
-      .createReadStream(downloadPath)
-      .pipe(unzipper.Extract({ path: extractPath }))
-      .promise();
-
-    logInfo("Extraction complete. Cleaning up...");
-    fs.unlinkSync(downloadPath);
-
-    logInfo("Download zip removed successfully");
+    // Clean up temporary zip
+    fs.unlinkSync(tempZipPath);
+    logInfo("Temporary zip removed successfully");
   } catch (error) {
-    logError("Error occurred fetching or extracting zip folder", error);
+    logError("Error occurred downloading or extracting zip", error);
     exit(1);
   }
 }
@@ -158,5 +141,5 @@ module.exports = {
   platforms,
   isSuportedPlatform,
   printPlatforms,
-  donwloadAndExtractZip,
+  downloadAndExtractZipToDist,
 };

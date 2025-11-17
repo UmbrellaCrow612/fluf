@@ -15,7 +15,7 @@ const {
   getArgsMap,
   isSuportedPlatform,
   printPlatforms,
-  donwloadAndExtractZip,
+  downloadAndExtractZipToDist,
 } = require("./helper");
 
 async function main() {
@@ -142,9 +142,9 @@ async function main() {
   logInfo("Removing uncompressed app folder");
   fs.rmSync(distAppPath, { recursive: true });
 
-  // Download Electron binaries
-  logInfo("Downloading Electron binaries from " + downloadUrl);
-  await donwloadAndExtractZip(downloadUrl, electronZipDownloadPath, distPath);
+ // Download Electron binaries directly into dist folder
+logInfo("Downloading Electron binaries from " + downloadUrl);
+await downloadAndExtractZipToDist(downloadUrl, distPath); // extract directly into dist
 
   logInfo("Build completed successfully!");
 }
