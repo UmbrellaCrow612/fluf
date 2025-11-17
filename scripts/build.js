@@ -13,7 +13,6 @@ const {
   logError,
   logInfo,
   getArgsMap,
-  platforms,
   isSuportedPlatform,
   printPlatforms,
   donwloadAndExtractZip,

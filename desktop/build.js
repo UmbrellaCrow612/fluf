@@ -29,31 +29,7 @@ const entryPoints = {
   preload: path.resolve(__dirname, "preload.js"),
 };
 
-/**
- *
- * @param {string} cmd
- * @param {any} opts
- * @returns
- */
-function execAsync(cmd, opts = {}) {
-  return new Promise((resolve, reject) => {
-    exec(cmd, { stdio: "inherit", ...opts }, (err, stdout, stderr) => {
-      if (err) reject(err);
-      else resolve({ stdout, stderr });
-    });
-  });
-}
-
 async function main() {
-  log.info("Switching to Node 20...");
-  try {
-    execSync("nvm use 20", { stdio: "inherit" });
-    log.success("Switched to Node 20");
-  } catch (/** @type {any}*/ err) {
-    log.error("Failed to switch Node version: " + err.message);
-    process.exit(1);
-  }
-
   // Install deps
   try {
     log.info("Installing deps...");
