@@ -16,7 +16,7 @@
 
     @if(expandOptions){
     <mat-checkbox
-      [(ngModel)]="fosOptions.caseInsensitive"
+      [(ngModel)]="fosOptions.ignoreCase"
       [ngModelOptions]="{ standalone: true }"
     >
       Case insensitive
@@ -30,7 +30,7 @@
     </mat-checkbox>
 
     <mat-checkbox
-      [(ngModel)]="fosOptions.includeHidden"
+      [(ngModel)]="fosOptions.hidden"
       [ngModelOptions]="{ standalone: true }"
     >
       Include hidden folders

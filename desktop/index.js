@@ -22,17 +22,8 @@ const {
   unwatchDirectoryImpl,
   cleanUpWatchers,
 } = require("./ipcFuncs");
-const {
-  cleanUpShells,
-  createShellImpl,
-  killShellById,
-  stopCommandInShell,
-  isShellActiveImpl,
-  writeToShellImpl,
-  resizeShellImpl,
-} = require("./shell");
 const { ripGrepImpl } = require("./riggrep");
-const { fosSearchImpl } = require("./fos");
+const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
 
 loadEnv();
@@ -89,23 +80,16 @@ app.whenReady().then(() => {
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
 
-  ipcMain.handle("shell:create", createShellImpl);
-  ipcMain.handle("shell:kill", killShellById);
-  ipcMain.handle("shell:write", writeToShellImpl);
-  ipcMain.handle("shell:stop", stopCommandInShell);
-  ipcMain.handle("shell:alive", isShellActiveImpl);
-  ipcMain.handle("shell:resize", resizeShellImpl);
 
   ipcMain.handle("ripgrep:search", ripGrepImpl);
-  ipcMain.handle("fos:search", fosSearchImpl);
 
   registerGitListeners(ipcMain);
+  registerFsearchListeners(ipcMain)
 
   createWindow();
 });
 
 app.on("before-quit", () => {
-  cleanUpShells();
   cleanUpWatchers();
   stopWatchingGitRepo();
 });

@@ -279,72 +279,6 @@ type ripGrepResult = {
  */
 type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
 /**
- * Options passed to fos folder search
- */
-type fosOptions = {
-    /**
-     * - To search for folder names that contain the given term partially
-     */
-    partial?: boolean | undefined;
-    /**
-     * - Whether to ignore case (uppercase or lowercase) when matching
-     */
-    caseInsensitive?: boolean | undefined;
-    /**
-     * - List of folder names to exclude from the search
-     */
-    exclude?: string[] | undefined;
-    /**
-     * - How deep it will search in the given folder, e.g., stop at the first layer, etc.
-     */
-    depth?: number | undefined;
-    /**
-     * - Whether to include hidden folders (those starting with `.` such as `.git`)
-     */
-    includeHidden?: boolean | undefined;
-    /**
-     * - If a given match is found, stop and open the folder in the explorer
-     */
-    open?: boolean | undefined;
-    /**
-     * - If passed, will provide a simple tree view of matches and their contents
-     */
-    preview?: boolean | undefined;
-    /**
-     * - If passed, will simply print the number of matches found
-     */
-    countOnly?: boolean | undefined;
-    /**
-     * - Stop at a given limit when a specified number of matches have been found
-     */
-    limit?: number | undefined;
-    /**
-     * - Sorting criteria for output results
-     */
-    sort?: "name" | "size" | "modified" | undefined;
-    /**
-     * - If passed, will not run the logic but simply print out the arguments passed and their values
-     */
-    debug?: boolean | undefined;
-};
-/**
- * Result object for s fos search item
- */
-type fosResult = {
-    /**
-     * - The name of the folder
-     */
-    name: string;
-    /**
-     * - The path to the folder
-     */
-    path: string;
-};
-/**
- * Search for a specific folder really fast
- */
-type fos = (event?: Electron.IpcMainInvokeEvent | undefined, term: string, path: string, options: fosOptions) => Promise<fosResult[]>;
-/**
  * Checks if the OS has git installed
  */
 type hasGit = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
@@ -451,6 +385,112 @@ type gitApi = {
     gitStatus: gitStatus;
 };
 /**
+ * Result object returned from fsearch
+ */
+type fsearchResult = {
+    /**
+     * - The absolute path to the file or folder
+     */
+    path: string;
+    /**
+     * - The name of the file or folder
+     */
+    name: string;
+};
+/**
+ * List of options to change the behaviour of the search
+ */
+type fsearchOptions = {
+    /**
+     * - The search term to look for
+     */
+    term: string;
+    /**
+     * - The folder to look in
+     */
+    directory: string;
+    /**
+     * - Match files whose names contain the search term
+     */
+    partial?: boolean | undefined;
+    /**
+     * - Perform a case-insensitive search
+     */
+    ignoreCase?: boolean | undefined;
+    /**
+     * - Open the first matched file in the system’s default program
+     */
+    open?: boolean | undefined;
+    /**
+     * - Number of lines to show in preview if type is file and number is greater than 0
+     */
+    lines?: number | undefined;
+    /**
+     * - Maximum number of matches to return
+     */
+    limit?: number | undefined;
+    /**
+     * - Maximum folder depth to search
+     */
+    depth?: number | undefined;
+    /**
+     * - List of file extensions to include
+     */
+    ext?: string[] | undefined;
+    /**
+     * - List of file extensions to exclude
+     */
+    excludeExt?: string[] | undefined;
+    /**
+     * - List of directories to exclude
+     */
+    excludeDir?: string[] | undefined;
+    /**
+     * - Minimum file size number
+     */
+    minSize?: number | undefined;
+    /**
+     * - Maximum file size number
+     */
+    maxSize?: number | undefined;
+    /**
+     * - The type format used in size comparisons
+     */
+    sizeType?: "B" | "KB" | undefined;
+    /**
+     * - Include files modified before date (YYYY-MM-DD)
+     */
+    modifiedBefore?: string | undefined;
+    /**
+     * - Include files modified after date (YYYY-MM-DD)
+     */
+    modifiedAfter?: string | undefined;
+    /**
+     * - Include hidden files and folders in search
+     */
+    hidden?: boolean | undefined;
+    /**
+     * - Display only the count of matches (no file details)
+     */
+    count?: boolean | undefined;
+    /**
+     * - Treat the search term as a regular expression pattern
+     */
+    regex?: boolean | undefined;
+    /**
+     * - Show all passed flag values and environment info without performing a search
+     */
+    debug?: boolean | undefined;
+    /**
+     * - Type of item to search for
+     */
+    type?: "file" | "folder" | undefined;
+};
+/**
+ * Search for a given file or folder with options
+ */
+type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearchOptions) => Promise<fsearchResult[]>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -555,13 +595,13 @@ type ElectronApi = {
      */
     ripGrep: ripGrep;
     /**
-     * - Search for a specific folder.
-     */
-    fos: fos;
-    /**
      * - Offers all the git func
      */
     gitApi: gitApi;
+    /**
+     * - Search for files or folders really fast
+     */
+    fsearch: fsearch;
 };
 /**
  * Extends the global `window` object to include the Electron API.

@@ -43,21 +43,19 @@ export class SideFolderSearchComponent {
   /**
    * Object used as two way binding
    */
-  fosOptions: fosOptions = {
-    caseInsensitive: true,
-    countOnly: false,
+  fosOptions: fsearchOptions = {
+    ignoreCase: true,
     debug: false,
     depth: 0,
-    exclude: [],
-    includeHidden: false,
     limit: 0,
     open: false,
     partial: true,
-    preview: false,
-    sort: 'name',
+    term: '',
+    directory: this.selectedDir!,
+    type: "folder"
   };
 
-  results: fosResult[] = [];
+  results: fsearchResult[] = [];
 
   async submit(event: Event) {
     event.preventDefault();
@@ -66,11 +64,9 @@ export class SideFolderSearchComponent {
       return;
     }
 
-    this.results = await this.api.fos(
-      undefined,
-      this.searchInputControl.value!,
-      this.selectedDir!,
-      this.fosOptions
-    );
+    this.results = await this.api.fsearch(undefined, {
+      ...this.fosOptions,
+      term: this.searchInputControl.value!,
+    });
   }
 }

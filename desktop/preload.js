@@ -97,8 +97,7 @@ const api = {
 
   ripGrep: (_event, options) => ipcRenderer.invoke("ripgrep:search", options),
 
-  fos: (_event, term, path, options) =>
-    ipcRenderer.invoke("fos:search", term, path, options),
+  fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
 
   gitApi,
 };
