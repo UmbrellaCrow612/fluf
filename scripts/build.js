@@ -145,7 +145,7 @@ async function main() {
 
   // Download Electron binaries directly into dist folder
   logInfo("Downloading Electron binaries from " + downloadUrl);
-  await downloadAndExtractZipToDist(downloadUrl, distPath); // extract directly into dist
+  await downloadAndExtractZipToDist(downloadUrl, distPath); 
 
   logInfo("Build completed successfully!");
 }

@@ -5,7 +5,7 @@
 const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
-const { execSync, exec } = require("child_process");
+const { execSync } = require("child_process");
 
 const log = {
   info: (/** @type {string}*/ msg) =>
