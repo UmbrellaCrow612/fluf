@@ -22,7 +22,7 @@ const {
   unwatchDirectoryImpl,
   cleanUpWatchers,
 } = require("./ipcFuncs");
-const { ripGrepImpl } = require("./riggrep");
+const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
 

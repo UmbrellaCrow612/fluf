@@ -5,6 +5,7 @@
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
+const { isPackaged } = require("./packing");
 
 /** @type {fsearchOptions} */
 const defaultSearchOptions = {
@@ -71,27 +72,35 @@ const parseStdout = (stdout) => {
 
 /**
  * Get the exe path of fsearch binary based on the platform where running on
- * @returns {string}
+ * @returns {string | undefined}
  */
 const getExePath = () => {
-  const platform = process.platform;
+  const isPackagedManual = isPackaged();
 
-  // TODO add other platform
-  // Also change it a bit for if it's running in electron final built as it might be diffrent
+  let p;
 
-  let base = path.join(__dirname, "bin", "fsearch");
-  let exePath;
+  if (isPackagedManual) {
+    // Packaged: use process.resourcesPath
+    p = path.join(
+      process.resourcesPath,
+      "bin",
+      "fsearch",
+      "windows",
+      "fsearch.exe"
+    );
 
-  switch (platform) {
-    case "win32":
-      exePath = path.join(base, "windows", "fsearch.exe");
-      break;
-
-    default:
-      break;
+    // TODO: add other platforms
+  } else {
+    // Development: use __dirname
+    p = path.join(__dirname, "bin", "fsearch", "windows", "fsearch.exe");
   }
 
-  return exePath ?? "";
+  if (!fs.existsSync(p)) {
+    console.error("Ripgrep path not found:", p);
+    return undefined;
+  }
+
+  return p;
 };
 
 /**
@@ -168,8 +177,7 @@ const searchWithFSearch = (options) => {
   return new Promise((resolve, reject) => {
     try {
       const exePath = getExePath();
-
-      if (!fs.existsSync(exePath)) {
+      if (!exePath) {
         return reject(new Error(`Executable not found: ${exePath}`));
       }
 
