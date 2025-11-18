@@ -7,6 +7,7 @@ const fs = require("fs");
 const { exit } = require("process");
 const path = require("path");
 const { unzip } = require("umbr-zip");
+const { download } = require("umbr-dl");
 
 /**
  * Logs an error message to the console with timestamp and optional details.
@@ -112,18 +113,16 @@ async function downloadAndExtractZipToDist(url, distFolder) {
   try {
     if (!fs.existsSync(distFolder)) fs.mkdirSync(distFolder, { recursive: true });
 
-    const tempZipPath = path.join(distFolder, "temp_download.zip");
+    const zipFileName = "download.zip";
+    const tempZipPath = path.join(distFolder, zipFileName);
 
     logInfo(`Downloading zip from ${url}`);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to download: ${res.status} ${res.statusText}`);
-
-    const buffer = Buffer.from(await res.arrayBuffer());
-    fs.writeFileSync(tempZipPath, buffer);
+    
+    await download(url, { name: zipFileName, path: distFolder });
     logInfo(`Downloaded zip to ${tempZipPath}`);
 
     logInfo(`Extracting zip into dist folder: ${distFolder}`);
-    await unzip(tempZipPath, distFolder, { timeout: 60000 }); // extract directly into dist
+    await unzip(tempZipPath, distFolder, { timeout: 60000 });
 
     // Clean up temporary zip
     fs.unlinkSync(tempZipPath);

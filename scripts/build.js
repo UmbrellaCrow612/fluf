@@ -35,7 +35,8 @@ async function main() {
   const extraResourcesPath = path.join(distPath, "resources", "bin");
   const electronZipDownloadPath = path.join(distPath, "electron_binarys.zip");
 
-  const basePackageUrl = "https://github.com/electron/electron/releases/download";
+  const basePackageUrl =
+    "https://github.com/electron/electron/releases/download";
 
   // Clean previous dist
   if (fs.existsSync(distPath)) {
@@ -142,9 +143,9 @@ async function main() {
   logInfo("Removing uncompressed app folder");
   fs.rmSync(distAppPath, { recursive: true });
 
- // Download Electron binaries directly into dist folder
-logInfo("Downloading Electron binaries from " + downloadUrl);
-await downloadAndExtractZipToDist(downloadUrl, distPath); // extract directly into dist
+  // Download Electron binaries directly into dist folder
+  logInfo("Downloading Electron binaries from " + downloadUrl);
+  await downloadAndExtractZipToDist(downloadUrl, distPath); // extract directly into dist
 
   logInfo("Build completed successfully!");
 }
