@@ -9,6 +9,7 @@ import {
   Injector,
   OnDestroy,
   OnInit,
+  Type,
 } from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
@@ -19,7 +20,9 @@ import { OpenFileContainerComponent } from '../open-file-container/open-file-con
 import { getElectronApi } from '../../utils';
 import { SideSearchComponent } from '../side-search/side-search.component';
 import { SideFolderSearchComponent } from '../side-folder-search/side-folder-search.component';
-import { SideGitComponent } from "../side-git/side-git.component";
+import { SideGitComponent } from '../side-git/side-git.component';
+import { NgComponentOutlet } from '@angular/common';
+import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -27,13 +30,10 @@ type unSub = () => Promise<void>;
   imports: [
     TopBarComponent,
     SideBarComponent,
-    FileExplorerComponent,
     FileExplorerContextMenuComponent,
     OpenFileContainerComponent,
-    SideSearchComponent,
-    SideFolderSearchComponent,
-    SideGitComponent
-],
+    NgComponentOutlet,
+  ],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
@@ -46,6 +46,63 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
+
+  private selectedDir = this.appContext.getSnapshot().selectedDirectoryPath;
+  /**
+   * List of all components that can be rendered in the side bar
+   */
+  sideBarElements: {
+    /** The component class to render */
+    component: Type<any>;
+
+    /**
+     * Callback that runs the conditions to render the component
+     */
+    condition: () => boolean;
+  }[] = [
+    {
+      component: FileExplorerComponent,
+      condition: () => {
+        return (
+          this.sideBarActivateElement == 'file-explorer' &&
+          typeof this.selectedDir == 'string'
+        );
+      },
+    },
+    {
+      component: SideSearchComponent,
+      condition: () => {
+        return (
+          this.sideBarActivateElement == 'search' &&
+          typeof this.selectedDir == 'string'
+        );
+      },
+    },
+    {
+      component: SideFolderSearchComponent,
+      condition: () => {
+        return (
+          this.sideBarActivateElement == 'search-folders' &&
+          typeof this.selectedDir == 'string'
+        );
+      },
+    },
+    {
+      component: SideGitComponent,
+      condition: () => {
+        return (
+          this.sideBarActivateElement == 'source-control' &&
+          typeof this.selectedDir == 'string'
+        );
+      },
+    },
+    {
+      component: SelectDirectoryComponent,
+      condition: () => {
+        return !this.selectedDir;
+      },
+    },
+  ];
 
   private resizer = new ResizerTwo({
     direction: 'horizontal',
@@ -107,6 +164,8 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.appContext.autoSub(
       'selectedDirectoryPath',
       async (ctx) => {
+        this.selectedDir = ctx.selectedDirectoryPath;
+
         if (!this.isDirectoryBeingWatched && ctx.selectedDirectoryPath) {
           this.isDirectoryBeingWatched = true;
           this.unSub = await this.api.onDirectoryChange(
@@ -134,7 +193,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     if (this.addedResizer) {
-      this.resizer.remove()
+      this.resizer.remove();
     }
 
     if (this.isLeftActive) {

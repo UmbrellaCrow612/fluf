@@ -6,16 +6,12 @@
     <div class="side" id="editor_resize_container">
       @if (isLeftActive) {
       <div class="left">
-        @if (sideBarActivateElement === "file-explorer") {
-        <app-file-explorer />
-        } @else if (sideBarActivateElement === "search") {
-        <app-side-search />
-        } @else if(sideBarActivateElement === "search-folders"){
-        <app-side-folder-search />
-        } @else if(sideBarActivateElement === "source-control"){
-        <app-side-git />
-        } @else {
-        <div>Unkown state</div>
+        @for (element of sideBarElements; track $index) {
+        <!---->
+        @if (element.condition()) {
+        <ng-container *ngComponentOutlet="element.component" />
+        }
+        <!---->
         }
       </div>
       }

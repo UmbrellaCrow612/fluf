@@ -34,7 +34,7 @@ export class FileExplorerComponent implements OnInit {
   isExplorerActive = false;
   disableCreateFileOrFolder: boolean | null = null;
 
-  ngOnInit(): void {
+  async ngOnInit() {
     let init = this.appContext.getSnapshot();
 
     // set inital state based on ctx
@@ -44,11 +44,14 @@ export class FileExplorerComponent implements OnInit {
       init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
     this.disableCreateFileOrFolder = init.isCreateFileOrFolderActive;
 
+    await this.readDir();
+
     // Subscribe to changes update local state
     this.appContext.autoSub(
       'selectedDirectoryPath',
-      (ctx) => {
+      async (ctx) => {
         this.selectedDirectorPath = ctx.selectedDirectoryPath;
+        await this.readDir();
       },
       this.destroyRef
     );
@@ -86,22 +89,12 @@ export class FileExplorerComponent implements OnInit {
     );
   }
 
-  async openFolder() {
-    let res = await this.api.selectFolder();
-    if (res.canceled) {
-      return;
-    }
-
-    this.appContext.update('selectedDirectoryPath', res.filePaths[0]);
-
-    await this.readDir();
-  }
-
   /**
    * Reads selected folder path and sets file nodes globally
    */
   async readDir() {
     let nodes = await this.api.readDir(undefined, this.selectedDirectorPath!);
+    this.directoryFileNodes = nodes
 
     this.appContext.update('directoryFileNodes', nodes);
   }
@@ -117,7 +110,7 @@ export class FileExplorerComponent implements OnInit {
       expanded: false,
       isDirectory: true,
       path: this.selectedDirectorPath!,
-      parentPath: "",
+      parentPath: '',
       name: 'Root',
       mode: 'default',
     });
@@ -145,7 +138,7 @@ export class FileExplorerComponent implements OnInit {
         expanded: false,
         isDirectory: true,
         path: this.selectedDirectorPath!,
-        parentPath: "",
+        parentPath: '',
         name: 'Root',
         mode: 'default',
       });
@@ -243,7 +236,7 @@ export class FileExplorerComponent implements OnInit {
         merged.push(nodeToAdd);
       } else {
         existing.name = newNode.name;
-        existing.parentPath = newNode.parentPath
+        existing.parentPath = newNode.parentPath;
 
         if (existing.isDirectory && existing.expanded) {
           const newChildren = await this.api.readDir(undefined, existing.path);
