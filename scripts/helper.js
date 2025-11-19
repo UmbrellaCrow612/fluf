@@ -46,65 +46,6 @@ function logInfo(message, details) {
 }
 
 /**
- * Get all args passed to the script in the form of a map
- * @returns {Map} Map of key value pairs of args passed to the script
- */
-function getArgsMap() {
-  const args = process.argv.slice(2); // skip node and script path
-  const argsMap = new Map();
-
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-
-    if (arg.startsWith("--")) {
-      // Handle --key=value
-      if (arg.includes("=")) {
-        const [key, value] = arg.slice(2).split("=");
-        argsMap.set(key, value);
-      } else {
-        // Handle --key value
-        const key = arg.slice(2);
-        const value =
-          args[i + 1] && !args[i + 1].startsWith("--") ? args[++i] : true;
-        argsMap.set(key, value);
-      }
-    } else {
-      // standalone value, use index as key
-      argsMap.set(`arg${i}`, arg);
-    }
-  }
-
-  return argsMap;
-}
-
-/**
- * List of platforms
- */
-const platforms = {
-  windows: "windows",
-  linux: "linux",
-  macOs: "macOs",
-};
-
-/**
- * Helper to check if a str is a supported platform
- * @param {string} str Platform passed
- * @returns {boolean} If the string is part of the supported platforms
- */
-function isSuportedPlatform(str) {
-  return new Set(Object.keys(platforms)).has(str);
-}
-
-/**
- * Helper to print all str platforms
- */
-function printPlatforms() {
-  Object.keys(platforms).forEach((p) => {
-    logInfo("Platform supported " + p);
-  });
-}
-
-/**
  * Download and extract a ZIP file from a URL directly into the `dist` folder.
  * @param {string} url - The URL to fetch the ZIP file from.
  * @param {string} distFolder - The folder where the contents will be extracted (e.g., C:/dev/fluf/dist).
@@ -136,9 +77,5 @@ async function downloadAndExtractZipToDist(url, distFolder) {
 module.exports = {
   logError,
   logInfo,
-  getArgsMap,
-  platforms,
-  isSuportedPlatform,
-  printPlatforms,
   downloadAndExtractZipToDist,
 };

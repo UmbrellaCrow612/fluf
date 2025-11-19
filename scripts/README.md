@@ -1,9 +1,8 @@
-# Scripts 
+# Scripts
 
-Contains all out build scripts 
+Contains all out build scripts
 
-
-# Set up to build 
+# Set up to build
 
 - run `npm ci` for utils deps
 
@@ -16,7 +15,8 @@ Contains all out build scripts
 # Info
 
 What build script try to achieve:
-- build frontend angular code 
+
+- build frontend angular code
 - build desktop code
 - put them both into a app folder
 - copy bin desktop folder as wel
@@ -24,14 +24,10 @@ What build script try to achieve:
 - then download and add the electron binarys
 - done
 
-
 # Buidling app
 
 ```bash
-root folder> node .\scripts\build.js --platform=windows --electronVersion=v38.2.1 --platformPackage=electron-v38.2.1-win32-x64.zip
+root folder> node .\scripts\build.js --platform=linux, windows or darwin
 ```
 
-TODO later:
-
-- make it support all platforms properly and only bundle neccary binarys for said platform just pass the platform string
-down script layers like binman would run `npppx binman . --platform-linux` to just get linux binarrys and then that would be in bin to be bundled etc
+Only builds for x64 for each

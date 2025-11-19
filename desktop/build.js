@@ -1,5 +1,6 @@
 /**
  * Clean ESBuild script to bundle app scripts into /dist.
+ * Builds the project for a specific platform and runs binman accordingly.
  */
 
 const esbuild = require("esbuild");
@@ -7,15 +8,28 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
+/** Logging utility */
 const log = {
-  info: (/** @type {string}*/ msg) =>
-    console.log(`\x1b[36m[INFO]\x1b[0m ${msg}`),
-  success: (/** @type {string}*/ msg) =>
-    console.log(`\x1b[32m[SUCCESS]\x1b[0m ${msg}`),
-  warn: (/** @type {string}*/ msg) =>
-    console.log(`\x1b[33m[WARN]\x1b[0m ${msg}`),
-  error: (/** @type {string}*/ msg) =>
-    console.log(`\x1b[31m[ERROR]\x1b[0m ${msg}`),
+  /**
+   * Info log
+   * @param {string} msg
+   */
+  info: (msg) => console.log(`\x1b[36m[INFO]\x1b[0m ${msg}`),
+  /**
+   * Success log
+   * @param {string} msg
+   */
+  success: (msg) => console.log(`\x1b[32m[SUCCESS]\x1b[0m ${msg}`),
+  /**
+   * Warning log
+   * @param {string} msg
+   */
+  warn: (msg) => console.log(`\x1b[33m[WARN]\x1b[0m ${msg}`),
+  /**
+   * Error log
+   * @param {string} msg
+   */
+  error: (msg) => console.log(`\x1b[31m[ERROR]\x1b[0m ${msg}`),
 };
 
 const distFolder = path.resolve(__dirname, "dist");
@@ -29,13 +43,26 @@ const entryPoints = {
   preload: path.resolve(__dirname, "preload.js"),
 };
 
+/** @type {string} Platform argument: linux, darwin, or windows */
+const platform = process.argv[2]?.toLowerCase();
+/** @type {string[]} Allowed platforms */
+const allowedPlatforms = ["linux", "darwin", "windows"];
+
+if (!platform || !allowedPlatforms.includes(platform)) {
+  log.error(`Platform must be one of: ${allowedPlatforms.join(", ")}`);
+  process.exit(1);
+}
+
+/**
+ * Main build function
+ */
 async function main() {
   // Install deps
   try {
     log.info("Installing deps...");
     execSync("npm ci", { stdio: "inherit" });
     log.success("Deps installed.");
-  } catch (/** @type {any}*/ err) {
+  } catch (/** @type {any} */ err) {
     log.error("Failed installing deps: " + err.message);
     process.exit(1);
   }
@@ -54,10 +81,9 @@ async function main() {
     log.info("Running TypeScript compiler...");
     execSync("npx tsc", { stdio: "inherit" });
     log.success("TypeScript compiled.");
-  } catch (/** @type {any}*/ err) {
+  } catch (/** @type {any} */ err) {
     log.error("TypeScript failed: " + err.message);
     process.exit(1);
-    return;
   }
 
   // Copy .env
@@ -73,7 +99,6 @@ async function main() {
     process.exit(1);
   }
   fs.copyFileSync(packageFile, distPackageFile);
-
   log.success("Config files copied.");
 
   // Validate entry files
@@ -98,18 +123,19 @@ async function main() {
     });
 
     log.success("esbuild bundling complete!");
-  } catch (/** @type {any}*/ err) {
+  } catch (/** @type {any} */ err) {
     log.error("esbuild failed: " + err.message);
     process.exit(1);
   }
 
-  // Run npm run binman
-  log.info("Running `npm run binman`...");
+  // Run npm run binman for the specific platform
+  const binmanCmd = `npm run binman:${platform}`;
+  log.info(`Running \`${binmanCmd}\`...`);
   try {
-    execSync("npm run binman", { stdio: "inherit" });
-    log.success("binman completed.");
-  } catch (/** @type {any}*/ err) {
-    log.error("binman failed: " + err.message);
+    execSync(binmanCmd, { stdio: "inherit" });
+    log.success(`binman for ${platform} completed.`);
+  } catch (/** @type {any} */ err) {
+    log.error(`binman for ${platform} failed: ${err.message}`);
     process.exit(1);
   }
 }

@@ -9,18 +9,36 @@ const { execSync } = require("child_process");
 const { exit } = require("process");
 const { createPackage } = require("@electron/asar");
 
-const {
-  logError,
-  logInfo,
-  getArgsMap,
-  isSuportedPlatform,
-  printPlatforms,
-  downloadAndExtractZipToDist,
-} = require("./helper");
+const { logError, logInfo, downloadAndExtractZipToDist } = require("./helper");
+const { parse } = require("./args");
 
 async function main() {
   logInfo("Starting build");
-  const argsMap = getArgsMap();
+
+  /** The URL to download the specific electron binarys */
+  let downloadUrl;
+
+  const options = parse();
+
+  if (options.platform == "windows") {
+    downloadUrl =
+      "https://github.com/electron/electron/releases/download/v39.2.2/electron-v39.2.2-win32-x64.zip";
+  }
+
+  if (options.platform == "darwin") {
+    downloadUrl =
+      "https://github.com/electron/electron/releases/download/v39.2.2/electron-v39.2.2-darwin-x64.zip";
+  }
+
+  if (options.platform == "linux") {
+    downloadUrl =
+      "https://github.com/electron/electron/releases/download/v39.2.2/electron-v39.2.2-linux-x64.zip";
+  }
+
+  if (!downloadUrl) {
+    logError("Download URL not set " + downloadUrl);
+    process.exit(1);
+  }
 
   const distPath = path.join(__dirname, "..", "dist");
   const uiPath = path.join(__dirname, "..", "ui");
@@ -33,44 +51,12 @@ async function main() {
   const asarFilePath = path.join(distPath, "resources", "app.asar");
 
   const extraResourcesPath = path.join(distPath, "resources", "bin");
-  const electronZipDownloadPath = path.join(distPath, "electron_binarys.zip");
-
-  const basePackageUrl =
-    "https://github.com/electron/electron/releases/download";
 
   // Clean previous dist
   if (fs.existsSync(distPath)) {
     logInfo("Removing previous dist build");
     fs.rmSync(distPath, { recursive: true });
   }
-
-  // Validate platform
-  const platform = argsMap.get("platform");
-  if (!platform || !isSuportedPlatform(platform)) {
-    logError("--platform not passed or unsupported");
-    printPlatforms();
-    exit(1);
-  }
-
-  // Validate Electron version
-  const electronVersion = argsMap.get("electronVersion");
-  if (!electronVersion || typeof electronVersion !== "string") {
-    logError("--electronVersion not passed or invalid");
-    exit(1);
-  }
-
-  logInfo("Building with Electron version " + electronVersion);
-
-  // Validate platform package version
-  const platformPackageVersion = argsMap.get("platformPackage");
-  if (!platformPackageVersion || typeof platformPackageVersion !== "string") {
-    logError("--platformPackage not passed or invalid");
-    exit(1);
-  }
-
-  logInfo("Building with platform package " + platformPackageVersion);
-
-  const downloadUrl = `${basePackageUrl}/${electronVersion}/${platformPackageVersion}`;
 
   // Validate paths
   [uiPath, desktopPath].forEach((p) => {
@@ -94,7 +80,10 @@ async function main() {
   logInfo("Building Desktop source code");
   try {
     logInfo("Running npm run build at " + desktopPath);
-    execSync("npm run build", { cwd: desktopPath, stdio: "inherit" });
+    execSync(`npm run build:${options.platform}`, {
+      cwd: desktopPath,
+      stdio: "inherit",
+    });
   } catch {
     logError("Desktop build failed");
     exit(1);
@@ -145,7 +134,7 @@ async function main() {
 
   // Download Electron binaries directly into dist folder
   logInfo("Downloading Electron binaries from " + downloadUrl);
-  await downloadAndExtractZipToDist(downloadUrl, distPath); 
+  await downloadAndExtractZipToDist(downloadUrl, distPath);
 
   logInfo("Build completed successfully!");
 }

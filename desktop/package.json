@@ -5,9 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "electron . --trace-warnings",
-    "build": "node build.js",
+    "build:linux": "node build.js linux",
+    "build:darwin": "node build.js darwin",
+    "build:windows": "node build.js windows",
     "binman": "npx binman .",
-    "binman:linux": "npx binman . --platform=linux"
+    "binman:linux": "npx binman . --platform=linux",
+    "binman:windows": "npx binman . --platform=windows",
+    "binman:darwin": "npx binman . --platform=darwin"
   },
   "keywords": [],
   "author": "",

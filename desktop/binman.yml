@@ -16,5 +16,9 @@ binaries:
   - name: fsearch
     url:
       windows: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_windows_amd64.zip
+      linux: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_linux_amd64.zip
+      darwin: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_darwin_amd64.zip
     sha256:
       windows: e18e6cfcba3ba5fb6626ab7dc65e3ef3ce7b3d996c806eee659c5457f64290a3
+      linux: 787535a8a916864d7da280c385aaf4d6347c0c26fc4613c2dceb1a7b6261dce2
+      darwin: b2e7b014394a0eec5b820f802ed98fe70ad6a30d840775c7ed5fd68900c8f037
