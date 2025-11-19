@@ -16,40 +16,39 @@ const { download } = require("umbr-dl");
  * @param {string} binaryName - The name of the binary file (e.g., 'go-download-linux').
  */
 function ensureExecutable(packageName, binaryName) {
-    const binaryPath = path.join(
-        __dirname, 
-        'node_modules', 
-        packageName, 
-        'bin', 
-        binaryName
-    );
-    
-    // 1. Check if the file exists
-    if (fs.existsSync(binaryPath)) {
-        let isExecutable = true;
-        
-        try {
-            // 2. Try to access the file with execute permission (X_OK).
-            // This function returns void on success and THROWS on failure (EACCES).
-            fs.accessSync(binaryPath, fs.constants.X_OK);
-        } catch (e) {
-            // 3. If it throws, the file is not executable.
-            isExecutable = false;
-        }
+  const binaryPath = path.join(
+    __dirname,
+    "node_modules",
+    packageName,
+    "bin",
+    binaryName
+  );
 
-        if (!isExecutable) {
-            try {
-                logInfo(`Applying chmod +x to: ${binaryName}`);
-                // 4. Set rwxr-xr-x permission (0o755)
-                fs.chmodSync(binaryPath, 0o755); 
-            } catch (error) {
-                logError(`Failed to set execute permission on ${binaryName}`, error);
-                throw new Error(`Permission fix failed for ${binaryName}`);
-            }
-        }
+  // 1. Check if the file exists
+  if (fs.existsSync(binaryPath)) {
+    let isExecutable = true;
+
+    try {
+      // 2. Try to access the file with execute permission (X_OK).
+      // This function returns void on success and THROWS on failure (EACCES).
+      fs.accessSync(binaryPath, fs.constants.X_OK);
+    } catch (e) {
+      // 3. If it throws, the file is not executable.
+      isExecutable = false;
     }
-}
 
+    if (!isExecutable) {
+      try {
+        logInfo(`Applying chmod +x to: ${binaryName}`);
+        // 4. Set rwxr-xr-x permission (0o755)
+        fs.chmodSync(binaryPath, 0o755);
+      } catch (error) {
+        logError(`Failed to set execute permission on ${binaryName}`, error);
+        throw new Error(`Permission fix failed for ${binaryName}`);
+      }
+    }
+  }
+}
 
 /**
  * Logs an error message to the console with timestamp and optional details.
@@ -94,20 +93,21 @@ function logInfo(message, details) {
  */
 async function downloadAndExtractZipToDist(url, distFolder) {
   try {
-    if (!fs.existsSync(distFolder)) fs.mkdirSync(distFolder, { recursive: true });
+    if (!fs.existsSync(distFolder))
+      fs.mkdirSync(distFolder, { recursive: true });
 
     const zipFileName = "download.zip";
     const tempZipPath = path.join(distFolder, zipFileName);
 
     logInfo(`Downloading zip from ${url}`);
-    
-    ensureExecutable('umbr-dl', 'go-download-linux'); 
+
+    ensureExecutable("umbr-dl", "go-download-linux");
     await download(url, { name: zipFileName, path: distFolder });
     logInfo(`Downloaded zip to ${tempZipPath}`);
 
     logInfo(`Extracting zip into dist folder: ${distFolder}`);
-    
-    ensureExecutable('umbr-zip', 'go-unzip-linux'); 
+
+    ensureExecutable("umbr-zip", "go-zip-linux");
     await unzip(tempZipPath, distFolder, { timeout: 60000 });
 
     // Clean up temporary zip

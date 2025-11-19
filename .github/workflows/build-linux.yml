@@ -30,22 +30,11 @@ jobs:
         working-directory: ./desktop
         run: npm ci
 
-      - name: Ensure binman-linux is executable
-        working-directory: ./desktop
-        run: |
-          BINMAN_PATH="./node_modules/umbr-binman/bin/binman-linux"
-          if test -x "$BINMAN_PATH"; then
-            echo "$BINMAN_PATH is already executable. Skipping chmod."
-          else
-            echo "$BINMAN_PATH is not executable. Applying chmod +x."
-            chmod +x "$BINMAN_PATH"
-          fi
-
-      # Step 6: Rename .env.example to .env for Desktop
+      # Step 5: Rename .env.example to .env for Desktop
       - name: Setup Desktop .env
         working-directory: ./desktop
         run: mv .env.example .env
 
-      # Step 7: Run the build script
+      # Step 6: Run the build script
       - name: Build for Linux
         run: node ./scripts/build.js --platform=linux
