@@ -13,30 +13,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Install dependencies for scripts
+      # Step 2: Install dependencies for scripts
       - name: Install scripts dependencies
         working-directory: ./scripts
         run: npm ci
 
-      # Install dependencies for UI
+      # Step 3: Install dependencies for UI
       - name: Install UI dependencies
         working-directory: ./ui
         run: npm ci
 
-      # Install dependencies for Desktop
+      # Step 4: Install dependencies for Desktop
       - name: Install Desktop dependencies
         working-directory: ./desktop
         run: npm ci
 
-      # Rename .env.example to .env for Desktop
+      # Step 5: Rename .env.example to .env for Desktop
       - name: Setup Desktop .env
         working-directory: ./desktop
         run: mv .env.example .env
 
-      # Run the build
+      # Step 6: Make binman-linux executable
+      - name: Make binman-linux executable
+        working-directory: ./desktop
+        run: chmod +x ./node_modules/umbr-binman/bin/binman-linux
+
+      # Step 7: Run the build script
       - name: Build for Linux
         run: node ./scripts/build.js --platform=linux
