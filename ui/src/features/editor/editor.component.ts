@@ -23,6 +23,7 @@ import { SideFolderSearchComponent } from '../side-folder-search/side-folder-sea
 import { SideGitComponent } from '../side-git/side-git.component';
 import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
+import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -92,6 +93,15 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       condition: () => {
         return (
           this.sideBarActivateElement == 'source-control' &&
+          typeof this.selectedDir == 'string'
+        );
+      },
+    },
+    {
+      component: SideFileSearchComponent,
+      condition: () => {
+        return (
+          this.sideBarActivateElement == 'search-files' &&
           typeof this.selectedDir == 'string'
         );
       },

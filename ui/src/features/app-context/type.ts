@@ -8,6 +8,7 @@ export type sideBarActiveElement =
   | 'run-and-debug'
   | 'extensions'
   | 'search-folders'
+  | "search-files"
   | null;
 
 /**

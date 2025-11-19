@@ -1,0 +1,137 @@
+<div class="container">
+  <form
+    class="search_from"
+    (submit)="search($event)"
+    [formGroup]="searchFormOptions"
+  >
+    <input type="text" placeholder="file name" formControlName="term" />
+
+    <button
+      type="button"
+      class="toggle-btn"
+      (click)="showOptions = !showOptions"
+    >
+      {{ showOptions ? "Hide Options" : "Show Options" }}
+    </button>
+  </form>
+
+  @if (showOptions) {
+  <div class="options-header">
+    <button type="button" class="clear-btn" (click)="searchFormOptions.reset()">
+      Clear Options
+    </button>
+  </div>
+
+  <form
+    class="options"
+    [formGroup]="searchFormOptions"
+    (submit)="search($event)"
+  >
+    <!-- BOOLEAN OPTIONS -->
+    <label>
+      <input type="checkbox" formControlName="partial" />
+      Partial match
+    </label>
+
+    <label>
+      <input type="checkbox" formControlName="ignoreCase" />
+      Ignore case
+    </label>
+
+    <label>
+      <input type="checkbox" formControlName="open" />
+      Open first matched file
+    </label>
+
+    <label>
+      <input type="checkbox" formControlName="hidden" />
+      Include Hidden
+    </label>
+
+    <label>
+      <input type="checkbox" formControlName="count" />
+      Count Only
+    </label>
+
+    <label>
+      <input type="checkbox" formControlName="regex" />
+      Treat term as Regex
+    </label>
+
+    <!-- NUMERIC OPTIONS -->
+    <label>
+      Limit:
+      <input type="number" formControlName="limit" />
+    </label>
+
+    <label>
+      Depth:
+      <input type="number" formControlName="depth" />
+    </label>
+
+    <label>
+      Min Size:
+      <input type="number" formControlName="minSize" />
+    </label>
+
+    <label>
+      Max Size:
+      <input type="number" formControlName="maxSize" />
+    </label>
+
+    <!-- SIZE TYPE -->
+    <label>
+      Size Type:
+      <select formControlName="sizeType">
+        <option value="B">Bytes (B)</option>
+        <option value="KB">Kilobytes (KB)</option>
+      </select>
+    </label>
+
+    <!-- ARRAY OPTIONS -->
+    <label>
+      Extensions (include):
+      <input type="text" placeholder="e.g., js,ts,html" formControlName="ext" />
+    </label>
+
+    <label>
+      Exclude Extensions:
+      <input
+        type="text"
+        placeholder="e.g., log,tmp"
+        formControlName="excludeExt"
+      />
+    </label>
+
+    <label>
+      Exclude Directories:
+      <input
+        type="text"
+        placeholder="e.g., node_modules,.git"
+        formControlName="excludeDir"
+      />
+    </label>
+
+    <!-- DATE FILTERS -->
+    <label>
+      Modified Before:
+      <input type="date" formControlName="modifiedBefore" />
+    </label>
+
+    <label>
+      Modified After:
+      <input type="date" formControlName="modifiedAfter" />
+    </label>
+  </form>
+  }
+
+  <div class="results">
+    <!---->
+    @for (item of results; track $index) {
+    <div class="result-item">
+      <div class="file-name">{{ item.name }}</div>
+      <div class="file-path">{{ item.path }}</div>
+    </div>
+    } @empty {}
+  </div>
+</div>

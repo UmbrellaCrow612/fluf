@@ -1,0 +1,262 @@
+/* Keep existing styles - don't modify */
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  background-color: rgb(20, 20, 20);
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  min-width: 0;
+}
+
+.result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  min-width: 0;
+}
+
+.result-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.result-item:active {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.file-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-path {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-item:hover .file-path {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* VSCode style enhancements */
+.search_from {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.search_from input[type="text"] {
+  flex: 1;
+  min-width: 150px;
+  padding: 6px 10px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.search_from input[type="text"]:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.search_from input[type="text"]:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(88, 166, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.3);
+}
+
+.search_from input[type="text"]::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.toggle-btn {
+  padding: 6px 14px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.toggle-btn:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.options-header {
+  display: flex;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clear-btn {
+  padding: 6px 14px;
+  background-color: rgba(255, 100, 100, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  color: rgba(255, 150, 150, 0.9);
+  font-size: 13px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+  background-color: rgba(255, 100, 100, 0.25);
+  border-color: rgba(255, 100, 100, 0.5);
+}
+
+.clear-btn:active {
+  background-color: rgba(255, 100, 100, 0.35);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  max-height: 400px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.options label:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.options input[type="checkbox"],
+.options input[type="date"],
+.options input[type="number"],
+.options input[type="text"],
+.options select {
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.options input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #58a6ff;
+}
+
+.options input[type="date"],
+.options input[type="number"],
+.options input[type="text"],
+.options select {
+  flex: 1;
+  min-width: 100px;
+}
+
+.options input[type="date"]:hover,
+.options input[type="number"]:hover,
+.options input[type="text"]:hover,
+.options select:hover {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.options input[type="date"]:focus,
+.options input[type="number"]:focus,
+.options input[type="text"]:focus,
+.options select:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(88, 166, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.3);
+}
+
+.options select option {
+  background-color: rgb(30, 30, 30);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.options select {
+  cursor: pointer;
+}
+
+/* Scrollbar styling for VSCode aesthetic */
+.options::-webkit-scrollbar,
+.results::-webkit-scrollbar {
+  width: 12px;
+}
+
+.options::-webkit-scrollbar-track,
+.results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.options::-webkit-scrollbar-thumb,
+.results::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.options::-webkit-scrollbar-thumb:hover,
+.results::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: padding-box;
+}
