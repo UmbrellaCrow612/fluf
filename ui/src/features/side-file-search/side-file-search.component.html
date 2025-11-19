@@ -1,6 +1,10 @@
 <div class="container">
-  <form class="search_from" (submit)="search($event)" [formGroup]="searchFormOptions">
-    <input type="text" placeholder="file name" formControlName="term"/>
+  <form
+    class="search_from"
+    (submit)="search($event)"
+    [formGroup]="searchFormOptions"
+  >
+    <input type="text" placeholder="file name" formControlName="term" />
 
     <button
       type="button"
@@ -18,7 +22,11 @@
     </button>
   </div>
 
-  <form class="options" [formGroup]="searchFormOptions" (submit)="search($event)">
+  <form
+    class="options"
+    [formGroup]="searchFormOptions"
+    (submit)="search($event)"
+  >
     <!-- BOOLEAN OPTIONS -->
     <label>
       <input type="checkbox" formControlName="partial" />
@@ -118,6 +126,12 @@
   }
 
   <div class="results">
-    {{ searchFormOptions.value | json }}
+    <!---->
+    @for (item of results; track $index) {
+    <div class="result-item">
+      <div class="file-name">{{ item.name }}</div>
+      <div class="file-path">{{ item.path }}</div>
+    </div>
+    } @empty {}
   </div>
 </div>

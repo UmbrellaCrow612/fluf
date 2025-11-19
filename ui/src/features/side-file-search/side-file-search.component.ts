@@ -6,12 +6,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { JsonPipe } from '@angular/common';
 import { getElectronApi } from '../../utils';
 
 @Component({
   selector: 'app-side-file-search',
-  imports: [ReactiveFormsModule, JsonPipe],
+  imports: [ReactiveFormsModule],
   templateUrl: './side-file-search.component.html',
   styleUrl: './side-file-search.component.css',
 })
@@ -27,16 +26,16 @@ export class SideFileSearchComponent {
     term: new FormControl('', {
       validators: [Validators.required],
     }),
-    partial: new FormControl(false),
-    ignoreCase: new FormControl(false),
+    partial: new FormControl(true),
+    ignoreCase: new FormControl(true),
     open: new FormControl(false),
     limit: new FormControl(0),
     depth: new FormControl(0),
 
-    /** string[] are set as strings via ui they need to be normalized into string[] via a split , on submit*/
-    ext: new FormControl<string[] | null>(null),
-    excludeExt: new FormControl<string[] | null>(null),
-    excludeDir: new FormControl<string[] | null>(null),
+    /** set as plain string sbut need to be normalised to string[] split via , */
+    ext: new FormControl<string | null>(null),
+    excludeExt: new FormControl<string | null>(null),
+    excludeDir: new FormControl<string | null>("node_modules,bin"),
     /** */
 
     minSize: new FormControl(0),
@@ -53,27 +52,69 @@ export class SideFileSearchComponent {
 
   isSubmitting = false;
 
+  results: fsearchResult[] = [];
+
   /**
    * Runs logic to search with fsearch
    */
   async search(event: Event) {
     event.preventDefault();
 
-    if (this.isSubmitting) {
-      return;
-    }
+    if (this.isSubmitting || this.searchFormOptions.invalid) return;
 
     this.isSubmitting = true;
 
-    let res = await this.api.fsearch(undefined, {
+    const form = this.searchFormOptions.controls;
+
+    const normalizeArray = (value: string[] | string | null | undefined) => {
+      if (!value) return undefined;
+
+      if (Array.isArray(value)) {
+        return value
+          .map((v) => v.split(','))
+          .flat()
+          .map((v) => v.trim())
+          .filter((v) => v.length > 0);
+      }
+
+      if (typeof value === 'string') {
+        return value
+          .split(',')
+          .map((v) => v.trim())
+          .filter((v) => v.length > 0);
+      }
+
+      return undefined;
+    };
+
+    const options: fsearchOptions = {
       directory: this.selectedDir!,
-      term: this.searchFormOptions.controls.term.value!,
-      partial: true,
-      ignoreCase: true
-    });
+      term: form.term.value!,
+      partial: form.partial.value!,
+      ignoreCase: form.ignoreCase.value!,
+      open: form.open.value!,
+      lines: undefined,
+      limit: form.limit.value || undefined,
+      depth: form.depth.value || undefined,
+      ext: normalizeArray(form.ext.value),
+      excludeExt: normalizeArray(form.excludeExt.value),
+      excludeDir: normalizeArray(form.excludeDir.value),
+      minSize: form.minSize.value || undefined,
+      maxSize: form.maxSize.value || undefined,
+      sizeType: form.sizeType.value!,
+      modifiedBefore: form.modifiedBefore.value || undefined,
+      modifiedAfter: form.modifiedAfter.value || undefined,
+      hidden: form.hidden.value!,
+      count: form.count.value!,
+      regex: form.regex.value!,
+    };
 
-    this.isSubmitting = false;
-
-    console.log(JSON.stringify(res));
+    try {
+      this.results = await this.api.fsearch(undefined, options);
+    } catch (err) {
+      console.error('Search failed', err);
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 }
