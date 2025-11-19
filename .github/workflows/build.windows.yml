@@ -1,0 +1,40 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install dependencies for scripts
+      - name: Install scripts dependencies
+        working-directory: ./scripts
+        run: npm ci
+
+      # Step 3: Install dependencies for UI
+      - name: Install UI dependencies
+        working-directory: ./ui
+        run: npm ci
+
+      # Step 4: Install dependencies for Desktop
+      - name: Install Desktop dependencies
+        working-directory: ./desktop
+        run: npm ci
+
+      # Step 5: Rename .env.example to .env for Desktop
+      - name: Setup Desktop .env
+        working-directory: ./desktop
+        run: copy .env.example .env
+
+      # Step 6: Run the build script
+      - name: Build for Windows
+        run: node ./scripts/build.js --platform=windows

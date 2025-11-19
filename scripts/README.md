@@ -18,6 +18,7 @@ What build script try to achieve:
 
 - build frontend angular code
 - build desktop code
+- Set any linux perms for extenal binarys packages i use
 - put them both into a app folder
 - copy bin desktop folder as wel
 - asar the app files
