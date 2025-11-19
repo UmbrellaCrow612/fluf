@@ -1,6 +1,6 @@
 <div class="container">
-  <form class="search_from">
-    <input type="text" placeholder="file name" />
+  <form class="search_from" (submit)="search($event)" [formGroup]="searchFormOptions">
+    <input type="text" placeholder="file name" formControlName="term"/>
 
     <button
       type="button"
@@ -18,7 +18,7 @@
     </button>
   </div>
 
-  <form class="options" [formGroup]="searchFormOptions">
+  <form class="options" [formGroup]="searchFormOptions" (submit)="search($event)">
     <!-- BOOLEAN OPTIONS -->
     <label>
       <input type="checkbox" formControlName="partial" />

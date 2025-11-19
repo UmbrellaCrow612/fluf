@@ -1,7 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { JsonPipe } from '@angular/common';
+import { getElectronApi } from '../../utils';
 
 @Component({
   selector: 'app-side-file-search',
@@ -13,10 +19,14 @@ export class SideFileSearchComponent {
   private readonly appContext = inject(ContextService);
   private readonly selectedDir =
     this.appContext.getSnapshot().selectedDirectoryPath;
+  private readonly api = getElectronApi();
 
   showOptions = false;
 
   searchFormOptions = new FormGroup({
+    term: new FormControl('', {
+      validators: [Validators.required],
+    }),
     partial: new FormControl(false),
     ignoreCase: new FormControl(false),
     open: new FormControl(false),
@@ -40,4 +50,30 @@ export class SideFileSearchComponent {
     count: new FormControl(false),
     regex: new FormControl(false),
   });
+
+  isSubmitting = false;
+
+  /**
+   * Runs logic to search with fsearch
+   */
+  async search(event: Event) {
+    event.preventDefault();
+
+    if (this.isSubmitting) {
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    let res = await this.api.fsearch(undefined, {
+      directory: this.selectedDir!,
+      term: this.searchFormOptions.controls.term.value!,
+      partial: true,
+      ignoreCase: true
+    });
+
+    this.isSubmitting = false;
+
+    console.log(JSON.stringify(res));
+  }
 }
