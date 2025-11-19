@@ -81,6 +81,32 @@
   background-color: rgba(255, 255, 255, 0.15);
 }
 
+.options-header {
+  display: flex;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clear-btn {
+  padding: 6px 14px;
+  background-color: rgba(255, 100, 100, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  color: rgba(255, 150, 150, 0.9);
+  font-size: 13px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+  background-color: rgba(255, 100, 100, 0.25);
+  border-color: rgba(255, 100, 100, 0.5);
+}
+
+.clear-btn:active {
+  background-color: rgba(255, 100, 100, 0.35);
+}
+
 .options {
   display: flex;
   flex-direction: column;

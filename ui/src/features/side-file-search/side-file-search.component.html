@@ -12,6 +12,12 @@
   </form>
 
   @if (showOptions) {
+  <div class="options-header">
+    <button type="button" class="clear-btn" (click)="searchFormOptions.reset()">
+      Clear Options
+    </button>
+  </div>
+
   <form class="options" [formGroup]="searchFormOptions">
     <!-- BOOLEAN OPTIONS -->
     <label>

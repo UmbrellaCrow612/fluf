@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 
 @Component({
@@ -23,9 +23,11 @@ export class SideFileSearchComponent {
     limit: new FormControl(0),
     depth: new FormControl(0),
 
+    /** string[] are set as strings via ui they need to be normalized into string[] via a split , on submit*/
     ext: new FormControl<string[] | null>(null),
     excludeExt: new FormControl<string[] | null>(null),
     excludeDir: new FormControl<string[] | null>(null),
+    /** */
 
     minSize: new FormControl(0),
     maxSize: new FormControl(0),
