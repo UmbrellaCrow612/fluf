@@ -10,6 +10,48 @@ const { unzip } = require("umbr-zip");
 const { download } = require("umbr-dl");
 
 /**
+ * Ensures a binary packaged inside node_modules has the execute permission.
+ * This is necessary because 'npm ci' sometimes removes this flag.
+ * @param {string} packageName - The name of the npm package (e.g., 'umbr-dl').
+ * @param {string} binaryName - The name of the binary file (e.g., 'go-download-linux').
+ */
+function ensureExecutable(packageName, binaryName) {
+    const binaryPath = path.join(
+        __dirname, 
+        'node_modules', 
+        packageName, 
+        'bin', 
+        binaryName
+    );
+    
+    // 1. Check if the file exists
+    if (fs.existsSync(binaryPath)) {
+        let isExecutable = true;
+        
+        try {
+            // 2. Try to access the file with execute permission (X_OK).
+            // This function returns void on success and THROWS on failure (EACCES).
+            fs.accessSync(binaryPath, fs.constants.X_OK);
+        } catch (e) {
+            // 3. If it throws, the file is not executable.
+            isExecutable = false;
+        }
+
+        if (!isExecutable) {
+            try {
+                logInfo(`Applying chmod +x to: ${binaryName}`);
+                // 4. Set rwxr-xr-x permission (0o755)
+                fs.chmodSync(binaryPath, 0o755); 
+            } catch (error) {
+                logError(`Failed to set execute permission on ${binaryName}`, error);
+                throw new Error(`Permission fix failed for ${binaryName}`);
+            }
+        }
+    }
+}
+
+
+/**
  * Logs an error message to the console with timestamp and optional details.
  * @param {string} message - The main error message.
  * @param {object} [details] - Optional additional details (like stack, object info, etc.)
@@ -59,10 +101,13 @@ async function downloadAndExtractZipToDist(url, distFolder) {
 
     logInfo(`Downloading zip from ${url}`);
     
+    ensureExecutable('umbr-dl', 'go-download-linux'); 
     await download(url, { name: zipFileName, path: distFolder });
     logInfo(`Downloaded zip to ${tempZipPath}`);
 
     logInfo(`Extracting zip into dist folder: ${distFolder}`);
+    
+    ensureExecutable('umbr-zip', 'go-unzip-linux'); 
     await unzip(tempZipPath, distFolder, { timeout: 60000 });
 
     // Clean up temporary zip
