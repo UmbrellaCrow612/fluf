@@ -1,0 +1,27 @@
+name: Build Linux
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Navigate to scripts and install dependencies
+      - name: Install dependencies in scripts
+        working-directory: ./scripts
+        run: npm ci
+
+      # Step 3: Run build script from root
+      - name: Build for Linux
+        run: node ./scripts/build.js --platform=linux
