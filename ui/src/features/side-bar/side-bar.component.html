@@ -29,6 +29,15 @@
 
     <button
       mat-icon-button
+      matTooltip="Search files"
+      [class.active]="activeElement == 'search-files'"
+      (click)="toggleSearchFiles()"
+    >
+      <mat-icon>find_in_page</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
       matTooltip="Source control"
       [class.active]="activeElement == 'source-control'"
       (click)="toggleSourceControl()"

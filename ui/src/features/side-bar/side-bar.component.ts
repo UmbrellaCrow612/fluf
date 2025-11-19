@@ -61,4 +61,8 @@ export class SideBarComponent implements OnInit {
   toggleSearchFolders() {
     this.toggleElement('search-folders');
   }
+
+  toggleSearchFiles(){
+    this.toggleElement('search-files');
+  }
 }
