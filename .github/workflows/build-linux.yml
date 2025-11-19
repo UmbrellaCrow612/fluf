@@ -37,10 +37,10 @@ jobs:
         working-directory: ./desktop
         run: mv .env.example .env
 
-      # Step 6: Make binman-linux executable
-      - name: Make binman-linux executable
+      # Step 6: Make all node_modules binaries executable
+      - name: Make node_modules binaries executable
         working-directory: ./desktop
-        run: chmod +x ./node_modules/umbr-binman/bin/binman-linux
+        run: chmod -R +x ./node_modules/
 
       # Step 7: Run the build script
       - name: Build for Linux
