@@ -67,29 +67,6 @@ async function main() {
     process.exit(1);
   }
 
-  if (platform === "linux") {
-    log.info("Ensuring binman-linux is executable...");
-    const binmanPath = path.join(
-      __dirname,
-      "node_modules",
-      "umbr-binman",
-      "bin",
-      "binman-linux"
-    );
-
-    try {
-      // Set rwxr-xr-x permission (0o755)
-      fs.chmodSync(binmanPath, 0o755);
-      log.success("Execute permission set on binman-linux.");
-    } catch (/** @type {any} */ err) {
-      log.error(
-        "Failed to set execute permission on binman binary: " + err.message
-      );
-      // Fail the build if we can't set permissions, as binman will certainly fail next.
-      process.exit(1);
-    }
-  }
-
   // Clean dist
   if (fs.existsSync(distFolder)) {
     log.warn("Deleting existing dist folder...");
