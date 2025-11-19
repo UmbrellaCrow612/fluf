@@ -30,19 +30,22 @@ jobs:
         working-directory: ./desktop
         run: npm ci
 
-      # Step 5: FIX: Explicitly ensure the binman-linux binary is executable
-      # This resolves the 'EACCES' error by granting execute permissions (+x).
       - name: Ensure binman-linux is executable
         working-directory: ./desktop
-        run: chmod +x ./node_modules/umbr-binman/bin/binman-linux
+        run: |
+          BINMAN_PATH="./node_modules/umbr-binman/bin/binman-linux"
+          if test -x "$BINMAN_PATH"; then
+            echo "$BINMAN_PATH is already executable. Skipping chmod."
+          else
+            echo "$BINMAN_PATH is not executable. Applying chmod +x."
+            chmod +x "$BINMAN_PATH"
+          fi
 
       # Step 6: Rename .env.example to .env for Desktop
       - name: Setup Desktop .env
         working-directory: ./desktop
         run: mv .env.example .env
 
-      # Step 7 (Original Step 6 removed/skipped as the fix is Step 5)
-
-      # Step 8: Run the build script
+      # Step 7: Run the build script
       - name: Build for Linux
         run: node ./scripts/build.js --platform=linux
