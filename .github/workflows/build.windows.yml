@@ -20,6 +20,16 @@ jobs:
         working-directory: ./scripts
         run: npm ci
 
+      # Step 3: Install dependencies for UI
+      - name: Install UI dependencies
+        working-directory: ./ui
+        run: npm ci
+
+      # Step 4: Install dependencies for Desktop
+      - name: Install Desktop dependencies
+        working-directory: ./desktop
+        run: npm ci
+
       # Step 5: Rename .env.example to .env for Desktop
       - name: Setup Desktop .env
         working-directory: ./desktop
