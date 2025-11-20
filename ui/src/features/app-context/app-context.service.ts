@@ -30,8 +30,6 @@ export class ContextService {
     currentActiveShellId: null,
     isEditorResize: null,
     currentActiveContextMenu: null,
-    currentActiveContextMenuPosition: null,
-    currentActiveContextMenuData:null
   };
 
   private subscriptions = new Map<keyof AppContext, Set<AppContextCallback>>();

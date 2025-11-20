@@ -100,20 +100,27 @@ export type AppContext = {
   /**
    * The current context menu that is showing, if there is a value then said context menu will apppear else the context menu will be closed
    */
-  currentActiveContextMenu: contextMenuActiveElement | null;
+  currentActiveContextMenu: {
+    /** The specific context menu to show */
+    key: contextMenuActiveElement;
 
-  /**
-   * The x and y position pprovided to where to render the context menu
-   */
-  currentActiveContextMenuPosition: { x: number; y: number } | null;
+    /** The position to show it */
+    pos: { x: number; y: number };
 
-  /**
-   * Any data you want to pass to the context menu note validation must be done in the context menu itself to make sure the correct data was passed
-   */
-  currentActiveContextMenuData: Object | null;
+    /** Any data to be passed to it */
+    data: Object | null;
+  } | null;
 };
 
 /**
  * The callback that runs when a field changes that you sub to
  */
 export type AppContextCallback = (ctx: AppContext) => void | Promise<void>;
+
+
+/**
+ * Represents application context that stays in memeory until a refresh or app close
+ */
+export type InMemoryAppContext = {
+
+}

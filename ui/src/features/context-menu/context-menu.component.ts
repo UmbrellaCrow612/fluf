@@ -9,6 +9,8 @@ import { ContextService } from '../app-context/app-context.service';
 })
 export class ContextMenuComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService)
+
+  
   ngOnInit(): void {}
 
   ngOnDestroy(): void {
