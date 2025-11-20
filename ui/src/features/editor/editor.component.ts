@@ -1,7 +1,6 @@
 import { ResizerTwo } from 'umbr-resizer-two';
 import {
   sideBarActiveElement,
-  contextMenuActiveElement,
 } from './../app-context/type';
 import {
   afterNextRender,

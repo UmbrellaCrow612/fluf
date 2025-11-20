@@ -2,6 +2,7 @@ import {
   Component,
   ElementRef,
   inject,
+  OnDestroy,
   OnInit,
   Type,
   viewChild,
@@ -15,7 +16,7 @@ import { NgComponentOutlet } from '@angular/common';
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.css',
 })
-export class ContextMenuComponent implements OnInit {
+export class ContextMenuComponent implements OnInit, OnDestroy {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   /**
    * The current data when the dialog is rendered
@@ -40,25 +41,29 @@ export class ContextMenuComponent implements OnInit {
 
   ngOnInit(): void {
     const dialog = this.dialogRef()!.nativeElement;
-
     this.positionDialog(dialog);
-
     dialog.showModal();
+    dialog.addEventListener('click', this.handleClickOutside);
+  }
 
-    dialog.addEventListener('click', (event) => {
-      const rect = dialog.getBoundingClientRect();
+  private handleClickOutside = (event: MouseEvent) => {
+    const dialog = this.dialogRef()!.nativeElement;
+    const rect = dialog.getBoundingClientRect();
+    const isClickedOutside =
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom ||
+      event.clientX < rect.left ||
+      event.clientX > rect.right;
 
-      const isClickedOutside =
-        event.clientY < rect.top ||
-        event.clientY > rect.bottom ||
-        event.clientX < rect.left ||
-        event.clientX > rect.right;
+    if (isClickedOutside) {
+      dialog.close();
+      this.inMemoryContextService.update('currentActiveContextMenu', null);
+    }
+  };
 
-      if (isClickedOutside) {
-        dialog.close();
-        this.inMemoryContextService.update('currentActiveContextMenu', null);
-      }
-    });
+  ngOnDestroy(): void {
+    const dialog = this.dialogRef()!.nativeElement;
+    dialog.removeEventListener('click', this.handleClickOutside);
   }
 
   /**
