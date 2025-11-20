@@ -90,7 +90,14 @@ export type AppContextCallback = (ctx: AppContext) => void | Promise<void>;
 /**
  * The callback that runs when a field changes that you sub to
  */
-export type InMemoryAppContextCallback = (ctx: InMemoryAppContext) => void | Promise<void>;
+export type InMemoryAppContextCallback = (
+  ctx: InMemoryAppContext
+) => void | Promise<void>;
+
+/**
+ * All the types of shape data can be 
+ */
+export type CurrentActiveContextMenuData = fileNode | null;
 
 /**
  * Represents application context that stays in memeory until a refresh or app close
@@ -107,7 +114,7 @@ export type InMemoryAppContext = {
     pos: { x: number; y: number };
 
     /** Any data to be passed to it */
-    data: Object | null;
+    data: CurrentActiveContextMenuData | null;
   } | null;
 
   /**

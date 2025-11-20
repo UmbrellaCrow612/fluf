@@ -1,0 +1,26 @@
+dialog {
+  /* Center the dialog on the screen */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* Optional: Basic styling for appearance */
+  border: 1px solid #ccc;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ensure it's on top */
+}
+
+/* Styling for the backdrop (the overlay behind the dialog) */
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.no-elements-message {
+  padding: 8px;
+  color: #666;
+  font-style: italic;
+}
