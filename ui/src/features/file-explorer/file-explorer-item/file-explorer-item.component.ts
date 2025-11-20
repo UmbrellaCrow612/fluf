@@ -19,6 +19,7 @@ import {
 } from '../utils';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
+import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 
 @Component({
   selector: 'app-file-explorer-item',
@@ -30,6 +31,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly appContext = inject(ContextService);
   private readonly api = getElectronApi();
+  private readonly inMemoryContextService = inject(InMemoryContextService);
 
   /**
    * The specific file to render as a file tree item
@@ -79,7 +81,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     let nodes = this.appContext.getSnapshot().directoryFileNodes;
     removeCreateNodes(nodes!);
 
-    this.appContext.update('isCreateFileOrFolderActive', false);
+    this.inMemoryContextService.update('isCreateFileOrFolderActive', false);
     this.appContext.update('directoryFileNodes', nodes);
   }
 
@@ -143,12 +145,15 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
    */
   onRightClick(event: MouseEvent) {
     event.preventDefault();
-    this.appContext.update('fileExplorerContextMenuFileNode', this.fileNode());
-    this.appContext.update('fileExplorerContextMenuClickPosition', {
-      x: event.clientX,
-      y: event.clientY,
+
+    this.inMemoryContextService.update('currentActiveContextMenu', {
+      data: this.fileNode(),
+      key: 'file-explorer-file-node-context-menu',
+      pos: {
+        x: event.clientX,
+        y: event.clientY,
+      },
     });
-    this.appContext.update('displayFileExplorerContextMenu', true);
   }
 
   async createFileOrFolder(e: Event) {

@@ -1,6 +1,7 @@
 import { inject, Injectable, DestroyRef } from '@angular/core';
-import { AppContext, ContextService } from '../app-context/app-context.service';
+import { ContextService } from '../app-context/app-context.service';
 import { WinKey } from './win-key';
+import { AppContext } from '../app-context/type';
 
 /**
  * Represents a hot key

@@ -52,17 +52,6 @@ export type AppContext = {
   fileExplorerActiveFileOrFolder: fileNode | null;
 
   /**
-   * Represents whether a file or folder creator is active
-   */
-  isCreateFileOrFolderActive: boolean | null;
-
-  /**
-   * Indicates if it should refresh / reread nodes and update the current nodes with updated folder nodes -
-   * keeps expanded state and adds / removes children based on new state
-   */
-  refreshDirectory: boolean | null;
-
-  /**
    * List of open files in the editor to show in the open file tab bar
    */
   openFiles: fileNode[] | null;
@@ -91,12 +80,22 @@ export type AppContext = {
    * The current active shell to see output and input cmds in
    */
   currentActiveShellId: string | null;
+};
 
-  /**
-   * Use a sub to listen when this is fired off - used when file explorer is resized or open file bottom is resized
-   */
-  isEditorResize: boolean | null;
+/**
+ * The callback that runs when a field changes that you sub to
+ */
+export type AppContextCallback = (ctx: AppContext) => void | Promise<void>;
 
+/**
+ * The callback that runs when a field changes that you sub to
+ */
+export type InMemoryAppContextCallback = (ctx: InMemoryAppContext) => void | Promise<void>;
+
+/**
+ * Represents application context that stays in memeory until a refresh or app close
+ */
+export type InMemoryAppContext = {
   /**
    * The current context menu that is showing, if there is a value then said context menu will apppear else the context menu will be closed
    */
@@ -110,17 +109,20 @@ export type AppContext = {
     /** Any data to be passed to it */
     data: Object | null;
   } | null;
+
+  /**
+   * Use a sub to listen when this is fired off - used when file explorer is resized or open file bottom is resized
+   */
+  isEditorResize: boolean | null;
+
+  /**
+   * Indicates if it should refresh / reread nodes and update the current nodes with updated folder nodes -
+   * keeps expanded state and adds / removes children based on new state
+   */
+  refreshDirectory: boolean | null;
+
+  /**
+   * Represents whether a file or folder creator is active
+   */
+  isCreateFileOrFolderActive: boolean | null;
 };
-
-/**
- * The callback that runs when a field changes that you sub to
- */
-export type AppContextCallback = (ctx: AppContext) => void | Promise<void>;
-
-
-/**
- * Represents application context that stays in memeory until a refresh or app close
- */
-export type InMemoryAppContext = {
-
-}

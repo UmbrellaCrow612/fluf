@@ -27,6 +27,7 @@ import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { ContextMenuComponent } from "../context-menu/context-menu.component";
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -43,6 +44,7 @@ type unSub = () => Promise<void>;
 })
 export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly appContext = inject(ContextService);
+  private readonly inMemoryContextService = inject(InMemoryContextService)
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly injector = inject(Injector);
@@ -145,7 +147,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.unSub = await this.api.onDirectoryChange(
         init.selectedDirectoryPath,
         (_) => {
-          this.appContext.update('refreshDirectory', true);
+          this.inMemoryContextService.update('refreshDirectory', true);
         }
       );
     }
@@ -166,7 +168,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       this.destroyRef
     );
-    this.appContext.autoSub(
+    this.inMemoryContextService.autoSub(
       'currentActiveContextMenu',
       (ctx) => {
         this.isContextMenuActive = ctx.currentActiveContextMenu != null;
@@ -183,7 +185,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           this.unSub = await this.api.onDirectoryChange(
             ctx.selectedDirectoryPath,
             (_) => {
-              this.appContext.update('refreshDirectory', true);
+              this.inMemoryContextService.update('refreshDirectory', true);
             }
           );
         }

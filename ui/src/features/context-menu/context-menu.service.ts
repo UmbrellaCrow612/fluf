@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { contextMenuActiveElement } from '../app-context/type';
 import { ContextService } from '../app-context/app-context.service';
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 
 /**
  * Provides a API to trigger the context menu and what context menu to trigger
@@ -9,7 +10,7 @@ import { ContextService } from '../app-context/app-context.service';
   providedIn: 'root',
 })
 export class ContextMenuService {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(InMemoryContextService);
 
   /**
    * Open a context menu

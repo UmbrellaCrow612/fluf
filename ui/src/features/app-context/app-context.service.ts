@@ -20,16 +20,12 @@ export class ContextService {
     selectedDirectoryPath: null,
     directoryFileNodes: null,
     fileExplorerActiveFileOrFolder: null,
-    isCreateFileOrFolderActive: null,
-    refreshDirectory: null,
     openFiles: null,
     currentOpenFileInEditor: null,
     displayFileEditorBottom: null,
     fileEditorBottomActiveElement: null,
     shells: null,
     currentActiveShellId: null,
-    isEditorResize: null,
-    currentActiveContextMenu: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<AppContextCallback>>();
