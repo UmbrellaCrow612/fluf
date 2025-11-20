@@ -1,5 +1,9 @@
 import { DestroyRef, Injectable } from '@angular/core';
-import { fileEditorBottomActiveElement, sideBarActiveElement } from './type';
+import {
+  contextMenuActiveElement,
+  fileEditorBottomActiveElement,
+  sideBarActiveElement,
+} from './type';
 
 export type AppContext = {
   /**
@@ -32,22 +36,6 @@ export type AppContext = {
    * keeps expanded state and adds / removes children based on new state
    */
   refreshDirectory: boolean | null;
-
-  /**
-   * Indicates that the right-click context menu on a file explorer item should be displayed -
-   * think of this as simply a trigger you push values to, and the context menu will react when you want to display or hide it
-   */
-  displayFileExplorerContextMenu: boolean | null;
-
-  /**
-   * The node to process the context menu for — the trigger node the context menu was opened for
-   */
-  fileExplorerContextMenuFileNode: fileNode | null;
-
-  /**
-   * Set this before showing the context menu to indicate where it was clicked in the file explorer
-   */
-  fileExplorerContextMenuClickPosition: { x: number; y: number } | null;
 
   /**
    * List of open files in the editor to show in the open file tab bar
@@ -83,6 +71,11 @@ export type AppContext = {
    * Use a sub to listen when this is fired off - used when file explorer is resized or open file bottom is resized
    */
   isEditorResize: boolean | null;
+
+  /**
+   * The current context menu that is showing, if there is a value then said context menu will apppear else the context menu will be closed
+   */
+  currentActiveContextMenu: contextMenuActiveElement | null;
 };
 
 export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
@@ -105,16 +98,14 @@ export class ContextService {
     fileExplorerActiveFileOrFolder: null,
     isCreateFileOrFolderActive: null,
     refreshDirectory: null,
-    displayFileExplorerContextMenu: null,
-    fileExplorerContextMenuFileNode: null,
-    fileExplorerContextMenuClickPosition: null,
     openFiles: null,
     currentOpenFileInEditor: null,
     displayFileEditorBottom: null,
     fileEditorBottomActiveElement: null,
     shells: null,
     currentActiveShellId: null,
-    isEditorResize:null
+    isEditorResize: null,
+    currentActiveContextMenu: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();

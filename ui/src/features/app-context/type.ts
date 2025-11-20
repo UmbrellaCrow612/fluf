@@ -8,7 +8,7 @@ export type sideBarActiveElement =
   | 'run-and-debug'
   | 'extensions'
   | 'search-folders'
-  | "search-files"
+  | 'search-files'
   | null;
 
 /**
@@ -20,3 +20,9 @@ export type fileEditorBottomActiveElement =
   | 'ports'
   | 'output'
   | 'problems';
+
+/**
+ * Contains all the context menus that can be activated
+ */
+export type contextMenuActiveElement =
+  /** Displays when a right click is done in file explorer and on a specific file node*/ 'file-explorer-file-node-context-menu';
