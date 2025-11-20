@@ -95,7 +95,7 @@ export type InMemoryAppContextCallback = (
 ) => void | Promise<void>;
 
 /**
- * All the types of shape data can be 
+ * All the types of shape data can be
  */
 export type CurrentActiveContextMenuData = fileNode | null;
 
@@ -110,8 +110,10 @@ export type InMemoryAppContext = {
     /** The specific context menu to show */
     key: contextMenuActiveElement;
 
-    /** The position to show it */
-    pos: { x: number; y: number };
+    /**
+     * The specific element it triggered by / on
+     */
+    target: { x: number; y: number; width: number; height: number };
 
     /** Any data to be passed to it */
     data: CurrentActiveContextMenuData | null;

@@ -2,7 +2,6 @@ import {
   Component,
   ElementRef,
   inject,
-  OnDestroy,
   OnInit,
   Type,
   viewChild,
@@ -38,11 +37,15 @@ export class ContextMenuComponent implements OnInit {
     /** The callback that returns when it should be rendered based on a condition */
     condition: () => boolean;
   }[] = [];
-
   ngOnInit(): void {
-    this.dialogRef()?.nativeElement.showModal();
-    this.dialogRef()?.nativeElement.addEventListener('click', (event) => {
-      const rect = this.dialogRef()!.nativeElement.getBoundingClientRect();
+    const dialog = this.dialogRef()!.nativeElement;
+
+    this.positionDialog(dialog);
+
+    dialog.showModal();
+
+    dialog.addEventListener('click', (event) => {
+      const rect = dialog.getBoundingClientRect();
 
       const isClickedOutside =
         event.clientY < rect.top ||
@@ -51,10 +54,45 @@ export class ContextMenuComponent implements OnInit {
         event.clientX > rect.right;
 
       if (isClickedOutside) {
-        this.dialogRef()!.nativeElement.close();
+        dialog.close();
         this.inMemoryContextService.update('currentActiveContextMenu', null);
       }
     });
+  }
+
+  /**
+   * Position the dialog using the SAFE rect data stored in context.
+   */
+  private positionDialog(dialog: HTMLDialogElement) {
+    const ctx = this.snapshot.currentActiveContextMenu;
+    if (!ctx?.target) return;
+
+    const rect = ctx.target;
+
+    const dialogWidth = dialog.offsetWidth;
+    const dialogHeight = dialog.offsetHeight;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Preferred: center horizontally below the target
+    let left = rect.x + rect.width / 2 - dialogWidth / 2;
+    let top = rect.y + rect.height + 4; // 4px gap
+
+    // Keep inside viewport
+    if (left < 8) left = 8;
+
+    if (left + dialogWidth > viewportWidth) {
+      left = viewportWidth - dialogWidth - 8;
+    }
+
+    // If overflow bottom → move above target
+    if (top + dialogHeight > viewportHeight) {
+      top = rect.y - dialogHeight - 4;
+    }
+
+    dialog.style.position = 'fixed';
+    dialog.style.left = `${left}px`;
+    dialog.style.top = `${top}px`;
   }
 
   /**
