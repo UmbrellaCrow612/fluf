@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   inject,
@@ -17,7 +18,7 @@ import { FileExplorerFileNodeContextMenuComponent } from '../file-explorer/file-
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.css',
 })
-export class ContextMenuComponent implements OnInit {
+export class ContextMenuComponent implements OnInit, AfterViewInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   /**
    * The current data when the dialog is rendered
@@ -73,6 +74,11 @@ export class ContextMenuComponent implements OnInit {
       this.inMemoryContextService.update('currentActiveContextMenu', null);
     }
   };
+
+  ngAfterViewInit(): void {
+    const dialog = this.dialogRef()!.nativeElement;
+    this.positionDialog(dialog);
+  }
 
   /**
    * Position the dialog
