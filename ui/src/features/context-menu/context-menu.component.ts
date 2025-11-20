@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { NgComponentOutlet } from '@angular/common';
+import { FileExplorerFileNodeContextMenuComponent } from '../file-explorer/file-explorer-file-node-context-menu/file-explorer-file-node-context-menu.component';
 
 @Component({
   selector: 'app-context-menu',
@@ -16,7 +17,7 @@ import { NgComponentOutlet } from '@angular/common';
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.css',
 })
-export class ContextMenuComponent implements OnInit, OnDestroy {
+export class ContextMenuComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   /**
    * The current data when the dialog is rendered
@@ -37,7 +38,18 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
     component: Type<any>;
     /** The callback that returns when it should be rendered based on a condition */
     condition: () => boolean;
-  }[] = [];
+  }[] = [
+    {
+      component: FileExplorerFileNodeContextMenuComponent,
+      condition: () => {
+        return (
+          typeof this.snapshot.currentActiveContextMenu?.key == 'string' &&
+          this.snapshot.currentActiveContextMenu?.key ==
+            'file-explorer-file-node-context-menu'
+        );
+      },
+    },
+  ];
 
   ngOnInit(): void {
     const dialog = this.dialogRef()!.nativeElement;
@@ -57,44 +69,47 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
 
     if (isClickedOutside) {
       dialog.close();
+      dialog.removeEventListener('click', this.handleClickOutside);
       this.inMemoryContextService.update('currentActiveContextMenu', null);
     }
   };
 
-  ngOnDestroy(): void {
-    const dialog = this.dialogRef()!.nativeElement;
-    dialog.removeEventListener('click', this.handleClickOutside);
-  }
-
   /**
-   * Position the dialog using the SAFE rect data stored in context.
+   * Position the dialog
    */
   private positionDialog(dialog: HTMLDialogElement) {
     const ctx = this.snapshot.currentActiveContextMenu;
     if (!ctx) return;
 
-    const mouseX = ctx.target.mouseX;
-    const belowY = ctx.target.belowY;
+    const { mouseX, mouseY } = ctx.pos;
 
-    const dialogWidth = dialog.offsetWidth;
-    const dialogHeight = dialog.offsetHeight;
+    let dialogWidth = dialog.offsetWidth;
+    let dialogHeight = dialog.offsetHeight;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // Preferred placement: below element, aligned with cursor X
-    let left = mouseX;
-    let top = belowY + 4; // 4px gap
-
-    // --- Clamp X so it never goes off screen ---
-    if (left + dialogWidth > viewportWidth) {
-      left = viewportWidth - dialogWidth - 8; // margin
+    // Shrink if bigger than viewport
+    if (dialogWidth > viewportWidth - 16) {
+      dialogWidth = viewportWidth - 16;
+      dialog.style.width = `${dialogWidth}px`;
     }
-    if (left < 8) left = 8;
+    if (dialogHeight > viewportHeight - 16) {
+      dialogHeight = viewportHeight - 16;
+      dialog.style.height = `${dialogHeight}px`;
+      dialog.style.overflowY = 'auto'; // scroll if too tall
+    }
 
-    // --- Clamp Y so it never goes off bottom ---
-    if (top + dialogHeight > viewportHeight) {
-      // Place above the element if it wouldn't fit below
-      top = belowY - dialogHeight - 8;
+    // Preferred placement: below mouse
+    let left = mouseX;
+    let top = mouseY + 4;
+
+    // Clamp X to viewport
+    left = Math.min(Math.max(left, 8), viewportWidth - dialogWidth - 8);
+
+    // Clamp Y to viewport (place above if not enough space below)
+    if (top + dialogHeight > viewportHeight - 8) {
+      top = mouseY - dialogHeight - 4;
+      if (top < 8) top = 8; // if still too high, clamp
     }
 
     dialog.style.position = 'fixed';

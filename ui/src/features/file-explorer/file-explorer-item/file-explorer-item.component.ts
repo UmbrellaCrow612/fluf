@@ -146,15 +146,12 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
  onRightClick(event: MouseEvent) {
   event.preventDefault();
 
-  const element = event.currentTarget as HTMLElement;
-  const rect = element.getBoundingClientRect();
-
   this.inMemoryContextService.update('currentActiveContextMenu', {
     data: this.fileNode(),
     key: 'file-explorer-file-node-context-menu',
-    target: {
+    pos: {
       mouseX: event.clientX,
-      belowY: rect.bottom, // BELOW the element
+      mouseY: event.clientY
     },
   });
 }

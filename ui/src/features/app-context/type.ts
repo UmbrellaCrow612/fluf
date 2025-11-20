@@ -111,9 +111,9 @@ export type InMemoryAppContext = {
     key: contextMenuActiveElement;
 
     /**
-     * The specific element it triggered by / on
+     * The position of where to render the the menu
      */
-    target: { mouseX:number, belowY:number };
+    pos: { mouseX: number; mouseY: number };
 
     /** Any data to be passed to it */
     data: CurrentActiveContextMenuData | null;
