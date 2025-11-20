@@ -143,22 +143,21 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
   /**
    * Runs when right click ran on a specific item
    */
-  onRightClick(event: MouseEvent) {
-    event.preventDefault();
+ onRightClick(event: MouseEvent) {
+  event.preventDefault();
 
-    const rect = (event.target as HTMLElement).getBoundingClientRect();
+  const element = event.currentTarget as HTMLElement;
+  const rect = element.getBoundingClientRect();
 
-    this.inMemoryContextService.update('currentActiveContextMenu', {
-      data: this.fileNode(),
-      key: 'file-explorer-file-node-context-menu',
-      target: {
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-        height: rect.height,
-      },
-    });
-  }
+  this.inMemoryContextService.update('currentActiveContextMenu', {
+    data: this.fileNode(),
+    key: 'file-explorer-file-node-context-menu',
+    target: {
+      mouseX: event.clientX,
+      belowY: rect.bottom, // BELOW the element
+    },
+  });
+}
 
   async createFileOrFolder(e: Event) {
     e.preventDefault();

@@ -37,6 +37,7 @@ export class ContextMenuComponent implements OnInit {
     /** The callback that returns when it should be rendered based on a condition */
     condition: () => boolean;
   }[] = [];
+
   ngOnInit(): void {
     const dialog = this.dialogRef()!.nativeElement;
 
@@ -65,29 +66,30 @@ export class ContextMenuComponent implements OnInit {
    */
   private positionDialog(dialog: HTMLDialogElement) {
     const ctx = this.snapshot.currentActiveContextMenu;
-    if (!ctx?.target) return;
+    if (!ctx) return;
 
-    const rect = ctx.target;
+    const mouseX = ctx.target.mouseX;
+    const belowY = ctx.target.belowY;
 
     const dialogWidth = dialog.offsetWidth;
     const dialogHeight = dialog.offsetHeight;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // Preferred: center horizontally below the target
-    let left = rect.x + rect.width / 2 - dialogWidth / 2;
-    let top = rect.y + rect.height + 4; // 4px gap
+    // Preferred placement: below element, aligned with cursor X
+    let left = mouseX;
+    let top = belowY + 4; // 4px gap
 
-    // Keep inside viewport
+    // --- Clamp X so it never goes off screen ---
+    if (left + dialogWidth > viewportWidth) {
+      left = viewportWidth - dialogWidth - 8; // margin
+    }
     if (left < 8) left = 8;
 
-    if (left + dialogWidth > viewportWidth) {
-      left = viewportWidth - dialogWidth - 8;
-    }
-
-    // If overflow bottom → move above target
+    // --- Clamp Y so it never goes off bottom ---
     if (top + dialogHeight > viewportHeight) {
-      top = rect.y - dialogHeight - 4;
+      // Place above the element if it wouldn't fit below
+      top = belowY - dialogHeight - 8;
     }
 
     dialog.style.position = 'fixed';

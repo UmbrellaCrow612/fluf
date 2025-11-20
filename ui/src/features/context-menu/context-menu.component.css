@@ -1,18 +1,27 @@
-/* VS Code context menu container */
-dialog#contextDialog {
-  padding: 6px 0;
+.main_dialog {
+  padding: 4px 0;
   margin: 0;
   border: 1px solid #3c3c3c;
-  background: #1e1e1e; /* VS Code dark menu background */
-  border-radius: 4px;
-  color: #ccc;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  width: max-content;
+  background: #1e1e1e;
+  border-radius: 6px;
+  color: #cccccc;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+
+  width: 240px; 
+  max-width: 260px;
   position: fixed;
+  overflow: scroll;
+  font-size: 13px;
+  font-family: Consolas, "Segoe UI", sans-serif;
+
+  display: flex;
+  min-height: 0;
+  min-width: 0;
 }
 
-/* Removes browser default dialog outline */
-dialog#contextDialog::backdrop {
-  background: rgba(0, 0, 0, 0.35); /* Subtle dimming (VS Code style) */
-  backdrop-filter: blur(1px);
+.main_dialog::backdrop {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(2px);
 }

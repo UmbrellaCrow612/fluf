@@ -113,7 +113,7 @@ export type InMemoryAppContext = {
     /**
      * The specific element it triggered by / on
      */
-    target: { x: number; y: number; width: number; height: number };
+    target: { mouseX:number, belowY:number };
 
     /** Any data to be passed to it */
     data: CurrentActiveContextMenuData | null;
