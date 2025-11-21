@@ -1,0 +1,23 @@
+<div
+  class="context-menu-item"
+  [class.disabled]="disabled()"
+  (click)="!disabled() && clicked.emit()"
+>
+  <!-- Icon -->
+  @if (icon()) {
+  <span class="icon">
+    <mat-icon [fontIcon]="icon()!"></mat-icon>
+  </span>
+
+  }
+
+  <!-- Label -->
+  <span class="label">{{ label() }}</span>
+
+  <!-- Keybinding (Cmd+K style text on right) -->
+  @if (keybinding()) {
+  <span class="keybinding">
+    {{ keybinding() }}
+  </span>
+  }
+</div>
