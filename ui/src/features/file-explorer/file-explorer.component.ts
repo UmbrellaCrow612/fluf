@@ -11,6 +11,7 @@ import {
   getParentNode,
   pushChildrenToNode,
 } from './utils';
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 
 @Component({
   selector: 'app-file-explorer',
@@ -26,6 +27,7 @@ import {
 })
 export class FileExplorerComponent implements OnInit {
   private readonly appContext = inject(ContextService);
+  private readonly inMemoryApppContext = inject(InMemoryContextService)
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
@@ -36,13 +38,14 @@ export class FileExplorerComponent implements OnInit {
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
+    let inMemeoryInit = this.inMemoryApppContext.getSnapShot();
 
     // set inital state based on ctx
     this.selectedDirectorPath = init.selectedDirectoryPath;
     this.directoryFileNodes = init.directoryFileNodes;
     this.isExplorerActive =
       init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
-    this.disableCreateFileOrFolder = init.isCreateFileOrFolderActive;
+    this.disableCreateFileOrFolder = inMemeoryInit.isCreateFileOrFolderActive;
 
     await this.readDir();
 
@@ -71,14 +74,14 @@ export class FileExplorerComponent implements OnInit {
       },
       this.destroyRef
     );
-    this.appContext.autoSub(
+    this.inMemoryApppContext.autoSub(
       'isCreateFileOrFolderActive',
       (ctx) => {
         this.disableCreateFileOrFolder = ctx.isCreateFileOrFolderActive;
       },
       this.destroyRef
     );
-    this.appContext.autoSub(
+    this.inMemoryApppContext.autoSub(
       'refreshDirectory',
       async (ctx) => {
         if (ctx.refreshDirectory) {
@@ -121,7 +124,7 @@ export class FileExplorerComponent implements OnInit {
    * Runs when refresh button clicked - re reads nodes and updates global state
    */
   refreshClicked() {
-    this.appContext.update('refreshDirectory', true);
+    this.inMemoryApppContext.update('refreshDirectory', true);
   }
 
   /**
@@ -197,7 +200,7 @@ export class FileExplorerComponent implements OnInit {
       }
     }
 
-    this.appContext.update('isCreateFileOrFolderActive', true);
+    this.inMemoryApppContext.update('isCreateFileOrFolderActive', true);
     this.appContext.update('directoryFileNodes', nodes);
   }
 

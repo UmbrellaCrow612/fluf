@@ -49,10 +49,8 @@ A simple text editor with desktop packaging support using Electron.
 3. **Run the build script from the project root:**
 
    ```bash
-   node .\scripts\build.js --platform=windows --electronVersion=v38.2.1 --platformPackage=electron-v38.2.1-win32-x64.zip
+   node .\scripts\build.js --platform=windows
    ```
-
-   _(You can pass additional arguments as needed.)_
 
 4. **Verify the build:**
 

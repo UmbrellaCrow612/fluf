@@ -1,0 +1,16 @@
+<dialog #contextDialog class="main_dialog">
+  @for (item of elements; track $index) {
+
+  <!---->
+  @if (item.condition()) {
+  <ng-container *ngComponentOutlet="item.component" />
+  }
+
+  <!---->
+  }
+
+  <!---->
+  @if (hasNoRenderableElements) {
+  <div class="no-elements-message">No component condition met</div>
+  }
+</dialog>

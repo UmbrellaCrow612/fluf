@@ -10,6 +10,7 @@ import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IDisposable, Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
+import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 
 type UnsubscribeCallback = () => void;
 
@@ -21,6 +22,7 @@ type UnsubscribeCallback = () => void;
 })
 export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService);
+  private readonly inMemoryAppContext = inject(InMemoryContextService)
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
@@ -58,7 +60,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.destroyRef
     );
 
-    this.appContext.autoSub(
+    this.inMemoryAppContext.autoSub(
       'isEditorResize',
       async (ctx) => {
         if (ctx.isEditorResize && this.fitAddon && this.terminal) {

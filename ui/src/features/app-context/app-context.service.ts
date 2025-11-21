@@ -1,92 +1,9 @@
 import { DestroyRef, Injectable } from '@angular/core';
-import { fileEditorBottomActiveElement, sideBarActiveElement } from './type';
+import {
+  AppContext,
+  AppContextCallback,
+} from './type';
 
-export type AppContext = {
-  /**
-   * Current active sidebar element
-   */
-  sideBarActiveElement: sideBarActiveElement;
-
-  /**
-   * List of nodes read from the selected directory
-   */
-  directoryFileNodes: Array<fileNode> | null;
-
-  /**
-   * Folder path selected in the editor
-   */
-  selectedDirectoryPath: string | null;
-
-  /**
-   * The current focused / last clicked or last edited file (from editor) in the file explorer tree
-   */
-  fileExplorerActiveFileOrFolder: fileNode | null;
-
-  /**
-   * Represents whether a file or folder creator is active
-   */
-  isCreateFileOrFolderActive: boolean | null;
-
-  /**
-   * Indicates if it should refresh / reread nodes and update the current nodes with updated folder nodes -
-   * keeps expanded state and adds / removes children based on new state
-   */
-  refreshDirectory: boolean | null;
-
-  /**
-   * Indicates that the right-click context menu on a file explorer item should be displayed -
-   * think of this as simply a trigger you push values to, and the context menu will react when you want to display or hide it
-   */
-  displayFileExplorerContextMenu: boolean | null;
-
-  /**
-   * The node to process the context menu for — the trigger node the context menu was opened for
-   */
-  fileExplorerContextMenuFileNode: fileNode | null;
-
-  /**
-   * Set this before showing the context menu to indicate where it was clicked in the file explorer
-   */
-  fileExplorerContextMenuClickPosition: { x: number; y: number } | null;
-
-  /**
-   * List of open files in the editor to show in the open file tab bar
-   */
-  openFiles: fileNode[] | null;
-
-  /**
-   * The current file being displayed in the text file editor
-   */
-  currentOpenFileInEditor: fileNode | null;
-
-  /**
-   * Indicates if it should show the file editor bottom section, which contains the terminal, problems, etc.
-   */
-  displayFileEditorBottom: boolean | null;
-
-  /**
-   * The current active element in the file editor bottom container
-   */
-  fileEditorBottomActiveElement: fileEditorBottomActiveElement | null;
-
-  /**
-   * List of active shells
-   */
-  shells: shellInformation[] | null;
-
-  /**
-   * The current active shell to see output and input cmds in
-   */
-  currentActiveShellId: string | null;
-
-  /**
-   * Use a sub to listen when this is fired off - used when file explorer is resized or open file bottom is resized
-   */
-  isEditorResize: boolean | null;
-};
-
-export type SubCallBack = (ctx: AppContext) => void | Promise<void>;
-export type UnsubscribeFn = () => void;
 
 const LOCAL_STORAGE_KEY = 'app-context';
 
@@ -103,21 +20,15 @@ export class ContextService {
     selectedDirectoryPath: null,
     directoryFileNodes: null,
     fileExplorerActiveFileOrFolder: null,
-    isCreateFileOrFolderActive: null,
-    refreshDirectory: null,
-    displayFileExplorerContextMenu: null,
-    fileExplorerContextMenuFileNode: null,
-    fileExplorerContextMenuClickPosition: null,
     openFiles: null,
     currentOpenFileInEditor: null,
     displayFileEditorBottom: null,
     fileEditorBottomActiveElement: null,
     shells: null,
     currentActiveShellId: null,
-    isEditorResize:null
   };
 
-  private subscriptions = new Map<keyof AppContext, Set<SubCallBack>>();
+  private subscriptions = new Map<keyof AppContext, Set<AppContextCallback>>();
 
   constructor() {
     this.restoreState();
@@ -155,8 +66,8 @@ export class ContextService {
    */
   sub<K extends keyof AppContext>(
     key: K,
-    callback: SubCallBack
-  ): UnsubscribeFn {
+    callback: AppContextCallback
+  ): voidCallback {
     if (!this.subscriptions.has(key)) {
       this.subscriptions.set(key, new Set());
     }
@@ -172,7 +83,7 @@ export class ContextService {
    */
   autoSub<K extends keyof AppContext>(
     key: K,
-    callback: SubCallBack,
+    callback: AppContextCallback,
     destroyRef: DestroyRef
   ): void {
     const unsubscribe = this.sub(key, callback);

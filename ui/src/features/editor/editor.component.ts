@@ -1,5 +1,7 @@
 import { ResizerTwo } from 'umbr-resizer-two';
-import { sideBarActiveElement } from './../app-context/type';
+import {
+  sideBarActiveElement,
+} from './../app-context/type';
 import {
   afterNextRender,
   AfterViewInit,
@@ -15,7 +17,6 @@ import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
 import { ContextService } from '../app-context/app-context.service';
 import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
-import { FileExplorerContextMenuComponent } from '../file-explorer/file-explorer-context-menu/file-explorer-context-menu.component';
 import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
 import { getElectronApi } from '../../utils';
 import { SideSearchComponent } from '../side-search/side-search.component';
@@ -24,6 +25,8 @@ import { SideGitComponent } from '../side-git/side-git.component';
 import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
+import { ContextMenuComponent } from "../context-menu/context-menu.component";
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -31,15 +34,16 @@ type unSub = () => Promise<void>;
   imports: [
     TopBarComponent,
     SideBarComponent,
-    FileExplorerContextMenuComponent,
     OpenFileContainerComponent,
     NgComponentOutlet,
-  ],
+    ContextMenuComponent
+],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
 export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly appContext = inject(ContextService);
+  private readonly inMemoryContextService = inject(InMemoryContextService)
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly injector = inject(Injector);
@@ -127,7 +131,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   isLeftActive = false;
   sideBarActivateElement: sideBarActiveElement = null;
 
-  isFileExplorerContextMenuActive: boolean | null = null;
+  isContextMenuActive: boolean | null = null;
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
@@ -142,7 +146,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.unSub = await this.api.onDirectoryChange(
         init.selectedDirectoryPath,
         (_) => {
-          this.appContext.update('refreshDirectory', true);
+          this.inMemoryContextService.update('refreshDirectory', true);
         }
       );
     }
@@ -163,11 +167,10 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       this.destroyRef
     );
-    this.appContext.autoSub(
-      'displayFileExplorerContextMenu',
+    this.inMemoryContextService.autoSub(
+      'currentActiveContextMenu',
       (ctx) => {
-        this.isFileExplorerContextMenuActive =
-          ctx.displayFileExplorerContextMenu;
+        this.isContextMenuActive = ctx.currentActiveContextMenu != null;
       },
       this.destroyRef
     );
@@ -181,7 +184,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           this.unSub = await this.api.onDirectoryChange(
             ctx.selectedDirectoryPath,
             (_) => {
-              this.appContext.update('refreshDirectory', true);
+              this.inMemoryContextService.update('refreshDirectory', true);
             }
           );
         }
