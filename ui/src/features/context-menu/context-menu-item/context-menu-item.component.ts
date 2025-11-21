@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 export type ContextMenuItem = {
   label: string;
   icon: string | undefined;
-  disabled: boolean;
+  disabled: () => boolean;
   keybinding:string | undefined
   clicked: voidCallback
 };

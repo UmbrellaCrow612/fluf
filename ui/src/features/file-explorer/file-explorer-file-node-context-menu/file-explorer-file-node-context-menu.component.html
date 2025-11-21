@@ -3,7 +3,7 @@
   <app-context-menu-item
     [label]="item.label"
     [keybinding]="item.keybinding"
-    [disabled]="item.disabled"
+    [disabled]="item.disabled()"
     (clicked)="item.clicked()"
     [icon]="item.icon"
   ></app-context-menu-item>
