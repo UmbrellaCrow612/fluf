@@ -5,7 +5,7 @@ import {
   ContextMenuItemComponent,
 } from '../../context-menu/context-menu-item/context-menu-item.component';
 import { ContextService } from '../../app-context/app-context.service';
-import { createFileOrFolderNode } from '../work-tree';
+import { addFileOrFolderNode } from '../work-tree';
 
 @Component({
   selector: 'app-file-explorer-file-node-context-menu',
@@ -25,11 +25,36 @@ export class FileExplorerFileNodeContextMenuComponent {
     {
       label: 'New file',
       clicked: () => {
-        createFileOrFolderNode(
+        let nodes = this.appContext.getSnapshot().directoryFileNodes ?? [];
+        addFileOrFolderNode(
           this.snapshot.currentActiveContextMenu?.data as fileNode,
           'createFile',
-          this.appContext
+          nodes
         );
+        this.appContext.update('directoryFileNodes', nodes);
+        this.inMemoryContextService.update('isCreateFileOrFolderActive', true);
+        this.inMemoryContextService.update('currentActiveContextMenu', null);
+      },
+      disabled: () => {
+        return (
+          this.snapshot.isCreateFileOrFolderActive != null &&
+          this.snapshot.isCreateFileOrFolderActive
+        );
+      },
+      icon: undefined,
+      keybinding: undefined,
+    },
+
+    {
+      label: 'New folder',
+      clicked: () => {
+        let nodes = this.appContext.getSnapshot().directoryFileNodes ?? [];
+        addFileOrFolderNode(
+          this.snapshot.currentActiveContextMenu?.data as fileNode,
+          'createFolder',
+          nodes
+        );
+        this.appContext.update('directoryFileNodes', nodes);
         this.inMemoryContextService.update('isCreateFileOrFolderActive', true);
         this.inMemoryContextService.update('currentActiveContextMenu', null);
       },

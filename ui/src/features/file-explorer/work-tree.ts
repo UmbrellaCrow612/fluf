@@ -2,22 +2,25 @@
  * Contains all helppper for working with work tree nodes
  */
 
-import { ContextService } from '../app-context/app-context.service';
 import { getParentNode, pushChildrenToNode } from './utils';
 
 /**
- * Creates a file or folder create node into the gobal nodes
+ * Creates a file or folder create node into the nodes
  * @param node - The node to create it at
  * @param mode - The mode to create the node in
- * @param appCtx - The ctx service
+ * @param nodes - Nodes to add it to
  */
-export function createFileOrFolderNode(
+export function addFileOrFolderNode(
   node: fileNode,
   mode: fileNodeMode,
-  appCtx: ContextService
+  nodes: fileNode[]
 ) {
-  let nodes = appCtx.getSnapshot().directoryFileNodes ?? [];
   let nodePath = node.path;
+
+  if (!node.isDirectory) {
+    nodePath = node.parentPath;
+  }
+
   /** Node that creates a create file or folder node  */
   let newNode: fileNode = {
     children: [],
@@ -28,10 +31,6 @@ export function createFileOrFolderNode(
     parentPath: node.parentPath,
     path: nodePath,
   };
-
-  if (!node.isDirectory) {
-    nodePath = node.parentPath;
-  }
 
   if (node.isDirectory) {
     // Push under the directory
@@ -46,6 +45,4 @@ export function createFileOrFolderNode(
       nodes.push(newNode);
     }
   }
-
-  appCtx.update('directoryFileNodes', nodes);
 }

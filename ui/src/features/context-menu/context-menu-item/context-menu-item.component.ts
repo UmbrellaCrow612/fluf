@@ -1,14 +1,16 @@
 import { Component, input, model, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
+/**
+ * Represents a context menu item and all it's inputs to be passed to a component for a loop render of it
+ */
 export type ContextMenuItem = {
   label: string;
   icon: string | undefined;
   disabled: () => boolean;
-  keybinding:string | undefined
-  clicked: voidCallback
+  keybinding: string | undefined;
+  clicked: voidCallback;
 };
-
 
 @Component({
   selector: 'app-context-menu-item',
