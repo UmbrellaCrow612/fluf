@@ -5,7 +5,8 @@
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
-const { isPackaged } = require("./packing");
+const { isPackaged, binPath } = require("./packing");
+const { binmanResolve } = require("umbr-binman");
 
 /** @type {fsearchOptions} */
 const defaultSearchOptions = {
@@ -68,39 +69,6 @@ const parseStdout = (stdout) => {
   }
 
   return results;
-};
-
-/**
- * Get the exe path of fsearch binary based on the platform where running on
- * @returns {string | undefined}
- */
-const getExePath = () => {
-  const isPackagedManual = isPackaged();
-
-  let p;
-
-  if (isPackagedManual) {
-    // Packaged: use process.resourcesPath
-    p = path.join(
-      process.resourcesPath,
-      "bin",
-      "fsearch",
-      "windows",
-      "fsearch.exe"
-    );
-
-    // TODO: add other platforms
-  } else {
-    // Development: use __dirname
-    p = path.join(__dirname, "bin", "fsearch", "windows", "fsearch.exe");
-  }
-
-  if (!fs.existsSync(p)) {
-    console.error("Ripgrep path not found:", p);
-    return undefined;
-  }
-
-  return p;
 };
 
 /**
@@ -173,56 +141,66 @@ const buildArgs = (options) => {
  * @param {fsearchOptions} options
  * @returns {Promise<fsearchResult[]>}
  */
-const searchWithFSearch = (options) => {
+const searchWithFSearch = async (options) => {
+  const exePath = await binmanResolve("fsearch", "fsearch", binPath());
+  
+  if (!exePath) throw new Error("fsearch executable not found");
+  if (!fs.existsSync(options.directory))
+    throw new Error("Search path does not exist");
+
+  const args = buildArgs(options);
+
   return new Promise((resolve, reject) => {
-    try {
-      const exePath = getExePath();
-      if (!exePath) {
-        return reject(new Error(`Executable not found: ${exePath}`));
+    const child = spawn(exePath, args);
+
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+
+    function safeResolve(/** @type {any}*/ val) {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timeoutId);
+        resolve(val);
       }
-
-      const args = buildArgs(options);
-      const child = spawn(exePath, args);
-
-      let stdout = "";
-      let stderr = "";
-
-      child.stdout.on("data", (data) => {
-        stdout += data.toString();
-      });
-
-      child.stderr.on("data", (data) => {
-        stderr += data.toString();
-      });
-
-      const timeout = setTimeout(() => {
-        child.kill("SIGKILL");
-        reject(new Error("Search timed out after 5 seconds"));
-      }, 5000);
-
-      child.on("error", (err) => {
-        clearTimeout(timeout);
-        reject(err);
-      });
-
-      child.on("close", (code) => {
-        clearTimeout(timeout);
-
-        if (code !== 0) {
-          return reject(
-            new Error(
-              `fsearch exited with code ${code}. Error: ${
-                stderr || "No stderr"
-              }`
-            )
-          );
-        }
-
-        resolve(parseStdout(stdout));
-      });
-    } catch (error) {
-      reject(error);
     }
+
+    function safeReject(/** @type {any}*/ err) {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timeoutId);
+        reject(err);
+      }
+    }
+
+    const timeoutId = setTimeout(() => {
+      child.kill("SIGKILL");
+      safeReject(new Error("fsearch timeout exceeded (5s)"));
+    }, 5000);
+
+    child.stdout.on("data", (data) => (stdout += data.toString()));
+    child.stderr.on("data", (data) => (stderr += data.toString()));
+
+    child.on("error", (err) =>
+      safeReject(new Error(`Failed to spawn fsearch: ${err.message}`))
+    );
+
+    child.on("close", (code) => {
+      if (code === 0) {
+        try {
+          const results = parseStdout(stdout);
+          safeResolve(results);
+        } catch (err) {
+          safeReject(err);
+        }
+      } else {
+        safeReject(
+          new Error(
+            `fsearch exited with code ${code}: ${stderr || "No stderr"}`
+          )
+        );
+      }
+    });
   });
 };
 
