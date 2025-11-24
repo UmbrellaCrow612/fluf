@@ -5,33 +5,8 @@
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
-const { isPackaged } = require("./packing");
-
-/**
- * Returns the path to the exe in dev or prod
- */
-function getRipGrepPath() {
-  const isPackagedManual = isPackaged()
-
-  let p;
-
-  if (isPackagedManual) {
-    // Packaged: use process.resourcesPath
-    p = path.join(process.resourcesPath, "bin", "ripgrep", "windows", "rg.exe");
-  } else {
-    // Development: use __dirname
-    p = path.join(__dirname, "bin", "ripgrep", "windows", "rg.exe");
-  }
-
-  console.log("Using ripgrep path:", p);
-
-  if (!fs.existsSync(p)) {
-    console.error("Ripgrep path not found:", p);
-    return undefined;
-  }
-
-  return p;
-}
+const { binmanResolve } = require("umbr-binman");
+const { binPath } = require("./packing");
 
 /**
  * Parses ripgrep --vimgrep stdout and converts it to structured objects
@@ -151,39 +126,39 @@ function buildRipgrepArgs(options) {
  * @param {ripgrepArgsOptions} options
  * @returns {Promise<ripGrepResult[]>}
  */
-function searchWithRipGrep(options) {
+async function searchWithRipGrep(options) {
+  const ripGrepPath = await binmanResolve("ripgrep", "rg", binPath());
+
+  if (!ripGrepPath) throw new Error("Ripgrep path is undefined");
+  if (!fs.existsSync(options.searchPath))
+    throw new Error("Search path does not exist");
+
+  const args = buildRipgrepArgs(options);
+
   return new Promise((resolve, reject) => {
-    const ripGrepPath = getRipGrepPath();
-
-    if (!ripGrepPath) return reject(new Error("Ripgrep path is undefined"));
-    if (!fs.existsSync(options.searchPath))
-      return reject(new Error("Search path does not exist"));
-
-    let args = buildRipgrepArgs(options);
-
     const ripGrep = spawn(ripGrepPath, args);
 
     let stdout = "";
     let stderr = "";
     let settled = false;
 
-    function safeResolve(/** @type {ripGrepResult[]}*/ val) {
+    function safeResolve(/** @type {any}*/ val) {
       if (!settled) {
         settled = true;
-        clearTimeout(timeOutId);
+        clearTimeout(timeoutId);
         resolve(val);
       }
     }
 
-    function safeReject(/** @type {Error}*/ err) {
+    function safeReject(/** @type {any}*/ err) {
       if (!settled) {
         settled = true;
-        clearTimeout(timeOutId);
+        clearTimeout(timeoutId);
         reject(err);
       }
     }
 
-    const timeOutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       ripGrep.kill();
       safeReject(new Error("Ripgrep timeout exceeded"));
     }, 30000);
@@ -195,7 +170,7 @@ function searchWithRipGrep(options) {
 
     ripGrep.on("close", (code) => {
       if (code === 0 || code === 1) {
-        let data = parseRipgrepOutput(stdout, options.searchTerm);
+        const data = parseRipgrepOutput(stdout, options.searchTerm);
         safeResolve(data);
       } else {
         safeReject(new Error(`Ripgrep exited with code ${code}: ${stderr}`));
