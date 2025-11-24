@@ -21,6 +21,6 @@
     "esbuild": "^0.25.10",
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
-    "umbr-binman": "^1.0.10"
+    "umbr-binman": "^1.0.12"
   }
 }
