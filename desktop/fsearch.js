@@ -2,10 +2,9 @@
  * Contains all the code to interact with fsearch
  */
 
-const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
-const { isPackaged, binPath } = require("./packing");
+const { binPath } = require("./packing");
 const { binmanResolve } = require("umbr-binman");
 
 /** @type {fsearchOptions} */
@@ -143,7 +142,7 @@ const buildArgs = (options) => {
  */
 const searchWithFSearch = async (options) => {
   const exePath = await binmanResolve("fsearch", "fsearch", binPath());
-  
+
   if (!exePath) throw new Error("fsearch executable not found");
   if (!fs.existsSync(options.directory))
     throw new Error("Search path does not exist");
