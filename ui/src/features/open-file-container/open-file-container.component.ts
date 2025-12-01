@@ -6,20 +6,22 @@ import {
   inject,
   Injector,
   OnInit,
+  Type,
 } from '@angular/core';
 import { OpenFileContainerTabsComponent } from './open-file-container-tabs/open-file-container-tabs.component';
-import { OpenFileEditorComponent } from './open-file-editor/open-file-editor.component';
+import { TextFileEditorComponent } from './text-file-editor/text-file-editor.component';
 import { ContextService } from '../app-context/app-context.service';
 import { OpenFileContainerBottomComponent } from './open-file-container-bottom/open-file-container-bottom.component';
 import { HotKey, HotKeyService } from '../hotkeys/hot-key.service';
 import ResizerTwo from 'umbr-resizer-two';
+import { NgComponentOutlet } from '@angular/common';
 
 @Component({
   selector: 'app-open-file-container',
   imports: [
     OpenFileContainerTabsComponent,
-    OpenFileEditorComponent,
     OpenFileContainerBottomComponent,
+    NgComponentOutlet,
   ],
   templateUrl: './open-file-container.component.html',
   styleUrl: './open-file-container.component.css',
@@ -29,6 +31,22 @@ export class OpenFileContainerComponent implements OnInit, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly hotKeyService = inject(HotKeyService);
   private readonly injector = inject(Injector);
+  private openFileNode: fileNode | null = null;
+
+  /**
+   * List of components that can be rendered in the main area such as the file editor or other comppponents
+   */
+  componentList: { component: Type<any>; condition: () => boolean }[] = [
+    {
+      component: TextFileEditorComponent,
+      condition: () => {
+        return (
+          this.openFileNode != null &&
+          this.openFileNode.extension.length > 0
+        );
+      },
+    },
+  ];
 
   private resizer = new ResizerTwo({
     direction: 'vertical',
@@ -44,12 +62,8 @@ export class OpenFileContainerComponent implements OnInit, AfterViewInit {
     callback: (ctx) => {
       if (!ctx.displayFileEditorBottom) {
         this.appContext.update('displayFileEditorBottom', true);
-        this.fileEditorContainerFlex = 1;
-        this.bottomFlex = 1;
       } else {
         this.appContext.update('displayFileEditorBottom', false);
-        this.fileEditorContainerFlex = 1;
-        this.bottomFlex = 1;
       }
     },
     keys: ['Control', 'j'],
@@ -57,10 +71,6 @@ export class OpenFileContainerComponent implements OnInit, AfterViewInit {
 
   showTabBar = false;
   showBottom = false;
-
-  fileEditorContainerFlex = 1;
-  bottomFlex = 1;
-  minFlex = 0.4;
 
   ngOnInit(): void {
     let init = this.appContext.getSnapshot();
@@ -70,6 +80,7 @@ export class OpenFileContainerComponent implements OnInit, AfterViewInit {
     this.showBottom = init.displayFileEditorBottom
       ? init.displayFileEditorBottom
       : false;
+    this.openFileNode = init.currentOpenFileInEditor
 
     this.hotKeyService.autoSub(this.openBottomHotKey, this.destroyRef);
 
@@ -100,6 +111,9 @@ export class OpenFileContainerComponent implements OnInit, AfterViewInit {
       },
       this.destroyRef
     );
+    this.appContext.autoSub("currentOpenFileInEditor", (ctx) => {
+      this.openFileNode = ctx.currentOpenFileInEditor
+    }, this.destroyRef)
   }
 
   ngAfterViewInit(): void {

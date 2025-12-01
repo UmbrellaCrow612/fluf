@@ -14,6 +14,7 @@ import {
   appendChildrenToNode,
   collapseNodeByPath,
   expandNodeByPath,
+  getExtension,
   getFileExtension,
   removeCreateNodes,
 } from '../utils';
@@ -143,18 +144,18 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
   /**
    * Runs when right click ran on a specific item
    */
- onRightClick(event: MouseEvent) {
-  event.preventDefault();
+  onRightClick(event: MouseEvent) {
+    event.preventDefault();
 
-  this.inMemoryContextService.update('currentActiveContextMenu', {
-    data: this.fileNode(),
-    key: 'file-explorer-file-node-context-menu',
-    pos: {
-      mouseX: event.clientX,
-      mouseY: event.clientY
-    },
-  });
-}
+    this.inMemoryContextService.update('currentActiveContextMenu', {
+      data: this.fileNode(),
+      key: 'file-explorer-file-node-context-menu',
+      pos: {
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+      },
+    });
+  }
 
   async createFileOrFolder(e: Event) {
     e.preventDefault();
@@ -194,6 +195,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
             name: value!,
             path: newPath,
             parentPath: '',
+            extension: getExtension(value) ?? '',
           });
         } else {
           inputEl?.setCustomValidity('File creation operation failed');
@@ -226,6 +228,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
             name: value!,
             path: newPath,
             parentPath: '',
+            extension: getExtension(value) ?? '',
           });
         } else {
           inputEl?.setCustomValidity('Folder creation operation failed');

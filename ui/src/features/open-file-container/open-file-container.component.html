@@ -5,7 +5,16 @@
   <!---->
 
   <div id="open_file_container_resize_wrapper" class="wrapper">
-    <app-open-file-editor />
+    @for (component of componentList; track $index) {
+
+    <!---->
+    @if (component.condition()) {
+    <ng-container *ngComponentOutlet="component.component" />
+    }
+    <!---->
+    }
+
+    <!---->
     @if (showBottom) {
     <app-open-file-container-bottom />
     }

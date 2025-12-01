@@ -47,12 +47,15 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly injector = inject(Injector);
-  private addedResizer = false;
 
+  private addedResizer = false;
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
-
   private selectedDir = this.appContext.getSnapshot().selectedDirectoryPath;
+
+  /** Indicates if there is a file node open i.e a file is open */
+   isOpenFileNode : boolean = false;
+
   /**
    * List of all components that can be rendered in the side bar
    */
@@ -139,6 +142,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     // set stored state
     this.isLeftActive = init.sideBarActiveElement != null;
     this.sideBarActivateElement = init.sideBarActiveElement;
+    this.isOpenFileNode = init.currentOpenFileInEditor != null
 
     // if dir selected watch it
     if (init.selectedDirectoryPath) {
@@ -191,6 +195,9 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       this.destroyRef
     );
+    this.appContext.autoSub("currentOpenFileInEditor", (ctx) => {
+      this.isOpenFileNode = ctx.currentOpenFileInEditor != null
+    }, this.destroyRef)
   }
 
   ngAfterViewInit(): void {

@@ -12,12 +12,12 @@ import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 
 @Component({
-  selector: 'app-open-file-editor',
+  selector: 'app-text-file-editor',
   imports: [],
-  templateUrl: './open-file-editor.component.html',
-  styleUrl: './open-file-editor.component.css',
+  templateUrl: './text-file-editor.component.html',
+  styleUrl: './text-file-editor.component.css',
 })
-export class OpenFileEditorComponent implements OnInit {
+export class TextFileEditorComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();

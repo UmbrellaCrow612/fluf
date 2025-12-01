@@ -116,6 +116,7 @@ export class FileExplorerComponent implements OnInit {
       parentPath: '',
       name: 'Root',
       mode: 'default',
+      extension: ""
     });
     this.appContext.update('directoryFileNodes', ctx.directoryFileNodes);
   }
@@ -144,6 +145,7 @@ export class FileExplorerComponent implements OnInit {
         parentPath: '',
         name: 'Root',
         mode: 'default',
+        extension: ""
       });
     }
   }
@@ -182,6 +184,7 @@ export class FileExplorerComponent implements OnInit {
       path: activeNode.path,
       parentPath: activeNode.parentPath,
       mode: mode,
+      extension: ""
     };
 
     if (isRootActive) {

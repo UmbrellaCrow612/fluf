@@ -30,7 +30,7 @@ type fileNode = {
      */
     isDirectory: boolean;
     /**
-     * - Children of the node
+     * - Children of the node by default is empty
      */
     children: Array<fileNode>;
     /**
@@ -41,6 +41,10 @@ type fileNode = {
      * - Indicates the mode of the editor to either create a file or folder
      */
     mode: fileNodeMode;
+    /**
+     * - The file extension of the node, if it doesn't have one it will be empty
+     */
+    extension: string;
 };
 /**
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means

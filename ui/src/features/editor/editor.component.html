@@ -16,7 +16,11 @@
       </div>
       }
       <div class="right">
+        @if (isOpenFileNode) {
         <app-open-file-container />
+        } @else {
+        <div>Fluffy mnain page</div>
+        }
       </div>
     </div>
   </div>
