@@ -25,12 +25,12 @@ import { SelectDirectoryComponent } from '../file-explorer/select-directory/sele
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import { OpenFileContainerTabsComponent } from '../open-file-container/open-file-container-tabs/open-file-container-tabs.component';
-import { OpenFileContainerBottomComponent } from '../open-file-container/open-file-container-bottom/open-file-container-bottom.component';
-import { TextFileEditorComponent } from '../open-file-container/text-file-editor/text-file-editor.component';
 import Resizer from 'umbr-resizer-two';
 import { HotKeyService } from '../hotkeys/hot-key.service';
 import { EditorHomePageComponent } from './editor-home-page/editor-home-page.component';
+import { OpenFileContainerTabsComponent } from '../open-files/open-file-container-tabs/open-file-container-tabs.component';
+import { OpenFileContainerBottomComponent } from '../open-files/open-file-container-bottom/open-file-container-bottom.component';
+import { TextFileEditorComponent } from '../open-files/text-file-editor/text-file-editor.component';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -132,6 +132,13 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       },
     },
   ];
+
+  /**
+   * Gets the side bar element to render
+   */
+  get sideBarElementCompo(): Type<any> | undefined {
+    return this.sideBarElements.find((x) => x.condition())?.component;
+  }
 
   /**
    * List of components that will be rendered as the main compponent

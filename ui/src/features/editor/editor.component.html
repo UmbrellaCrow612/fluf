@@ -6,13 +6,11 @@
     <div class="side" id="editor_resize_container">
       @if (isLeftActive) {
       <div class="left">
-        @for (element of sideBarElements; track $index) {
         <!---->
-        @if (element.condition()) {
-        <ng-container *ngComponentOutlet="element.component" />
+        @if (sideBarElementCompo) {
+        <ng-container *ngComponentOutlet="sideBarElementCompo" />
         }
         <!---->
-        }
       </div>
       }
       <div class="right">
