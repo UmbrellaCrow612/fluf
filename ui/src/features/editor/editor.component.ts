@@ -1,9 +1,8 @@
-import { ResizerTwo } from 'umbr-resizer-two';
 import {
   sideBarActiveElement,
+  editorMainActiveElement,
 } from './../app-context/type';
 import {
-  afterNextRender,
   AfterViewInit,
   Component,
   DestroyRef,
@@ -17,7 +16,6 @@ import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
 import { ContextService } from '../app-context/app-context.service';
 import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
-import { OpenFileContainerComponent } from '../open-file-container/open-file-container.component';
 import { getElectronApi } from '../../utils';
 import { SideSearchComponent } from '../side-search/side-search.component';
 import { SideFolderSearchComponent } from '../side-folder-search/side-folder-search.component';
@@ -25,8 +23,14 @@ import { SideGitComponent } from '../side-git/side-git.component';
 import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
-import { ContextMenuComponent } from "../context-menu/context-menu.component";
+import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { OpenFileContainerTabsComponent } from '../open-file-container/open-file-container-tabs/open-file-container-tabs.component';
+import { OpenFileContainerBottomComponent } from '../open-file-container/open-file-container-bottom/open-file-container-bottom.component';
+import { TextFileEditorComponent } from '../open-file-container/text-file-editor/text-file-editor.component';
+import Resizer from 'umbr-resizer-two';
+import { HotKeyService } from '../hotkeys/hot-key.service';
+import { EditorHomePageComponent } from './editor-home-page/editor-home-page.component';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -34,27 +38,35 @@ type unSub = () => Promise<void>;
   imports: [
     TopBarComponent,
     SideBarComponent,
-    OpenFileContainerComponent,
     NgComponentOutlet,
-    ContextMenuComponent
-],
+    ContextMenuComponent,
+    OpenFileContainerTabsComponent,
+    OpenFileContainerBottomComponent,
+  ],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
 export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly appContext = inject(ContextService);
-  private readonly inMemoryContextService = inject(InMemoryContextService)
+  private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
-  private readonly injector = inject(Injector);
+  private readonly keyService = inject(HotKeyService);
 
-  private addedResizer = false;
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
   private selectedDir = this.appContext.getSnapshot().selectedDirectoryPath;
+  private mainEditorActiveElement: editorMainActiveElement | null = null;
 
-  /** Indicates if there is a file node open i.e a file is open */
-   isOpenFileNode : boolean = false;
+  /**
+   * Used to indicate if it should show bottom which contains terminal etc
+   */
+  showBottom = false;
+
+  /**
+   * Indicates if it should show the tabs of open file component
+   */
+  showOpenFileTabs = false;
 
   /**
    * List of all components that can be rendered in the side bar
@@ -121,11 +133,40 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   ];
 
-  private resizer = new ResizerTwo({
+  /**
+   * List of components that will be rendered as the main compponent
+   */
+  mainComponents: { component: Type<any>; codition: () => boolean }[] = [
+    {
+      codition: () => {
+        return this.mainEditorActiveElement == 'text-file-editor';
+      },
+      component: TextFileEditorComponent,
+    },
+  ];
+
+  get mainCompToRender(): Type<any> {
+    return (
+      this.mainComponents.find((x) => x.codition())?.component ??
+      EditorHomePageComponent
+    );
+  }
+
+  private resizer = new Resizer({
     direction: 'horizontal',
     minFlex: 0.2,
     handleStyles: {
       width: '6px',
+      background: 'linear-gradient(to bottom,rgb(19, 18, 18),rgb(20, 20, 20))',
+      boxShadow: 'inset 0 0 2px #000, 0 0 4px rgba(0,0,0,0.4)',
+    },
+  });
+
+  private mainResizer = new Resizer({
+    direction: 'vertical',
+    minFlex: 0.2,
+    handleStyles: {
+      height: '6px',
       background: 'linear-gradient(to bottom,rgb(19, 18, 18),rgb(20, 20, 20))',
       boxShadow: 'inset 0 0 2px #000, 0 0 4px rgba(0,0,0,0.4)',
     },
@@ -142,7 +183,10 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     // set stored state
     this.isLeftActive = init.sideBarActiveElement != null;
     this.sideBarActivateElement = init.sideBarActiveElement;
-    this.isOpenFileNode = init.currentOpenFileInEditor != null
+    this.showOpenFileTabs =
+      init.openFiles && init.openFiles.length > 0 ? true : false;
+    this.showBottom = init.displayFileEditorBottom ? true : false;
+    this.mainEditorActiveElement = init.editorMainActiveElement;
 
     // if dir selected watch it
     if (init.selectedDirectoryPath) {
@@ -156,18 +200,45 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     // subs
+    this.keyService.autoSub(
+      {
+        callback: (ctx) => {
+          this.appContext.update(
+            'displayFileEditorBottom',
+            !ctx.displayFileEditorBottom
+          );
+        },
+        keys: ['Control', 'j'],
+      },
+      this.destroyRef
+    );
+    this.appContext.autoSub(
+      'editorMainActiveElement',
+      (ctx) => {
+        this.mainEditorActiveElement = ctx.editorMainActiveElement;
+      },
+      this.destroyRef
+    );
+    this.appContext.autoSub(
+      'openFiles',
+      (ctx) => {
+        this.showOpenFileTabs =
+          ctx.openFiles && ctx.openFiles.length > 0 ? true : false;
+      },
+      this.destroyRef
+    );
+    this.appContext.autoSub(
+      'displayFileEditorBottom',
+      (ctx) => {
+        this.showBottom = ctx.displayFileEditorBottom ? true : false;
+      },
+      this.destroyRef
+    );
     this.appContext.autoSub(
       'sideBarActiveElement',
       (ctx) => {
         this.isLeftActive = ctx.sideBarActiveElement != null;
         this.sideBarActivateElement = ctx.sideBarActiveElement;
-
-        afterNextRender(
-          () => {
-            this.updateResizer();
-          },
-          { injector: this.injector }
-        );
       },
       this.destroyRef
     );
@@ -195,39 +266,18 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       this.destroyRef
     );
-    this.appContext.autoSub("currentOpenFileInEditor", (ctx) => {
-      this.isOpenFileNode = ctx.currentOpenFileInEditor != null
-    }, this.destroyRef)
   }
 
   ngAfterViewInit(): void {
-    this.updateResizer();
-  }
-
-  private updateResizer(): void {
-    const target = document.getElementById('editor_resize_container');
-
-    if (!target) {
-      console.error('Could not find editor_resize_container');
-      return;
-    }
-
-    if (this.addedResizer) {
-      this.resizer.remove();
-    }
-
-    if (this.isLeftActive) {
-      this.resizer.add(target);
-      this.addedResizer = true;
-    } else {
-      this.resizer.remove();
-      this.addedResizer = false;
-    }
+    this.resizer.observe(
+      document.getElementById('editor_resize_container') as HTMLDivElement
+    );
+    this.mainResizer.observe(
+      document.getElementById('main_resize_container') as HTMLDivElement
+    );
   }
 
   async ngOnDestroy() {
-    this.resizer.remove();
-
     if (this.unSub) {
       await this.unSub();
     }

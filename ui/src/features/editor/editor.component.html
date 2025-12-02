@@ -16,11 +16,18 @@
       </div>
       }
       <div class="right">
-        @if (isOpenFileNode) {
-        <app-open-file-container />
-        } @else {
-        <div>Fluffy mnain page</div>
+        @if (showOpenFileTabs) {
+        <app-open-file-container-tabs />
         }
+        <div class="main_wrappper" id="main_resize_container">
+          <div class="ng_container_wrapper">
+            <ng-container *ngComponentOutlet="mainCompToRender" />
+          </div>
+          <!---->
+          @if (showBottom) {
+          <app-open-file-container-bottom />
+          }
+        </div>
       </div>
     </div>
   </div>

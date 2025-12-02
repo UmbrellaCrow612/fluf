@@ -50,6 +50,7 @@ export class FileTabItemComponent implements OnInit {
         this.appContext.update('currentOpenFileInEditor', files[0]);
       } else {
         this.appContext.update('currentOpenFileInEditor', null);
+        this.appContext.update("editorMainActiveElement", null)
       }
     }
   }

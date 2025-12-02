@@ -22,6 +22,11 @@ export type fileEditorBottomActiveElement =
   | 'problems';
 
 /**
+ * All the components it can render in the middle of the text editor
+ */
+export type editorMainActiveElement = 'text-file-editor';
+
+/**
  * Contains all the context menus that can be activated
  */
 export type contextMenuActiveElement =
@@ -80,6 +85,11 @@ export type AppContext = {
    * The current active shell to see output and input cmds in
    */
   currentActiveShellId: string | null;
+
+  /**
+   * Represents the main component to render in the middle of the text editor such as the file text editor or other components
+   */
+  editorMainActiveElement: editorMainActiveElement | null;
 };
 
 /**

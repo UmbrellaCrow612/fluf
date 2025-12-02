@@ -107,6 +107,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
 
       this.appContext.update('openFiles', files);
       this.appContext.update('currentOpenFileInEditor', this.fileNode());
+      this.appContext.update('editorMainActiveElement', 'text-file-editor'); // todo change it based on what the file node is
       return;
     }
 

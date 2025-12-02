@@ -26,6 +26,7 @@ export class ContextService {
     fileEditorBottomActiveElement: null,
     shells: null,
     currentActiveShellId: null,
+    editorMainActiveElement: null
   };
 
   private subscriptions = new Map<keyof AppContext, Set<AppContextCallback>>();
