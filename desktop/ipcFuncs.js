@@ -26,6 +26,20 @@ const readFileImpl = async (_event = undefined, filePath) => {
 };
 
 /**
+ * Gets the extension from a filename.
+ * @param {string} filename
+ * @returns {string|null} The extension without the dot, or null if none.
+ */
+function getExtension(filename) {
+  if (typeof filename !== "string") return null;
+
+  const lastDot = filename.lastIndexOf(".");
+  if (lastDot === -1 || lastDot === filename.length - 1) return null;
+
+  return filename.slice(lastDot + 1).toLowerCase();
+}
+
+/**
  * @type {readDir}
  */
 const readDirImpl = async (_event = undefined, directoryPath) => {
@@ -41,6 +55,7 @@ const readDirImpl = async (_event = undefined, directoryPath) => {
     expanded: false,
     parentPath: directoryPath,
     mode: "default",
+    extension: getExtension(item.name) ?? "",
   }));
 
   // Sort: folders first, then files — both alphabetically

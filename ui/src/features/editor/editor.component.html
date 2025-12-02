@@ -6,17 +6,26 @@
     <div class="side" id="editor_resize_container">
       @if (isLeftActive) {
       <div class="left">
-        @for (element of sideBarElements; track $index) {
         <!---->
-        @if (element.condition()) {
-        <ng-container *ngComponentOutlet="element.component" />
+        @if (sideBarElementCompo) {
+        <ng-container *ngComponentOutlet="sideBarElementCompo" />
         }
         <!---->
-        }
       </div>
       }
       <div class="right">
-        <app-open-file-container />
+        @if (showOpenFileTabs) {
+        <app-open-file-container-tabs />
+        }
+        <div class="main_wrappper" id="main_resize_container">
+          <div class="ng_container_wrapper">
+            <ng-container *ngComponentOutlet="mainCompToRender" />
+          </div>
+          <!---->
+          @if (showBottom) {
+          <app-open-file-container-bottom />
+          }
+        </div>
       </div>
     </div>
   </div>

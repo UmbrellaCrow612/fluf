@@ -26,9 +26,10 @@
  * @property {string} path - The file path to the file or folder
  * @property {string} parentPath - The path to the parent folder contaning said file or folder
  * @property {boolean} isDirectory - If the given node is a directory
- * @property {Array<fileNode>} children - Children of the node
+ * @property {Array<fileNode>} children - Children of the node by default is empty
  * @property {boolean} expanded - Indicates if the node has been expanded
  * @property {fileNodeMode} mode - Indicates the mode of the editor to either create a file or folder
+ * @property {string} extension - The file extension of the node, if it doesn't have one it will be empty
  */
 
 /**
@@ -437,12 +438,22 @@
  * @returns {Promise<fsearchResult[]>}
  */
 
+
+/**
+ * Read the contents of a image file and get base 64 string back
+ * @callback readImage 
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} filePath - the path to the image file to read
+ * @returns {Promise<string | undefined>} Base64 string of the image or undefined if either it does not exist or failed
+ */
+
 /**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
  * @property {readFile} readFile - Reads the contents of a file.
  * @property {readDir} readDir - Reads the contents of a directory.
+ * @property {readImage} readImage - Read a image file and get base 64 string back
  * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
  * @property {exists} exists - Check if a file or folder exists
  * @property {minimize} minimize - Minimizes the screen window

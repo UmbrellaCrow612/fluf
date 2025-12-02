@@ -42,4 +42,20 @@
   flex: 1; /* Changed via resizer */
 
   display: flex;
+  flex-direction: column;
+}
+
+.main_wrappper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.ng_container_wrapper {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
 }

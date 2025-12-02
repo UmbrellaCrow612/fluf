@@ -1,0 +1,62 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Container styled like VS Code welcome screen */
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #1e1e1e; /* VSCode Dark */
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+/* Gradient animated heading */
+.title {
+  font-weight: 900;
+  margin: 0;
+
+  /* Auto-scale text so it fits container */
+  font-size: clamp(3rem, 15vw, 12rem);
+
+  background: linear-gradient(
+    90deg,
+    #ff6ec4,
+    #7873f5,
+    #4ade80,
+    #facc15,
+    #fb923c
+  );
+  background-size: 500%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 6s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0%;
+  }
+  50% {
+    background-position: 100%;
+  }
+  100% {
+    background-position: 0%;
+  }
+}
+
+/* Subtitle styling */
+.subtitle {
+  margin-top: 1rem;
+  color: #cccccc;
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  opacity: 0.75;
+}

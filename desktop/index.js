@@ -25,6 +25,7 @@ const {
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
+const { registerFsListeners } = require("./fs");
 
 loadEnv();
 
@@ -85,6 +86,7 @@ app.whenReady().then(() => {
 
   registerGitListeners(ipcMain);
   registerFsearchListeners(ipcMain)
+  registerFsListeners(ipcMain)
 
   createWindow();
 });

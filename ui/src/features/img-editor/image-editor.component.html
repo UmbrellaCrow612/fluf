@@ -1,0 +1,17 @@
+@if (isLoading) {
+<div>Loading</div>
+}
+
+<!---->
+@if (!isLoading && error) {
+<div>Error occured rendering image {{ error }}</div>
+}
+
+<!---->
+
+@if (!isLoading && !error) {
+<div class="image-wrapper">
+  <img [src]="imageSrc" class="image" />
+</div>
+
+}

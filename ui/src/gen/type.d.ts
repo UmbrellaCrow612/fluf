@@ -30,7 +30,7 @@ type fileNode = {
      */
     isDirectory: boolean;
     /**
-     * - Children of the node
+     * - Children of the node by default is empty
      */
     children: Array<fileNode>;
     /**
@@ -41,6 +41,10 @@ type fileNode = {
      * - Indicates the mode of the editor to either create a file or folder
      */
     mode: fileNodeMode;
+    /**
+     * - The file extension of the node, if it doesn't have one it will be empty
+     */
+    extension: string;
 };
 /**
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
@@ -491,6 +495,10 @@ type fsearchOptions = {
  */
 type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearchOptions) => Promise<fsearchResult[]>;
 /**
+ * Read the contents of a image file and get base 64 string back
+ */
+type readImage = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string | undefined>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -502,6 +510,10 @@ type ElectronApi = {
      * - Reads the contents of a directory.
      */
     readDir: readDir;
+    /**
+     * - Read a image file and get base 64 string back
+     */
+    readImage: readImage;
     /**
      * - Opens a dialog and allows the user to choose a folder to select
      */
