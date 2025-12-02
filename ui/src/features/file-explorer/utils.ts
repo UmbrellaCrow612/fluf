@@ -34,15 +34,14 @@ export function getFileExtension(path: string): SupportedFileExtensions {
  * @param {string} filename
  * @returns {string|null} The extension without the dot, or null if none.
  */
-export function getExtension(filename:string) {
-  if (typeof filename !== "string") return null;
+export function getExtension(filename: string) {
+  if (typeof filename !== 'string') return null;
 
-  const lastDot = filename.lastIndexOf(".");
+  const lastDot = filename.lastIndexOf('.');
   if (lastDot === -1 || lastDot === filename.length - 1) return null;
 
   return filename.slice(lastDot + 1).toLowerCase();
 }
-
 
 /**
  * List of supported file extenions

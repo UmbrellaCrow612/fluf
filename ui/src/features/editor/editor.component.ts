@@ -31,6 +31,7 @@ import { EditorHomePageComponent } from './editor-home-page/editor-home-page.com
 import { OpenFileContainerTabsComponent } from '../open-files/open-file-container-tabs/open-file-container-tabs.component';
 import { OpenFileContainerBottomComponent } from '../open-files/open-file-container-bottom/open-file-container-bottom.component';
 import { TextFileEditorComponent } from '../open-files/text-file-editor/text-file-editor.component';
+import { ImageEditorComponent } from '../img-editor/image-editor.component';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -149,6 +150,12 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
         return this.mainEditorActiveElement == 'text-file-editor';
       },
       component: TextFileEditorComponent,
+    },
+    {
+      component: ImageEditorComponent,
+      codition: () => {
+        return this.mainEditorActiveElement == 'image-editor';
+      },
     },
   ];
 

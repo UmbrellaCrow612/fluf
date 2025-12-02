@@ -24,7 +24,7 @@ export type fileEditorBottomActiveElement =
 /**
  * All the components it can render in the middle of the text editor
  */
-export type editorMainActiveElement = 'text-file-editor';
+export type editorMainActiveElement = 'text-file-editor' | "image-editor";
 
 /**
  * Contains all the context menus that can be activated

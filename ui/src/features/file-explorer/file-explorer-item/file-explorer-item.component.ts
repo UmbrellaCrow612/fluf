@@ -21,6 +21,7 @@ import {
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
+import { hasImageExtension } from '../../img-editor/utils';
 
 @Component({
   selector: 'app-file-explorer-item',
@@ -107,7 +108,13 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
 
       this.appContext.update('openFiles', files);
       this.appContext.update('currentOpenFileInEditor', this.fileNode());
-      this.appContext.update('editorMainActiveElement', 'text-file-editor'); // todo change it based on what the file node is
+
+      let isImg = hasImageExtension(this.fileNode().extension); // todo add others as needed
+      if (isImg) {
+        this.appContext.update('editorMainActiveElement', 'image-editor');
+      } else {
+        this.appContext.update('editorMainActiveElement', 'text-file-editor');
+      }
       return;
     }
 
