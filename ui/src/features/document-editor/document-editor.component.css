@@ -1,0 +1,13 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}

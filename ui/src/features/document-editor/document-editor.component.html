@@ -1,1 +1,17 @@
-<p>document-editor works!</p>
+@if (error) {
+<div>Error: {{ error }}</div>
+}
+
+<!---->
+
+@if (!error && isLoading) {
+<div>loading</div>
+}
+
+<!---->
+
+@if (!isLoading && !error) {
+<div class="container">
+
+</div>
+}
