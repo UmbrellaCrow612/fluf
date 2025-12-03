@@ -7,7 +7,6 @@ import {
   Component,
   DestroyRef,
   inject,
-  Injector,
   OnDestroy,
   OnInit,
   Type,
@@ -32,6 +31,7 @@ import { OpenFileContainerTabsComponent } from '../open-files/open-file-containe
 import { OpenFileContainerBottomComponent } from '../open-files/open-file-container-bottom/open-file-container-bottom.component';
 import { TextFileEditorComponent } from '../open-files/text-file-editor/text-file-editor.component';
 import { ImageEditorComponent } from '../img-editor/image-editor.component';
+import { DocumentEditorComponent } from '../document-editor/document-editor.component';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -155,6 +155,12 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       component: ImageEditorComponent,
       codition: () => {
         return this.mainEditorActiveElement == 'image-editor';
+      },
+    },
+    {
+      component: DocumentEditorComponent,
+      codition: () => {
+        return this.mainEditorActiveElement == 'document-editor';
       },
     },
   ];
