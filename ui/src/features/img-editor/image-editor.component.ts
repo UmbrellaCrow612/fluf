@@ -81,7 +81,7 @@ export class ImageEditorComponent implements OnInit {
     event.preventDefault();
 
     this.inMemoryContextService.update('currentActiveContextMenu', {
-      data: this.base64 ?? null,
+      data: this.currentActiveFileNode,
       key: 'image-editor-img-context-menu',
       pos: {
         mouseX: event.clientX,

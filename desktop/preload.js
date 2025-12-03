@@ -101,6 +101,8 @@ const api = {
   fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
 
   gitApi,
+
+  writeImageToClipboard: (_event, fp) => ipcRenderer.invoke("clipboard:write:image", fp)
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

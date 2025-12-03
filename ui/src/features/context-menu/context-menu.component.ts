@@ -11,6 +11,7 @@ import {
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { NgComponentOutlet } from '@angular/common';
 import { FileExplorerFileNodeContextMenuComponent } from '../file-explorer/file-explorer-file-node-context-menu/file-explorer-file-node-context-menu.component';
+import { ImageEditorContextMenuComponent } from '../img-editor/image-editor-context-menu/image-editor-context-menu.component';
 
 @Component({
   selector: 'app-context-menu',
@@ -47,6 +48,16 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
           typeof this.snapshot.currentActiveContextMenu?.key == 'string' &&
           this.snapshot.currentActiveContextMenu?.key ==
             'file-explorer-file-node-context-menu'
+        );
+      },
+    },
+    {
+      component: ImageEditorContextMenuComponent,
+      condition: () => {
+        return (
+          typeof this.snapshot.currentActiveContextMenu?.key == 'string' &&
+          this.snapshot.currentActiveContextMenu?.key ==
+            'image-editor-img-context-menu'
         );
       },
     },

@@ -438,13 +438,20 @@
  * @returns {Promise<fsearchResult[]>}
  */
 
-
 /**
  * Read the contents of a image file and get base 64 string back
- * @callback readImage 
+ * @callback readImage
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} filePath - the path to the image file to read
  * @returns {Promise<string | undefined>} Base64 string of the image or undefined if either it does not exist or failed
+ */
+
+/**
+ * Write a image to clipboard to be pasted elsewhere
+ * @callback writeImageToClipboard
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} filePath The path to the file to copy to the clipboard
+ * @returns {Promise<boolean>} If it could or not copy it, if the file does not exist then false else true if it could
  */
 
 /**
@@ -483,6 +490,8 @@
  * @property {gitApi} gitApi - Offers all the git func
  *
  * @property {fsearch} fsearch - Search for files or folders really fast
+ * 
+ * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
  */
 
 /**
