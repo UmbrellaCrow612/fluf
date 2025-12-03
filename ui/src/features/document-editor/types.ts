@@ -1,15 +1,7 @@
 /**
  * List of document extensions that can be rendered in a browser via iframe or online viewers.
  */
-export const docExtensions = [
-  'pdf',
-  'doc',
-  'docx',
-  'xls',
-  'xlsx',
-  'ppt',
-  'pptx',
-] as const;
+export const docExtensions = ['pdf'] as const;
 
 /**
  * Type representing all valid document extensions.
