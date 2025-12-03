@@ -52,6 +52,13 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
     },
   ];
 
+  /**
+   * Gets the context menu to render or undefined
+   */
+  get renderComponent(): Type<any> | undefined {
+    return this.elements.find((x) => x.condition())?.component;
+  }
+
   ngOnInit(): void {
     const dialog = this.dialogRef()!.nativeElement;
     this.positionDialog(dialog);
@@ -121,19 +128,5 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
     dialog.style.position = 'fixed';
     dialog.style.left = `${left}px`;
     dialog.style.top = `${top}px`;
-  }
-
-  /**
-   * Checks if at least one element's condition is met.
-   */
-  get hasRenderableElements(): boolean {
-    return this.elements.some((element) => element.condition());
-  }
-
-  /**
-   * Checks if NONE of the elements' conditions are met.
-   */
-  get hasNoRenderableElements(): boolean {
-    return !this.hasRenderableElements;
   }
 }
