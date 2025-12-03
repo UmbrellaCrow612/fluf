@@ -11,6 +11,7 @@ import {
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { NgComponentOutlet } from '@angular/common';
 import { FileExplorerFileNodeContextMenuComponent } from '../file-explorer/file-explorer-file-node-context-menu/file-explorer-file-node-context-menu.component';
+import { ImageEditorContextMenuComponent } from '../img-editor/image-editor-context-menu/image-editor-context-menu.component';
 
 @Component({
   selector: 'app-context-menu',
@@ -50,7 +51,24 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
         );
       },
     },
+    {
+      component: ImageEditorContextMenuComponent,
+      condition: () => {
+        return (
+          typeof this.snapshot.currentActiveContextMenu?.key == 'string' &&
+          this.snapshot.currentActiveContextMenu?.key ==
+            'image-editor-img-context-menu'
+        );
+      },
+    },
   ];
+
+  /**
+   * Gets the context menu to render or undefined
+   */
+  get renderComponent(): Type<any> | undefined {
+    return this.elements.find((x) => x.condition())?.component;
+  }
 
   ngOnInit(): void {
     const dialog = this.dialogRef()!.nativeElement;
@@ -121,19 +139,5 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
     dialog.style.position = 'fixed';
     dialog.style.left = `${left}px`;
     dialog.style.top = `${top}px`;
-  }
-
-  /**
-   * Checks if at least one element's condition is met.
-   */
-  get hasRenderableElements(): boolean {
-    return this.elements.some((element) => element.condition());
-  }
-
-  /**
-   * Checks if NONE of the elements' conditions are met.
-   */
-  get hasNoRenderableElements(): boolean {
-    return !this.hasRenderableElements;
   }
 }

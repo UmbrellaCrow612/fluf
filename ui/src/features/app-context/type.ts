@@ -24,13 +24,16 @@ export type fileEditorBottomActiveElement =
 /**
  * All the components it can render in the middle of the text editor
  */
-export type editorMainActiveElement = 'text-file-editor' | "image-editor";
+export type editorMainActiveElement = 'text-file-editor' | 'image-editor';
 
 /**
  * Contains all the context menus that can be activated
  */
 export type contextMenuActiveElement =
-  /** Displays when a right click is done in file explorer and on a specific file node*/ 'file-explorer-file-node-context-menu';
+  /** Displays when a right click is done in file explorer and on a specific file node*/
+  | 'file-explorer-file-node-context-menu'
+  /** Displays context menu for when the right click is fired off inside the img editor on a img tag*/
+  | 'image-editor-img-context-menu';
 
 /**
  * Represents application wide context that persists between sessions
@@ -107,7 +110,7 @@ export type InMemoryAppContextCallback = (
 /**
  * All the types of shape data can be
  */
-export type CurrentActiveContextMenuData = fileNode | null;
+export type CurrentActiveContextMenuData = fileNode | null | string;
 
 /**
  * Represents application context that stays in memeory until a refresh or app close

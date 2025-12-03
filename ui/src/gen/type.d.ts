@@ -499,6 +499,10 @@ type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearc
  */
 type readImage = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string | undefined>;
 /**
+ * Write a image to clipboard to be pasted elsewhere
+ */
+type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -614,6 +618,10 @@ type ElectronApi = {
      * - Search for files or folders really fast
      */
     fsearch: fsearch;
+    /**
+     * - Write a file path to the clipboard to be pasted into other applications
+     */
+    writeImageToClipboard: writeImageToClipboard;
 };
 /**
  * Extends the global `window` object to include the Electron API.
