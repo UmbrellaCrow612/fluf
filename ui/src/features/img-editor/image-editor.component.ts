@@ -2,12 +2,11 @@ import {
   Component,
   DestroyRef,
   inject,
-  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { hasImageExtension } from './utils';
 
 @Component({
   selector: 'app-image-editor',
@@ -19,7 +18,6 @@ export class ImageEditorComponent implements OnInit {
   private readonly api = getElectronApi();
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly san = inject(DomSanitizer);
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
@@ -41,7 +39,7 @@ export class ImageEditorComponent implements OnInit {
   currentActiveFileNode: fileNode | null = null;
   isLoading = false;
   error: string | null = null;
-  imageSrc: SafeUrl | null = null;
+  imageSrc: string | null = null;
 
   /**
    * Runs to render the current active img
@@ -57,21 +55,20 @@ export class ImageEditorComponent implements OnInit {
         return;
       }
 
-      // Check it's an image
-      const isImage = /\.(png|jpg|jpeg|gif|bmp|webp|svg)$/i.test(node.name);
+      const isImage = hasImageExtension(node.path)
       if (!isImage) {
         this.error = 'Not an image file';
         return;
       }
 
       const base64 = await this.api.readImage(undefined, node.path);
+      if(!base64){
+        this.error = "Failed to read image"
+        return;
+      }
 
-      // Convert to data URL
       const ext = node.extension || 'png';
-      const dataUrl = `data:image/${ext};base64,${base64}`;
-
-      // Sanitize for Angular
-      this.imageSrc = this.san.bypassSecurityTrustUrl(dataUrl);
+      this.imageSrc= `data:image/${ext};base64,${base64}`;
     } catch (err: any) {
       this.error = err?.message || 'Unknown error';
     } finally {
