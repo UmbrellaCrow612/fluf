@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
 import { hasImageExtension } from './utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { ImageService } from './image.service';
 
 @Component({
   selector: 'app-image-editor',
@@ -13,6 +14,7 @@ export class ImageEditorComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly imageService = inject(ImageService)
 
   currentActiveFileNode: fileNode | null = null;
   imgSrc: string | null = null;
@@ -69,7 +71,7 @@ export class ImageEditorComponent implements OnInit {
         this.currentObjectUrl = null;
       }
 
-      let response = await fetch(`image://${node.path}`);
+      let response = await this.imageService.getLocalImg(node.path)
 
       if (!response.ok) {
         this.error = `Failed HTTP ${response.status}`;

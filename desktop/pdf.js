@@ -5,6 +5,7 @@
 const { pathToFileURL } = require("node:url");
 const { net } = require("electron");
 const fs = require("fs/promises");
+const path = require("path");
 
 /**
  * Registers protocol called beofre app ready
@@ -31,21 +32,26 @@ const registerPdfProtocol = (protocol) => {
  */
 const registerPdfListeners = (ipcMain, protocol) => {
   protocol.handle("pdf", async (request) => {
-    const urlObject = new URL(request.url);
-    const rawPath = decodeURIComponent(urlObject.pathname.replace(/^\//, ""));
-
-    const absoluteFilePath =
-      process.platform === "win32"
-        ? rawPath.replace(/\//g, "\\")
-        : "/" + rawPath; 
-
     try {
-      await fs.access(absoluteFilePath);
-      return net.fetch(pathToFileURL(absoluteFilePath).toString());
-    } catch (/** @type {any}*/ error) {
-      if (error.code === "ENOENT") {
+      let rawPath = request.url.replace("pdf://", "");
+
+      if (process.platform === "win32" && /^[a-zA-Z]\/.*$/.test(rawPath)) {
+        rawPath = rawPath.charAt(0) + ":" + rawPath.substring(1);
+      }
+
+      const absoluteFilePath = path.resolve(rawPath);
+
+      try {
+        await fs.access(absoluteFilePath);
+      } catch {
         return new Response("File Not Found", { status: 404 });
       }
+
+      const fileURL = pathToFileURL(absoluteFilePath).toString();
+
+      return net.fetch(fileURL);
+    } catch (/** @type {any} */ error) {
+      console.error("PDF protocol error:", error);
       return new Response("Internal Server Error", { status: 500 });
     }
   });

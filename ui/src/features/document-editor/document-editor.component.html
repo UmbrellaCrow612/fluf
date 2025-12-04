@@ -1,17 +1,1 @@
-@if (error) {
-<div>Error: {{ error }}</div>
-}
-
-<!---->
-
-@if (!error && isLoading) {
-<div>loading</div>
-}
-
-<!---->
-
-@if (!isLoading && !error) {
-<div class="container">
-
-</div>
-}
+<ng-container *ngComponentOutlet="renderComponent" />
