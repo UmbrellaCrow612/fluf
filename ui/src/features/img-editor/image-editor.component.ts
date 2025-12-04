@@ -1,8 +1,8 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
-import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
 import { hasImageExtension } from './utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { ImageService } from './image.service';
 
 @Component({
   selector: 'app-image-editor',
@@ -11,17 +11,30 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
   styleUrl: './image-editor.component.css',
 })
 export class ImageEditorComponent implements OnInit {
-  private readonly api = getElectronApi();
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly imageService = inject(ImageService)
+
+  currentActiveFileNode: fileNode | null = null;
+  imgSrc: string | null = null;
+  isLoading = false;
+  error: string | null = null;
+  private currentObjectUrl: string | null = null;
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
+    const init = this.appContext.getSnapshot();
 
     this.currentActiveFileNode = init.currentOpenFileInEditor;
 
     await this.render();
+
+    this.destroyRef.onDestroy(() => {
+      if (this.currentObjectUrl) {
+        URL.revokeObjectURL(this.currentObjectUrl);
+        this.currentObjectUrl = null;
+      }
+    });
 
     this.appContext.autoSub(
       'currentOpenFileInEditor',
@@ -33,14 +46,8 @@ export class ImageEditorComponent implements OnInit {
     );
   }
 
-  currentActiveFileNode: fileNode | null = null;
-  isLoading = false;
-  error: string | null = null;
-  imageSrc: string | null = null;
-  base64: string | undefined = undefined;
-
   /**
-   * Runs to render the current active img
+   * Loads and displays the current image file
    */
   private async render() {
     this.isLoading = true;
@@ -59,14 +66,24 @@ export class ImageEditorComponent implements OnInit {
         return;
       }
 
-      this.base64 = await this.api.readImage(undefined, node.path);
-      if (!this.base64) {
-        this.error = 'Failed to read image';
+      if (this.currentObjectUrl) {
+        URL.revokeObjectURL(this.currentObjectUrl);
+        this.currentObjectUrl = null;
+      }
+
+      let response = await this.imageService.getLocalImg(node.path)
+
+      if (!response.ok) {
+        this.error = `Failed HTTP ${response.status}`;
         return;
       }
 
-      const ext = node.extension || 'png';
-      this.imageSrc = `data:image/${ext};base64,${this.base64}`;
+      let blob = await response.blob();
+
+      this.currentObjectUrl = URL.createObjectURL(blob);
+
+      this.imgSrc = this.currentObjectUrl;
+      
     } catch (err: any) {
       this.error = err?.message || 'Unknown error';
     } finally {
@@ -75,7 +92,7 @@ export class ImageEditorComponent implements OnInit {
   }
 
   /**
-   * Runs when the user right clicks the img tag
+   * Runs when the user right-clicks the img tag
    */
   onRightClick(event: MouseEvent) {
     event.preventDefault();

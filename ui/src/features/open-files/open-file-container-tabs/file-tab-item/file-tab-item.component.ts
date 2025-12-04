@@ -5,6 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ContextService } from '../../../app-context/app-context.service';
 import { removeFileIfExists } from '../../../file-explorer/utils';
 import { hasImageExtension } from '../../../img-editor/utils';
+import { hasDocumentExtension } from '../../../document-editor/utils';
 
 @Component({
   selector: 'app-file-tab-item',
@@ -34,14 +35,21 @@ export class FileTabItemComponent implements OnInit {
   }
 
   tabItemClicked() {
+    this.appContext.update('currentOpenFileInEditor', this.fileNode());
+
     let isImg = hasImageExtension(this.fileNode().extension);
     if (isImg) {
       this.appContext.update('editorMainActiveElement', 'image-editor');
-    } else {
-      this.appContext.update('editorMainActiveElement', 'text-file-editor');
+      return;
     }
 
-    this.appContext.update('currentOpenFileInEditor', this.fileNode());
+    let isDoc = hasDocumentExtension(this.fileNode().extension);
+    if (isDoc) {
+      this.appContext.update('editorMainActiveElement', 'document-editor');
+      return;
+    }
+
+    this.appContext.update('editorMainActiveElement', 'text-file-editor');
   }
 
   removeTabItem(event: MouseEvent) {
@@ -58,7 +66,14 @@ export class FileTabItemComponent implements OnInit {
         let isImg = hasImageExtension(files[0].extension);
         if (isImg) {
           this.appContext.update('editorMainActiveElement', 'image-editor');
-        } else {
+        }
+
+        let isDoc = hasDocumentExtension(files[0].extension);
+        if (isDoc) {
+          this.appContext.update('editorMainActiveElement', 'document-editor');
+        }
+
+        if (!isDoc && !isImg) {
           this.appContext.update('editorMainActiveElement', 'text-file-editor');
         }
 

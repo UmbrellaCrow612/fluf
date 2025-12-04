@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
 const {
@@ -25,10 +25,13 @@ const {
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
-const { registerFsListeners } = require("./fs");
 const { registerClipboardListeners } = require("./clipboard");
+const { registerProtocols } = require("./protocol");
+const { registerPdfListeners } = require("./pdf");
+const { registerImageListeners } = require("./image");
 
 loadEnv();
+registerProtocols();
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -39,6 +42,7 @@ const createWindow = () => {
     frame: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      plugins: true,
     },
   });
 
@@ -82,13 +86,13 @@ app.whenReady().then(() => {
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
 
-
   ipcMain.handle("ripgrep:search", ripGrepImpl);
 
   registerGitListeners(ipcMain);
-  registerFsearchListeners(ipcMain)
-  registerFsListeners(ipcMain)
-  registerClipboardListeners(ipcMain)
+  registerFsearchListeners(ipcMain);
+  registerClipboardListeners(ipcMain);
+  registerPdfListeners(ipcMain, protocol);
+  registerImageListeners(ipcMain, protocol);
 
   createWindow();
 });
