@@ -25,13 +25,13 @@ const {
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
-const { registerFsListeners } = require("./fs");
 const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
+const { registerImageListeners } = require("./image");
 
 loadEnv();
-registerProtocols()
+registerProtocols();
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -42,7 +42,7 @@ const createWindow = () => {
     frame: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      plugins: true
+      plugins: true,
     },
   });
 
@@ -90,9 +90,9 @@ app.whenReady().then(() => {
 
   registerGitListeners(ipcMain);
   registerFsearchListeners(ipcMain);
-  registerFsListeners(ipcMain);
   registerClipboardListeners(ipcMain);
-  registerPdfListeners(ipcMain, protocol)
+  registerPdfListeners(ipcMain, protocol);
+  registerImageListeners(ipcMain, protocol);
 
   createWindow();
 });

@@ -439,14 +439,6 @@
  */
 
 /**
- * Read the contents of a image file and get base 64 string back
- * @callback readImage
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} filePath - the path to the image file to read
- * @returns {Promise<string | undefined>} Base64 string of the image or undefined if either it does not exist or failed
- */
-
-/**
  * Write a image to clipboard to be pasted elsewhere
  * @callback writeImageToClipboard
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
@@ -460,7 +452,6 @@
  * @typedef {Object} ElectronApi
  * @property {readFile} readFile - Reads the contents of a file.
  * @property {readDir} readDir - Reads the contents of a directory.
- * @property {readImage} readImage - Read a image file and get base 64 string back
  * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
  * @property {exists} exists - Check if a file or folder exists
  * @property {minimize} minimize - Minimizes the screen window

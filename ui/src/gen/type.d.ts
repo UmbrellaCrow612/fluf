@@ -495,10 +495,6 @@ type fsearchOptions = {
  */
 type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearchOptions) => Promise<fsearchResult[]>;
 /**
- * Read the contents of a image file and get base 64 string back
- */
-type readImage = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string | undefined>;
-/**
  * Write a image to clipboard to be pasted elsewhere
  */
 type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
@@ -514,10 +510,6 @@ type ElectronApi = {
      * - Reads the contents of a directory.
      */
     readDir: readDir;
-    /**
-     * - Read a image file and get base 64 string back
-     */
-    readImage: readImage;
     /**
      * - Opens a dialog and allows the user to choose a folder to select
      */
