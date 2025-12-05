@@ -21,6 +21,7 @@ const {
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
+  writeToFileImpl,
 } = require("./ipcFuncs");
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
@@ -65,6 +66,7 @@ app.whenReady().then(() => {
   ipcMain.handle("file:create", createFileImpl);
   ipcMain.handle("file:exists", fileExistsImpl);
   ipcMain.handle("file:delete", deleteFileImpl);
+  ipcMain.handle("file:write", writeToFileImpl);
 
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);

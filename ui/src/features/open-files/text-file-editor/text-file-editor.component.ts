@@ -93,6 +93,30 @@ export class TextFileEditorComponent implements OnInit {
     { dark: true }
   );
 
+  private saveTimeout: any;
+  onSaveEvent() {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+
+    this.saveTimeout = setTimeout(() => {
+      this.handleSave();
+    }, 200);
+  }
+
+  private async handleSave() {
+    console.log('Auto save fired off');
+    if (!this.openFileNode || !this.savedState) {
+      console.error('Handle save');
+      return;
+    }
+    await this.api.writeToFile(
+      undefined,
+      this.openFileNode.path,
+      this.savedState.doc.toString()
+    );
+  }
+
   /**
    * Local state of the currently opened file (not global)
    */
@@ -106,6 +130,16 @@ export class TextFileEditorComponent implements OnInit {
   updateListener = EditorView.updateListener.of((update) => {
     if (update.docChanged) {
       this.savedState = update.state;
+      this.onSaveEvent();
+    }
+
+    if (
+      update.transactions.some(
+        (tr) => tr.isUserEvent('undo') || tr.isUserEvent('redo')
+      )
+    ) {
+      this.savedState = update.state;
+      this.onSaveEvent();
     }
   });
 
@@ -146,9 +180,7 @@ export class TextFileEditorComponent implements OnInit {
         this.disposeCodeMirror();
         this.openFileNode = ctx.currentOpenFileInEditor;
 
-        if (this.openFileNode) {
-          await this.displayFile();
-        }
+        await this.displayFile();
       },
       this.destroyRef
     );
@@ -162,12 +194,11 @@ export class TextFileEditorComponent implements OnInit {
     if (this.savedState) {
       this.codeMirrorView = new EditorView({
         parent: container,
-        state: this.savedState, // IMPORTANT: do not re-apply extensions
+        state: this.savedState,
       });
       return;
     }
 
-    // 2. Create new state FROM SCRATCH
     const startState = EditorState.create({
       doc: this.stringContent,
       extensions: [basicSetup, this.updateListener, this.theme],

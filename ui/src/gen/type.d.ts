@@ -499,6 +499,10 @@ type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearc
  */
 type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
 /**
+ * Write new content to a file
+ */
+type writeToFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string, content: string) => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -614,6 +618,10 @@ type ElectronApi = {
      * - Write a file path to the clipboard to be pasted into other applications
      */
     writeImageToClipboard: writeImageToClipboard;
+    /**
+     * - Write new content for a file, it writes the new content as the new content of the whole file
+     */
+    writeToFile: writeToFile;
 };
 /**
  * Extends the global `window` object to include the Electron API.

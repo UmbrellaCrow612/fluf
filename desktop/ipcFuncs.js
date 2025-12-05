@@ -25,6 +25,20 @@ const readFileImpl = async (_event = undefined, filePath) => {
   }
 };
 
+/** @type {writeToFile} */
+const writeToFileImpl = async (event, filePath, content) => {
+  try {
+    await fsp.access(filePath)
+
+    await fsp.writeFile(filePath, content, 'utf8');
+
+    return true;
+  } catch (error) {
+    console.error('Error writing to file:', error);
+    return false;
+  }
+};
+
 /**
  * Gets the extension from a filename.
  * @param {string} filename
@@ -302,4 +316,5 @@ module.exports = {
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
+  writeToFileImpl
 };

@@ -32,6 +32,8 @@ const gitApi = {
  * @type {ElectronApi}
  */
 const api = {
+  writeToFile: (_event, fp, content) =>
+    ipcRenderer.invoke("file:write", fp, content),
   readFile: (_event, filepath) => ipcRenderer.invoke("file:read", filepath),
   createFile: (_event, path) => ipcRenderer.invoke("file:create", path),
   fileExists: (_event, fp) => ipcRenderer.invoke("file:exists", fp),
@@ -101,7 +103,8 @@ const api = {
 
   gitApi,
 
-  writeImageToClipboard: (_event, fp) => ipcRenderer.invoke("clipboard:write:image", fp)
+  writeImageToClipboard: (_event, fp) =>
+    ipcRenderer.invoke("clipboard:write:image", fp),
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
