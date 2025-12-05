@@ -12,6 +12,9 @@ import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
+import { html } from '@codemirror/lang-html';
+import { css } from '@codemirror/lang-css';
+import { javascript } from '@codemirror/lang-javascript';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -28,66 +31,81 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly inMemory = inject(InMemoryContextService);
 
-  /**
-   * Dynamic theme extension
-   */
+  private getLanguageExtension(ext: string) {
+    switch (ext.toLowerCase()) {
+      case 'html':
+        return html();
+      case 'css':
+        return css();
+      case 'js':
+      case 'mjs':
+      case 'cjs':
+        return javascript();
+      default:
+        return []; // No highlighting fallback
+    }
+  }
+
   private theme = EditorView.theme(
     {
       '&': {
-        color: '#ddd',
-        backgroundColor: '#1b1b1b',
+        color: '#e0e0e0',
+        backgroundColor: '#1a1c20',
         height: '100%',
         overflow: 'auto',
         fontFamily: '"Fira Code", Consolas, monospace',
         fontSize: '14px',
       },
+
+      /* Scroll area */
       '.cm-scroller': {
         overflow: 'auto',
         scrollbarWidth: 'thin',
-        scrollbarColor: '#555 #222',
+        scrollbarColor: '#3f444a #1a1c20',
       },
       '.cm-scroller::-webkit-scrollbar': {
-        width: '6px',
-        height: '6px',
+        width: '8px',
+        height: '8px',
       },
       '.cm-scroller::-webkit-scrollbar-track': {
-        background: '#222',
-        borderRadius: '3px',
+        background: '#1a1c20',
       },
       '.cm-scroller::-webkit-scrollbar-thumb': {
-        backgroundColor: '#555',
-        borderRadius: '3px',
-        border: '1px solid #333',
+        backgroundColor: '#3f444a',
+        borderRadius: '4px',
       },
       '.cm-scroller::-webkit-scrollbar-thumb:hover': {
-        backgroundColor: '#777',
+        backgroundColor: '#50555c',
       },
+
+      /* Text + cursor */
       '.cm-content': {
-        caretColor: '#66d9ef',
-      },
-      '.cm-content, .cm-line': {
-        padding: '0 8px',
+        caretColor: '#80CBC4',
       },
       '&.cm-focused .cm-cursor': {
-        borderLeftColor: '#66d9ef',
+        borderLeftColor: '#80CBC4',
       },
       '&.cm-focused .cm-selectionBackground, ::selection': {
-        backgroundColor: 'rgba(102, 217, 239, 0.25)',
+        backgroundColor: 'rgba(128, 203, 196, 0.25)',
       },
-      '.cm-gutters': {
-        backgroundColor: '#1a1a1a',
-        color: '#777',
-        borderRight: '1px solid #333',
-      },
-      '.cm-gutterElement': {
-        padding: '0 6px',
+
+      /* Lines */
+      '.cm-content, .cm-line': {
+        padding: '0 8px',
       },
       '.cm-activeLine': {
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
       },
+
+      /* Gutter */
+      '.cm-gutters': {
+        backgroundColor: '#1a1c20',
+        color: '#59626e',
+        borderRight: '1px solid #2a2e35',
+      },
       '.cm-activeLineGutter': {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-        color: '#bbb',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        color: '#aab2bf',
       },
     },
     { dark: true }
@@ -190,7 +208,11 @@ export class TextFileEditorComponent implements OnInit {
     const container = this.codeMirrorContainer()?.nativeElement;
     if (!container) return;
 
-    // 1. Load previously saved state for this file, if exists
+    const fileExtension = this.openFileNode?.extension ?? '';
+
+    const language = this.getLanguageExtension(fileExtension);
+
+    // If saved state exists, reuse it
     if (this.savedState) {
       this.codeMirrorView = new EditorView({
         parent: container,
@@ -201,7 +223,7 @@ export class TextFileEditorComponent implements OnInit {
 
     const startState = EditorState.create({
       doc: this.stringContent,
-      extensions: [basicSetup, this.updateListener, this.theme],
+      extensions: [basicSetup, this.updateListener, this.theme, language],
     });
 
     this.codeMirrorView = new EditorView({
