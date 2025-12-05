@@ -10,6 +10,8 @@ import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
+import { EditorState } from '@codemirror/state';
+import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -24,140 +26,192 @@ export class TextFileEditorComponent implements OnInit {
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(
     'code_mirror_container'
   );
+  private readonly inMemory = inject(InMemoryContextService);
 
   /**
-   * The code mirrow view instace
+   * Dynamic theme extension
    */
+  private theme = EditorView.theme(
+    {
+      '&': {
+        color: '#ddd',
+        backgroundColor: '#1b1b1b',
+        height: '100%',
+        overflow: 'auto',
+        fontFamily: '"Fira Code", Consolas, monospace',
+        fontSize: '14px',
+      },
+      '.cm-scroller': {
+        overflow: 'auto',
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#555 #222',
+      },
+      '.cm-scroller::-webkit-scrollbar': {
+        width: '6px',
+        height: '6px',
+      },
+      '.cm-scroller::-webkit-scrollbar-track': {
+        background: '#222',
+        borderRadius: '3px',
+      },
+      '.cm-scroller::-webkit-scrollbar-thumb': {
+        backgroundColor: '#555',
+        borderRadius: '3px',
+        border: '1px solid #333',
+      },
+      '.cm-scroller::-webkit-scrollbar-thumb:hover': {
+        backgroundColor: '#777',
+      },
+      '.cm-content': {
+        caretColor: '#66d9ef',
+      },
+      '.cm-content, .cm-line': {
+        padding: '0 8px',
+      },
+      '&.cm-focused .cm-cursor': {
+        borderLeftColor: '#66d9ef',
+      },
+      '&.cm-focused .cm-selectionBackground, ::selection': {
+        backgroundColor: 'rgba(102, 217, 239, 0.25)',
+      },
+      '.cm-gutters': {
+        backgroundColor: '#1a1a1a',
+        color: '#777',
+        borderRight: '1px solid #333',
+      },
+      '.cm-gutterElement': {
+        padding: '0 6px',
+      },
+      '.cm-activeLine': {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      },
+      '.cm-activeLineGutter': {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        color: '#bbb',
+      },
+    },
+    { dark: true }
+  );
+
+  private saveTimeout: any;
+  onSaveEvent() {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+
+    this.saveTimeout = setTimeout(() => {
+      this.handleSave();
+    }, 200);
+  }
+
+  private async handleSave() {
+    console.log('Auto save fired off');
+    if (!this.openFileNode || !this.savedState) {
+      console.error('Handle save');
+      return;
+    }
+    await this.api.writeToFile(
+      undefined,
+      this.openFileNode.path,
+      this.savedState.doc.toString()
+    );
+  }
+
+  /**
+   * Local state of the currently opened file (not global)
+   */
+  savedState: EditorState | null = null;
+
   codeMirrorView: EditorView | null = null;
 
   /**
-   * Runs when code mirrow view changes 
+   * Keeps state updated whenever doc changes
    */
-  updateListner = EditorView.updateListener.of((x) => {
+  updateListener = EditorView.updateListener.of((update) => {
+    if (update.docChanged) {
+      this.savedState = update.state;
+      this.onSaveEvent();
+    }
 
-    // todo add debouce 
-    // after debouce add it to new doc state
-    // on ctrl s
-    // call save
-    // console.log(x.state.changes.toString())
+    if (
+      update.transactions.some(
+        (tr) => tr.isUserEvent('undo') || tr.isUserEvent('redo')
+      )
+    ) {
+      this.savedState = update.state;
+      this.onSaveEvent();
+    }
   });
 
-  /**
-   * The current file to show in the editor
-   */
   openFileNode: fileNode | null = null;
   error: string | null = null;
   isLoading = false;
-
   stringContent = '';
 
   async ngOnInit() {
     this.openFileNode = this.appContext.getSnapshot().currentOpenFileInEditor;
+
     if (this.openFileNode) {
       await this.displayFile();
     }
 
+    // when unreding save last state of current file
+    this.destroyRef.onDestroy(() => {
+      if (this.codeMirrorView && this.openFileNode) {
+        const latestState = this.codeMirrorView.state;
+
+        const map = this.inMemory.getSnapShot().savedEditorStates;
+        map.set(this.openFileNode.path, latestState);
+        this.inMemory.update('savedEditorStates', map);
+      }
+    });
+
     this.appContext.autoSub(
       'currentOpenFileInEditor',
       async (ctx) => {
+        // 1. Save current file state before switching
+        if (this.openFileNode && this.savedState) {
+          const map = this.inMemory.getSnapShot().savedEditorStates;
+          map.set(this.openFileNode.path, this.savedState);
+          this.inMemory.update('savedEditorStates', map);
+        }
+
+        // 2. Switch file
         this.disposeCodeMirror();
         this.openFileNode = ctx.currentOpenFileInEditor;
-        if (this.openFileNode) {
-          await this.displayFile();
-        }
+
+        await this.displayFile();
       },
       this.destroyRef
     );
   }
 
   private renderCodeMirror() {
-    this.codeMirrorView = new EditorView({
+    const container = this.codeMirrorContainer()?.nativeElement;
+    if (!container) return;
+
+    // 1. Load previously saved state for this file, if exists
+    if (this.savedState) {
+      this.codeMirrorView = new EditorView({
+        parent: container,
+        state: this.savedState,
+      });
+      return;
+    }
+
+    const startState = EditorState.create({
       doc: this.stringContent,
-      parent: this.codeMirrorContainer()?.nativeElement,
-      extensions: [
-        basicSetup,
-        this.updateListner,
-        EditorView.theme(
-          {
-            /* ====== Root Editor ====== */
-            '&': {
-              color: '#ddd',
-              backgroundColor: '#1b1b1b',
-              height: '100%',
-              overflow: 'auto',
-              fontFamily: '"Fira Code", Consolas, monospace',
-              fontSize: '14px',
-            },
+      extensions: [basicSetup, this.updateListener, this.theme],
+    });
 
-            /* ====== Scroller (scrollbar styles) ====== */
-            '.cm-scroller': {
-              overflow: 'auto',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#555 #222',
-            },
-            '.cm-scroller::-webkit-scrollbar': {
-              width: '6px',
-              height: '6px',
-            },
-            '.cm-scroller::-webkit-scrollbar-track': {
-              background: '#222',
-              borderRadius: '3px',
-            },
-            '.cm-scroller::-webkit-scrollbar-thumb': {
-              backgroundColor: '#555',
-              borderRadius: '3px',
-              border: '1px solid #333',
-            },
-            '.cm-scroller::-webkit-scrollbar-thumb:hover': {
-              backgroundColor: '#777',
-            },
-
-            /* ====== Editor Content ====== */
-            '.cm-content': {
-              caretColor: '#66d9ef',
-            },
-            '.cm-content, .cm-line': {
-              padding: '0 8px',
-            },
-
-            /* ====== Selection and Cursor ====== */
-            '&.cm-focused .cm-cursor': {
-              borderLeftColor: '#66d9ef',
-            },
-            '&.cm-focused .cm-selectionBackground, ::selection': {
-              backgroundColor: 'rgba(102, 217, 239, 0.25)',
-            },
-
-            /* ====== Gutter (line numbers) ====== */
-            '.cm-gutters': {
-              backgroundColor: '#1a1a1a',
-              color: '#777',
-              borderRight: '1px solid #333',
-            },
-            '.cm-gutterElement': {
-              padding: '0 6px',
-            },
-
-            /* ====== Active Line Highlight ====== */
-            '.cm-activeLine': {
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            },
-            '.cm-activeLineGutter': {
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              color: '#bbb',
-            },
-          },
-          { dark: true }
-        ),
-      ],
+    this.codeMirrorView = new EditorView({
+      parent: container,
+      state: startState,
     });
   }
 
   private disposeCodeMirror() {
-    if (this.codeMirrorView) {
-      this.codeMirrorView?.destroy();
-    }
-
+    this.codeMirrorView?.destroy();
     this.codeMirrorView = null;
   }
 
@@ -167,17 +221,24 @@ export class TextFileEditorComponent implements OnInit {
     this.disposeCodeMirror();
 
     if (!this.openFileNode) {
-      this.error = `Could not read file`;
+      this.error = 'Could not read file';
       this.isLoading = false;
       return;
     }
 
-    this.stringContent = await this.api.readFile(
-      undefined,
-      this.openFileNode?.path
-    );
-    this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
+    // -- Load saved state per file --
+    const map = this.inMemory.getSnapShot().savedEditorStates;
+    this.savedState = map.get(this.openFileNode.path) ?? null;
 
+    // If file was never edited, load fresh content
+    if (!this.savedState) {
+      this.stringContent = await this.api.readFile(
+        undefined,
+        this.openFileNode.path
+      );
+    }
+
+    this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
     this.isLoading = false;
 
     this.renderCodeMirror();

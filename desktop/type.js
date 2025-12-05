@@ -447,6 +447,15 @@
  */
 
 /**
+ * Write new content to a file
+ * @callback writeToFile
+ * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @param {string} filePath - The path to the file
+ * @param {string} content - The new content for the file
+ * @returns {Promise<boolean>} If it could or could not write to the file
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -481,8 +490,9 @@
  * @property {gitApi} gitApi - Offers all the git func
  *
  * @property {fsearch} fsearch - Search for files or folders really fast
- * 
+ *
  * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
+ * @property {writeToFile} writeToFile - Write new content for a file, it writes the new content as the new content of the whole file
  */
 
 /**
