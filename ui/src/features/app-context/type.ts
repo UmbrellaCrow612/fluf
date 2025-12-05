@@ -1,3 +1,4 @@
+import { EditorState } from '@codemirror/state';
 /**
  * Represents what elements from the side bar can be in a active state i.e the elements that can be clicked to show said render component off
  */
@@ -23,12 +24,15 @@ export type fileEditorBottomActiveElement =
 
 /**
  * All the components it can render in the middle of the text editor
- * 
+ *
  * - `text-file-editor` - Is shown for any plain text document such as code or any other
- * - `image-editor` - is shown for documents that are img formats 
+ * - `image-editor` - is shown for documents that are img formats
  * - `document-editor` - is shown when the file is a document type such as pdf etc which are supported by native browser to be shown
  */
-export type editorMainActiveElement = 'text-file-editor' | 'image-editor' | "document-editor";
+export type editorMainActiveElement =
+  | 'text-file-editor'
+  | 'image-editor'
+  | 'document-editor';
 
 /**
  * Contains all the context menus that can be activated
@@ -151,4 +155,9 @@ export type InMemoryAppContext = {
    * Represents whether a file or folder creator is active
    */
   isCreateFileOrFolderActive: boolean | null;
+
+  /**
+   * Contains all file nodes that have been rendered in the UI and changes have been made to said file, this saves thr editor state so it can be re-hydrated if it is unrendered between file changes
+   */
+  savedEditorStates: Map<string, EditorState>;
 };
