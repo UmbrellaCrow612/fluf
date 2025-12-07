@@ -30,6 +30,7 @@ const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
+const { startLanguageServers, stopLanguageServers } = require("./language-server");
 
 loadEnv();
 registerProtocols();
@@ -96,10 +97,13 @@ app.whenReady().then(() => {
   registerPdfListeners(ipcMain, protocol);
   registerImageListeners(ipcMain, protocol);
 
+  startLanguageServers();
+
   createWindow();
 });
 
 app.on("before-quit", () => {
   cleanUpWatchers();
   stopWatchingGitRepo();
+  stopLanguageServers();
 });

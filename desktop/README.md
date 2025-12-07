@@ -36,7 +36,8 @@ run `npx tsc` to see for any errors and generating frontend ts types to use and 
 
 Building:
 
-- Build index.js and preload with es build
-- Copy pack json and any other files as well as built index and preload into 
+- Build index.js and preload with es build excluding electron and node pty etc packs
+- Copy pack json, .env and es build into dist
+- Copy any external deps - for now typescriopt server source code into dist as well for lang suppport
 - Download any external binarys into bin
 - All files made for final packing
