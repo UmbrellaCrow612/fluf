@@ -3,7 +3,7 @@
 */
 
 const path = require("path");
-const { isPackaged } = require("./packing");
+const { getTsServerPath } = require("./packing");
 const fs = require("fs");
 const { spawn } = require("child_process");
 
@@ -12,18 +12,8 @@ const { spawn } = require("child_process");
  */
 let childSpawnRef;
 
-/**
- * Get the path to the ts server in both dev and prod
- * @returns {string}
- */
-function getPath() {
-  return isPackaged()
-    ? path.join(__dirname, "typescript", "tsserver.js")
-    : path.join(__dirname, "node_modules/typescript/tsserver.js");
-}
-
 const startTsServer = () => {
-  let p = getPath();
+  let p = getTsServerPath();
   if (!fs.existsSync(p)) {
     console.log("Failed to stat ts server could not find entry point " + p);
     return;
@@ -36,6 +26,9 @@ const startTsServer = () => {
   // on stdout emit event
 };
 
+/**
+ * Trys to kill TS child processes that was spawned
+ */
 const stopTsServer = () => {
   if (childSpawnRef) {
     childSpawnRef.kill();
@@ -45,6 +38,10 @@ const stopTsServer = () => {
   }
 };
 
-const registerTsListners = () => {};
+/**
+ * Register all TS main events listeners
+ * @param {import("electron").IpcMain} ipcMain
+ */
+const registerTsListeners = (ipcMain) => {};
 
-module.exports = { startTsServer, stopTsServer };
+module.exports = { startTsServer, stopTsServer, registerTsListeners };

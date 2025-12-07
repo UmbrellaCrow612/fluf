@@ -31,6 +31,7 @@ const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
 const { startLanguageServers, stopLanguageServers } = require("./language-server");
+const { registerTsListeners } = require("./typescript");
 
 loadEnv();
 registerProtocols();
@@ -96,6 +97,7 @@ app.whenReady().then(() => {
   registerClipboardListeners(ipcMain);
   registerPdfListeners(ipcMain, protocol);
   registerImageListeners(ipcMain, protocol);
+  registerTsListeners(ipcMain)
 
   startLanguageServers();
 
