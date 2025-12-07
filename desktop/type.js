@@ -456,6 +456,33 @@
  */
 
 /**
+ * Sends a message to the typescript server
+ * @callback sendTsServerMessage
+ * @param {Object} message - Object to pass to the TS server
+ */
+
+/**
+ * Runs when listening to TS server response and passes the data to it
+ * @callback tsServerResponseCallback
+ * @param {string | Object} data - The data parsed from TS server
+ * @returns {void}
+ */
+
+/**
+ * Runs the callbackj when TS server responds
+ * @callback onTsServerResponse
+ * @param {tsServerResponseCallback} callback - The callback to run
+ * @returns {voidCallback} Unsub
+ */
+
+/**
+ * Represents the typescript server API
+ * @typedef {Object} tsServer
+ * @property {sendTsServerMessage} sendMessage - Forward a message to the TS server
+ * @property {onTsServerResponse} onResponse - React to TS server responses and run custom logic
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -493,6 +520,8 @@
  *
  * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
  * @property {writeToFile} writeToFile - Write new content for a file, it writes the new content as the new content of the whole file
+ * 
+ * @property {tsServer} tsServer - The ts / typescript language server 
  */
 
 /**

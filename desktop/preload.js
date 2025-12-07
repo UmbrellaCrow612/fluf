@@ -28,6 +28,27 @@ const gitApi = {
   gitStatus: (_event, dir) => ipcRenderer.invoke("git:status", dir),
 };
 
+/** @type {tsServer} */
+const tsServer = {
+  onResponse: (callback) => {
+    /**
+     * @param {import("electron").IpcRendererEvent} _event
+     * @param {string} data
+     */
+    let l = (_event, data) => {
+      callback(data);
+    };
+
+    ipcRenderer.on("tsserver-response", l);
+
+    return () => ipcRenderer.removeListener("tsserver-response", l);
+  },
+
+  sendMessage: (message) => {
+    ipcRenderer.send("tsserver-send", message);
+  },
+};
+
 /**
  * @type {ElectronApi}
  */
@@ -102,6 +123,7 @@ const api = {
   fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
 
   gitApi,
+  tsServer,
 
   writeImageToClipboard: (_event, fp) =>
     ipcRenderer.invoke("clipboard:write:image", fp),

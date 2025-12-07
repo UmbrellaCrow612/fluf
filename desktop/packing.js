@@ -5,8 +5,6 @@
 const path = require("path");
 const fs = require("fs");
 
-
-
 /**
  * Checks if the app is packaged
  */
@@ -36,11 +34,11 @@ const binPath = () => {
 function getTsServerPath() {
   return isPackaged()
     ? path.join(__dirname, "typescript", "tsserver.js")
-    : path.join(__dirname, "node_modules/typescript/tsserver.js");
+    : path.join(__dirname, "node_modules", "typescript", "lib", "tsserver.js");
 }
 
 module.exports = {
   isPackaged,
   binPath,
-  getTsServerPath
+  getTsServerPath,
 };
