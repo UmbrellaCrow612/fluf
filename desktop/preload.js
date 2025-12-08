@@ -33,15 +33,15 @@ const tsServer = {
   onResponse: (callback) => {
     /**
      * @param {import("electron").IpcRendererEvent} _event
-     * @param {string} data
+     * @param {...any} args
      */
-    let l = (_event, data) => {
-      callback(data);
+    let listener = (_event, ...args) => {
+      callback(args);
     };
 
-    ipcRenderer.on("tsserver-response", l);
+    ipcRenderer.on("tsserver-response", listener);
 
-    return () => ipcRenderer.removeListener("tsserver-response", l);
+    return () => ipcRenderer.removeListener("tsserver-response", listener);
   },
 
   sendMessage: (message) => {

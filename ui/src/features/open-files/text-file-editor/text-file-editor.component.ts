@@ -31,6 +31,8 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly inMemory = inject(InMemoryContextService);
 
+  private tsUnsubscribe: (() => void) | null = null;
+
   private getLanguageExtension(ext: string) {
     switch (ext.toLowerCase()) {
       case 'html':
@@ -40,6 +42,7 @@ export class TextFileEditorComponent implements OnInit {
       case 'js':
       case 'mjs':
       case 'cjs':
+      case 'ts':
         return javascript();
       default:
         return []; // No highlighting fallback
@@ -159,6 +162,16 @@ export class TextFileEditorComponent implements OnInit {
       this.savedState = update.state;
       this.onSaveEvent();
     }
+
+    this.api.tsServer.sendMessage({
+      seq: 0,
+      type: 'request',
+      command: 'open',
+      arguments: {
+        file: this.openFileNode?.path,
+        content: update.state.doc.toString(),
+      },
+    });
   });
 
   openFileNode: fileNode | null = null;
@@ -173,6 +186,15 @@ export class TextFileEditorComponent implements OnInit {
       await this.displayFile();
     }
 
+    this.tsUnsubscribe = this.api.tsServer.onResponse((resp: any) => {
+      console.log('TS Server Response:', resp);
+    });
+
+    this.destroyRef.onDestroy(() => {
+      if (this.tsUnsubscribe) {
+        this.tsUnsubscribe();
+      }
+    });
     // when unreding save last state of current file
     this.destroyRef.onDestroy(() => {
       if (this.codeMirrorView && this.openFileNode) {

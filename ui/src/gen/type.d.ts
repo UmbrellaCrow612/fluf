@@ -503,6 +503,31 @@ type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, f
  */
 type writeToFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string, content: string) => Promise<boolean>;
 /**
+ * Sends a message to the typescript server
+ */
+type sendTsServerMessage = (message: Object) => void;
+/**
+ * Runs when listening to TS server response and passes the data to it
+ */
+type tsServerResponseCallback = (data: string | Object) => void;
+/**
+ * Runs the callbackj when TS server responds
+ */
+type onTsServerResponse = (callback: tsServerResponseCallback) => voidCallback;
+/**
+ * Represents the typescript server API
+ */
+type tsServer = {
+    /**
+     * - Forward a message to the TS server
+     */
+    sendMessage: sendTsServerMessage;
+    /**
+     * - React to TS server responses and run custom logic
+     */
+    onResponse: onTsServerResponse;
+};
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -622,6 +647,10 @@ type ElectronApi = {
      * - Write new content for a file, it writes the new content as the new content of the whole file
      */
     writeToFile: writeToFile;
+    /**
+     * - The ts / typescript language server
+     */
+    tsServer: tsServer;
 };
 /**
  * Extends the global `window` object to include the Electron API.

@@ -51,6 +51,8 @@ const stopTsServer = () => {
   }
 };
 
+
+
 /**
  * Register all TS main events listeners
  * @param {import("electron").IpcMain} ipcMain
