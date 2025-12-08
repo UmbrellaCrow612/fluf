@@ -457,30 +457,30 @@
 
 /**
  * Sends a message to the typescript server
- * @callback sendTsServerMessage
+ * @callback sendServerMessage
  * @param {Object} message - Object to pass to the TS server
- * @returns {void}
- */
-
-/**
- * Runs when listening to TS server response and passes the data to it
- * @callback tsServerResponseCallback
- * @param {string | Object} data - The data parsed from TS server
  * @returns {void} Nothing
  */
 
 /**
- * Runs the callbackj when TS server responds
- * @callback onTsServerResponse
- * @param {tsServerResponseCallback} callback - The callback to run
+ * Runs when listening to a specific server and you want to run custom callback
+ * @callback serverResponseCallback
+ * @param {string | Object} data - The data parsed from the server
+ * @returns {void} Nothing
+ */
+
+/**
+ * Runs the callback when server responds
+ * @callback onServerResponse
+ * @param {serverResponseCallback} callback - The callback to run
  * @returns {voidCallback} Unsub callback to stop
  */
 
 /**
  * Represents the typescript server API
  * @typedef {Object} tsServer
- * @property {sendTsServerMessage} sendMessage - Forward a message to the TS server
- * @property {onTsServerResponse} onResponse - React to TS server responses and run custom logic
+ * @property {sendServerMessage} sendMessage - Forward a message to the TS server
+ * @property {onServerResponse} onResponse - React to TS server responses and run custom logic
  */
 
 /**

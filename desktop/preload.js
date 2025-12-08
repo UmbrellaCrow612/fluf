@@ -44,9 +44,7 @@ const tsServer = {
     return () => ipcRenderer.removeListener("tsserver-response", listener);
   },
 
-  sendMessage: (message) => {
-    ipcRenderer.send("tsserver-send", message);
-  },
+  sendMessage: (message) => ipcRenderer.send("tsserver-send", message),
 };
 
 /**

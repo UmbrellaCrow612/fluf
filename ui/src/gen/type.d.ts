@@ -505,15 +505,15 @@ type writeToFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: s
 /**
  * Sends a message to the typescript server
  */
-type sendTsServerMessage = (message: Object) => void;
+type sendServerMessage = (message: Object) => void;
 /**
- * Runs when listening to TS server response and passes the data to it
+ * Runs when listening to a specific server and you want to run custom callback
  */
-type tsServerResponseCallback = (data: string | Object) => void;
+type serverResponseCallback = (data: string | Object) => void;
 /**
- * Runs the callbackj when TS server responds
+ * Runs the callback when server responds
  */
-type onTsServerResponse = (callback: tsServerResponseCallback) => voidCallback;
+type onServerResponse = (callback: serverResponseCallback) => voidCallback;
 /**
  * Represents the typescript server API
  */
@@ -521,11 +521,11 @@ type tsServer = {
     /**
      * - Forward a message to the TS server
      */
-    sendMessage: sendTsServerMessage;
+    sendMessage: sendServerMessage;
     /**
      * - React to TS server responses and run custom logic
      */
-    onResponse: onTsServerResponse;
+    onResponse: onServerResponse;
 };
 /**
  * APIs exposed to the renderer process for using Electron functions.

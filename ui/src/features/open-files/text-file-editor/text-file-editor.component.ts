@@ -15,6 +15,7 @@ import { InMemoryContextService } from '../../app-context/app-in-memory-context.
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
+import { LanguageServer } from '../../language/type';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -31,8 +32,11 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly inMemory = inject(InMemoryContextService);
 
-  private tsUnsubscribe: (() => void) | null = null;
+  private serverUnSub: voidCallback | null = null;
 
+  /**
+   * Used to add specific syntax highlighting
+   */
   private getLanguageExtension(ext: string) {
     switch (ext.toLowerCase()) {
       case 'html':
@@ -47,6 +51,24 @@ export class TextFileEditorComponent implements OnInit {
       default:
         return []; // No highlighting fallback
     }
+  }
+
+  private getLanguageServer(extension: string): LanguageServer | null {
+    switch (extension) {
+      case 'js':
+      case 'mjs':
+      case 'cjs':
+      case 'ts':
+        return 'js/ts';
+
+      default:
+        console.log('Unsuported language server for file');
+        return null;
+    }
+  }
+
+  private initLanguageServer(fileNode: fileNode) {
+    
   }
 
   private theme = EditorView.theme(
@@ -162,16 +184,6 @@ export class TextFileEditorComponent implements OnInit {
       this.savedState = update.state;
       this.onSaveEvent();
     }
-
-    this.api.tsServer.sendMessage({
-      seq: 0,
-      type: 'request',
-      command: 'open',
-      arguments: {
-        file: this.openFileNode?.path,
-        content: update.state.doc.toString(),
-      },
-    });
   });
 
   openFileNode: fileNode | null = null;
@@ -186,15 +198,6 @@ export class TextFileEditorComponent implements OnInit {
       await this.displayFile();
     }
 
-    this.tsUnsubscribe = this.api.tsServer.onResponse((resp: any) => {
-      console.log('TS Server Response:', resp);
-    });
-
-    this.destroyRef.onDestroy(() => {
-      if (this.tsUnsubscribe) {
-        this.tsUnsubscribe();
-      }
-    });
     // when unreding save last state of current file
     this.destroyRef.onDestroy(() => {
       if (this.codeMirrorView && this.openFileNode) {
