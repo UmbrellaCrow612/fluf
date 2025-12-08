@@ -6,16 +6,17 @@ import {
   OnInit,
   viewChild,
 } from '@angular/core';
-import { ContextService } from '../../app-context/app-context.service';
-import { getElectronApi } from '../../../utils';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
-import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
-import { LanguageServer } from '../../language/type';
+import { ContextService } from '../app-context/app-context.service';
+import { getElectronApi } from '../../utils';
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { LanguageServer } from '../language/type';
+import { LanguageService } from '../language/language.service';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -31,12 +32,8 @@ export class TextFileEditorComponent implements OnInit {
     'code_mirror_container'
   );
   private readonly inMemory = inject(InMemoryContextService);
+  private readonly languageService = inject(LanguageService);
 
-  private serverUnSub: voidCallback | null = null;
-
-  /**
-   * Used to add specific syntax highlighting
-   */
   private getLanguageExtension(ext: string) {
     switch (ext.toLowerCase()) {
       case 'html':
@@ -53,6 +50,9 @@ export class TextFileEditorComponent implements OnInit {
     }
   }
 
+  /** Callback to unsub reacting to language server changes */
+  private serverUnSub: voidCallback | null = null;
+
   private getLanguageServer(extension: string): LanguageServer | null {
     switch (extension) {
       case 'js':
@@ -66,10 +66,66 @@ export class TextFileEditorComponent implements OnInit {
         return null;
     }
   }
+  private languageServer: LanguageServer | null = null;
 
-  private initLanguageServer(fileNode: fileNode) {
-    
+  private initLangServer(fileNode: fileNode | null) {
+    if (!fileNode) {
+      console.warn('No file selected cannot start language server');
+      return;
+    }
+
+    if (this.serverUnSub) {
+      this.serverUnSub();
+    }
+
+    this.languageServer = this.getLanguageServer(fileNode.extension);
+    if (!this.languageServer) {
+      console.warn('No language server found for ' + fileNode.extension);
+      return;
+    }
+
+    this.serverUnSub = this.languageService.onResponse(
+      this.onLanguageServerResponse,
+      this.languageServer
+    );
+
+    console.log('Language server started for ' + this.languageServer);
   }
+  /**
+   * Define custom logic to un when the server responds such as adding intlisense warnings etc
+   */
+  private onLanguageServerResponse: serverResponseCallback = (data) => {
+    console.log(data);
+  };
+
+  /** Runs when doc changes and you want to send it to server for checks */
+  private sendServerMessage = () => {
+    if (this.languageServer && this.openFileNode) {
+      switch (this.languageServer) {
+        case 'js/ts':
+          this.languageService.sendMessage(
+            {
+              seq: 0,
+              type: 'request',
+              command: 'updateOpen',
+              arguments: {
+                openFiles: [
+                  {
+                    file: this.openFileNode?.path,
+                    fileContent: this.stringContent,
+                  },
+                ],
+              },
+            },
+            this.languageServer
+          );
+          break;
+
+        default:
+          break;
+      }
+    }
+  };
 
   private theme = EditorView.theme(
     {
@@ -171,6 +227,8 @@ export class TextFileEditorComponent implements OnInit {
    * Keeps state updated whenever doc changes
    */
   updateListener = EditorView.updateListener.of((update) => {
+    this.stringContent = update.state.doc.toString();
+
     if (update.docChanged) {
       this.savedState = update.state;
       this.onSaveEvent();
@@ -184,6 +242,8 @@ export class TextFileEditorComponent implements OnInit {
       this.savedState = update.state;
       this.onSaveEvent();
     }
+
+    this.sendServerMessage();
   });
 
   openFileNode: fileNode | null = null;
@@ -194,10 +254,14 @@ export class TextFileEditorComponent implements OnInit {
   async ngOnInit() {
     this.openFileNode = this.appContext.getSnapshot().currentOpenFileInEditor;
 
-    if (this.openFileNode) {
-      await this.displayFile();
-    }
+    await this.displayFile();
+    this.initLangServer(this.openFileNode);
 
+    this.destroyRef.onDestroy(() => {
+      if (this.serverUnSub) {
+        this.serverUnSub();
+      }
+    });
     // when unreding save last state of current file
     this.destroyRef.onDestroy(() => {
       if (this.codeMirrorView && this.openFileNode) {
@@ -224,6 +288,7 @@ export class TextFileEditorComponent implements OnInit {
         this.openFileNode = ctx.currentOpenFileInEditor;
 
         await this.displayFile();
+        this.initLangServer(this.openFileNode);
       },
       this.destroyRef
     );
@@ -243,6 +308,8 @@ export class TextFileEditorComponent implements OnInit {
         parent: container,
         state: this.savedState,
       });
+
+      this.stringContent = this.savedState.doc.toString();
       return;
     }
 

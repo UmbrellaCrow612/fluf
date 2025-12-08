@@ -3,5 +3,5 @@
  * @returns Electron api
  */
 export function getElectronApi(): ElectronApi {
-  return (window as unknown as EWindow).electronApi;
+  return (window as unknown as EWindow).electronApi; 
 }
