@@ -92,20 +92,25 @@ export class TextFileEditorComponent implements OnInit {
     console.log('Language server started for ' + this.languageServer);
   }
   /**
-   * Define custom logic to un when the server responds such as adding intlisense warnings etc
+   * Define custom logic to run when the server responds such as adding intlisense warnings etc
    */
   private onLanguageServerResponse: serverResponseCallback = (data) => {
+    // todo add diagnotics to the UI
     console.log(data);
   };
+  /** Incremented every time a request is sent to language service */
+  private requestSequenceNumber = 0;
 
   /** Runs when doc changes and you want to send it to server for checks */
   private sendServerMessage = () => {
     if (this.languageServer && this.openFileNode) {
+      this.requestSequenceNumber = this.requestSequenceNumber + 1;
+
       switch (this.languageServer) {
         case 'js/ts':
           this.languageService.sendMessage(
             {
-              seq: 0,
+              seq: this.requestSequenceNumber,
               type: 'request',
               command: 'updateOpen',
               arguments: {
