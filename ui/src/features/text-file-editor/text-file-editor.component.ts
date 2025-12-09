@@ -15,7 +15,11 @@ import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import { LanguageServer } from '../language/type';
+import {
+  LanguageServer,
+  TsServerDiagnostic,
+  TsServerDiagnosticEvent,
+} from '../language/type';
 import { LanguageService } from '../language/language.service';
 
 @Component({
@@ -91,35 +95,67 @@ export class TextFileEditorComponent implements OnInit {
 
     console.log('Language server started for ' + this.languageServer);
   }
+
+  /** Contains a list of all ts server errors */
+  private tsErrors: Map<string, TsServerDiagnostic> = new Map();
+
   /**
    * Define custom logic to run when the server responds such as adding intlisense warnings etc
    */
-  private onLanguageServerResponse: serverResponseCallback = (data) => {
-    // todo add diagnotics to the UI
-    console.log(data);
+  private onLanguageServerResponse: serverResponseCallback = (data: any) => {
+    // Handle TS typescript
+    if (Array.isArray(data) && data[0].body && data[0].body.diagnostics) {
+      let tdata = data as TsServerDiagnosticEvent[];
+      tdata.forEach((x) => {
+        x.body.diagnostics.forEach((y) => {
+          if (y.category == 'error') {
+            let key = `${y.category}-${y.code}-${y.end.line}-${y.end.offset}-${y.start.line}-${y.start.offset}-${y.text}`
+            if(!this.tsErrors.has(key)){
+              this.tsErrors.set(key, y)
+            }
+          }
+        });
+      });
+
+      console.log(this.tsErrors);
+
+      return;
+    }
+
+    // call a debouce add lint to code mirror which gose through all errors and whicuever one has errors add lint for it
   };
-  /** Incremented every time a request is sent to language service */
-  private requestSequenceNumber = 0;
+
+  generateSeq() {
+    // Generate a random integer as seq
+    return Math.floor(Math.random() * 1_000_000);
+  }
 
   /** Runs when doc changes and you want to send it to server for checks */
   private sendServerMessage = () => {
     if (this.languageServer && this.openFileNode) {
-      this.requestSequenceNumber = this.requestSequenceNumber + 1;
-
       switch (this.languageServer) {
         case 'js/ts':
           this.languageService.sendMessage(
             {
-              seq: this.requestSequenceNumber,
+              seq: this.generateSeq(),
               type: 'request',
-              command: 'updateOpen',
+              command: 'open',
               arguments: {
-                openFiles: [
-                  {
-                    file: this.openFileNode?.path,
-                    fileContent: this.stringContent,
-                  },
-                ],
+                file: this.openFileNode.path,
+                fileContent: this.stringContent,
+              },
+            },
+            this.languageServer
+          );
+
+          // Request errors
+          this.languageService.sendMessage(
+            {
+              seq: this.generateSeq(),
+              type: 'request',
+              command: 'geterr',
+              arguments: {
+                files: [this.openFileNode.path],
               },
             },
             this.languageServer
