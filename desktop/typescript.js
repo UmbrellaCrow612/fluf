@@ -17,6 +17,13 @@ let childSpawnRef = null;
  */
 let stdoutBuffer = "";
 
+/** Request sequencse number  */
+let seq = 0;
+
+/** Get the next seq  */
+const getNextSeq = () => seq++;
+
+/** Parses the stdout  */
 const parseStdout = () => {};
 
 const startTsServer = () => {
@@ -30,6 +37,7 @@ const startTsServer = () => {
 
   childSpawnRef.stdout.on("data", (data) => {
     stdoutBuffer += data.toString();
+    parseStdout();
   });
 
   childSpawnRef.stderr.on("data", (data) => {
@@ -61,31 +69,28 @@ const stopTsServer = () => {
  * @param {import("electron").IpcMain} ipcMain
  */
 const registerTsListeners = (ipcMain) => {
-  ipcMain.on(
-    "tsserver:file:open",
-    (_, filePath, fileContent, requestNumber) => {
-      if (!childSpawnRef) return;
-
-      childSpawnRef.stdin.write(
-        JSON.stringify({
-          seq: requestNumber,
-          type: "request",
-          command: "open",
-          arguments: {
-            file: filePath,
-            fileContent: fileContent,
-          },
-        }) + "\n"
-      );
-    }
-  );
-
-  ipcMain.on("tsserver:file:edit", (_, filePath, newContent, requestNumber) => {
+  ipcMain.on("tsserver:file:open", (_, filePath, fileContent) => {
     if (!childSpawnRef) return;
 
     childSpawnRef.stdin.write(
       JSON.stringify({
-        seq: requestNumber,
+        seq: getNextSeq(),
+        type: "request",
+        command: "open",
+        arguments: {
+          file: filePath,
+          fileContent: fileContent,
+        },
+      }) + "\n"
+    );
+  });
+
+  ipcMain.on("tsserver:file:edit", (_, filePath, newContent) => {
+    if (!childSpawnRef) return;
+
+    childSpawnRef.stdin.write(
+      JSON.stringify({
+        seq: getNextSeq(),
         type: "request",
         command: "updateOpen",
         arguments: {
@@ -96,12 +101,12 @@ const registerTsListeners = (ipcMain) => {
     );
   });
 
-  ipcMain.on("tsserver:file:save", (_, filePath, requestNumber) => {
+  ipcMain.on("tsserver:file:save", (_, filePath) => {
     if (!childSpawnRef) return;
 
     childSpawnRef.stdin.write(
       JSON.stringify({
-        seq: requestNumber,
+        seq: getNextSeq(),
         type: "request",
         command: "save",
         arguments: {
@@ -111,12 +116,12 @@ const registerTsListeners = (ipcMain) => {
     );
   });
 
-  ipcMain.on("tsserver:file:close", (_, filePath, requestNumber) => {
+  ipcMain.on("tsserver:file:close", (_, filePath) => {
     if (!childSpawnRef) return;
 
     childSpawnRef.stdin.write(
       JSON.stringify({
-        seq: requestNumber,
+        seq: getNextSeq(),
         type: "request",
         command: "close",
         arguments: {
