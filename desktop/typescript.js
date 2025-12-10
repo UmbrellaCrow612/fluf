@@ -24,18 +24,6 @@ let seq = 0;
 const getNextSeq = () => seq++;
 
 /**
- * By filepath and latest diognostics 
- * @type {Map<string, any[]>} 
- * */
-const diagnosticBuffer = new Map();
-
-// Timeout reference for the debounce/throttle mechanism
-let diagnosticTimeoutRef = null;
-
-// How long to wait before sending diagnostics (e.g., 200ms)
-const DIAGNOSTICS_DELAY_MS = 200;
-
-/**
  * Parses the stdout buffer from TS server
  */
 const parseStdout = () => {

@@ -455,6 +455,41 @@
  * @returns {Promise<boolean>} If it could or could not write to the file
  */
 
+/**
+ * List of what the value of the event field can be
+ * @typedef {"projectLoadingStart" | "projectLoadingFinish" |
+ * "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" |
+ * "configFileDiag" | "typingsInstallerPid" | "setTypings" | "typingsInstalled" |"telemetry"
+ * | "largeFileReferenced"} tsServerOutputEvent
+ */
+
+/**
+ * Represents a diagnostic sent from ts server output
+ * @typedef {Object} tsServerOutputDiagnostic
+ * @property {{line:number, offset: number}} start - Cords of the start
+ * @property {{line:number, offset: number}} end - Cords of the end
+ * @property {string} text - Message
+ * @property {number} code - The code
+ * @property {"suggestion" | "message" | "error"} category - What type of diagnostic it is
+ * @property {boolean} [reportsUnnecessary] - Another field it reports
+ */
+
+/**
+ * The shape the body can be in
+ * @typedef {Object} tsServerOutputBody
+ * @property {number} [pid] - Optional could contain the PID number
+ * @property {string} [file] - The file path
+ * @property {tsServerOutputDiagnostic[]} [diagnostics] - List of diagnostics
+ */
+
+/**
+ * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
+ * @typedef {Object} tsServerOutput
+ * @property {number} seq - The sequence
+ * @property {"request" | "response" | "event"} type - What type this message is
+ * @property {tsServerOutputEvent} event - What type of event was emitted
+ * @property {tsServerOutputBody} body - The body of the output
+ */
 
 /**
  * @typedef {Object} tsServer
