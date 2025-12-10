@@ -455,32 +455,9 @@
  * @returns {Promise<boolean>} If it could or could not write to the file
  */
 
-/**
- * Sends a message to the typescript server
- * @callback sendServerMessage
- * @param {Object} message - Object to pass to the TS server
- * @returns {void} Nothing
- */
 
 /**
- * Runs when listening to a specific server and you want to run custom callback
- * @callback serverResponseCallback
- * @param {string | Object} data - The data parsed from the server
- * @returns {void} Nothing
- */
-
-/**
- * Runs the callback when server responds
- * @callback onServerResponse
- * @param {serverResponseCallback} callback - The callback to run
- * @returns {voidCallback} Unsub callback to stop
- */
-
-/**
- * Represents the typescript server API
  * @typedef {Object} tsServer
- * @property {sendServerMessage} sendMessage - Forward a message to the TS server
- * @property {onServerResponse} onResponse - React to TS server responses and run custom logic
  */
 
 /**

@@ -23,8 +23,52 @@ let seq = 0;
 /** Get the next seq  */
 const getNextSeq = () => seq++;
 
-/** Parses the stdout  */
-const parseStdout = () => {};
+/**
+ * By filepath and latest diognostics 
+ * @type {Map<string, any[]>} 
+ * */
+const diagnosticBuffer = new Map();
+
+// Timeout reference for the debounce/throttle mechanism
+let diagnosticTimeoutRef = null;
+
+// How long to wait before sending diagnostics (e.g., 200ms)
+const DIAGNOSTICS_DELAY_MS = 200;
+
+/**
+ * Parses the stdout buffer from TS server
+ */
+const parseStdout = () => {
+  let newlineIndex;
+  while ((newlineIndex = stdoutBuffer.indexOf("\n")) >= 0) {
+    const line = stdoutBuffer.slice(0, newlineIndex).trim();
+    stdoutBuffer = stdoutBuffer.slice(newlineIndex + 1);
+
+    if (!line) continue;
+
+    try {
+      const message = JSON.parse(line);
+      handleTsMessage(message);
+    } catch (err) {
+      console.error("Failed to parse TS server message:", line, err);
+    }
+  }
+};
+
+/**
+ * Handle TS server messages
+ * @param {any} message
+ */
+const handleTsMessage = (message) => {
+  // Example: log server events
+  if (message.type === "response") {
+    console.log("TS server response:", message);
+  } else if (message.type === "event") {
+    console.log("TS server event:", message.event, message.body);
+  } else {
+    console.log("TS server unknown message:", message);
+  }
+};
 
 const startTsServer = () => {
   const path = getTsServerPath();
@@ -69,7 +113,7 @@ const stopTsServer = () => {
  * @param {import("electron").IpcMain} ipcMain
  */
 const registerTsListeners = (ipcMain) => {
-  ipcMain.on("tsserver:file:open", (_, filePath, fileContent) => {
+  ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
     if (!childSpawnRef) return;
 
     childSpawnRef.stdin.write(
