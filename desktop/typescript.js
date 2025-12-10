@@ -75,7 +75,7 @@ const registerTsListeners = (ipcMain) => {
             file: filePath,
             fileContent: fileContent,
           },
-        })
+        }) + "\n"
       );
     }
   );
@@ -92,7 +92,7 @@ const registerTsListeners = (ipcMain) => {
           file: filePath,
           fileContent: newContent,
         },
-      })
+      }) + "\n"
     );
   });
 
@@ -107,7 +107,7 @@ const registerTsListeners = (ipcMain) => {
         arguments: {
           file: filePath,
         },
-      })
+      }) + "\n"
     );
   });
 
@@ -122,7 +122,7 @@ const registerTsListeners = (ipcMain) => {
         arguments: {
           file: filePath,
         },
-      })
+      }) + "\n"
     );
   });
 };
