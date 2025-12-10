@@ -92,7 +92,6 @@ const startTsServer = () => {
 
   childSpawnRef.stdout.on("data", (data) => {
     stdoutBuffer += data.toString();
-    console.log(" YO " + data)
     parseStdout();
   });
 
@@ -145,6 +144,18 @@ const registerTsListeners = (ipcMain) => {
         },
       }) + "\n"
     );
+
+    childSpawnRef.stdin.write(
+      JSON.stringify({
+        seq: getNextSeq(),
+        type: "request",
+        command: "geterr",
+        arguments: {
+          delay: 0,
+          files: [filePath],
+        },
+      }) + "\n"
+    );
   });
 
   ipcMain.on("tsserver:file:edit", (event, filePath, newContent) => {
@@ -167,6 +178,18 @@ const registerTsListeners = (ipcMain) => {
         },
       }) + "\n"
     );
+
+    childSpawnRef.stdin.write(
+      JSON.stringify({
+        seq: getNextSeq(),
+        type: "request",
+        command: "geterr",
+        arguments: {
+          delay: 0,
+          files: [filePath],
+        },
+      }) + "\n"
+    );
   });
 
   ipcMain.on("tsserver:file:save", (event, filePath) => {
@@ -185,6 +208,18 @@ const registerTsListeners = (ipcMain) => {
         command: "save",
         arguments: {
           file: filePath,
+        },
+      }) + "\n"
+    );
+
+    childSpawnRef.stdin.write(
+      JSON.stringify({
+        seq: getNextSeq(),
+        type: "request",
+        command: "geterr",
+        arguments: {
+          delay: 0,
+          files: [filePath],
         },
       }) + "\n"
     );
