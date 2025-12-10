@@ -32,19 +32,26 @@ const gitApi = {
 const tsServer = {
   onResponse: (callback) => {
     /**
+     * Custom listner to register and unsub
      * @param {import("electron").IpcRendererEvent} _event
-     * @param {...any} args
+     * @param {tsServerOutput} message
      */
-    let listener = (_event, ...args) => {
-      callback(args);
+    let listener = (_event, message) => {
+      callback(message);
     };
 
-    ipcRenderer.on("tsserver-response", listener);
+    ipcRenderer.on("tsserver:message", listener);
 
-    return () => ipcRenderer.removeListener("tsserver-response", listener);
+    return () => ipcRenderer.removeListener("tsserver:message", listener);
   },
 
-  sendMessage: (message) => ipcRenderer.send("tsserver-send", message),
+  closeFile: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
+  editFile: (filePath, content) =>
+    ipcRenderer.send("tsserver:file:edit", filePath, content),
+  openFile: (filePath, content) =>
+    ipcRenderer.send("tsserver:file:open", filePath, content),
+  saveFile: (filePath, content) =>
+    ipcRenderer.send("tsserver:file:save", filePath, content),
 };
 
 /**

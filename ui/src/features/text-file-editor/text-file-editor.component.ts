@@ -88,46 +88,11 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    this.serverUnSub = this.languageService.onResponse(
-      this.onLanguageServerResponse,
-      this.languageServer
-    );
+    this.serverUnSub = this.api.tsServer.onResponse((mess) => {
+      console.log(JSON.stringify(mess)); // todo change
+    });
 
     console.log('Language server started for ' + this.languageServer);
-  }
-
-  /** Contains a list of all ts server errors */
-  private tsErrors: Map<string, TsServerDiagnostic> = new Map();
-
-  /**
-   * Define custom logic to run when the server responds such as adding intlisense warnings etc
-   */
-  private onLanguageServerResponse: serverResponseCallback = (data: any) => {
-    // Handle TS typescript
-    if (Array.isArray(data) && data[0].body && data[0].body.diagnostics) {
-      let tdata = data as TsServerDiagnosticEvent[];
-      tdata.forEach((x) => {
-        x.body.diagnostics.forEach((y) => {
-          if (y.category == 'error') {
-            let key = `${y.category}-${y.code}-${y.end.line}-${y.end.offset}-${y.start.line}-${y.start.offset}-${y.text}`
-            if(!this.tsErrors.has(key)){
-              this.tsErrors.set(key, y)
-            }
-          }
-        });
-      });
-
-      console.log(this.tsErrors);
-
-      return;
-    }
-
-    // call a debouce add lint to code mirror which gose through all errors and whicuever one has errors add lint for it
-  };
-
-  generateSeq() {
-    // Generate a random integer as seq
-    return Math.floor(Math.random() * 1_000_000);
   }
 
   /** Runs when doc changes and you want to send it to server for checks */
@@ -135,30 +100,9 @@ export class TextFileEditorComponent implements OnInit {
     if (this.languageServer && this.openFileNode) {
       switch (this.languageServer) {
         case 'js/ts':
-          this.languageService.sendMessage(
-            {
-              seq: this.generateSeq(),
-              type: 'request',
-              command: 'open',
-              arguments: {
-                file: this.openFileNode.path,
-                fileContent: this.stringContent,
-              },
-            },
-            this.languageServer
-          );
-
-          // Request errors
-          this.languageService.sendMessage(
-            {
-              seq: this.generateSeq(),
-              type: 'request',
-              command: 'geterr',
-              arguments: {
-                files: [this.openFileNode.path],
-              },
-            },
-            this.languageServer
+          this.api.tsServer.editFile(
+            this.openFileNode.path,
+            this.stringContent
           );
           break;
 
@@ -395,6 +339,8 @@ export class TextFileEditorComponent implements OnInit {
 
     this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
     this.isLoading = false;
+
+    this.api.tsServer.openFile(this.openFileNode.path, this.stringContent)
 
     this.renderCodeMirror();
   }

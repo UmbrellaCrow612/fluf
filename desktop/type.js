@@ -492,7 +492,57 @@
  */
 
 /**
+ * @callback tsServerResponseCallback
+ * @param {tsServerOutput} message - The message sent
+ * @returns {void} Nothing
+ */
+
+/**
+ * Register a callback to run when ts server emits a message
+ * @callback onTsServerResponse
+ * @param {tsServerResponseCallback} callback - The callback to run
+ * @returns {voidCallback} Callback to stop running the callback passed
+ */
+
+/**
+ * Writes the file to tsserver stream to watch it and emit stuff for it in the stream
+ * @callback tsServerOpenFile
+ * @param {string} filePath - The path to the file
+ * @param {string} fileContent - The content of the file
+ * @returns {void} Nothing
+ */
+
+/**
+ * Writes the file to the stream as being edited
+ * @callback tsServerEditFile
+ * @param {string} filePath - The path to the file
+ * @param {string} newContent - The new content of the file whole
+ * @returns {void} Nothing
+ */
+
+/**
+ * Save the file to the stream event
+ * @callback tsServerSaveFile
+ * @param {string} filePath - The path to the file
+ * @param {string} content - The full file content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Closes the file into the stream
+ * @callback tsServerCloseFile
+ * @param {string} filePath - The path to the file
+ * @returns {void} Nothing
+ */
+
+/**
+ * The Typescript server
  * @typedef {Object} tsServer
+ * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message
+ * @property {tsServerOpenFile} openFile - Write file to open state within the ts server
+ * @property {tsServerEditFile} editFile - Edit the file in the stream
+ * @property {tsServerSaveFile} saveFile - Save the file to the stream
+ * @property {tsServerCloseFile} closeFile - Close file into the stream
  */
 
 /**

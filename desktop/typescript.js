@@ -24,37 +24,60 @@ let seq = 0;
 const getNextSeq = () => seq++;
 
 /**
- * Parses the stdout buffer from TS server
+ * Callback used to send the latest TS messages
+ * @type {((message: tsServerOutput) => void) | null}
  */
-const parseStdout = () => {
-  let newlineIndex;
-  while ((newlineIndex = stdoutBuffer.indexOf("\n")) >= 0) {
-    const line = stdoutBuffer.slice(0, newlineIndex).trim();
-    stdoutBuffer = stdoutBuffer.slice(newlineIndex + 1);
+let notifyUI = null;
 
-    if (!line) continue;
+/** @type {number | null} */
+let pendingContentLength = null;
+
+const parseStdout = () => {
+  while (true) {
+    // Step 1: Parse header if we don't know body length yet
+    if (pendingContentLength === null) {
+      const headerEnd = stdoutBuffer.indexOf("\r\n\r\n");
+      if (headerEnd === -1) return; // Wait for full header
+
+      const header = stdoutBuffer.slice(0, headerEnd).toString();
+      const match = header.match(/Content-Length:\s*(\d+)/i);
+      if (!match) {
+        console.error("Invalid TS Server header:", header);
+        stdoutBuffer = stdoutBuffer.slice(headerEnd + 4);
+        continue;
+      }
+
+      pendingContentLength = parseInt(match[1], 10);
+      stdoutBuffer = stdoutBuffer.slice(headerEnd + 4);
+    }
+
+    // Step 2: Check if we have full body
+    if (stdoutBuffer.length < pendingContentLength) return;
+
+    const jsonText = stdoutBuffer.slice(0, pendingContentLength);
+    stdoutBuffer = stdoutBuffer.slice(pendingContentLength);
+    pendingContentLength = null;
 
     try {
-      const message = JSON.parse(line);
+      const message = JSON.parse(jsonText);
       handleTsMessage(message);
     } catch (err) {
-      console.error("Failed to parse TS server message:", line, err);
+      console.error(
+        "Failed to parse TS Server JSON:",
+        jsonText.toString(),
+        err
+      );
     }
   }
 };
 
 /**
  * Handle TS server messages
- * @param {any} message
+ * @param {tsServerOutput} message
  */
 const handleTsMessage = (message) => {
-  // Example: log server events
-  if (message.type === "response") {
-    console.log("TS server response:", message);
-  } else if (message.type === "event") {
-    console.log("TS server event:", message.event, message.body);
-  } else {
-    console.log("TS server unknown message:", message);
+  if (notifyUI) {
+    notifyUI(message);
   }
 };
 
@@ -69,6 +92,7 @@ const startTsServer = () => {
 
   childSpawnRef.stdout.on("data", (data) => {
     stdoutBuffer += data.toString();
+    console.log(" YO " + data)
     parseStdout();
   });
 
@@ -104,6 +128,12 @@ const registerTsListeners = (ipcMain) => {
   ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
     if (!childSpawnRef) return;
 
+    if (!notifyUI) {
+      notifyUI = (message) => {
+        event.sender.send(`tsserver:message`, message);
+      };
+    }
+
     childSpawnRef.stdin.write(
       JSON.stringify({
         seq: getNextSeq(),
@@ -117,8 +147,14 @@ const registerTsListeners = (ipcMain) => {
     );
   });
 
-  ipcMain.on("tsserver:file:edit", (_, filePath, newContent) => {
+  ipcMain.on("tsserver:file:edit", (event, filePath, newContent) => {
     if (!childSpawnRef) return;
+
+    if (!notifyUI) {
+      notifyUI = (message) => {
+        event.sender.send(`tsserver:message`, message);
+      };
+    }
 
     childSpawnRef.stdin.write(
       JSON.stringify({
@@ -133,8 +169,14 @@ const registerTsListeners = (ipcMain) => {
     );
   });
 
-  ipcMain.on("tsserver:file:save", (_, filePath) => {
+  ipcMain.on("tsserver:file:save", (event, filePath) => {
     if (!childSpawnRef) return;
+
+    if (!notifyUI) {
+      notifyUI = (message) => {
+        event.sender.send(`tsserver:message`, message);
+      };
+    }
 
     childSpawnRef.stdin.write(
       JSON.stringify({
@@ -148,8 +190,14 @@ const registerTsListeners = (ipcMain) => {
     );
   });
 
-  ipcMain.on("tsserver:file:close", (_, filePath) => {
+  ipcMain.on("tsserver:file:close", (event, filePath) => {
     if (!childSpawnRef) return;
+
+    if (!notifyUI) {
+      notifyUI = (message) => {
+        event.sender.send(`tsserver:message`, message);
+      };
+    }
 
     childSpawnRef.stdin.write(
       JSON.stringify({
