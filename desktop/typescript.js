@@ -60,6 +60,20 @@ const s = {
 };
 
 /**
+ * Helper to write a mesage to the typescript stdin procsess
+ * @param {import("./type").tsServerWritableObject} message The message to write to stdin stream of typescript processes
+ */
+function write(message) {
+  if (!childSpawnRef) return;
+
+  try {
+    childSpawnRef.stdin.write(JSON.stringify(message) + "\n"); // new line to make each message seperate
+  } catch (error) {
+    console.log("Failed to write to tserver " + error);
+  }
+}
+
+/**
  * Callback used to send the latest TS messages to the main window
  * @type {(message: import("./type").tsServerOutput) => void}
  */
@@ -166,8 +180,6 @@ const registerTsListeners = (ipcMain, win) => {
   mainWindowRef = win;
 
   ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
-    if (!childSpawnRef) return;
-
     /** @type {import("./type").tsServerWritableObject} */
     let oObj = {
       seq: getNextSeq(),
@@ -182,13 +194,11 @@ const registerTsListeners = (ipcMain, win) => {
 
     let gter = s.Geterr(filePath);
 
-    childSpawnRef.stdin.write(JSON.stringify(oObj) + "\n");
-    childSpawnRef.stdin.write(JSON.stringify(gter) + "\n");
+    write(oObj);
+    write(gter);
   });
 
   ipcMain.on("tsserver:file:edit", (event, filePath, newContent) => {
-    if (!childSpawnRef) return;
-
     /** @type {import("./type").tsServerWritableObject} */
     let eObj = {
       seq: getNextSeq(),
@@ -203,13 +213,11 @@ const registerTsListeners = (ipcMain, win) => {
 
     let gter = s.Geterr(filePath);
 
-    childSpawnRef.stdin.write(JSON.stringify(eObj) + "\n");
-    childSpawnRef.stdin.write(JSON.stringify(gter) + "\n");
+    write(eObj);
+    write(gter);
   });
 
   ipcMain.on("tsserver:file:save", (event, filePath) => {
-    if (!childSpawnRef) return;
-
     /** @type {import("./type").tsServerWritableObject} */
     let sObj = {
       seq: getNextSeq(),
@@ -224,13 +232,11 @@ const registerTsListeners = (ipcMain, win) => {
 
     let gter = s.Geterr(filePath);
 
-    childSpawnRef.stdin.write(JSON.stringify(sObj) + "\n");
-    childSpawnRef.stdin.write(JSON.stringify(gter) + "\n");
+    write(sObj);
+    write(gter);
   });
 
   ipcMain.on("tsserver:file:close", (event, filePath) => {
-    if (!childSpawnRef) return;
-
     /** @type {import("./type").tsServerWritableObject} */
     let obj = {
       seq: getNextSeq(),
@@ -242,14 +248,12 @@ const registerTsListeners = (ipcMain, win) => {
         },
     };
 
-    childSpawnRef.stdin.write(JSON.stringify(obj) + "\n");
+    write(obj);
   });
 
   ipcMain.on(
     "tsserver:file:completion",
     (event, filePath, lineNumber, lineOffest) => {
-      if (!childSpawnRef) return;
-
       /** @type {import("./type").tsServerWritableObject}*/
       let obj = {
         seq: getNextSeq(),
@@ -263,7 +267,7 @@ const registerTsListeners = (ipcMain, win) => {
           },
       };
 
-      childSpawnRef.stdin.write(JSON.stringify(obj) + "\n");
+      write(obj);
     }
   );
 };
