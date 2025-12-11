@@ -9,18 +9,16 @@ import {
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
+import { linter, Diagnostic } from '@codemirror/lint';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import {
-  LanguageServer,
-  TsServerDiagnostic,
-  TsServerDiagnosticEvent,
-} from '../language/type';
+import { LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
+import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from './typescript';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -37,6 +35,14 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly inMemory = inject(InMemoryContextService);
   private readonly languageService = inject(LanguageService);
+
+  /**
+   * Contains a map of file paths and then a map of ecific types of diagnostics like error, warning suggestion keys then the diagnostics
+   */
+  private fileAndDiagnostics = new Map<
+    /** file path is key */ string,
+    Map<tsServerOutputEvent, Diagnostic[]>
+  >();
 
   private getLanguageExtension(ext: string) {
     switch (ext.toLowerCase()) {
@@ -57,6 +63,11 @@ export class TextFileEditorComponent implements OnInit {
   /** Callback to unsub reacting to language server changes */
   private serverUnSub: voidCallback | null = null;
 
+  /**
+   * Get the specific ;language server needed for the file based on it's extension
+   * @param extension The file extension
+   * @returns Lang server or null
+   */
   private getLanguageServer(extension: string): LanguageServer | null {
     switch (extension) {
       case 'js':
@@ -72,43 +83,74 @@ export class TextFileEditorComponent implements OnInit {
   }
   private languageServer: LanguageServer | null = null;
 
+  /**
+   * Launch the language server - AFTER - rendering the UI for the given node in the UI
+   * @param fileNode The current open file node in the editor view
+   */
   private initLangServer(fileNode: fileNode | null) {
     if (!fileNode) {
       console.warn('No file selected cannot start language server');
       return;
     }
 
+    if (!this.codeMirrorView) {
+      console.warn('No code mirror view init');
+      return;
+    }
+
     if (this.serverUnSub) {
-      this.serverUnSub();
+      this.serverUnSub(); // unsub from previous lang server
     }
 
     this.languageServer = this.getLanguageServer(fileNode.extension);
     if (!this.languageServer) {
       console.warn('No language server found for ' + fileNode.extension);
       return;
-    }
+    } 
+
+    // todo make it generic
 
     this.serverUnSub = this.api.tsServer.onResponse((mess) => {
-      console.log(JSON.stringify(mess)); // todo change
+      if (!this.codeMirrorView) {
+        console.warn('No code mirrror view');
+        return;
+      }
+
+      let mapped = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
+        [mess],
+        this.codeMirrorView.state
+      );
+
+      if (!this.fileAndDiagnostics.has(fileNode.path)) {
+        let specificDiagnoticMap = new Map<tsServerOutputEvent, Diagnostic[]>();
+
+        specificDiagnoticMap.set(mess.event, mapped);
+
+        this.fileAndDiagnostics.set(
+          this.openFileNode!.path,
+          specificDiagnoticMap
+        );
+      } else {
+        let map = this.fileAndDiagnostics.get(fileNode.path);
+        map?.set(mess.event, mapped); // basically overide previous "syntaxDiag" or others new ones that come in
+      }
     });
 
     console.log('Language server started for ' + this.languageServer);
   }
 
-  /** Runs when doc changes and you want to send it to server for checks */
+  /** Runs when the editor dose edits */
   private sendServerMessage = () => {
-    if (this.languageServer && this.openFileNode) {
-      switch (this.languageServer) {
-        case 'js/ts':
-          this.api.tsServer.editFile(
-            this.openFileNode.path,
-            this.stringContent
-          );
-          break;
+    if (!this.languageServer || !this.openFileNode) return;
 
-        default:
-          break;
-      }
+    switch (this.languageServer) {
+      case 'js/ts':
+        this.api.tsServer.editFile(this.openFileNode.path, this.stringContent);
+        break;
+
+      default:
+        console.warn('unkown server ' + this.languageServer);
+        break;
     }
   };
 
@@ -214,19 +256,8 @@ export class TextFileEditorComponent implements OnInit {
   updateListener = EditorView.updateListener.of((update) => {
     this.stringContent = update.state.doc.toString();
 
-    if (update.docChanged) {
-      this.savedState = update.state;
-      this.onSaveEvent();
-    }
-
-    if (
-      update.transactions.some(
-        (tr) => tr.isUserEvent('undo') || tr.isUserEvent('redo')
-      )
-    ) {
-      this.savedState = update.state;
-      this.onSaveEvent();
-    }
+    this.savedState = update.state;
+    this.onSaveEvent();
 
     this.sendServerMessage();
   });
@@ -340,7 +371,7 @@ export class TextFileEditorComponent implements OnInit {
     this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
     this.isLoading = false;
 
-    this.api.tsServer.openFile(this.openFileNode.path, this.stringContent)
+    this.api.tsServer.openFile(this.openFileNode.path, this.stringContent);
 
     this.renderCodeMirror();
   }
