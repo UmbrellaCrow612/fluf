@@ -353,4 +353,8 @@ export class TextFileEditorComponent implements OnInit {
 
     return d.get('semanticDiag') ?? [];
   });
+
+  // TODO next
+  // we always keep a track latest just need to re compute linter and file change as for now it sticks old ones but hard pppart is done
+  // then just refactor it to use the lang service pass lang server and ppas it to correct imppl of the server but for it's ok
 }
