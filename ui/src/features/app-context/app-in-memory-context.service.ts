@@ -22,7 +22,6 @@ export class InMemoryContextService {
     isCreateFileOrFolderActive: null,
     isEditorResize: null,
     refreshDirectory: null,
-    savedEditorStates: new Map(),
   };
 
   /**
@@ -79,10 +78,7 @@ export class InMemoryContextService {
    * @returns {InMemoryAppContext}
    */
   getSnapShot(): InMemoryAppContext {
-    return {
-      ...this.appContext,
-      savedEditorStates: this.appContext.savedEditorStates, // do not clone
-    };
+    return structuredClone(this.appContext);
   }
 
   /**

@@ -37,6 +37,8 @@ const envFile = path.resolve(__dirname, ".env");
 const packageFile = path.resolve(__dirname, "package.json");
 const distEnvFile = path.join(distFolder, ".env");
 const distPackageFile = path.join(distFolder, "package.json");
+const tsSrc = path.resolve(__dirname, "node_modules/typescript/lib");
+const tsDest = path.join(distFolder, "typescript");
 
 const entryPoints = {
   index: path.resolve(__dirname, "index.js"),
@@ -85,6 +87,14 @@ async function main() {
     log.error("TypeScript failed: " + err.message);
     process.exit(1);
   }
+
+  // Copy over TS server
+  log.info("Copying TypeScript lib files")
+  if (!fs.existsSync(tsSrc)) {
+    log.error("TypeScript library not found in node_modules!");
+    process.exit(1);
+  }
+  fs.cpSync(tsSrc, tsDest, { recursive: true });
 
   // Copy .env
   if (!fs.existsSync(envFile)) {

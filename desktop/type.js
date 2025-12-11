@@ -456,6 +456,96 @@
  */
 
 /**
+ * List of what the value of the event field can be
+ * @typedef {"projectLoadingStart" | "projectLoadingFinish" |
+ * "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" |
+ * "configFileDiag" | "typingsInstallerPid" | "setTypings" | "typingsInstalled" |"telemetry"
+ * | "largeFileReferenced"} tsServerOutputEvent
+ */
+
+/**
+ * Represents a diagnostic sent from ts server output
+ * @typedef {Object} tsServerOutputDiagnostic
+ * @property {{line:number, offset: number}} start - Cords of the start
+ * @property {{line:number, offset: number}} end - Cords of the end
+ * @property {string} text - Message
+ * @property {number} code - The code
+ * @property {"suggestion" | "message" | "error"} category - What type of diagnostic it is
+ * @property {boolean} [reportsUnnecessary] - Another field it reports
+ */
+
+/**
+ * The shape the body can be in
+ * @typedef {Object} tsServerOutputBody
+ * @property {number} [pid] - Optional could contain the PID number
+ * @property {string} [file] - The file path
+ * @property {tsServerOutputDiagnostic[]} [diagnostics] - List of diagnostics
+ */
+
+/**
+ * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
+ * @typedef {Object} tsServerOutput
+ * @property {number} seq - The sequence
+ * @property {"request" | "response" | "event"} type - What type this message is
+ * @property {tsServerOutputEvent} event - What type of event was emitted
+ * @property {tsServerOutputBody} body - The body of the output
+ */
+
+/**
+ * @callback tsServerResponseCallback
+ * @param {tsServerOutput} message - The message sent
+ * @returns {void} Nothing
+ */
+
+/**
+ * Register a callback to run when ts server emits a message
+ * @callback onTsServerResponse
+ * @param {tsServerResponseCallback} callback - The callback to run
+ * @returns {voidCallback} Callback to stop running the callback passed
+ */
+
+/**
+ * Writes the file to tsserver stream to watch it and emit stuff for it in the stream
+ * @callback tsServerOpenFile
+ * @param {string} filePath - The path to the file
+ * @param {string} fileContent - The content of the file
+ * @returns {void} Nothing
+ */
+
+/**
+ * Writes the file to the stream as being edited
+ * @callback tsServerEditFile
+ * @param {string} filePath - The path to the file
+ * @param {string} newContent - The new content of the file whole
+ * @returns {void} Nothing
+ */
+
+/**
+ * Save the file to the stream event
+ * @callback tsServerSaveFile
+ * @param {string} filePath - The path to the file
+ * @param {string} content - The full file content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Closes the file into the stream
+ * @callback tsServerCloseFile
+ * @param {string} filePath - The path to the file
+ * @returns {void} Nothing
+ */
+
+/**
+ * The Typescript server
+ * @typedef {Object} tsServer
+ * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message
+ * @property {tsServerOpenFile} openFile - Write file to open state within the ts server
+ * @property {tsServerEditFile} editFile - Edit the file in the stream
+ * @property {tsServerSaveFile} saveFile - Save the file to the stream
+ * @property {tsServerCloseFile} closeFile - Close file into the stream
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -493,6 +583,8 @@
  *
  * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
  * @property {writeToFile} writeToFile - Write new content for a file, it writes the new content as the new content of the whole file
+ *
+ * @property {tsServer} tsServer - The ts / typescript language server
  */
 
 /**

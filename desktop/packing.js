@@ -1,3 +1,7 @@
+/*
+ * Contains all code and helppers todo with app packing state or packing in general
+ */
+
 const path = require("path");
 const fs = require("fs");
 
@@ -20,10 +24,21 @@ const binPath = () => {
   } else {
     p = path.join(__dirname, "bin");
   }
-  return p
+  return p;
 };
+
+/**
+ * Get the path to the ts server in both dev and prod
+ * @returns {string}
+ */
+function getTsServerPath() {
+  return isPackaged()
+    ? path.join(__dirname, "typescript", "tsserver.js")
+    : path.join(__dirname, "node_modules", "typescript", "lib", "tsserver.js");
+}
 
 module.exports = {
   isPackaged,
-  binPath
+  binPath,
+  getTsServerPath,
 };

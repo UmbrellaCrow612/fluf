@@ -503,6 +503,129 @@ type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, f
  */
 type writeToFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string, content: string) => Promise<boolean>;
 /**
+ * List of what the value of the event field can be
+ */
+type tsServerOutputEvent = "projectLoadingStart" | "projectLoadingFinish" | "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" | "configFileDiag" | "typingsInstallerPid" | "setTypings" | "typingsInstalled" | "telemetry" | "largeFileReferenced";
+/**
+ * Represents a diagnostic sent from ts server output
+ */
+type tsServerOutputDiagnostic = {
+    /**
+     * - Cords of the start
+     */
+    start: {
+        line: number;
+        offset: number;
+    };
+    /**
+     * - Cords of the end
+     */
+    end: {
+        line: number;
+        offset: number;
+    };
+    /**
+     * - Message
+     */
+    text: string;
+    /**
+     * - The code
+     */
+    code: number;
+    /**
+     * - What type of diagnostic it is
+     */
+    category: "suggestion" | "message" | "error";
+    /**
+     * - Another field it reports
+     */
+    reportsUnnecessary?: boolean | undefined;
+};
+/**
+ * The shape the body can be in
+ */
+type tsServerOutputBody = {
+    /**
+     * - Optional could contain the PID number
+     */
+    pid?: number | undefined;
+    /**
+     * - The file path
+     */
+    file?: string | undefined;
+    /**
+     * - List of diagnostics
+     */
+    diagnostics?: tsServerOutputDiagnostic[] | undefined;
+};
+/**
+ * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
+ */
+type tsServerOutput = {
+    /**
+     * - The sequence
+     */
+    seq: number;
+    /**
+     * - What type this message is
+     */
+    type: "request" | "response" | "event";
+    /**
+     * - What type of event was emitted
+     */
+    event: tsServerOutputEvent;
+    /**
+     * - The body of the output
+     */
+    body: tsServerOutputBody;
+};
+type tsServerResponseCallback = (message: tsServerOutput) => void;
+/**
+ * Register a callback to run when ts server emits a message
+ */
+type onTsServerResponse = (callback: tsServerResponseCallback) => voidCallback;
+/**
+ * Writes the file to tsserver stream to watch it and emit stuff for it in the stream
+ */
+type tsServerOpenFile = (filePath: string, fileContent: string) => Promise<void>;
+/**
+ * Writes the file to the stream as being edited
+ */
+type tsServerEditFile = (filePath: string, newContent: string) => Promise<void>;
+/**
+ * Save the file to the stream event
+ */
+type tsServerSaveFile = (filePath: string, content: string) => Promise<void>;
+/**
+ * Closes the file into the stream
+ */
+type tsServerCloseFile = (filePath: string) => Promise<void>;
+/**
+ * The Typescript server
+ */
+type tsServer = {
+    /**
+     * - Register callback when ts server emits a event message
+     */
+    onResponse: onTsServerResponse;
+    /**
+     * - Write file to open state within the ts server
+     */
+    openFile: tsServerOpenFile;
+    /**
+     * - Edit the file in the stream
+     */
+    editFile: tsServerEditFile;
+    /**
+     * - Save the file to the stream
+     */
+    saveFile: tsServerSaveFile;
+    /**
+     * - Close file into the stream
+     */
+    closeFile: tsServerCloseFile;
+};
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 type ElectronApi = {
@@ -622,6 +745,10 @@ type ElectronApi = {
      * - Write new content for a file, it writes the new content as the new content of the whole file
      */
     writeToFile: writeToFile;
+    /**
+     * - The ts / typescript language server
+     */
+    tsServer: tsServer;
 };
 /**
  * Extends the global `window` object to include the Electron API.

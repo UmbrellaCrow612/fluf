@@ -29,9 +29,9 @@ import { HotKeyService } from '../hotkeys/hot-key.service';
 import { EditorHomePageComponent } from './editor-home-page/editor-home-page.component';
 import { OpenFileContainerTabsComponent } from '../open-files/open-file-container-tabs/open-file-container-tabs.component';
 import { OpenFileContainerBottomComponent } from '../open-files/open-file-container-bottom/open-file-container-bottom.component';
-import { TextFileEditorComponent } from '../open-files/text-file-editor/text-file-editor.component';
 import { ImageEditorComponent } from '../img-editor/image-editor.component';
 import { DocumentEditorComponent } from '../document-editor/document-editor.component';
+import { TextFileEditorComponent } from '../text-file-editor/text-file-editor.component';
 type unSub = () => Promise<void>;
 
 @Component({

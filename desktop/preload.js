@@ -28,6 +28,32 @@ const gitApi = {
   gitStatus: (_event, dir) => ipcRenderer.invoke("git:status", dir),
 };
 
+/** @type {tsServer} */
+const tsServer = {
+  onResponse: (callback) => {
+    /**
+     * Custom listner to register and unsub
+     * @param {import("electron").IpcRendererEvent} _event
+     * @param {tsServerOutput} message
+     */
+    let listener = (_event, message) => {
+      callback(message);
+    };
+
+    ipcRenderer.on("tsserver:message", listener);
+
+    return () => ipcRenderer.removeListener("tsserver:message", listener);
+  },
+
+  closeFile: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
+  editFile: (filePath, content) =>
+    ipcRenderer.send("tsserver:file:edit", filePath, content),
+  openFile: (filePath, content) =>
+    ipcRenderer.send("tsserver:file:open", filePath, content),
+  saveFile: (filePath, content) =>
+    ipcRenderer.send("tsserver:file:save", filePath, content),
+};
+
 /**
  * @type {ElectronApi}
  */
@@ -102,6 +128,7 @@ const api = {
   fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
 
   gitApi,
+  tsServer,
 
   writeImageToClipboard: (_event, fp) =>
     ipcRenderer.invoke("clipboard:write:image", fp),

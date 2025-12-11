@@ -30,12 +30,23 @@ const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
+const {
+  startLanguageServers,
+  stopLanguageServers,
+} = require("./language-server");
+const { registerTsListeners } = require("./typescript");
+
+/**
+ * Global ref to main window used for sending events without being coupled to incoming events
+ * @type {import("electron").BrowserWindow | null}
+ */
+let mainWindow = null;
 
 loadEnv();
 registerProtocols();
 
 const createWindow = () => {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     minWidth: 800,
     height: 600,
@@ -48,20 +59,25 @@ const createWindow = () => {
   });
 
   if (process.env.MODE === "dev") {
-    // In dev we can just load the running react app on the website port it is running on instead of loading it from file system works the same
+    // In dev we can just load the running app on the website port it is running on instead of loading it from file system works the same
     console.log(
       "Running dev mode loading website from " + process.env.DEV_UI_PORT + "\n"
     );
 
-    // @ts-ignore
-    win.loadURL(process.env.DEV_UI_PORT);
+    let devUIPort = process.env.DEV_UI_PORT;
+    if (!devUIPort) {
+      throw new Error("No dev UI port DEV_UI_PORT env set or missing");
+    }
+
+    mainWindow.loadURL(devUIPort);
   } else {
-    win.loadFile("index.html");
-    // todo remove dev tools
+    mainWindow.loadFile("index.html");
   }
 };
 
 app.whenReady().then(() => {
+  createWindow();
+
   ipcMain.handle("file:read", readFileImpl);
   ipcMain.handle("file:create", createFileImpl);
   ipcMain.handle("file:exists", fileExistsImpl);
@@ -95,11 +111,13 @@ app.whenReady().then(() => {
   registerClipboardListeners(ipcMain);
   registerPdfListeners(ipcMain, protocol);
   registerImageListeners(ipcMain, protocol);
+  registerTsListeners(ipcMain, mainWindow);
 
-  createWindow();
+  startLanguageServers();
 });
 
 app.on("before-quit", () => {
   cleanUpWatchers();
   stopWatchingGitRepo();
+  stopLanguageServers();
 });
