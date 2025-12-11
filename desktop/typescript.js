@@ -7,6 +7,12 @@ const { spawn } = require("child_process");
 const { getTsServerPath } = require("./packing");
 
 /**
+ *  A local ref to main window 
+ * @type {import("electron").BrowserWindow | null}
+ */
+let mainWindowRef = null;
+
+/**
  * Refrence to the child processes spawned for the TS typescript server
  *  @type {import("child_process").ChildProcessWithoutNullStreams | null}
  */
@@ -24,10 +30,14 @@ let seq = 0;
 const getNextSeq = () => seq++;
 
 /**
- * Callback used to send the latest TS messages
- * @type {((message: tsServerOutput) => void) | null}
+ * Callback used to send the latest TS messages to the main window
+ * @type {(message: tsServerOutput) => void}
  */
-let notifyUI = null;
+let notifyUI = (message) => {
+  if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+    mainWindowRef.webContents.send("tsserver:message", message);
+  }
+};
 
 /** @type {number | null} */
 let pendingContentLength = null;
@@ -76,9 +86,7 @@ const parseStdout = () => {
  * @param {tsServerOutput} message
  */
 const handleTsMessage = (message) => {
-  if (notifyUI) {
     notifyUI(message);
-  }
 };
 
 const startTsServer = () => {
@@ -122,16 +130,13 @@ const stopTsServer = () => {
 /**
  * Register all TS main events listeners
  * @param {import("electron").IpcMain} ipcMain
+ * @param {import("electron").BrowserWindow | null} win
  */
-const registerTsListeners = (ipcMain) => {
+const registerTsListeners = (ipcMain, win) => {
+  mainWindowRef = win
+
   ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
     if (!childSpawnRef) return;
-
-    if (!notifyUI) {
-      notifyUI = (message) => {
-        event.sender.send(`tsserver:message`, message);
-      };
-    }
 
     childSpawnRef.stdin.write(
       JSON.stringify({
@@ -161,12 +166,6 @@ const registerTsListeners = (ipcMain) => {
   ipcMain.on("tsserver:file:edit", (event, filePath, newContent) => {
     if (!childSpawnRef) return;
 
-    if (!notifyUI) {
-      notifyUI = (message) => {
-        event.sender.send(`tsserver:message`, message);
-      };
-    }
-
     childSpawnRef.stdin.write(
       JSON.stringify({
         seq: getNextSeq(),
@@ -195,12 +194,6 @@ const registerTsListeners = (ipcMain) => {
   ipcMain.on("tsserver:file:save", (event, filePath) => {
     if (!childSpawnRef) return;
 
-    if (!notifyUI) {
-      notifyUI = (message) => {
-        event.sender.send(`tsserver:message`, message);
-      };
-    }
-
     childSpawnRef.stdin.write(
       JSON.stringify({
         seq: getNextSeq(),
@@ -227,12 +220,6 @@ const registerTsListeners = (ipcMain) => {
 
   ipcMain.on("tsserver:file:close", (event, filePath) => {
     if (!childSpawnRef) return;
-
-    if (!notifyUI) {
-      notifyUI = (message) => {
-        event.sender.send(`tsserver:message`, message);
-      };
-    }
 
     childSpawnRef.stdin.write(
       JSON.stringify({

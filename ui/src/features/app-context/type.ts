@@ -155,9 +155,4 @@ export type InMemoryAppContext = {
    * Represents whether a file or folder creator is active
    */
   isCreateFileOrFolderActive: boolean | null;
-
-  /**
-   * Contains all file nodes that have been rendered in the UI and changes have been made to said file, this saves thr editor state so it can be re-hydrated if it is unrendered between file changes
-   */
-  savedEditorStates: Map<string, EditorState>;
 };

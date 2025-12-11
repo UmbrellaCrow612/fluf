@@ -106,7 +106,7 @@ export class TextFileEditorComponent implements OnInit {
     if (!this.languageServer) {
       console.warn('No language server found for ' + fileNode.extension);
       return;
-    } 
+    }
 
     // todo make it generic
 
@@ -232,21 +232,17 @@ export class TextFileEditorComponent implements OnInit {
 
   private async handleSave() {
     console.log('Auto save fired off');
-    if (!this.openFileNode || !this.savedState) {
-      console.error('Handle save');
+    if (!this.openFileNode) {
+      console.error('Handle save no file node');
       return;
     }
+
     await this.api.writeToFile(
       undefined,
       this.openFileNode.path,
-      this.savedState.doc.toString()
+      this.stringContent
     );
   }
-
-  /**
-   * Local state of the currently opened file (not global)
-   */
-  savedState: EditorState | null = null;
 
   codeMirrorView: EditorView | null = null;
 
@@ -254,22 +250,20 @@ export class TextFileEditorComponent implements OnInit {
    * Keeps state updated whenever doc changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    this.stringContent = update.state.doc.toString();
-
-    this.savedState = update.state;
-    this.onSaveEvent();
-
-    this.sendServerMessage();
+    if (update.docChanged) {
+      this.stringContent = update.state.doc.toString();
+      this.onSaveEvent();
+      this.sendServerMessage();
+    }
   });
 
-  openFileNode: fileNode | null = null;
+  openFileNode: fileNode | null =
+    this.appContext.getSnapshot().currentOpenFileInEditor;
   error: string | null = null;
   isLoading = false;
   stringContent = '';
 
   async ngOnInit() {
-    this.openFileNode = this.appContext.getSnapshot().currentOpenFileInEditor;
-
     await this.displayFile();
     this.initLangServer(this.openFileNode);
 
@@ -278,29 +272,10 @@ export class TextFileEditorComponent implements OnInit {
         this.serverUnSub();
       }
     });
-    // when unreding save last state of current file
-    this.destroyRef.onDestroy(() => {
-      if (this.codeMirrorView && this.openFileNode) {
-        const latestState = this.codeMirrorView.state;
-
-        const map = this.inMemory.getSnapShot().savedEditorStates;
-        map.set(this.openFileNode.path, latestState);
-        this.inMemory.update('savedEditorStates', map);
-      }
-    });
 
     this.appContext.autoSub(
       'currentOpenFileInEditor',
       async (ctx) => {
-        // 1. Save current file state before switching
-        if (this.openFileNode && this.savedState) {
-          const map = this.inMemory.getSnapShot().savedEditorStates;
-          map.set(this.openFileNode.path, this.savedState);
-          this.inMemory.update('savedEditorStates', map);
-        }
-
-        // 2. Switch file
-        this.disposeCodeMirror();
         this.openFileNode = ctx.currentOpenFileInEditor;
 
         await this.displayFile();
@@ -317,17 +292,6 @@ export class TextFileEditorComponent implements OnInit {
     const fileExtension = this.openFileNode?.extension ?? '';
 
     const language = this.getLanguageExtension(fileExtension);
-
-    // If saved state exists, reuse it
-    if (this.savedState) {
-      this.codeMirrorView = new EditorView({
-        parent: container,
-        state: this.savedState,
-      });
-
-      this.stringContent = this.savedState.doc.toString();
-      return;
-    }
 
     const startState = EditorState.create({
       doc: this.stringContent,
@@ -356,21 +320,12 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    // -- Load saved state per file --
-    const map = this.inMemory.getSnapShot().savedEditorStates;
-    this.savedState = map.get(this.openFileNode.path) ?? null;
-
-    // If file was never edited, load fresh content
-    if (!this.savedState) {
-      this.stringContent = await this.api.readFile(
-        undefined,
-        this.openFileNode.path
-      );
-    }
+    this.stringContent = await this.api.readFile(undefined, this.openFileNode.path)
 
     this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
     this.isLoading = false;
 
+    // todo change
     this.api.tsServer.openFile(this.openFileNode.path, this.stringContent);
 
     this.renderCodeMirror();
