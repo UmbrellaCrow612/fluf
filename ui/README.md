@@ -9,6 +9,10 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 - `npm ci`
 - `npm run start`
 
+Type checking:
+
+Sometimes types generated from `desktop` change and `npm run start` does not catch them run `tsc --noEmit` for these.
+
 **Build:**
 
 - `npm run build`
