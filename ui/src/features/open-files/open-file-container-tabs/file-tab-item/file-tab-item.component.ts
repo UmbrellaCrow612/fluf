@@ -6,6 +6,7 @@ import { ContextService } from '../../../app-context/app-context.service';
 import { removeFileIfExists } from '../../../file-explorer/utils';
 import { hasImageExtension } from '../../../img-editor/utils';
 import { hasDocumentExtension } from '../../../document-editor/utils';
+import { fileNode } from '../../../../gen/type';
 
 @Component({
   selector: 'app-file-tab-item',

@@ -10,11 +10,11 @@ const path = require("path");
  * Parses the stdout from `git status` and returns a structured JSON object.
  *
  * @param {string} stdout - The raw stdout string from `git status`
- * @returns {gitStatusResult} A structured representation of the git status
+ * @returns {import("./type").gitStatusResult} A structured representation of the git status
  */
 function parseGitStatus(stdout) {
   const lines = stdout.split(/\r?\n/);
-  /** @type {gitStatusResult} */
+  /** @type {import("./type").gitStatusResult} */
   const result = {
     branch: null,
     branchStatus: null,
@@ -25,7 +25,7 @@ function parseGitStatus(stdout) {
     clean: false,
   };
 
-  /** @type {gitSection} */
+  /** @type {import("./type").gitSection} */
   let section = null;
 
   for (const line of lines) {
@@ -85,9 +85,9 @@ function parseGitStatus(stdout) {
         let file = match[2] ? match[2].trim() : null;
 
         if (file) {
-          /** @type {gitFileEntry} */
+          /** @type {import("./type").gitFileEntry} */
           const entry = {
-            status: /** @type {gitFileStatus} */ (status || "untracked"),
+            status: /** @type {import("./type").gitFileStatus} */ (status || "untracked"),
             file,
           };
 
@@ -153,7 +153,7 @@ function runGitCommand(args, cwd, timeOut = 5000) {
   });
 }
 
-/** @type {hasGit} */
+/** @type {import("./type").hasGit} */
 const hasGitImpl = async (_event) => {
   try {
     const version = await runGitCommand(["--version"], process.cwd());
@@ -163,7 +163,7 @@ const hasGitImpl = async (_event) => {
   }
 };
 
-/** @type {initializeGit} */
+/** @type {import("./type").initializeGit} */
 const initializeGitImpl = async (_event, dir) => {
   if (!_event || !dir) {
     return { error: "Params", success: false };
@@ -177,7 +177,7 @@ const initializeGitImpl = async (_event, dir) => {
   }
 };
 
-/** @type {isGitInitialized} */
+/** @type {import("./type").isGitInitialized} */
 const isGitInitializedImpl = async (_event, dir) => {
   if (!dir) {
     console.log("Param dir not passed");
@@ -189,13 +189,13 @@ const isGitInitializedImpl = async (_event, dir) => {
 
 /**
  * Unsub watcher logic
- * @type {voidCallback | null}
+ * @type {import("./type").voidCallback | null}
  */
 let gitWatcher = null;
 /** Flag to track if watch logic has been run  */
 let isWatchingGitRepo = false;
 
-/** @type {watchGitRepo} */
+/** @type {import("./type").watchGitRepo} */
 const watchGitRepoImpl = async (_event, dir) => {
   if (isWatchingGitRepo) {
     console.log("Already watching git repo");
@@ -247,7 +247,7 @@ const watchGitRepoImpl = async (_event, dir) => {
   return true;
 };
 
-/** @type {gitStatus} */
+/** @type {import("./type").gitStatus} */
 const gitStatusImpl = async (_event, dir) => {
   try {
     const stdout = await runGitCommand(["status"], dir);

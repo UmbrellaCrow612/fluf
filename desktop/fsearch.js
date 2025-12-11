@@ -7,7 +7,7 @@ const { spawn } = require("child_process");
 const { binPath } = require("./packing");
 const { binmanResolve } = require("umbr-binman");
 
-/** @type {fsearchOptions} */
+/** @type {import("./type").fsearchOptions} */
 const defaultSearchOptions = {
   directory: ".",
   term: "default",
@@ -35,11 +35,11 @@ const defaultSearchOptions = {
 /**
  * Parses the stdout captured from fsearch stdout and parsers it into reable data format
  * @param {string} stdout
- * @returns {fsearchResult[]}
+ * @returns {import("./type").fsearchResult[]}
  */
 const parseStdout = (stdout) => {
   /**
-   * @type {fsearchResult[]}
+   * @type {import("./type").fsearchResult[]}
    */
   const results = [];
 
@@ -72,7 +72,7 @@ const parseStdout = (stdout) => {
 
 /**
  * Builds args array
- * @param {fsearchOptions} options
+ * @param {import("./type").fsearchOptions} options
  * @returns {string[]} Args array
  */
 const buildArgs = (options) => {
@@ -137,8 +137,8 @@ const buildArgs = (options) => {
 
 /**
  * Search with fsearch binary
- * @param {fsearchOptions} options
- * @returns {Promise<fsearchResult[]>}
+ * @param {import("./type").fsearchOptions} options
+ * @returns {Promise<import("./type").fsearchResult[]>}
  */
 const searchWithFSearch = async (options) => {
   const exePath = await binmanResolve("fsearch", ["fsearch"], binPath());
@@ -203,7 +203,7 @@ const searchWithFSearch = async (options) => {
   });
 };
 
-/** @type {fsearch} */
+/** @type {import("./type").fsearch} */
 const fsearchImpl = async (_, options) => {
   let newOptions = { ...defaultSearchOptions, ...options };
   return await searchWithFSearch(newOptions);

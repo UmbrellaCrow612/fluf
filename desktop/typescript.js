@@ -7,7 +7,13 @@ const { spawn } = require("child_process");
 const { getTsServerPath } = require("./packing");
 
 /**
- *  A local ref to main window 
+ * All the commands that ts server accepts through the std in stream for a request object
+ *  @type {typeof import("typescript").server.protocol.CommandTypes}
+ */
+const commandTypes = require("typescript").server.protocol.CommandTypes;
+
+/**
+ *  A local ref to main window
  * @type {import("electron").BrowserWindow | null}
  */
 let mainWindowRef = null;
@@ -31,7 +37,7 @@ const getNextSeq = () => seq++;
 
 /**
  * Callback used to send the latest TS messages to the main window
- * @type {(message: tsServerOutput) => void}
+ * @type {(message: import("./type").tsServerOutput) => void}
  */
 let notifyUI = (message) => {
   if (mainWindowRef && !mainWindowRef.isDestroyed()) {
@@ -83,10 +89,10 @@ const parseStdout = () => {
 
 /**
  * Handle TS server messages
- * @param {tsServerOutput} message
+ * @param {import("./type").tsServerOutput} message
  */
 const handleTsMessage = (message) => {
-    notifyUI(message);
+  notifyUI(message);
 };
 
 const startTsServer = () => {
@@ -129,109 +135,134 @@ const stopTsServer = () => {
 
 /**
  * Register all TS main events listeners
- * @param {import("electron").IpcMain} ipcMain
- * @param {import("electron").BrowserWindow | null} win
+ * @param {import("electron").IpcMain} ipcMain - The IPC main to add handlers to
+ * @param {import("electron").BrowserWindow | null} win - Main window object, needed here becuase it needs to send agnostic events regardless of input events
  */
 const registerTsListeners = (ipcMain, win) => {
-  mainWindowRef = win
+  mainWindowRef = win;
 
   ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
     if (!childSpawnRef) return;
 
-    childSpawnRef.stdin.write(
-      JSON.stringify({
-        seq: getNextSeq(),
-        type: "request",
-        command: "open",
-        arguments: {
-          file: filePath,
-          fileContent: fileContent,
-        },
-      }) + "\n"
-    );
+    /** @type {import("./type").tsServerWritableObject} */
+    let oObj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Open,
+      arguments: {
+        file: filePath,
+        fileContent: fileContent,
+      },
+    };
 
-    childSpawnRef.stdin.write(
-      JSON.stringify({
-        seq: getNextSeq(),
-        type: "request",
-        command: "geterr",
-        arguments: {
-          delay: 0,
-          files: [filePath],
-        },
-      }) + "\n"
-    );
+    /** @type {import("./type").tsServerWritableObject} */
+    let gerrObj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Geterr,
+      arguments: {
+        delay: 0,
+        files: [filePath],
+      },
+    };
+
+    childSpawnRef.stdin.write(JSON.stringify(oObj) + "\n");
+    childSpawnRef.stdin.write(JSON.stringify(gerrObj) + "\n");
   });
 
   ipcMain.on("tsserver:file:edit", (event, filePath, newContent) => {
     if (!childSpawnRef) return;
 
-    childSpawnRef.stdin.write(
-      JSON.stringify({
-        seq: getNextSeq(),
-        type: "request",
-        command: "updateOpen",
-        arguments: {
-          file: filePath,
-          fileContent: newContent,
-        },
-      }) + "\n"
-    );
+    /** @type {import("./type").tsServerWritableObject} */
+    let eObj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.UpdateOpen,
+      arguments: {
+        file: filePath,
+        fileContent: newContent,
+      },
+    };
 
-    childSpawnRef.stdin.write(
-      JSON.stringify({
-        seq: getNextSeq(),
-        type: "request",
-        command: "geterr",
-        arguments: {
-          delay: 0,
-          files: [filePath],
-        },
-      }) + "\n"
-    );
+    /** @type {import("./type").tsServerWritableObject} */
+    let gerrObj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Geterr,
+      arguments: {
+        delay: 0,
+        files: [filePath],
+      },
+    };
+
+    childSpawnRef.stdin.write(JSON.stringify(eObj) + "\n");
+    childSpawnRef.stdin.write(JSON.stringify(gerrObj) + "\n");
   });
 
   ipcMain.on("tsserver:file:save", (event, filePath) => {
     if (!childSpawnRef) return;
 
-    childSpawnRef.stdin.write(
-      JSON.stringify({
-        seq: getNextSeq(),
-        type: "request",
-        command: "save",
-        arguments: {
-          file: filePath,
-        },
-      }) + "\n"
-    );
+    /** @type {import("./type").tsServerWritableObject} */
+    let sObj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.CompileOnSaveEmitFile,
+      arguments: {
+        file: filePath,
+      },
+    };
 
-    childSpawnRef.stdin.write(
-      JSON.stringify({
-        seq: getNextSeq(),
-        type: "request",
-        command: "geterr",
-        arguments: {
-          delay: 0,
-          files: [filePath],
-        },
-      }) + "\n"
-    );
+    /** @type {import("./type").tsServerWritableObject} */
+    let gerrObj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Geterr,
+      arguments: {
+        delay: 0,
+        files: [filePath],
+      },
+    };
+
+    childSpawnRef.stdin.write(JSON.stringify(sObj) + "\n");
+    childSpawnRef.stdin.write(JSON.stringify(gerrObj) + "\n");
   });
 
   ipcMain.on("tsserver:file:close", (event, filePath) => {
     if (!childSpawnRef) return;
 
-    childSpawnRef.stdin.write(
-      JSON.stringify({
+    /** @type {import("./type").tsServerWritableObject} */
+    let obj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Close,
+      arguments: {
+        file: filePath,
+      },
+    };
+
+    childSpawnRef.stdin.write(JSON.stringify(obj) + "\n");
+  });
+
+  ipcMain.on(
+    "tsserver:file:completion",
+    (event, filePath, lineNumber, lineOffest) => {
+      if (!childSpawnRef) return;
+
+      /** @type {import("./type").tsServerWritableObject}*/
+      let obj = {
         seq: getNextSeq(),
         type: "request",
-        command: "close",
+        command: commandTypes.CompletionInfo,
         arguments: {
           file: filePath,
+          line: lineNumber,
+          offset: lineOffest,
         },
-      }) + "\n"
-    );
-  });
+      };
+
+      childSpawnRef.stdin.write(JSON.stringify(obj) + "\n");
+    }
+  );
 };
 
 module.exports = { startTsServer, stopTsServer, registerTsListeners };

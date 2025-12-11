@@ -5,7 +5,7 @@
     "strict": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "../ui/src/gen", // for frontend to use
+    "outDir": "../ui/src/gen",
     "noEmit": false,
     "module": "commonjs"
   },
@@ -15,6 +15,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "build",
+    "build"
   ]
 }

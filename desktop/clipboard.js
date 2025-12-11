@@ -6,7 +6,7 @@ const path = require("path");
 const fs = require("fs/promises");
 const { clipboard, nativeImage } = require("electron");
 
-/** @type {writeImageToClipboard} */
+/** @type {import("./type").writeImageToClipboard} */
 const writeImageToClipboardImppl = async (_event, filePath) => {
   try {
     const resolvedPath = path.resolve(filePath);

@@ -23,6 +23,7 @@ import { getElectronApi } from '../../../utils';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 import { hasImageExtension } from '../../img-editor/utils';
 import { hasDocumentExtension } from '../../document-editor/utils';
+import { fileNode } from '../../../gen/type';
 
 @Component({
   selector: 'app-file-explorer-item',

@@ -3,6 +3,7 @@ import { ContextService } from '../app-context/app-context.service';
 import { hasImageExtension } from './utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { ImageService } from './image.service';
+import { fileNode } from '../../gen/type';
 
 @Component({
   selector: 'app-image-editor',

@@ -12,6 +12,7 @@ import {
   pushChildrenToNode,
 } from './utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { fileNode, fileNodeMode } from '../../gen/type';
 
 @Component({
   selector: 'app-file-explorer',

@@ -11,6 +11,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { ripGrepResult } from '../../gen/type';
 
 @Component({
   selector: 'app-side-search',

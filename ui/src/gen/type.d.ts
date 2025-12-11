@@ -4,15 +4,15 @@
  * In the main world, you don't need to worry about the `event` argument — it's specific to Electron's main process.
  * Simply ignore it and provide any other arguments after it.
  */
-type readFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string>;
+export type readFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string>;
 /**
  * Reads a folder content not recursive
  */
-type readDir = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<Array<fileNode>>;
+export type readDir = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<Array<fileNode>>;
 /**
  * Represents a file or folder read from a directory
  */
-type fileNode = {
+export type fileNode = {
     /**
      * - The name of the file or folder
      */
@@ -50,67 +50,67 @@ type fileNode = {
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
  * that the given node is going to be rendered as a editor to create said file or folder
  */
-type fileNodeMode = "createFile" | "createFolder" | "default";
+export type fileNodeMode = "createFile" | "createFolder" | "default";
 /**
  * Opens a folder selection dialog and returns the selected path.
  */
-type selectFolder = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<import("electron").OpenDialogReturnValue>;
+export type selectFolder = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<import("electron").OpenDialogReturnValue>;
 /**
  * Checks if a file or folder exists
  */
-type exists = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<boolean>;
+export type exists = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<boolean>;
 /**
  * Minimizes the window
  */
-type minimize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+export type minimize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
 /**
  * Maximize a window
  */
-type maximize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+export type maximize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
 /**
  * Close the window
  */
-type close = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+export type close = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
 /**
  * Checks if the window is maximized
  */
-type isMaximized = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
+export type isMaximized = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
 /**
  * Restores the browsers window back to beofre it was maximized
  */
-type restore = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+export type restore = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
 /**
  * Normalise a path
  */
-type normalize = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<string>;
+export type normalize = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<string>;
 /**
  * Create a file
  */
-type createFile = (event?: Electron.IpcMainInvokeEvent | undefined, destionationPath: string) => Promise<boolean>;
+export type createFile = (event?: Electron.IpcMainInvokeEvent | undefined, destionationPath: string) => Promise<boolean>;
 /**
  * Check if a file exists at a given path
  */
-type fileExists = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
+export type fileExists = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
 /**
  * Check if a folder exists
  */
-type directoryExists = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+export type directoryExists = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
  * Create a folder at a given path
  */
-type createDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+export type createDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
  * Delete a file by it's path
  */
-type deleteFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
+export type deleteFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
 /**
  * Delete an directory by it's path - recusive delete
  */
-type deleteDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+export type deleteDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
  * Data passed to the callback when a directory changes
  */
-type directoryChangedData = {
+export type directoryChangedData = {
     /**
      * - The directory being watched
      */
@@ -127,24 +127,24 @@ type directoryChangedData = {
 /**
  * The specific callback logic you want to run when a directory changes.
  */
-type onDirectoryChangeCallback = (data: directoryChangedData) => void;
+export type onDirectoryChangeCallback = (data: directoryChangedData) => void;
 /**
  * Listen to a specific directory and fire off custom logic when the directory changes,
  * either when a file is added, removed, or modified.
  */
-type onDirectoryChange = (directoryPath: string, callback: onDirectoryChangeCallback) => Promise<() => Promise<void>>;
+export type onDirectoryChange = (directoryPath: string, callback: onDirectoryChangeCallback) => Promise<() => Promise<void>>;
 /**
  * Watches a specific directory and emits change events
  */
-type watchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+export type watchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
  * Unwatches a directory
  */
-type unwatchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
+export type unwatchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
  * Data passed when shell out stream changes
  */
-type shellChangeData = {
+export type shellChangeData = {
     /**
      * - The chunk of new information
      */
@@ -157,15 +157,15 @@ type shellChangeData = {
 /**
  * Custom callback logic you want to run when a shell changes it's data
  */
-type onShellChangeCallback = (data: shellChangeData) => void;
+export type onShellChangeCallback = (data: shellChangeData) => void;
 /**
  * Listen to when a shell changes it data either with output stream data or error data
  */
-type onShellChange = (shellId: string, callback: onShellChangeCallback) => () => void;
+export type onShellChange = (shellId: string, callback: onShellChangeCallback) => () => void;
 /**
  * Information about a given shell
  */
-type shellInformation = {
+export type shellInformation = {
     /**
      * - The id of the shell
      */
@@ -179,34 +179,34 @@ type shellInformation = {
      */
     history: string[];
 };
-type createShell = (event?: Electron.IpcMainInvokeEvent | undefined, dir: string) => Promise<shellInformation | undefined>;
+export type createShell = (event?: Electron.IpcMainInvokeEvent | undefined, dir: string) => Promise<shellInformation | undefined>;
 /**
  * Write user input directly to ther shell input stream
  */
-type writeToShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, content: string) => Promise<boolean>;
+export type writeToShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, content: string) => Promise<boolean>;
 /**
  * Sends a Ctrl+C (interrupt) signal to the shell.
  */
-type stopCmdInShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
+export type stopCmdInShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
 /**
  * Finds and kills a shell by its ID.
  */
-type killShellById = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
+export type killShellById = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
 /**
  * Check if a shell is still alive and running
  */
-type isShellActive = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
+export type isShellActive = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
 /**
  * Resize the backend shell col and width
  */
-type resizeShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, data: {
+export type resizeShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, data: {
     cols: number;
     rows: number;
 }) => Promise<boolean>;
 /**
  * List of args to pass to ripgrep to search
  */
-type ripgrepArgsOptions = {
+export type ripgrepArgsOptions = {
     /**
      * - The search term to look for
      */
@@ -239,7 +239,7 @@ type ripgrepArgsOptions = {
 /**
  * Represents a line searched and matched the term
  */
-type ripGrepLine = {
+export type ripGrepLine = {
     /**
      * - The content before the match
      */
@@ -260,7 +260,7 @@ type ripGrepLine = {
 /**
  * File content and lines matched by the search term for a given file result
  */
-type ripGrepResult = {
+export type ripGrepResult = {
     /**
      * - The path to the matched file
      */
@@ -281,28 +281,28 @@ type ripGrepResult = {
 /**
  * Search a directory's files recursivley for a given string content match
  */
-type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
+export type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
 /**
  * Checks if the OS has git installed
  */
-type hasGit = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
+export type hasGit = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
 /**
  * Checks if the given folder has git Initialized
  */
-type isGitInitialized = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
+export type isGitInitialized = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
 /**
  * Initialize git into a given folder
  */
-type initializeGit = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<{
+export type initializeGit = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<{
     success: boolean;
     error: string | null;
 }>;
 /**
  * Callback structure for callback
  */
-type voidCallback = () => void;
-type gitFileStatus = "modified" | "deleted" | "new file" | "renamed" | "untracked" | "unknown";
-type gitFileEntry = {
+export type voidCallback = () => void;
+export type gitFileStatus = "modified" | "deleted" | "new file" | "renamed" | "untracked" | "unknown";
+export type gitFileEntry = {
     /**
      * - The status of the file (e.g., modified, deleted, untracked, etc.)
      */
@@ -312,8 +312,8 @@ type gitFileEntry = {
      */
     file: string;
 };
-type gitSection = "staged" | "unstaged" | "untracked" | "ignored" | null;
-type gitStatusResult = {
+export type gitSection = "staged" | "unstaged" | "untracked" | "ignored" | null;
+export type gitStatusResult = {
     /**
      * - The current branch name
      */
@@ -346,23 +346,23 @@ type gitStatusResult = {
 /**
  * Callback to run when git changes
  */
-type onGitChangeCallback = (data: gitStatusResult) => void;
+export type onGitChangeCallback = (data: gitStatusResult) => void;
 /**
  * Listen to when git changes i.e files modified and run custom logic
  */
-type onGitChange = (callback: onGitChangeCallback) => voidCallback;
+export type onGitChange = (callback: onGitChangeCallback) => voidCallback;
 /**
  * Begins watching the git reppo if there is one, can be called multiple times safeley
  */
-type watchGitRepo = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
+export type watchGitRepo = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
 /**
  * Runs git status in the current project and returns the result
  */
-type gitStatus = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<gitStatusResult | null>;
+export type gitStatus = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<gitStatusResult | null>;
 /**
  * Object that contains all the git helper functions
  */
-type gitApi = {
+export type gitApi = {
     /**
      * - Checks if the OS has GIT
      */
@@ -391,7 +391,7 @@ type gitApi = {
 /**
  * Result object returned from fsearch
  */
-type fsearchResult = {
+export type fsearchResult = {
     /**
      * - The absolute path to the file or folder
      */
@@ -404,7 +404,7 @@ type fsearchResult = {
 /**
  * List of options to change the behaviour of the search
  */
-type fsearchOptions = {
+export type fsearchOptions = {
     /**
      * - The search term to look for
      */
@@ -493,23 +493,23 @@ type fsearchOptions = {
 /**
  * Search for a given file or folder with options
  */
-type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearchOptions) => Promise<fsearchResult[]>;
+export type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearchOptions) => Promise<fsearchResult[]>;
 /**
  * Write a image to clipboard to be pasted elsewhere
  */
-type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
+export type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
 /**
  * Write new content to a file
  */
-type writeToFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string, content: string) => Promise<boolean>;
+export type writeToFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string, content: string) => Promise<boolean>;
 /**
  * List of what the value of the event field can be
  */
-type tsServerOutputEvent = "projectLoadingStart" | "projectLoadingFinish" | "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" | "configFileDiag" | "typingsInstallerPid" | "setTypings" | "typingsInstalled" | "telemetry" | "largeFileReferenced";
+export type tsServerOutputEvent = "projectLoadingStart" | "projectLoadingFinish" | "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" | "configFileDiag" | "typingsInstallerPid" | "setTypings" | "typingsInstalled" | "telemetry" | "largeFileReferenced";
 /**
  * Represents a diagnostic sent from ts server output
  */
-type tsServerOutputDiagnostic = {
+export type tsServerOutputDiagnostic = {
     /**
      * - Cords of the start
      */
@@ -544,7 +544,7 @@ type tsServerOutputDiagnostic = {
 /**
  * The shape the body can be in
  */
-type tsServerOutputBody = {
+export type tsServerOutputBody = {
     /**
      * - Optional could contain the PID number
      */
@@ -561,7 +561,7 @@ type tsServerOutputBody = {
 /**
  * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
  */
-type tsServerOutput = {
+export type tsServerOutput = {
     /**
      * - The sequence
      */
@@ -579,33 +579,58 @@ type tsServerOutput = {
      */
     body: tsServerOutputBody;
 };
-type tsServerResponseCallback = (message: tsServerOutput) => void;
+export type tsServerResponseCallback = (message: tsServerOutput) => void;
 /**
  * Register a callback to run when ts server emits a message
  */
-type onTsServerResponse = (callback: tsServerResponseCallback) => voidCallback;
+export type onTsServerResponse = (callback: tsServerResponseCallback) => voidCallback;
 /**
  * Writes the file to tsserver stream to watch it and emit stuff for it in the stream
  */
-type tsServerOpenFile = (filePath: string, fileContent: string) => Promise<void>;
+export type tsServerOpenFile = (filePath: string, fileContent: string) => void;
 /**
  * Writes the file to the stream as being edited
  */
-type tsServerEditFile = (filePath: string, newContent: string) => Promise<void>;
+export type tsServerEditFile = (filePath: string, newContent: string) => void;
 /**
  * Save the file to the stream event
  */
-type tsServerSaveFile = (filePath: string, content: string) => Promise<void>;
+export type tsServerSaveFile = (filePath: string, content: string) => void;
 /**
  * Closes the file into the stream
  */
-type tsServerCloseFile = (filePath: string) => Promise<void>;
+export type tsServerCloseFile = (filePath: string) => void;
 /**
- * The Typescript server
+ * Used to stream the completion cmd into tsserver
  */
-type tsServer = {
+export type tsServerCompletion = (filePath: string, line: number, offest: number) => void;
+/**
+ * Represents a shape of an object written to tsserver stdin stream
+ */
+export type tsServerWritableObject = {
     /**
-     * - Register callback when ts server emits a event message
+     * - What command to ppass to TS server stdin stream
+     */
+    command: import("typescript").server.protocol.CommandTypes;
+    /**
+     * - Always "request" for writable messages
+     */
+    type: "request";
+    /**
+     * - Unique request sequence number
+     */
+    seq: number;
+    /**
+     * - Arguments passed to tsserver; shape depends on the command
+     */
+    arguments: Object;
+};
+/**
+ * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
+ */
+export type tsServer = {
+    /**
+     * - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
      */
     onResponse: onTsServerResponse;
     /**
@@ -624,11 +649,15 @@ type tsServer = {
      * - Close file into the stream
      */
     closeFile: tsServerCloseFile;
+    /**
+     * - Get completion data of the current file and offest into the stream
+     */
+    completion: tsServerCompletion;
 };
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
-type ElectronApi = {
+export type ElectronApi = {
     /**
      * - Reads the contents of a file.
      */
@@ -753,7 +782,7 @@ type ElectronApi = {
 /**
  * Extends the global `window` object to include the Electron API.
  */
-type EWindow = {
+export type EWindow = {
     /**
      * - The attached Electron API.
      */

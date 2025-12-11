@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { PdfService } from './pdf.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser'; 
+import { fileNode } from '../../../gen/type';
 
 @Component({
   selector: 'app-pdf-viewer',

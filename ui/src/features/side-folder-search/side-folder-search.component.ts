@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
+import { fsearchOptions, fsearchResult } from '../../gen/type';
 
 @Component({
   selector: 'app-side-folder-search',

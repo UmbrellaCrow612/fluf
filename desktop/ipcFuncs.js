@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * @type {readFile}
+ * @type {import("./type").readFile}
  */
 const readFileImpl = async (_event = undefined, filePath) => {
   if (!filePath) {
@@ -25,7 +25,7 @@ const readFileImpl = async (_event = undefined, filePath) => {
   }
 };
 
-/** @type {writeToFile} */
+/** @type {import("./type").writeToFile} */
 const writeToFileImpl = async (event, filePath, content) => {
   try {
     await fsp.access(filePath)
@@ -54,13 +54,13 @@ function getExtension(filename) {
 }
 
 /**
- * @type {readDir}
+ * @type {import("./type").readDir}
  */
 const readDirImpl = async (_event = undefined, directoryPath) => {
   let items = await fsp.readdir(directoryPath, { withFileTypes: true });
 
   // Map to include metadata
-  /**@type {Array<fileNode>} */
+  /**@type {Array<import("./type").fileNode>} */
   let mappedItems = items.map((item) => ({
     name: item.name,
     path: path.join(directoryPath, item.name),
@@ -85,7 +85,7 @@ const readDirImpl = async (_event = undefined, directoryPath) => {
 };
 
 /**
- * @type {selectFolder}
+ * @type {import("./type").selectFolder}
  */
 const selectFolderImpl = async (_event = undefined) => {
   return await dialog.showOpenDialog({
@@ -94,7 +94,7 @@ const selectFolderImpl = async (_event = undefined) => {
 };
 
 /**
- * @type {exists}
+ * @type {import("./type").exists}
  */
 const existsImpl = async (_event = undefined, path) => {
   try {
@@ -106,7 +106,7 @@ const existsImpl = async (_event = undefined, path) => {
 };
 
 /**
- * @type {minimize}
+ * @type {import("./type").minimize}
  */
 const minimizeImpl = (_event = undefined) => {
   const webContents = _event?.sender;
@@ -115,7 +115,7 @@ const minimizeImpl = (_event = undefined) => {
 };
 
 /**
- * @type {maximize}
+ * @type {import("./type").maximize}
  */
 const maximizeImpl = (_event = undefined) => {
   const webContents = _event.sender;
@@ -133,7 +133,7 @@ const closeImpl = (_event = undefined) => {
 };
 
 /**
- * @type {isMaximized}
+ * @type {import("./type").isMaximized}
  */
 const isMaximizedImpl = async (_event = undefined) => {
   const webContents = _event.sender;
@@ -142,7 +142,7 @@ const isMaximizedImpl = async (_event = undefined) => {
 };
 
 /**
- * @type {restore}
+ * @type {import("./type").restore}
  */
 const restoreImpl = (_event = undefined) => {
   const webContents = _event.sender;
@@ -151,14 +151,14 @@ const restoreImpl = (_event = undefined) => {
 };
 
 /**
- * @type {normalize}
+ * @type {import("./type").normalize}
  */
 const normalizeImpl = async (_event = undefined, p) => {
   return path.normalize(p);
 };
 
 /**
- * @type {createFile}
+ * @type {import("./type").createFile}
  */
 const createFileImpl = async (_event = undefined, destinationPath) => {
   try {
@@ -173,7 +173,7 @@ const createFileImpl = async (_event = undefined, destinationPath) => {
 };
 
 /**
- * @type {fileExists}
+ * @type {import("./type").fileExists}
  */
 const fileExistsImpl = async (_event = undefined, fp) => {
   try {
@@ -186,7 +186,7 @@ const fileExistsImpl = async (_event = undefined, fp) => {
 };
 
 /**
- * @type {directoryExists}
+ * @type {import("./type").directoryExists}
  */
 const directoryExistsImpl = async (_event = undefined, fp) => {
   try {
@@ -199,7 +199,7 @@ const directoryExistsImpl = async (_event = undefined, fp) => {
 };
 
 /**
- * @type {createDirectory}
+ * @type {import("./type").createDirectory}
  */
 const createDirectoryImpl = async (_event = undefined, fp) => {
   try {
@@ -214,7 +214,7 @@ const createDirectoryImpl = async (_event = undefined, fp) => {
 };
 
 /**
- * @type {deleteFile}
+ * @type {import("./type").deleteFile}
  */
 const deleteFileImpl = async (_event = undefined, fp) => {
   try {
@@ -230,7 +230,7 @@ const deleteFileImpl = async (_event = undefined, fp) => {
 };
 
 /**
- * @type {deleteDirectory}
+ * @type {import("./type").deleteDirectory}
  */
 const deletDirectoryImpl = async (_event = undefined, dp) => {
   try {
@@ -251,7 +251,7 @@ const deletDirectoryImpl = async (_event = undefined, dp) => {
  */
 const watchersStore = new Map();
 
-/** @type {watchDirectory} */
+/** @type {import("./type").watchDirectory} */
 const watchDirectoryImpl = async (_event = undefined, dirPath) => {
   if (!fs.existsSync(dirPath)) return false;
 
@@ -262,7 +262,7 @@ const watchDirectoryImpl = async (_event = undefined, dirPath) => {
     { persistent: true },
     (eventType, filename) => {
       if (filename) {
-        /** @type {directoryChangedData} */
+        /** @type {import("./type").directoryChangedData} */
         let dirChangedData = {
           dirPath,
           eventType,
@@ -278,7 +278,7 @@ const watchDirectoryImpl = async (_event = undefined, dirPath) => {
   return true;
 };
 
-/** @type {unwatchDirectory} */
+/** @type {import("./type").unwatchDirectory} */
 const unwatchDirectoryImpl = async (_event = undefined, dp) => {
   const watcher = watchersStore.get(dp);
   if (watcher) {

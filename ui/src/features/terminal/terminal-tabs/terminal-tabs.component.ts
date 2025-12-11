@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
+import { shellInformation } from '../../../gen/type';
 
 @Component({
   selector: 'app-terminal-tabs',

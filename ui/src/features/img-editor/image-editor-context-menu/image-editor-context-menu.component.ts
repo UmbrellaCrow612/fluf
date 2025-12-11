@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 import { getElectronApi } from '../../../utils';
+import { fileNode } from '../../../gen/type';
 
 @Component({
   selector: 'app-image-editor-context-menu',

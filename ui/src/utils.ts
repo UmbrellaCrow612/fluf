@@ -1,3 +1,5 @@
+import { ElectronApi, EWindow } from "./gen/type";
+
 /**
  * Util to get the electron api
  * @returns Electron api

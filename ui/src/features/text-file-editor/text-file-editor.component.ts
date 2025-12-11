@@ -19,6 +19,7 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
 import { LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
 import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from './typescript';
+import { fileNode, tsServerOutputEvent, voidCallback } from '../../gen/type';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -121,19 +122,26 @@ export class TextFileEditorComponent implements OnInit {
         this.codeMirrorView.state
       );
 
-      if (!this.fileAndDiagnostics.has(fileNode.path)) {
+      let filePathOfTsOutput = mess?.body?.file;
+      if (!filePathOfTsOutput) {
+        console.warn(
+          "TS outpput from server does not have a file it's for " + mess
+        );
+        return;
+      }
+
+      if (!this.fileAndDiagnostics.has(filePathOfTsOutput)) {
         let specificDiagnoticMap = new Map<tsServerOutputEvent, Diagnostic[]>();
 
         specificDiagnoticMap.set(mess.event, mapped);
 
-        this.fileAndDiagnostics.set(
-          this.openFileNode!.path,
-          specificDiagnoticMap
-        );
+        this.fileAndDiagnostics.set(filePathOfTsOutput, specificDiagnoticMap);
       } else {
-        let map = this.fileAndDiagnostics.get(fileNode.path);
+        let map = this.fileAndDiagnostics.get(filePathOfTsOutput);
         map?.set(mess.event, mapped); // basically overide previous "syntaxDiag" or others new ones that come in
       }
+
+      console.log(this.fileAndDiagnostics);
     });
 
     console.log('Language server started for ' + this.languageServer);
@@ -343,6 +351,7 @@ export class TextFileEditorComponent implements OnInit {
   // linter
 
   private linter = linter((view) => {
+    console.log('linter ran');
     if (!this.openFileNode) {
       console.error('Linter ran no open file node');
       return [];

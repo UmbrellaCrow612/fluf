@@ -12,12 +12,12 @@ const { binPath } = require("./packing");
  * Parses ripgrep --vimgrep stdout and converts it to structured objects
  * @param {string} stdout - Full stdout returned by ripgrep (with --vimgrep)
  * @param {string} searchTerm - The search term
- * @returns {ripGrepResult[]} Array of structured results
+ * @returns {import("./type").ripGrepResult[]} Array of structured results
  */
 function parseRipgrepOutput(stdout, searchTerm) {
   /**
    * Contains the file path i.e file and the ripgrep result for it
-   * @type {Map<string, ripGrepResult>}
+   * @type {Map<string, import("./type").ripGrepResult>}
    */
   const map = new Map();
 
@@ -68,7 +68,7 @@ function parseRipgrepOutput(stdout, searchTerm) {
 
 /**
  * Builds an array of arguments to pass to ripgrep based on options
- * @param {ripgrepArgsOptions} options
+ * @param {import("./type").ripgrepArgsOptions} options
  * @returns {string[]} Array of arguments for ripgrep
  */
 function buildRipgrepArgs(options) {
@@ -123,8 +123,8 @@ function buildRipgrepArgs(options) {
 
 /**
  * Search with ripgrep
- * @param {ripgrepArgsOptions} options
- * @returns {Promise<ripGrepResult[]>}
+ * @param {import("./type").ripgrepArgsOptions} options
+ * @returns {Promise<import("./type").ripGrepResult[]>}
  */
 async function searchWithRipGrep(options) {
   const ripGrepPath = await binmanResolve("ripgrep", ["rg"], binPath());
@@ -179,7 +179,7 @@ async function searchWithRipGrep(options) {
   });
 }
 
-/** @type {ripGrep} */
+/** @type {import("./type").ripGrep} */
 const ripGrepImpl = async (_event = undefined, options) => {
   return await searchWithRipGrep(options);
 };

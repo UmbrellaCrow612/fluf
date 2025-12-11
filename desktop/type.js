@@ -1,3 +1,6 @@
+// Defines types for the backend electron side and also then generated for the frontend side to use, on frontend side do not EDIT the generated
+// type.d.ts file any changes made in type.js run npx tsc in desktop to update the UI side types they are purley generated and should only be edited via the ts cmd stated before
+
 /**
  * Reads the contents of a file.
  *
@@ -536,13 +539,32 @@
  */
 
 /**
- * The Typescript server
+ * Used to stream the completion cmd into tsserver
+ * @callback tsServerCompletion
+ * @param {string} filePath - The path to the file
+ * @param {number} line - The line to get the completion for
+ * @param {number} offest - Column of the line charcter at
+ * @returns {void} Nothing
+ */
+
+/**
+ * Represents a shape of an object written to tsserver stdin stream
+ * @typedef {object} tsServerWritableObject
+ * @property {import("typescript").server.protocol.CommandTypes} command - What command to ppass to TS server stdin stream
+ * @property {"request"} type - Always "request" for writable messages
+ * @property {number} seq - Unique request sequence number
+ * @property {Object} arguments - Arguments passed to tsserver; shape depends on the command
+ */
+
+/**
+ * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
  * @typedef {Object} tsServer
- * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message
+ * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
  * @property {tsServerOpenFile} openFile - Write file to open state within the ts server
  * @property {tsServerEditFile} editFile - Edit the file in the stream
  * @property {tsServerSaveFile} saveFile - Save the file to the stream
  * @property {tsServerCloseFile} closeFile - Close file into the stream
+ * @property {tsServerCompletion} completion - Get completion data of the current file and offest into the stream
  */
 
 /**
@@ -593,3 +615,5 @@
  * @typedef {Object} EWindow
  * @property {ElectronApi} electronApi - The attached Electron API.
  */
+
+export {};

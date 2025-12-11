@@ -7,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { getElectronApi } from '../../utils';
+import { fsearchOptions, fsearchResult } from '../../gen/type';
 
 @Component({
   selector: 'app-side-file-search',

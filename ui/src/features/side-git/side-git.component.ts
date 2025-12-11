@@ -2,6 +2,7 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
 import { MatButtonModule } from '@angular/material/button';
+import { gitStatusResult, voidCallback } from '../../gen/type';
 
 @Component({
   selector: 'app-side-git',

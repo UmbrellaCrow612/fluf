@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
- * @type {gitApi}
+ * @type {import("./type").gitApi}
  */
 const gitApi = {
   hasGit: (_event) => ipcRenderer.invoke("has:git"),
@@ -12,7 +12,7 @@ const gitApi = {
     /**
      * Runs when ipc send is sent to `git:change`
      * @param {import("electron").IpcRendererEvent} _event
-     * @param {gitStatusResult} data
+     * @param {import("./type").gitStatusResult} data
      */
     let listener = (_event, data) => {
       callback(data);
@@ -28,13 +28,13 @@ const gitApi = {
   gitStatus: (_event, dir) => ipcRenderer.invoke("git:status", dir),
 };
 
-/** @type {tsServer} */
+/** @type {import("./type").tsServer} */
 const tsServer = {
   onResponse: (callback) => {
     /**
      * Custom listner to register and unsub
      * @param {import("electron").IpcRendererEvent} _event
-     * @param {tsServerOutput} message
+     * @param {import("./type").tsServerOutput} message
      */
     let listener = (_event, message) => {
       callback(message);
@@ -52,10 +52,12 @@ const tsServer = {
     ipcRenderer.send("tsserver:file:open", filePath, content),
   saveFile: (filePath, content) =>
     ipcRenderer.send("tsserver:file:save", filePath, content),
+  completion: (filePath, lineNumber, offest) =>
+    ipcRenderer.send("tsserver:file:completion", filePath, lineNumber, offest),
 };
 
 /**
- * @type {ElectronApi}
+ * @type {import("./type").ElectronApi}
  */
 const api = {
   writeToFile: (_event, fp, content) =>
@@ -83,7 +85,7 @@ const api = {
   onShellChange: (shellId, cb) => {
     /**
      * @param {import("electron").IpcRendererEvent} _
-     * @param {shellChangeData} data
+     * @param {import("./type").shellChangeData} data
      */
     let listner = (_, data) => {
       if (data.id == shellId) cb(data);
@@ -104,7 +106,7 @@ const api = {
     await ipcRenderer.invoke("dir:watch", dirPath);
 
     /**
-     * @param {directoryChangedData} data
+     * @param {import("./type").directoryChangedData} data
      */
     const listener = (/** @type {any} */ _, data) => {
       if (data.dirPath === dirPath) cb(data);

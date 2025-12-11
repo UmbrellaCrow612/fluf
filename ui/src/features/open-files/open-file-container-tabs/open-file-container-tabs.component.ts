@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { FileTabItemComponent } from './file-tab-item/file-tab-item.component';
 import { ContextService } from '../../app-context/app-context.service';
+import { fileNode } from '../../../gen/type';
 
 @Component({
   selector: 'app-open-file-container-tabs',

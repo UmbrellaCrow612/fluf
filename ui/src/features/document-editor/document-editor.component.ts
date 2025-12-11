@@ -3,6 +3,7 @@ import { ContextService } from '../app-context/app-context.service';
 import { DocumentNotSupportedComponent } from './document-not-supported/document-not-supported.component';
 import { NgComponentOutlet } from '@angular/common';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
+import { fileNode } from '../../gen/type';
 
 /**
  * Renders when a supportted document type is chosen as a file then this renders the specific component needed to view said document type

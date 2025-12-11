@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ripGrepResult } from '../../../gen/type';
 
 @Component({
   selector: 'app-side-search-item',
