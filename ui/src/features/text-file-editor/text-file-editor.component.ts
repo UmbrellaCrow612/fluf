@@ -8,8 +8,8 @@ import {
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
-import { linter, Diagnostic } from '@codemirror/lint';
+import { EditorState, StateEffect, StateField } from '@codemirror/state';
+import { linter, Diagnostic, setDiagnosticsEffect } from '@codemirror/lint';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
@@ -295,7 +295,13 @@ export class TextFileEditorComponent implements OnInit {
 
     const startState = EditorState.create({
       doc: this.stringContent,
-      extensions: [basicSetup, this.updateListener, this.theme, language],
+      extensions: [
+        basicSetup,
+        this.updateListener,
+        this.theme,
+        language,
+        this.linter,
+      ],
     });
 
     this.codeMirrorView = new EditorView({
@@ -320,7 +326,10 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    this.stringContent = await this.api.readFile(undefined, this.openFileNode.path)
+    this.stringContent = await this.api.readFile(
+      undefined,
+      this.openFileNode.path
+    );
 
     this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
     this.isLoading = false;
@@ -330,4 +339,18 @@ export class TextFileEditorComponent implements OnInit {
 
     this.renderCodeMirror();
   }
+
+  // linter
+
+  private linter = linter((view) => {
+    if (!this.openFileNode) {
+      console.error('Linter ran no open file node');
+      return [];
+    }
+
+    let d = this.fileAndDiagnostics.get(this.openFileNode.path);
+    if (!d) return [];
+
+    return d.get('semanticDiag') ?? [];
+  });
 }
