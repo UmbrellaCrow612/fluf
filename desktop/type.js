@@ -548,12 +548,12 @@
  */
 
 /**
- * Represents a shape of an object written to tsserver stdin stream
+ * Represents a shape of an object written to tsserver stdin stream - mainly typed from typescript.d.ts
  * @typedef {object} tsServerWritableObject
- * @property {import("typescript").server.protocol.CommandTypes} command - What command to ppass to TS server stdin stream
+ * @property {import("typescript").server.protocol.CommandTypes} command - What command to pass to TS server stdin stream
  * @property {"request"} type - Always "request" for writable messages
  * @property {number} seq - Unique request sequence number
- * @property {Object} arguments - Arguments passed to tsserver; shape depends on the command
+ * @property {any} arguments - Arguments passed to tsserver; shape depends on the command look through typescript.d.ts and then the cmd name and then it's interface
  */
 
 /**
