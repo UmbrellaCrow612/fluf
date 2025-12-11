@@ -1,5 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { Diagnostic } from '@codemirror/lint';
+import { tsServerOutput, tsServerOutputDiagnostic } from '../../gen/type';
 
 /**
  * Convert typescript diagnostics to code mirror diagnostics

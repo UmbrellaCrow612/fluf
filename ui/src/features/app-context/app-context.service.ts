@@ -3,6 +3,7 @@ import {
   AppContext,
   AppContextCallback,
 } from './type';
+import { voidCallback } from '../../gen/type';
 
 
 const LOCAL_STORAGE_KEY = 'app-context';

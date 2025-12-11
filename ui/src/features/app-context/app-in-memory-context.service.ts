@@ -1,5 +1,6 @@
 import { DestroyRef, Injectable } from '@angular/core';
 import { InMemoryAppContext, InMemoryAppContextCallback } from './type';
+import { voidCallback } from '../../gen/type';
 
 /**
  * Represents information that dosent need to be persisted between sessions but within the lifecycle of the app, i.e until a refresh

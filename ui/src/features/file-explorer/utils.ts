@@ -1,3 +1,5 @@
+import { fileNode } from "../../gen/type";
+
 /**
  * Gets the file extension of a given path if it is supported.
  * Returns null for directories, files without an extension, or unsupported extensions.
