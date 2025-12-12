@@ -16,9 +16,9 @@ import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import { LanguageServer } from '../language/type';
+import { diagnosticType, LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
-import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from './typescript';
+import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from '../language/typescript';
 import { fileNode, tsServerOutputEvent, voidCallback } from '../../gen/type';
 
 @Component({
@@ -34,17 +34,21 @@ export class TextFileEditorComponent implements OnInit {
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(
     'code_mirror_container'
   );
-  private readonly inMemory = inject(InMemoryContextService);
   private readonly languageService = inject(LanguageService);
 
   /**
-   * Contains a map of file paths and then a map of ecific types of diagnostics like error, warning suggestion keys then the diagnostics
+   * Local copy of the data emitted from lang service
    */
-  private fileAndDiagnostics = new Map<
-    /** file path is key */ string,
-    Map<tsServerOutputEvent, Diagnostic[]>
-  >();
+  private serverResponseData: Map<
+    string,
+    Map<diagnosticType, Diagnostic[]>
+  > | null = null;
 
+  /**
+   * Getv the syntax highlting extension for a given file extension 
+   * @param ext The files extension
+   * @returns Code mirror lang extension for syntax highlting
+   */
   private getLanguageExtension(ext: string) {
     switch (ext.toLowerCase()) {
       case 'html':
@@ -82,6 +86,7 @@ export class TextFileEditorComponent implements OnInit {
         return null;
     }
   }
+
   private languageServer: LanguageServer | null = null;
 
   /**
@@ -109,57 +114,26 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    // todo make it generic
-
-    this.serverUnSub = this.api.tsServer.onResponse((mess) => {
-      if (!this.codeMirrorView) {
-        console.warn('No code mirrror view');
-        return;
+    this.serverUnSub = this.languageService.OnResponse(
+      this.languageServer,
+      this.codeMirrorView.state,
+      (data) => {
+        this.serverResponseData = data;
+        console.log(JSON.stringify(data))
       }
-
-      let mapped = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
-        [mess],
-        this.codeMirrorView.state
-      );
-
-      let filePathOfTsOutput = mess?.body?.file;
-      if (!filePathOfTsOutput) {
-        console.warn(
-          "TS outpput from server does not have a file it's for " + mess
-        );
-        return;
-      }
-
-      if (!this.fileAndDiagnostics.has(filePathOfTsOutput)) {
-        let specificDiagnoticMap = new Map<tsServerOutputEvent, Diagnostic[]>();
-
-        specificDiagnoticMap.set(mess.event, mapped);
-
-        this.fileAndDiagnostics.set(filePathOfTsOutput, specificDiagnoticMap);
-      } else {
-        let map = this.fileAndDiagnostics.get(filePathOfTsOutput);
-        map?.set(mess.event, mapped); // basically overide previous "syntaxDiag" or others new ones that come in
-      }
-
-      console.log(this.fileAndDiagnostics);
-    });
+    );
 
     console.log('Language server started for ' + this.languageServer);
   }
 
-  /** Runs when the editor dose edits */
   private sendServerMessage = () => {
     if (!this.languageServer || !this.openFileNode) return;
 
-    switch (this.languageServer) {
-      case 'js/ts':
-        this.api.tsServer.editFile(this.openFileNode.path, this.stringContent);
-        break;
-
-      default:
-        console.warn('unkown server ' + this.languageServer);
-        break;
-    }
+    this.languageService.Edit(
+      this.openFileNode.path,
+      this.stringContent,
+      this.languageServer
+    );
   };
 
   private theme = EditorView.theme(
@@ -339,31 +313,23 @@ export class TextFileEditorComponent implements OnInit {
       this.openFileNode.path
     );
 
+    this.languageServer = this.getLanguageServer(this.openFileNode.extension);
+
     this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
     this.isLoading = false;
 
-    // todo change
-    this.api.tsServer.openFile(this.openFileNode.path, this.stringContent);
+    if (this.languageServer) { // open file in lan server if it has one
+      this.languageService.Open(
+        this.openFileNode.path,
+        this.stringContent,
+        this.languageServer
+      );
+    }
 
     this.renderCodeMirror();
   }
 
-  // linter
-
   private linter = linter((view) => {
-    console.log('linter ran');
-    if (!this.openFileNode) {
-      console.error('Linter ran no open file node');
-      return [];
-    }
-
-    let d = this.fileAndDiagnostics.get(this.openFileNode.path);
-    if (!d) return [];
-
-    return d.get('semanticDiag') ?? [];
+    return [];
   });
-
-  // TODO next
-  // we always keep a track latest just need to re compute linter and file change as for now it sticks old ones but hard pppart is done
-  // then just refactor it to use the lang service pass lang server and ppas it to correct imppl of the server but for it's ok
 }

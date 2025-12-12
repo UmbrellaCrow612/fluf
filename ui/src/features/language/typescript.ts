@@ -1,6 +1,7 @@
 import { EditorState } from '@codemirror/state';
 import { Diagnostic } from '@codemirror/lint';
 import { tsServerOutput, tsServerOutputDiagnostic } from '../../gen/type';
+import { CodeMirrorSeverity, diagnosticType } from './type';
 
 /**
  * Convert typescript diagnostics to code mirror diagnostics
@@ -51,7 +52,7 @@ function positionToOffset(
   }
 }
 
-function mapSeverity(category: tsServerOutputDiagnostic['category']): Severity {
+function mapSeverity(category: tsServerOutputDiagnostic['category']): CodeMirrorSeverity {
   switch (category) {
     case 'error':
       return 'error';
@@ -63,8 +64,19 @@ function mapSeverity(category: tsServerOutputDiagnostic['category']): Severity {
   }
 }
 
-/**
- * Since code mirror dose not export this we just copy it from index.d.ts of it
- */
+export function mapTypescriptEventToDiagnosticType(
+  from: tsServerOutput
+): diagnosticType {
+  switch (from.event) {
+    case 'semanticDiag':
+      return 'error';
 
-type Severity = 'hint' | 'info' | 'warning' | 'error';
+    case 'suggestionDiag':
+      return 'suggestion';
+
+    default:
+      return 'other';
+  }
+}
+
+

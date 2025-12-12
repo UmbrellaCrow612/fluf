@@ -4,18 +4,25 @@ import {
   LanguageServer,
   ILanguageService,
   LanguageServiceCallback,
+  diagnosticType,
 } from './type';
 import { getElectronApi } from '../../utils';
-import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from '../text-file-editor/typescript';
+import { mapTypescriptDiagnosticToCodeMirrorDiagnostic, mapTypescriptEventToDiagnosticType } from './typescript';
+import { Diagnostic } from '@codemirror/lint';
 
 /**
- * Service used to send and respond to backend language service for specific language servers such as TS server ot HTML etc in a central way
+ * Service used to send and respond to backend language service for specific language servers such as TS server ot HTML etc in a central way like the client lsp protocol
  */
 @Injectable({
   providedIn: 'root',
 })
 export class LanguageService implements ILanguageService {
   private readonly api = getElectronApi();
+
+  /**
+   * Contains a map of a files path and it's specific diagnsitic type and all the diagnostics for it
+   */
+  private fileAndDiagMap = new Map<string, Map<diagnosticType, Diagnostic[]>>();
 
   Open = (
     filePath: string,
@@ -76,7 +83,21 @@ export class LanguageService implements ILanguageService {
             editorState
           );
 
-          callback(d);
+          let type = mapTypescriptEventToDiagnosticType(data)
+
+          let fp = data.body.file ?? "unkown"
+
+          let m = this.fileAndDiagMap.get(fp)
+          if(!m){
+            let dm = new Map<diagnosticType, Diagnostic[]>();
+            dm.set(type, d)
+            this.fileAndDiagMap.set(fp, dm)
+          } else {
+            let dm = this.fileAndDiagMap.get(fp)
+            dm?.set(type, d)
+          }
+
+          callback(this.fileAndDiagMap);
         });
 
         return () => {

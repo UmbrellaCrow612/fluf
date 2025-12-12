@@ -8,6 +8,8 @@ import { Diagnostic } from '@codemirror/lint';
 export type LanguageServer =
   /** Used for both TS typescript and JS javascript*/ 'js/ts';
 
+export type diagnosticType = 'error' | 'warning' | 'suggestion' | 'other';
+
 /**
  * Represents the standard a language service API has to impl be language agnostic and provide base methods needed to talk to any lang server this is the lsp protocol
  * under the hoodd it will routes said requests to the correct language server impl
@@ -69,7 +71,15 @@ export interface ILanguageService {
 
 /**
  * Runs when the lang server responds and it's specific response it then parsed and passed to you
- * @param {Diagnostic[]} diagnostics - List of parsed diagnostics from the lang server into a code mirror shaped diagnostic
+ * @param {Map<string, Map<diagnosticType, Diagnostic[]>>} fileAndDiagMap Contains a map of files and another map that for the specifc file has a diag type and it's diagnostics
  * @returns {void} Nothing
  */
-export type LanguageServiceCallback = (diagnostics: Diagnostic[]) => void;
+export type LanguageServiceCallback = (
+  fileAndDiagMap: Map<string, Map<diagnosticType, Diagnostic[]>>
+) => void;
+
+
+/**
+ * Since code mirror dose not export this we just copy it from index.d.ts of it this is for Serverity type within it
+ */
+export type CodeMirrorSeverity = 'hint' | 'info' | 'warning' | 'error';
