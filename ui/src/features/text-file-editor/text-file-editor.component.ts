@@ -20,6 +20,7 @@ import { diagnosticType, LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
 import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from '../language/typescript';
 import { fileNode, tsServerOutputEvent, voidCallback } from '../../gen/type';
+import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -37,15 +38,7 @@ export class TextFileEditorComponent implements OnInit {
   private readonly languageService = inject(LanguageService);
 
   /**
-   * Local copy of the data emitted from lang service
-   */
-  private serverResponseData: Map<
-    string,
-    Map<diagnosticType, Diagnostic[]>
-  > | null = null;
-
-  /**
-   * Getv the syntax highlting extension for a given file extension 
+   * Getv the syntax highlting extension for a given file extension
    * @param ext The files extension
    * @returns Code mirror lang extension for syntax highlting
    */
@@ -118,8 +111,39 @@ export class TextFileEditorComponent implements OnInit {
       this.languageServer,
       this.codeMirrorView.state,
       (data) => {
-        this.serverResponseData = data;
-        console.log(data)
+        if (!this.openFileNode) return;
+
+        console.log(data);
+
+        const originalPath = this.openFileNode.path;
+        console.log('Original Path:', originalPath);
+
+      
+        const normalizedPath = originalPath.replace(/\\/g, '/');
+        console.log('Normalized Path:', normalizedPath); 
+
+        let m = data.get(normalizedPath);
+
+        if (!m) {
+          console.log(
+            'here 1 - Failed to find diagnostics for the normalized path.'
+          );
+          return;
+        }
+
+        let dm = m.get('error');
+
+        if (Array.isArray(dm) && dm.length === 0) {
+          console.log('Here 2 - Diagnostics array is empty.');
+          return;
+        }
+
+        if (!dm) {
+          console.log("Here 3 - No 'error' key found in the file's Map.");
+          return;
+        }
+
+        applyExternalDiagnostics(this.codeMirrorView!, dm);
       }
     );
 
@@ -282,7 +306,7 @@ export class TextFileEditorComponent implements OnInit {
         this.updateListener,
         this.theme,
         language,
-        this.linter,
+        externalDiagnosticsExtension(),
       ],
     });
 
@@ -318,7 +342,8 @@ export class TextFileEditorComponent implements OnInit {
     this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
     this.isLoading = false;
 
-    if (this.languageServer) { // open file in lan server if it has one
+    if (this.languageServer) {
+      // open file in lan server if it has one
       this.languageService.Open(
         this.openFileNode.path,
         this.stringContent,
@@ -328,8 +353,4 @@ export class TextFileEditorComponent implements OnInit {
 
     this.renderCodeMirror();
   }
-
-  private linter = linter((view) => {
-    return [];
-  });
 }

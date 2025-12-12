@@ -11,7 +11,7 @@ import { mapTypescriptDiagnosticToCodeMirrorDiagnostic, mapTypescriptEventToDiag
 import { Diagnostic } from '@codemirror/lint';
 
 /**
- * Service used to send and respond to backend language service for specific language servers such as TS server ot HTML etc in a central way like the client lsp protocol
+ * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
  */
 @Injectable({
   providedIn: 'root',
