@@ -487,11 +487,16 @@
 
 /**
  * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
+ * Could contains any of the below fields
  * @typedef {Object} tsServerOutput
- * @property {number} seq - The sequence
- * @property {"request" | "response" | "event"} type - What type this message is
- * @property {tsServerOutputEvent} event - What type of event was emitted
- * @property {tsServerOutputBody} body - The body of the output
+ * @property {number} [seq] - The sequence
+ * @property {"request" | "response" | "event"} [type] - What type this message is
+ * @property {tsServerOutputEvent} [event] - What type of event was emitted
+ * @property {tsServerOutputBody} [body] - The body of the output
+ * @property {number} [request_seq] - Sequence number of the request message
+ * @property {boolean} [success] - Outcome of the request
+ * @property {import("typescript").server.protocol.CommandTypes} [command] - The command requested
+ * @property {string} [message] - Optional message
  */
 
 /**
@@ -519,15 +524,7 @@
  * Writes the file to the stream as being edited
  * @callback tsServerEditFile
  * @param {string} filePath - The path to the file
- * @param {string} newContent - The new content of the file whole
- * @returns {void} Nothing
- */
-
-/**
- * Save the file to the stream event
- * @callback tsServerSaveFile
- * @param {string} filePath - The path to the file
- * @param {string} content - The full file content
+ * @param {string} newContent - The whole new content of the doc
  * @returns {void} Nothing
  */
 
@@ -548,12 +545,12 @@
  */
 
 /**
- * Represents a shape of an object written to tsserver stdin stream
+ * Represents a shape of an object written to tsserver stdin stream - mainly typed from typescript.d.ts
  * @typedef {object} tsServerWritableObject
- * @property {import("typescript").server.protocol.CommandTypes} command - What command to ppass to TS server stdin stream
+ * @property {import("typescript").server.protocol.CommandTypes} command - What command to pass to TS server stdin stream
  * @property {"request"} type - Always "request" for writable messages
  * @property {number} seq - Unique request sequence number
- * @property {Object} arguments - Arguments passed to tsserver; shape depends on the command
+ * @property {any} arguments - Arguments passed to tsserver; shape depends on the command look through typescript.d.ts and then the cmd name and then it's interface
  */
 
 /**
@@ -562,7 +559,6 @@
  * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
  * @property {tsServerOpenFile} openFile - Write file to open state within the ts server
  * @property {tsServerEditFile} editFile - Edit the file in the stream
- * @property {tsServerSaveFile} saveFile - Save the file to the stream
  * @property {tsServerCloseFile} closeFile - Close file into the stream
  * @property {tsServerCompletion} completion - Get completion data of the current file and offest into the stream
  */

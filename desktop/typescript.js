@@ -6,6 +6,9 @@ const fs = require("fs");
 const { spawn } = require("child_process");
 const { getTsServerPath } = require("./packing");
 
+// Open typescript.d.ts and for each cmd look for it's request interface for it and then import that type for it's arguments for you to pass the
+// correct arguments for said cmd
+
 /**
  * All the commands that ts server accepts through the std in stream for a request object
  *  @type {typeof import("typescript").server.protocol.CommandTypes}
@@ -34,6 +37,77 @@ let seq = 0;
 
 /** Get the next seq  */
 const getNextSeq = () => seq++;
+
+/** Used as a helper to make really simple objects that are used in multiple places but do not change - The name is `s` for simple  */
+const s = {
+  /**
+   * Make a Geterr object
+   * @param  {...string} files
+   * @returns {import("./type").tsServerWritableObject} Writable object
+   */
+  Geterr: (...files) => {
+    return {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Geterr,
+      /** @type {import("typescript").server.protocol.GeterrRequestArgs}*/ arguments:
+        {
+          files: [...files],
+          delay: 50,
+        },
+    };
+  },
+
+  /**
+   * Create a close file object
+   * @param {string} filePath - The file path
+   * @returns {import("./type").tsServerWritableObject}
+   */
+  Close: (filePath) => {
+    return {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Close,
+      /** @type {import("typescript").server.protocol.FileRequestArgs}*/ arguments:
+        {
+          file: filePath,
+        },
+    };
+  },
+
+  /**
+   * Create an open object
+   * @param {string} filePath The path to the file
+   * @param {string} fileContent - The files content
+   * @returns {import("./type").tsServerWritableObject}
+   */
+  Open: (filePath, fileContent) => {
+    return {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Open,
+      /** @type {import("typescript").server.protocol.OpenRequestArgs}*/ arguments:
+        {
+          file: filePath,
+          fileContent: fileContent,
+        },
+    };
+  },
+};
+
+/**
+ * Helper to write a mesage to the typescript stdin procsess
+ * @param {import("./type").tsServerWritableObject} message The message to write to stdin stream of typescript processes
+ */
+function write(message) {
+  if (!childSpawnRef) return;
+
+  try {
+    childSpawnRef.stdin.write(JSON.stringify(message) + "\n"); // new line to make each message seperate
+  } catch (error) {
+    console.log("Failed to write to tserver " + error);
+  }
+}
 
 /**
  * Callback used to send the latest TS messages to the main window
@@ -142,125 +216,46 @@ const registerTsListeners = (ipcMain, win) => {
   mainWindowRef = win;
 
   ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
-    if (!childSpawnRef) return;
+    let oObj = s.Open(filePath, fileContent);
+    let gter = s.Geterr(filePath);
 
-    /** @type {import("./type").tsServerWritableObject} */
-    let oObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.Open,
-      arguments: {
-        file: filePath,
-        fileContent: fileContent,
-      },
-    };
-
-    /** @type {import("./type").tsServerWritableObject} */
-    let gerrObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.Geterr,
-      arguments: {
-        delay: 0,
-        files: [filePath],
-      },
-    };
-
-    childSpawnRef.stdin.write(JSON.stringify(oObj) + "\n");
-    childSpawnRef.stdin.write(JSON.stringify(gerrObj) + "\n");
+    write(oObj);
+    write(gter);
   });
 
-  ipcMain.on("tsserver:file:edit", (event, filePath, newContent) => {
-    if (!childSpawnRef) return;
+  ipcMain.on("tsserver:file:edit", (event, filePath, content) => {
+    let cObj = s.Close(filePath);
+    let oObj = s.Open(filePath, content);
+    let gter = s.Geterr(filePath);
 
-    /** @type {import("./type").tsServerWritableObject} */
-    let eObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.UpdateOpen,
-      arguments: {
-        file: filePath,
-        fileContent: newContent,
-      },
-    };
-
-    /** @type {import("./type").tsServerWritableObject} */
-    let gerrObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.Geterr,
-      arguments: {
-        delay: 0,
-        files: [filePath],
-      },
-    };
-
-    childSpawnRef.stdin.write(JSON.stringify(eObj) + "\n");
-    childSpawnRef.stdin.write(JSON.stringify(gerrObj) + "\n");
-  });
-
-  ipcMain.on("tsserver:file:save", (event, filePath) => {
-    if (!childSpawnRef) return;
-
-    /** @type {import("./type").tsServerWritableObject} */
-    let sObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.CompileOnSaveEmitFile,
-      arguments: {
-        file: filePath,
-      },
-    };
-
-    /** @type {import("./type").tsServerWritableObject} */
-    let gerrObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.Geterr,
-      arguments: {
-        delay: 0,
-        files: [filePath],
-      },
-    };
-
-    childSpawnRef.stdin.write(JSON.stringify(sObj) + "\n");
-    childSpawnRef.stdin.write(JSON.stringify(gerrObj) + "\n");
+    write(cObj);
+    write(oObj)
+    write(gter);
   });
 
   ipcMain.on("tsserver:file:close", (event, filePath) => {
-    if (!childSpawnRef) return;
+    let cObj = s.Close(filePath)
 
-    /** @type {import("./type").tsServerWritableObject} */
-    let obj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.Close,
-      arguments: {
-        file: filePath,
-      },
-    };
-
-    childSpawnRef.stdin.write(JSON.stringify(obj) + "\n");
+    write(cObj);
   });
 
   ipcMain.on(
     "tsserver:file:completion",
     (event, filePath, lineNumber, lineOffest) => {
-      if (!childSpawnRef) return;
-
       /** @type {import("./type").tsServerWritableObject}*/
       let obj = {
         seq: getNextSeq(),
         type: "request",
         command: commandTypes.CompletionInfo,
-        arguments: {
-          file: filePath,
-          line: lineNumber,
-          offset: lineOffest,
-        },
+        /** @type {import("typescript").server.protocol.CompletionsRequestArgs}*/ arguments:
+          {
+            file: filePath,
+            line: lineNumber,
+            offset: lineOffest,
+          },
       };
 
-      childSpawnRef.stdin.write(JSON.stringify(obj) + "\n");
+      write(obj);
     }
   );
 };

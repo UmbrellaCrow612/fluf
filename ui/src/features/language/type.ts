@@ -1,7 +1,88 @@
+import { EditorState } from '@codemirror/state';
+import { tsServerOutputEvent, voidCallback } from '../../gen/type';
+import { Diagnostic } from '@codemirror/lint';
+
 /**
- * Contains all the languiage server keys i.e list of server names that can be used or are currently implamented to be used for intellisense in the editor
+ * Contains all the language server keys i.e list of server names that can be used or are currently impl to be used for intellisense in the editor
  */
 export type LanguageServer =
-  /** Used for both TS typescript and JS javascrippt*/ 'js/ts';
+  /** Used for both TS typescript and JS javascript*/ 'js/ts';
 
-// ======================= TS typescript ====================
+
+/**
+ * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
+ */
+export type diagnosticType = tsServerOutputEvent | "unkown"
+/**
+ * Represents the standard a language service API has to impl be language agnostic and provide base methods needed to talk to any lang server this is the lsp protocol
+ * under the hoodd it will routes said requests to the correct language server impl
+ */
+export interface ILanguageService {
+  /**
+   * Open a file
+   * @param filePath The files path
+   * @param fileContent The files content
+   * @param langServer The specific language serve to call
+   * @returns Nothing
+   */
+  Open: (
+    filePath: string,
+    fileContent: string,
+    langServer: LanguageServer
+  ) => void;
+
+  /**
+   * Edit a file
+   * @param filePath The path to the fil;e
+   * @param fileContent The files content
+   * @param langServer The specific language server to send it to
+   * @returns Nothing
+   */
+  Edit: (
+    filePath: string,
+    fileContent: string,
+    langServer: LanguageServer
+  ) => void;
+
+  /**
+   * Get completion information
+   * @param filePath The files path
+   * @param lineNumber The line number (1-based)
+   * @param lineOffest The character offset (on the line) (1-based)
+   * @param langServer The specific language server to send it to
+   * @returns Nothing
+   */
+  Completion: (
+    filePath: string,
+    lineNumber: number,
+    lineOffest: number,
+    langServer: LanguageServer
+  ) => void;
+
+  /**
+   * Listen to response streams from a specific language server and run a callback
+   * @param langServer The specific language server to listen to
+   * @param {EditorState} editorState - The editors state
+   * @returns Unsub callback to stop
+   */
+  OnResponse: (
+    langServer: LanguageServer,
+    editorState: EditorState,
+    callback: LanguageServiceCallback
+  ) => voidCallback;
+}
+
+/**
+ * Runs when the lang server responds and it's specific response it then parsed and passed to you
+ * @param {Map<string, Map<diagnosticType, Diagnostic[]>>} fileAndDiagMap Contains a map of files and another map that for the specifc file has a diag type and it's diagnostics
+ * @returns {void} Nothing
+ */
+export type LanguageServiceCallback = (
+  fileAndDiagMap: Map<string, Map<diagnosticType, Diagnostic[]>>
+) => void;
+
+
+/**
+ * Since code mirror dose not export this we just copy it from index.d.ts of it this is for Serverity type within it
+ */
+export type CodeMirrorSeverity = 'hint' | 'info' | 'warning' | 'error';

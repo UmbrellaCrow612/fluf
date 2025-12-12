@@ -1,6 +1,7 @@
 import { EditorState } from '@codemirror/state';
 import { Diagnostic } from '@codemirror/lint';
 import { tsServerOutput, tsServerOutputDiagnostic } from '../../gen/type';
+import { CodeMirrorSeverity, diagnosticType } from './type';
 
 /**
  * Convert typescript diagnostics to code mirror diagnostics
@@ -8,27 +9,25 @@ import { tsServerOutput, tsServerOutputDiagnostic } from '../../gen/type';
  * @param state The CodeMirror editor state (needed to convert line/offset → absolute positions)
  */
 export function mapTypescriptDiagnosticToCodeMirrorDiagnostic(
-  from: tsServerOutput[],
+  from: tsServerOutput,
   state: EditorState
 ): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
 
-  for (const msg of from) {
-    const bodyDiagnostics = msg.body?.diagnostics;
-    if (!bodyDiagnostics || !msg.body.file) continue;
+  const bodyDiagnostics = from?.body?.diagnostics;
+  if (!bodyDiagnostics || !from?.body || !from?.body?.file) return [];
 
-    for (const d of bodyDiagnostics) {
-      const fromPos = positionToOffset(state, d.start.line, d.start.offset);
-      const toPos = positionToOffset(state, d.end.line, d.end.offset);
+  for (const d of bodyDiagnostics) {
+    const fromPos = positionToOffset(state, d.start.line, d.start.offset);
+    const toPos = positionToOffset(state, d.end.line, d.end.offset);
 
-      diagnostics.push({
-        from: fromPos,
-        to: toPos,
-        severity: mapSeverity(d.category),
-        message: d.text,
-        source: 'typescript',
-      });
-    }
+    diagnostics.push({
+      from: fromPos,
+      to: toPos,
+      severity: mapSeverity(d.category),
+      message: d.text,
+      source: 'typescript',
+    });
   }
 
   return diagnostics;
@@ -51,7 +50,9 @@ function positionToOffset(
   }
 }
 
-function mapSeverity(category: tsServerOutputDiagnostic['category']): Severity {
+function mapSeverity(
+  category: tsServerOutputDiagnostic['category']
+): CodeMirrorSeverity {
   switch (category) {
     case 'error':
       return 'error';
@@ -62,9 +63,3 @@ function mapSeverity(category: tsServerOutputDiagnostic['category']): Severity {
       return 'warning';
   }
 }
-
-/**
- * Since code mirror dose not export this we just copy it from index.d.ts of it
- */
-
-type Severity = 'hint' | 'info' | 'warning' | 'error';
