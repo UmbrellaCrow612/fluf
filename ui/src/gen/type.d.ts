@@ -560,24 +560,41 @@ export type tsServerOutputBody = {
 };
 /**
  * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
+ * Could contains any of the below fields
  */
 export type tsServerOutput = {
     /**
      * - The sequence
      */
-    seq: number;
+    seq?: number | undefined;
     /**
      * - What type this message is
      */
-    type: "request" | "response" | "event";
+    type?: "event" | "request" | "response" | undefined;
     /**
      * - What type of event was emitted
      */
-    event: tsServerOutputEvent;
+    event?: tsServerOutputEvent | undefined;
     /**
      * - The body of the output
      */
-    body: tsServerOutputBody;
+    body?: tsServerOutputBody | undefined;
+    /**
+     * - Sequence number of the request message
+     */
+    request_seq?: number | undefined;
+    /**
+     * - Outcome of the request
+     */
+    success?: boolean | undefined;
+    /**
+     * - The command requested
+     */
+    command?: import("typescript").server.protocol.CommandTypes | undefined;
+    /**
+     * - Optional message
+     */
+    message?: string | undefined;
 };
 export type tsServerResponseCallback = (message: tsServerOutput) => void;
 /**

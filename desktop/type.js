@@ -487,11 +487,16 @@
 
 /**
  * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
+ * Could contains any of the below fields
  * @typedef {Object} tsServerOutput
- * @property {number} seq - The sequence
- * @property {"request" | "response" | "event"} type - What type this message is
- * @property {tsServerOutputEvent} event - What type of event was emitted
- * @property {tsServerOutputBody} body - The body of the output
+ * @property {number} [seq] - The sequence
+ * @property {"request" | "response" | "event"} [type] - What type this message is
+ * @property {tsServerOutputEvent} [event] - What type of event was emitted
+ * @property {tsServerOutputBody} [body] - The body of the output
+ * @property {number} [request_seq] - Sequence number of the request message
+ * @property {boolean} [success] - Outcome of the request
+ * @property {import("typescript").server.protocol.CommandTypes} [command] - The command requested
+ * @property {string} [message] - Optional message
  */
 
 /**
