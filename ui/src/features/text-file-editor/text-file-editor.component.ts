@@ -119,7 +119,7 @@ export class TextFileEditorComponent implements OnInit {
       this.codeMirrorView.state,
       (data) => {
         this.serverResponseData = data;
-        console.log(JSON.stringify(data))
+        console.log(data)
       }
     );
 

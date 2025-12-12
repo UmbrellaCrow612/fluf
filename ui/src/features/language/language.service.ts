@@ -85,7 +85,7 @@ export class LanguageService implements ILanguageService {
 
           let type = mapTypescriptEventToDiagnosticType(data)
 
-          let fp = data.body.file ?? "unkown"
+          let fp = data?.body?.file ?? "unkown" // whenever acessing always chain ? when acessing
 
           let m = this.fileAndDiagMap.get(fp)
           if(!m){
