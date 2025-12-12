@@ -593,10 +593,6 @@ export type tsServerOpenFile = (filePath: string, fileContent: string) => void;
  */
 export type tsServerEditFile = (filePath: string, newContent: string) => void;
 /**
- * Save the file to the stream event
- */
-export type tsServerSaveFile = (filePath: string, content: string) => void;
-/**
  * Closes the file into the stream
  */
 export type tsServerCloseFile = (filePath: string) => void;
@@ -605,11 +601,11 @@ export type tsServerCloseFile = (filePath: string) => void;
  */
 export type tsServerCompletion = (filePath: string, line: number, offest: number) => void;
 /**
- * Represents a shape of an object written to tsserver stdin stream
+ * Represents a shape of an object written to tsserver stdin stream - mainly typed from typescript.d.ts
  */
 export type tsServerWritableObject = {
     /**
-     * - What command to ppass to TS server stdin stream
+     * - What command to pass to TS server stdin stream
      */
     command: import("typescript").server.protocol.CommandTypes;
     /**
@@ -621,9 +617,9 @@ export type tsServerWritableObject = {
      */
     seq: number;
     /**
-     * - Arguments passed to tsserver; shape depends on the command
+     * - Arguments passed to tsserver; shape depends on the command look through typescript.d.ts and then the cmd name and then it's interface
      */
-    arguments: Object;
+    arguments: any;
 };
 /**
  * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
@@ -641,10 +637,6 @@ export type tsServer = {
      * - Edit the file in the stream
      */
     editFile: tsServerEditFile;
-    /**
-     * - Save the file to the stream
-     */
-    saveFile: tsServerSaveFile;
     /**
      * - Close file into the stream
      */

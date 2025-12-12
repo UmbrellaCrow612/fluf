@@ -53,7 +53,43 @@ const s = {
       /** @type {import("typescript").server.protocol.GeterrRequestArgs}*/ arguments:
         {
           files: [...files],
-          delay: 100,
+          delay: 50,
+        },
+    };
+  },
+
+  /**
+   * Create a close file object
+   * @param {string} filePath - The file path
+   * @returns {import("./type").tsServerWritableObject}
+   */
+  Close: (filePath) => {
+    return {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Close,
+      /** @type {import("typescript").server.protocol.FileRequestArgs}*/ arguments:
+        {
+          file: filePath,
+        },
+    };
+  },
+
+  /**
+   * Create an open object
+   * @param {string} filePath The path to the file
+   * @param {string} fileContent - The files content
+   * @returns {import("./type").tsServerWritableObject}
+   */
+  Open: (filePath, fileContent) => {
+    return {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.Open,
+      /** @type {import("typescript").server.protocol.OpenRequestArgs}*/ arguments:
+        {
+          file: filePath,
+          fileContent: fileContent,
         },
     };
   },
@@ -180,75 +216,27 @@ const registerTsListeners = (ipcMain, win) => {
   mainWindowRef = win;
 
   ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
-    /** @type {import("./type").tsServerWritableObject} */
-    let oObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.Open,
-      /** @type {import("typescript").server.protocol.OpenRequestArgs}*/ arguments:
-        {
-          file: filePath,
-          fileContent: fileContent,
-        },
-    };
-
+    let oObj = s.Open(filePath, fileContent);
     let gter = s.Geterr(filePath);
 
     write(oObj);
     write(gter);
   });
 
-  ipcMain.on("tsserver:file:edit", (event, filePath, newContent) => {
-    /** @type {import("./type").tsServerWritableObject} */
-    let eObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.UpdateOpen,
-      /** @type {import("typescript").server.protocol.UpdateOpenRequestArgs}*/ arguments:
-        {
-          closedFiles: [filePath],
-          openFiles: [filePath], // we close then re open it to reload it's ast
-        },
-    };
-
+  ipcMain.on("tsserver:file:edit", (event, filePath, content) => {
+    let cObj = s.Close(filePath);
+    let oObj = s.Open(filePath, content);
     let gter = s.Geterr(filePath);
 
-    write(eObj);
-    write(gter);
-  });
-
-  ipcMain.on("tsserver:file:save", (event, filePath) => {
-    /** @type {import("./type").tsServerWritableObject} */
-    let sObj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.UpdateOpen,
-      /** @type {import("typescript").server.protocol.UpdateOpenRequestArgs}*/ arguments:
-        {
-          closedFiles: [filePath],
-          openFiles: [filePath], // we close then re open it to reload it's ast
-        },
-    };
-
-    let gter = s.Geterr(filePath);
-
-    write(sObj);
+    write(cObj);
+    write(oObj)
     write(gter);
   });
 
   ipcMain.on("tsserver:file:close", (event, filePath) => {
-    /** @type {import("./type").tsServerWritableObject} */
-    let obj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.Close,
-      /** @type {import("typescript").server.protocol.FileRequestArgs}*/ arguments:
-        {
-          file: filePath,
-        },
-    };
+    let cObj = s.Close(filePath)
 
-    write(obj);
+    write(cObj);
   });
 
   ipcMain.on(

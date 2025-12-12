@@ -46,12 +46,9 @@ const tsServer = {
   },
 
   closeFile: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
-  editFile: (filePath, content) =>
-    ipcRenderer.send("tsserver:file:edit", filePath, content),
+  editFile: (filePath, content) => ipcRenderer.send("tsserver:file:edit", filePath, content),
   openFile: (filePath, content) =>
     ipcRenderer.send("tsserver:file:open", filePath, content),
-  saveFile: (filePath, content) =>
-    ipcRenderer.send("tsserver:file:save", filePath, content),
   completion: (filePath, lineNumber, offest) =>
     ipcRenderer.send("tsserver:file:completion", filePath, lineNumber, offest),
 };
