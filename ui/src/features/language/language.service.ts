@@ -7,7 +7,7 @@ import {
   diagnosticType,
 } from './type';
 import { getElectronApi } from '../../utils';
-import { mapTypescriptDiagnosticToCodeMirrorDiagnostic, mapTypescriptEventToDiagnosticType } from './typescript';
+import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from './typescript';
 import { Diagnostic } from '@codemirror/lint';
 
 /**
@@ -79,22 +79,20 @@ export class LanguageService implements ILanguageService {
       case 'js/ts':
         let unsub = this.api.tsServer.onResponse((data) => {
           let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
-            [data],
+            data,
             editorState
           );
 
-          let type = mapTypescriptEventToDiagnosticType(data)
+          let fp = data?.body?.file ?? 'unkown'; // whenever acessing always chain ? when acessing
 
-          let fp = data?.body?.file ?? "unkown" // whenever acessing always chain ? when acessing
-
-          let m = this.fileAndDiagMap.get(fp)
-          if(!m){
+          let m = this.fileAndDiagMap.get(fp);
+          if (!m) {
             let dm = new Map<diagnosticType, Diagnostic[]>();
-            dm.set(type, d)
-            this.fileAndDiagMap.set(fp, dm)
+            dm.set(data?.event ?? 'unkown', d);
+            this.fileAndDiagMap.set(fp, dm);
           } else {
-            let dm = this.fileAndDiagMap.get(fp)
-            dm?.set(type, d)
+            let dm = this.fileAndDiagMap.get(fp);
+            dm?.set(data?.event ?? 'unkown', d);
           }
 
           callback(this.fileAndDiagMap);

@@ -1,5 +1,5 @@
 import { EditorState } from '@codemirror/state';
-import { voidCallback } from '../../gen/type';
+import { tsServerOutputEvent, voidCallback } from '../../gen/type';
 import { Diagnostic } from '@codemirror/lint';
 
 /**
@@ -8,8 +8,11 @@ import { Diagnostic } from '@codemirror/lint';
 export type LanguageServer =
   /** Used for both TS typescript and JS javascript*/ 'js/ts';
 
-export type diagnosticType = 'error' | 'warning' | 'suggestion' | 'other';
 
+/**
+ * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
+ */
+export type diagnosticType = tsServerOutputEvent | "unkown"
 /**
  * Represents the standard a language service API has to impl be language agnostic and provide base methods needed to talk to any lang server this is the lsp protocol
  * under the hoodd it will routes said requests to the correct language server impl

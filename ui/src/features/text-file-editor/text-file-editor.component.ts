@@ -8,19 +8,17 @@ import {
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
-import { EditorState, StateEffect, StateField } from '@codemirror/state';
-import { linter, Diagnostic, setDiagnosticsEffect } from '@codemirror/lint';
+import { EditorState } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { diagnosticType, LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
-import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from '../language/typescript';
-import { fileNode, tsServerOutputEvent, voidCallback } from '../../gen/type';
+import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
+import { Diagnostic } from '@codemirror/lint';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -82,6 +80,22 @@ export class TextFileEditorComponent implements OnInit {
 
   private languageServer: LanguageServer | null = null;
 
+  getDiagnosticsForFile(
+    diagnosticMap: Map<string, Map<diagnosticType, Diagnostic[]>>,
+    filePath: string
+  ) {
+    const fileDiagnostics = diagnosticMap.get(filePath);
+    if (!fileDiagnostics) return []; 
+
+    const allDiagnostics = [];
+
+    for (const diagnosticsArray of fileDiagnostics.values()) {
+      allDiagnostics.push(...diagnosticsArray);
+    }
+
+    return allDiagnostics;
+  }
+
   /**
    * Launch the language server - AFTER - rendering the UI for the given node in the UI
    * @param fileNode The current open file node in the editor view
@@ -113,14 +127,8 @@ export class TextFileEditorComponent implements OnInit {
       (data) => {
         if (!this.openFileNode) return;
 
-        console.log(data);
-
         const originalPath = this.openFileNode.path;
-        console.log('Original Path:', originalPath);
-
-      
         const normalizedPath = originalPath.replace(/\\/g, '/');
-        console.log('Normalized Path:', normalizedPath); 
 
         let m = data.get(normalizedPath);
 
@@ -131,19 +139,9 @@ export class TextFileEditorComponent implements OnInit {
           return;
         }
 
-        let dm = m.get('error');
+        let all = this.getDiagnosticsForFile(data, normalizedPath);
 
-        if (Array.isArray(dm) && dm.length === 0) {
-          console.log('Here 2 - Diagnostics array is empty.');
-          return;
-        }
-
-        if (!dm) {
-          console.log("Here 3 - No 'error' key found in the file's Map.");
-          return;
-        }
-
-        applyExternalDiagnostics(this.codeMirrorView!, dm);
+        applyExternalDiagnostics(this.codeMirrorView!, all);
       }
     );
 
