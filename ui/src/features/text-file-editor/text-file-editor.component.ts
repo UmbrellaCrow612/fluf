@@ -19,6 +19,11 @@ import { LanguageService } from '../language/language.service';
 import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 import { Diagnostic } from '@codemirror/lint';
+import {
+  autocompletion,
+  Completion,
+  CompletionContext,
+} from '@codemirror/autocomplete';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -34,6 +39,8 @@ export class TextFileEditorComponent implements OnInit {
     'code_mirror_container'
   );
   private readonly languageService = inject(LanguageService);
+
+  private fileAndCompletionMap = new Map<string, Completion[]>();
 
   /**
    * Getv the syntax highlting extension for a given file extension
@@ -85,7 +92,7 @@ export class TextFileEditorComponent implements OnInit {
     filePath: string
   ) {
     const fileDiagnostics = diagnosticMap.get(filePath);
-    if (!fileDiagnostics) return []; 
+    if (!fileDiagnostics) return [];
 
     const allDiagnostics = [];
 
@@ -124,13 +131,16 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.languageService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
-      (data) => {
+      (diagnosticMap, completionMap) => {
         if (!this.openFileNode) return;
+        this.fileAndCompletionMap = completionMap;
+
+        console.log(completionMap);
 
         const originalPath = this.openFileNode.path;
         const normalizedPath = originalPath.replace(/\\/g, '/');
 
-        let m = data.get(normalizedPath);
+        let m = diagnosticMap.get(normalizedPath);
 
         if (!m) {
           console.log(
@@ -139,7 +149,7 @@ export class TextFileEditorComponent implements OnInit {
           return;
         }
 
-        let all = this.getDiagnosticsForFile(data, normalizedPath);
+        let all = this.getDiagnosticsForFile(diagnosticMap, normalizedPath);
 
         applyExternalDiagnostics(this.codeMirrorView!, all);
       }
@@ -231,7 +241,7 @@ export class TextFileEditorComponent implements OnInit {
 
     this.saveTimeout = setTimeout(() => {
       this.handleSave();
-    }, 200);
+    }, 500);
   }
 
   private async handleSave() {
@@ -248,6 +258,57 @@ export class TextFileEditorComponent implements OnInit {
     );
   }
 
+  fileMapCompletionSource(
+    filePath: string,
+    fileAndCompletionMap: Map<string, Completion[]>
+  ) {
+    return (context: CompletionContext) => {
+      const completions = fileAndCompletionMap.get(filePath);
+
+      if (!completions || completions.length === 0) {
+        return null;
+      }
+
+      // Figure out what range should be replaced
+      const word = context.matchBefore(/[\w$]*/);
+
+      // If this wasn't an explicit request and we're not on a word, don't show
+      if (!word && !context.explicit) {
+        return null;
+      }
+
+      return {
+        from: word?.from ?? context.pos,
+        options: completions,
+      };
+    };
+  }
+
+  private completionTimeout: any;
+  onCompletionEvent() {
+    if (this.completionTimeout) {
+      clearTimeout(this.completionTimeout);
+    }
+
+    this.completionTimeout = setTimeout(() => {
+      if (!this.openFileNode || !this.languageServer || !this.codeMirrorView) {
+        return;
+      }
+
+      const pos = this.codeMirrorView.state.selection.main.head;
+      const line = this.codeMirrorView.state.doc.lineAt(pos);
+
+      this.languageService.Completion(
+        this.openFileNode?.path,
+        line.number,
+        pos - line.from + 1,
+        this.languageServer
+      );
+
+      console.log('Completion fired');
+    }, 5000);
+  }
+
   codeMirrorView: EditorView | null = null;
 
   /**
@@ -259,6 +320,8 @@ export class TextFileEditorComponent implements OnInit {
       this.onSaveEvent();
       this.sendServerMessage();
     }
+
+    this.onCompletionEvent();
   });
 
   openFileNode: fileNode | null =
@@ -305,6 +368,14 @@ export class TextFileEditorComponent implements OnInit {
         this.theme,
         language,
         externalDiagnosticsExtension(),
+        autocompletion({
+          override: [
+            this.fileMapCompletionSource(
+              "unkown",
+              this.fileAndCompletionMap
+            ),
+          ],
+        }),
       ],
     });
 

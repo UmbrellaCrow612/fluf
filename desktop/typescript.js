@@ -224,17 +224,23 @@ const registerTsListeners = (ipcMain, win) => {
   });
 
   ipcMain.on("tsserver:file:edit", (event, filePath, content) => {
-    let cObj = s.Close(filePath);
-    let oObj = s.Open(filePath, content);
     let gter = s.Geterr(filePath);
 
+    /** @type {import("./type").tsServerWritableObject} */
+    let t = {
+      arguments: {},
+      command: commandTypes.Change,
+      seq: getNextSeq(),
+      type: "request",
+    };
+
     write(cObj);
-    write(oObj)
+    write(oObj);
     write(gter);
   });
 
   ipcMain.on("tsserver:file:close", (event, filePath) => {
-    let cObj = s.Close(filePath)
+    let cObj = s.Close(filePath);
 
     write(cObj);
   });

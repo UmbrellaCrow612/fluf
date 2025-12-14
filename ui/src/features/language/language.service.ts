@@ -7,9 +7,14 @@ import {
   diagnosticType,
 } from './type';
 import { getElectronApi } from '../../utils';
-import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from './typescript';
+import {
+  isTypescriptCompletionInfoOutput,
+  isTypescriptDiagnosticOutput,
+  mapTsServerOutputToCompletions,
+  mapTypescriptDiagnosticToCodeMirrorDiagnostic,
+} from './typescript';
 import { Diagnostic } from '@codemirror/lint';
-import { tsServerOutput, tsServerOutputBody, tsServerOutputBodyCompletionEntry } from '../../gen/type';
+import { Completion } from '@codemirror/autocomplete';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -28,7 +33,7 @@ export class LanguageService implements ILanguageService {
   /**
    * Contains a list of files and there completion entry's for it TODO map it inot code mirror auto complete object
    */
-  private fileAndCompletionEntryMap = new Map<string, tsServerOutputBodyCompletionEntry[]>
+  private fileAndCompletionMap = new Map<string, Completion[]>();
 
   Open = (
     filePath: string,
@@ -84,27 +89,34 @@ export class LanguageService implements ILanguageService {
     switch (langServer) {
       case 'js/ts':
         let unsub = this.api.tsServer.onResponse((data) => {
-          let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
-            data,
-            editorState
-          );
+          let filePath = data?.body?.file ?? 'unkown';
 
-          // todo get diagnostics if it's diagnostics or if i has entries add diagnostci type comp0leInfo with completion info object or a serpate map thats passed 
+          if (isTypescriptDiagnosticOutput(data)) {
+            let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
+              data,
+              editorState
+            );
 
-          let fp = data?.body?.file ?? 'unkown'; // whenever acessing always chain ? when acessing
-
-          let m = this.fileAndDiagMap.get(fp);
-          if (!m) {
-            let dm = new Map<diagnosticType, Diagnostic[]>();
-            dm.set(data?.event ?? 'unkown', d);
-            this.fileAndDiagMap.set(fp, dm);
-          } else {
-            let dm = this.fileAndDiagMap.get(fp);
-            dm?.set(data?.event ?? 'unkown', d);
+            let m = this.fileAndDiagMap.get(filePath);
+            if (!m) {
+              let dm = new Map<diagnosticType, Diagnostic[]>();
+              dm.set(data?.event ?? 'unkown', d);
+              this.fileAndDiagMap.set(filePath, dm);
+            } else {
+              let dm = this.fileAndDiagMap.get(filePath);
+              dm?.set(data?.event ?? 'unkown', d);
+            }
           }
 
-          // todo pass both diag map and completion map
-          callback(this.fileAndDiagMap);
+          if (isTypescriptCompletionInfoOutput(data)) {
+            let entries = mapTsServerOutputToCompletions(data);
+            this.fileAndCompletionMap.set(filePath, entries);
+
+            console.log("From ts server raw")
+            console.log(data)
+          }
+
+          callback(this.fileAndDiagMap, this.fileAndCompletionMap);
         });
 
         return () => {
