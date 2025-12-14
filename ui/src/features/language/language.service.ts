@@ -9,6 +9,7 @@ import {
 import { getElectronApi } from '../../utils';
 import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from './typescript';
 import { Diagnostic } from '@codemirror/lint';
+import { tsServerOutput, tsServerOutputBody, tsServerOutputBodyCompletionEntry } from '../../gen/type';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -23,6 +24,11 @@ export class LanguageService implements ILanguageService {
    * Contains a map of a files path and it's specific diagnsitic type and all the diagnostics for it
    */
   private fileAndDiagMap = new Map<string, Map<diagnosticType, Diagnostic[]>>();
+
+  /**
+   * Contains a list of files and there completion entry's for it TODO map it inot code mirror auto complete object
+   */
+  private fileAndCompletionEntryMap = new Map<string, tsServerOutputBodyCompletionEntry[]>
 
   Open = (
     filePath: string,
@@ -83,6 +89,8 @@ export class LanguageService implements ILanguageService {
             editorState
           );
 
+          // todo get diagnostics if it's diagnostics or if i has entries add diagnostci type comp0leInfo with completion info object or a serpate map thats passed 
+
           let fp = data?.body?.file ?? 'unkown'; // whenever acessing always chain ? when acessing
 
           let m = this.fileAndDiagMap.get(fp);
@@ -95,6 +103,7 @@ export class LanguageService implements ILanguageService {
             dm?.set(data?.event ?? 'unkown', d);
           }
 
+          // todo pass both diag map and completion map
           callback(this.fileAndDiagMap);
         });
 

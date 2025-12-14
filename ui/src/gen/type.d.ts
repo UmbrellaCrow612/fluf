@@ -509,7 +509,7 @@ export type tsServerOutputEvent = "projectLoadingStart" | "projectLoadingFinish"
 /**
  * Represents a diagnostic sent from ts server output
  */
-export type tsServerOutputDiagnostic = {
+export type tsServerOutputBodyDiagnostic = {
     /**
      * - Cords of the start
      */
@@ -542,6 +542,80 @@ export type tsServerOutputDiagnostic = {
     reportsUnnecessary?: boolean | undefined;
 };
 /**
+ * Mapped from enum into a object to use from `typescript.d.ts => enum ScriptElementKind`
+ */
+export type tsServerOutputBodyScriptElementKind = {
+    unknown: "";
+    warning: "warning";
+    keyword: "keyword";
+    scriptElement: "script";
+    moduleElement: "module";
+    classElement: "class";
+    localClassElement: "local class";
+    interfaceElement: "interface";
+    typeElement: "type";
+    enumElement: "enum";
+    enumMemberElement: "enum member";
+    variableElement: "var";
+    localVariableElement: "local var";
+    variableUsingElement: "using";
+    variableAwaitUsingElement: "await using";
+    functionElement: "function";
+    localFunctionElement: "local function";
+    memberFunctionElement: "method";
+    memberGetAccessorElement: "getter";
+    memberSetAccessorElement: "setter";
+    memberVariableElement: "property";
+    memberAccessorVariableElement: "accessor";
+    constructorImplementationElement: "constructor";
+    callSignatureElement: "call";
+    indexSignatureElement: "index";
+    constructSignatureElement: "construct";
+    parameterElement: "parameter";
+    typeParameterElement: "type parameter";
+    primitiveType: "primitive type";
+    label: "label";
+    alias: "alias";
+    constElement: "const";
+    letElement: "let";
+    directory: "directory";
+    externalModuleName: "external module name";
+    jsxAttribute: "JSX attribute";
+    string: "string";
+    link: "link";
+    linkName: "link name";
+    linkText: "link text";
+};
+/**
+ * Mapped from `typescript.d.ts -> export type CompletionEntry`
+ */
+export type tsServerOutputBodyCompletionEntry = {
+    kind?: "" | "string" | "function" | "link" | "index" | "type" | "module" | "label" | "script" | "var" | "directory" | "method" | "class" | "getter" | "setter" | "accessor" | "warning" | "construct" | "keyword" | "local class" | "interface" | "enum" | "enum member" | "local var" | "using" | "await using" | "local function" | "property" | "constructor" | "call" | "parameter" | "type parameter" | "primitive type" | "alias" | "const" | "let" | "external module name" | "JSX attribute" | "link name" | "link text" | undefined;
+    kindModifiers?: string | undefined;
+    name?: string | undefined;
+    sortText?: string | undefined;
+    insertText?: string | undefined;
+    filterText?: string | undefined;
+    isSnippet?: boolean | undefined;
+    replacementSpan?: import("typescript").server.protocol.TextSpan | undefined;
+    hasAction?: boolean | undefined;
+    source?: string | undefined;
+    /**
+     * - if needed type
+     */
+    sourceDisplay?: any;
+    /**
+     * - if needed type
+     */
+    labelDetails?: any;
+    isRecommended?: boolean | undefined;
+    isFromUncheckedFile?: boolean | undefined;
+    isPackageJsonImport?: boolean | undefined;
+    isImportStatementCompletion?: boolean | undefined;
+    data?: any;
+    commitCharacters?: string[] | undefined;
+};
+/**
  * The shape the body can be in
  */
 export type tsServerOutputBody = {
@@ -556,7 +630,15 @@ export type tsServerOutputBody = {
     /**
      * - List of diagnostics
      */
-    diagnostics?: tsServerOutputDiagnostic[] | undefined;
+    diagnostics?: tsServerOutputBodyDiagnostic[] | undefined;
+    /**
+     * - From completion info
+     */
+    isIncomplete?: boolean | undefined;
+    /**
+     * - From completion info entries
+     */
+    entries?: tsServerOutputBodyCompletionEntry[] | undefined;
 };
 /**
  * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line

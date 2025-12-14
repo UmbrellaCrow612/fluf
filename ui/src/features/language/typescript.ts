@@ -1,6 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { Diagnostic } from '@codemirror/lint';
-import { tsServerOutput, tsServerOutputDiagnostic } from '../../gen/type';
+import { tsServerOutput, tsServerOutputBodyDiagnostic } from '../../gen/type';
 import { CodeMirrorSeverity, diagnosticType } from './type';
 
 /**
@@ -51,7 +51,7 @@ function positionToOffset(
 }
 
 function mapSeverity(
-  category: tsServerOutputDiagnostic['category']
+  category: tsServerOutputBodyDiagnostic['category']
 ): CodeMirrorSeverity {
   switch (category) {
     case 'error':
