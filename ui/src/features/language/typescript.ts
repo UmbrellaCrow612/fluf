@@ -2,6 +2,7 @@ import { EditorState } from '@codemirror/state';
 import { Diagnostic } from '@codemirror/lint';
 import { tsServerOutput, tsServerOutputBodyDiagnostic } from '../../gen/type';
 import { CodeMirrorSeverity, diagnosticType } from './type';
+import { CompletionContext } from '@codemirror/autocomplete';
 
 /**
  * Convert typescript diagnostics to code mirror diagnostics
@@ -63,3 +64,4 @@ function mapSeverity(
       return 'warning';
   }
 }
+
