@@ -20,9 +20,7 @@ import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 import { Diagnostic } from '@codemirror/lint';
 import {
-  autocompletion,
   Completion,
-  CompletionContext,
 } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 
@@ -40,8 +38,6 @@ export class TextFileEditorComponent implements OnInit {
     'code_mirror_container'
   );
   private readonly languageService = inject(LanguageService);
-
-  private completions: Completion[] = [];
 
   /**
    * Getv the syntax highlting extension for a given file extension
@@ -134,7 +130,8 @@ export class TextFileEditorComponent implements OnInit {
       this.codeMirrorView.state,
       (diagnosticMap, completions) => {
         if (!this.openFileNode) return;
-        this.completions = completions;
+
+        console.log(completions)
 
         const originalPath = this.openFileNode.path;
         const normalizedPath = originalPath.replace(/\\/g, '/');
@@ -247,43 +244,6 @@ export class TextFileEditorComponent implements OnInit {
     );
   }
 
-  CompletionSource(completions: Completion[]) {
-    return (context: CompletionContext) => {
-      if (!completions || completions.length === 0) {
-        return null;
-      }
-
-      // Figure out what range should be replaced
-      const word = context.matchBefore(/[\w$]*/);
-
-      // If this wasn't an explicit request and we're not on a word, don't show
-      if (!word && !context.explicit) {
-        return null;
-      }
-
-      return {
-        from: word?.from ?? context.pos,
-        options: completions,
-      };
-    };
-  }
-
-  onCompletionEvent() {
-    if (!this.openFileNode || !this.languageServer || !this.codeMirrorView) {
-      return;
-    }
-
-    const pos = this.codeMirrorView.state.selection.main.head;
-    const line = this.codeMirrorView.state.doc.lineAt(pos);
-
-    this.languageService.Completion(
-      this.openFileNode?.path,
-      line.number,
-      pos - line.from + 1,
-      this.languageServer
-    );
-  }
-
   codeMirrorView: EditorView | null = null;
 
   /**
@@ -358,9 +318,6 @@ export class TextFileEditorComponent implements OnInit {
         this.theme,
         language,
         externalDiagnosticsExtension(),
-        autocompletion({
-          override: [this.CompletionSource(this.completions)],
-        }),
       ],
     });
 

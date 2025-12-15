@@ -91,29 +91,19 @@ export class LanguageService implements ILanguageService {
         let unsub = this.api.tsServer.onResponse((data) => {
           let filePath = data?.body?.file ?? 'unkown';
 
-          if (isTypescriptDiagnosticOutput(data)) {
-            let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
-              data,
-              editorState
-            );
+          let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
+            data,
+            editorState
+          );
 
-            let m = this.fileAndDiagMap.get(filePath);
-            if (!m) {
-              let dm = new Map<diagnosticType, Diagnostic[]>();
-              dm.set(data?.event ?? 'unkown', d);
-              this.fileAndDiagMap.set(filePath, dm);
-            } else {
-              let dm = this.fileAndDiagMap.get(filePath);
-              dm?.set(data?.event ?? 'unkown', d);
-            }
-          }
-
-          if (isTypescriptCompletionInfoOutput(data)) {
-            let entries = mapTsServerOutputToCompletions(data);
-            this.completions = entries;
-
-            console.log('From ts server raw');
-            console.log(data);
+          let m = this.fileAndDiagMap.get(filePath);
+          if (!m) {
+            let dm = new Map<diagnosticType, Diagnostic[]>();
+            dm.set(data?.event ?? 'unkown', d);
+            this.fileAndDiagMap.set(filePath, dm);
+          } else {
+            let dm = this.fileAndDiagMap.get(filePath);
+            dm?.set(data?.event ?? 'unkown', d);
           }
 
           callback(this.fileAndDiagMap, this.completions);
