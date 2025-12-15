@@ -24,6 +24,7 @@ import {
   Completion,
   CompletionContext,
 } from '@codemirror/autocomplete';
+import { server } from 'typescript';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -40,7 +41,7 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly languageService = inject(LanguageService);
 
-  private fileAndCompletionMap = new Map<string, Completion[]>();
+  private completions: Completion[] = [];
 
   /**
    * Getv the syntax highlting extension for a given file extension
@@ -131,11 +132,9 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.languageService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
-      (diagnosticMap, completionMap) => {
+      (diagnosticMap, completions) => {
         if (!this.openFileNode) return;
-        this.fileAndCompletionMap = completionMap;
-
-        console.log(completionMap);
+        this.completions = completions;
 
         const originalPath = this.openFileNode.path;
         const normalizedPath = originalPath.replace(/\\/g, '/');
@@ -157,16 +156,6 @@ export class TextFileEditorComponent implements OnInit {
 
     console.log('Language server started for ' + this.languageServer);
   }
-
-  private sendServerMessage = () => {
-    if (!this.languageServer || !this.openFileNode) return;
-
-    this.languageService.Edit(
-      this.openFileNode.path,
-      this.stringContent,
-      this.languageServer
-    );
-  };
 
   private theme = EditorView.theme(
     {
@@ -258,13 +247,8 @@ export class TextFileEditorComponent implements OnInit {
     );
   }
 
-  fileMapCompletionSource(
-    filePath: string,
-    fileAndCompletionMap: Map<string, Completion[]>
-  ) {
+  CompletionSource(completions: Completion[]) {
     return (context: CompletionContext) => {
-      const completions = fileAndCompletionMap.get(filePath);
-
       if (!completions || completions.length === 0) {
         return null;
       }
@@ -284,44 +268,50 @@ export class TextFileEditorComponent implements OnInit {
     };
   }
 
-  private completionTimeout: any;
   onCompletionEvent() {
-    if (this.completionTimeout) {
-      clearTimeout(this.completionTimeout);
+    if (!this.openFileNode || !this.languageServer || !this.codeMirrorView) {
+      return;
     }
 
-    this.completionTimeout = setTimeout(() => {
-      if (!this.openFileNode || !this.languageServer || !this.codeMirrorView) {
-        return;
-      }
+    const pos = this.codeMirrorView.state.selection.main.head;
+    const line = this.codeMirrorView.state.doc.lineAt(pos);
 
-      const pos = this.codeMirrorView.state.selection.main.head;
-      const line = this.codeMirrorView.state.doc.lineAt(pos);
-
-      this.languageService.Completion(
-        this.openFileNode?.path,
-        line.number,
-        pos - line.from + 1,
-        this.languageServer
-      );
-
-      console.log('Completion fired');
-    }, 5000);
+    this.languageService.Completion(
+      this.openFileNode?.path,
+      line.number,
+      pos - line.from + 1,
+      this.languageServer
+    );
   }
 
   codeMirrorView: EditorView | null = null;
 
   /**
-   * Keeps state updated whenever doc changes
+   * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    if (update.docChanged) {
-      this.stringContent = update.state.doc.toString();
-      this.onSaveEvent();
-      this.sendServerMessage();
-    }
+    this.stringContent = update.state.doc.toString();
 
-    this.onCompletionEvent();
+    update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
+      const startPos = update.state.doc.lineAt(fromA);
+      const endPos = update.state.doc.lineAt(toA);
+
+      const args: server.protocol.ChangeRequestArgs = {
+        file: this.openFileNode!.path,
+
+        line: startPos.number - 1, // 0-based
+        offset: fromA - startPos.from, // column
+
+        endLine: endPos.number - 1, // 0-based
+        endOffset: toA - endPos.from, // column
+
+        insertString: inserted.toString(),
+      };
+
+      this.languageService.Edit(args, this.languageServer!);
+    });
+
+    this.onSaveEvent();
   });
 
   openFileNode: fileNode | null =
@@ -369,12 +359,7 @@ export class TextFileEditorComponent implements OnInit {
         language,
         externalDiagnosticsExtension(),
         autocompletion({
-          override: [
-            this.fileMapCompletionSource(
-              "unkown",
-              this.fileAndCompletionMap
-            ),
-          ],
+          override: [this.CompletionSource(this.completions)],
         }),
       ],
     });

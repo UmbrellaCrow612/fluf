@@ -223,21 +223,27 @@ const registerTsListeners = (ipcMain, win) => {
     write(gter);
   });
 
-  ipcMain.on("tsserver:file:edit", (event, filePath, content) => {
-    let gter = s.Geterr(filePath);
+  ipcMain.on(
+    "tsserver:file:edit",
+    (
+      event,
+      /** @type {import("typescript").server.protocol.ChangeRequestArgs}*/ args
+    ) => {
+      let gter = s.Geterr(args.file);
 
-    /** @type {import("./type").tsServerWritableObject} */
-    let t = {
-      arguments: {},
-      command: commandTypes.Change,
-      seq: getNextSeq(),
-      type: "request",
-    };
+      /** @type {import("./type").tsServerWritableObject} */
+      let cObj = {
+        /** @type {import("typescript").server.protocol.ChangeRequestArgs} */
+        arguments: args,
+        command: commandTypes.Change,
+        seq: getNextSeq(),
+        type: "request",
+      };
 
-    write(cObj);
-    write(oObj);
-    write(gter);
-  });
+      write(cObj)
+      write(gter);
+    }
+  );
 
   ipcMain.on("tsserver:file:close", (event, filePath) => {
     let cObj = s.Close(filePath);

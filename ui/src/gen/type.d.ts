@@ -690,7 +690,7 @@ export type tsServerOpenFile = (filePath: string, fileContent: string) => void;
 /**
  * Writes the file to the stream as being edited
  */
-export type tsServerEditFile = (filePath: string, newContent: string) => void;
+export type tsServerEditFile = (args: import("typescript").server.protocol.ChangeRequestArgs) => void;
 /**
  * Closes the file into the stream
  */

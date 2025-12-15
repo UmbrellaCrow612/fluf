@@ -15,6 +15,7 @@ import {
 } from './typescript';
 import { Diagnostic } from '@codemirror/lint';
 import { Completion } from '@codemirror/autocomplete';
+import { server } from 'typescript';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -31,9 +32,9 @@ export class LanguageService implements ILanguageService {
   private fileAndDiagMap = new Map<string, Map<diagnosticType, Diagnostic[]>>();
 
   /**
-   * Contains a list of files and there completion entry's for it TODO map it inot code mirror auto complete object
+   * List of current completions sent from tsserver
    */
-  private fileAndCompletionMap = new Map<string, Completion[]>();
+  private completions: Completion[] = [];
 
   Open = (
     filePath: string,
@@ -67,13 +68,12 @@ export class LanguageService implements ILanguageService {
   };
 
   Edit = (
-    filePath: string,
-    fileContent: string,
+    args: server.protocol.ChangeRequestArgs,
     langServer: LanguageServer
   ) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.editFile(filePath, fileContent);
+        this.api.tsServer.editFile(args);
         break;
 
       default:
@@ -110,13 +110,13 @@ export class LanguageService implements ILanguageService {
 
           if (isTypescriptCompletionInfoOutput(data)) {
             let entries = mapTsServerOutputToCompletions(data);
-            this.fileAndCompletionMap.set(filePath, entries);
+            this.completions = entries;
 
-            console.log("From ts server raw")
-            console.log(data)
+            console.log('From ts server raw');
+            console.log(data);
           }
 
-          callback(this.fileAndDiagMap, this.fileAndCompletionMap);
+          callback(this.fileAndDiagMap, this.completions);
         });
 
         return () => {

@@ -593,8 +593,7 @@
 /**
  * Writes the file to the stream as being edited
  * @callback tsServerEditFile
- * @param {string} filePath - The path to the file
- * @param {string} newContent - The whole new content of the doc
+ * @param {import("typescript").server.protocol.ChangeRequestArgs} args
  * @returns {void} Nothing
  */
 
