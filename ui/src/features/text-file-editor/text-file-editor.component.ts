@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Text } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
@@ -140,9 +140,6 @@ export class TextFileEditorComponent implements OnInit {
         let m = diagnosticMap.get(normalizedPath);
 
         if (!m) {
-          console.log(
-            'here 1 - Failed to find diagnostics for the normalized path.'
-          );
           return;
         }
 
@@ -241,7 +238,7 @@ export class TextFileEditorComponent implements OnInit {
     await this.api.writeToFile(
       undefined,
       this.openFileNode.path,
-      this.stringContent
+      this.stringContent.replace(/\n/g, '\r\n')
     );
   }
 
@@ -251,31 +248,7 @@ export class TextFileEditorComponent implements OnInit {
    * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    this.stringContent = update.state.doc.toString();
-
-    update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-      const startLine = update.startState.doc.lineAt(fromA); 
-      const endLine = update.startState.doc.lineAt(toA); 
-
-      const args: server.protocol.ChangeRequestArgs = {
-        file: this.openFileNode!.path,
-
-        line: startLine.number,
-        endLine: endLine.number,
-
-        offset: fromA - startLine.from + 1,
-        endOffset: toA - endLine.from + 1,
-
-        insertString: inserted.toString(),
-      };
-
-      this.languageService.Edit(args, this.languageServer!);
-    });
-
-    if (update.docChanged) {
-      this.diagnosticsEvent();
-      this.onSaveEvent();
-    }
+    
   });
 
   private diagTimeout: any;
@@ -292,7 +265,9 @@ export class TextFileEditorComponent implements OnInit {
       if (!this.openFileNode || !this.languageServer) return;
 
       this.languageService.Error(this.openFileNode.path, this.languageServer);
-    }, 500);
+
+      console.log('get err');
+    }, 1000);
   }
 
   openFileNode: fileNode | null =
@@ -335,9 +310,9 @@ export class TextFileEditorComponent implements OnInit {
       doc: this.stringContent,
       extensions: [
         basicSetup,
-        this.updateListener,
         this.theme,
         language,
+        this.updateListener,
         externalDiagnosticsExtension(),
       ],
     });
@@ -364,10 +339,9 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    this.stringContent = await this.api.readFile(
-      undefined,
-      this.openFileNode.path
-    );
+    this.stringContent = (
+      await this.api.readFile(undefined, this.openFileNode.path)
+    ).replace(/\r\n/g, '\n');
 
     this.languageServer = this.getLanguageServer(this.openFileNode.extension);
 
@@ -382,7 +356,7 @@ export class TextFileEditorComponent implements OnInit {
         this.languageServer
       );
 
-      this.languageService.Error(this.openFileNode.path, this.languageServer);
+      this.languageService.Error(this.openFileNode!.path, this.languageServer!);
     }
 
     this.renderCodeMirror();
