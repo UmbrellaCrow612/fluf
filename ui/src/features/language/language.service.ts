@@ -8,8 +8,6 @@ import {
 } from './type';
 import { getElectronApi } from '../../utils';
 import {
-  isTypescriptCompletionInfoOutput,
-  isTypescriptDiagnosticOutput,
   mapTsServerOutputToCompletions,
   mapTypescriptDiagnosticToCodeMirrorDiagnostic,
 } from './typescript';
@@ -106,6 +104,8 @@ export class LanguageService implements ILanguageService {
             dm?.set(data?.event ?? 'unkown', d);
           }
 
+          this.completions = mapTsServerOutputToCompletions(data);
+
           callback(this.fileAndDiagMap, this.completions);
         });
 
@@ -115,6 +115,17 @@ export class LanguageService implements ILanguageService {
 
       default:
         return () => {};
+    }
+  };
+
+  Error = (filePath: string, langServer: LanguageServer) => {
+    switch (langServer) {
+      case 'js/ts':
+        this.api.tsServer.errors(filePath);
+        break;
+
+      default:
+        break;
     }
   };
 }

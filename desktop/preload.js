@@ -51,6 +51,9 @@ const tsServer = {
     ipcRenderer.send("tsserver:file:open", filePath, content),
   completion: (filePath, lineNumber, offest) =>
     ipcRenderer.send("tsserver:file:completion", filePath, lineNumber, offest),
+
+
+  errors: (filePath) => ipcRenderer.send("tsserver:file:error", filePath)
 };
 
 /**

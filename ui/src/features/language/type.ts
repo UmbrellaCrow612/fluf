@@ -66,6 +66,15 @@ export interface ILanguageService {
     editorState: EditorState,
     callback: LanguageServiceCallback
   ) => voidCallback;
+
+
+  /**
+   * Get errors / syntax errors for a given file
+   * @param filePath The file to get the the errors for
+   * @param langServer The specific lang server to send it to
+   * @returns Nothing
+   */
+  Error: (filePath:string, langServer: LanguageServer) => void
 }
 
 /**

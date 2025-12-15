@@ -623,6 +623,13 @@
  */
 
 /**
+ * Trigger error checking
+ * @callback tsServerError
+ * @param {string} filePath - The file to check
+ * @returns {void} Nothing
+ */
+
+/**
  * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
  * @typedef {Object} tsServer
  * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
@@ -630,6 +637,7 @@
  * @property {tsServerEditFile} editFile - Edit the file in the stream
  * @property {tsServerCloseFile} closeFile - Close file into the stream
  * @property {tsServerCompletion} completion - Get completion data of the current file and offest into the stream
+ * @property {tsServerError} errors - Trigger get error's / checking for a file
  */
 
 /**

@@ -53,7 +53,7 @@ const s = {
       /** @type {import("typescript").server.protocol.GeterrRequestArgs}*/ arguments:
         {
           files: [...files],
-          delay: 50,
+          delay: 250,
         },
     };
   },
@@ -217,10 +217,8 @@ const registerTsListeners = (ipcMain, win) => {
 
   ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
     let oObj = s.Open(filePath, fileContent);
-    let gter = s.Geterr(filePath);
 
     write(oObj);
-    write(gter);
   });
 
   ipcMain.on(
@@ -229,8 +227,6 @@ const registerTsListeners = (ipcMain, win) => {
       event,
       /** @type {import("typescript").server.protocol.ChangeRequestArgs}*/ args
     ) => {
-      let gter = s.Geterr(args.file);
-
       /** @type {import("./type").tsServerWritableObject} */
       let cObj = {
         /** @type {import("typescript").server.protocol.ChangeRequestArgs} */
@@ -240,8 +236,7 @@ const registerTsListeners = (ipcMain, win) => {
         type: "request",
       };
 
-      write(cObj)
-      write(gter);
+      write(cObj);
     }
   );
 
@@ -270,6 +265,11 @@ const registerTsListeners = (ipcMain, win) => {
       write(obj);
     }
   );
+
+  ipcMain.on("tsserver:file:error", (event, filePath) => {
+    let eObj = s.Geterr(filePath);
+    write(eObj);
+  });
 };
 
 module.exports = { startTsServer, stopTsServer, registerTsListeners };

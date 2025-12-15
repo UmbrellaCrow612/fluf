@@ -721,6 +721,10 @@ export type tsServerWritableObject = {
     arguments: any;
 };
 /**
+ * Trigger error checking
+ */
+export type tsServerError = (filePath: string) => void;
+/**
  * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
  */
 export type tsServer = {
@@ -744,6 +748,10 @@ export type tsServer = {
      * - Get completion data of the current file and offest into the stream
      */
     completion: tsServerCompletion;
+    /**
+     * - Trigger get error's / checking for a file
+     */
+    errors: tsServerError;
 };
 /**
  * APIs exposed to the renderer process for using Electron functions.

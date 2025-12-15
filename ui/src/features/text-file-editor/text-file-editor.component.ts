@@ -19,9 +19,7 @@ import { LanguageService } from '../language/language.service';
 import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 import { Diagnostic } from '@codemirror/lint';
-import {
-  Completion,
-} from '@codemirror/autocomplete';
+import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 
 @Component({
@@ -38,6 +36,9 @@ export class TextFileEditorComponent implements OnInit {
     'code_mirror_container'
   );
   private readonly languageService = inject(LanguageService);
+
+  /** Local copy of completions from the server */
+  private completions: Completion[] = [];
 
   /**
    * Getv the syntax highlting extension for a given file extension
@@ -131,7 +132,7 @@ export class TextFileEditorComponent implements OnInit {
       (diagnosticMap, completions) => {
         if (!this.openFileNode) return;
 
-        console.log(completions)
+        this.completions = completions;
 
         const originalPath = this.openFileNode.path;
         const normalizedPath = originalPath.replace(/\\/g, '/');
@@ -253,17 +254,17 @@ export class TextFileEditorComponent implements OnInit {
     this.stringContent = update.state.doc.toString();
 
     update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-      const startPos = update.state.doc.lineAt(fromA);
-      const endPos = update.state.doc.lineAt(toA);
+      const startLine = update.startState.doc.lineAt(fromA); 
+      const endLine = update.startState.doc.lineAt(toA); 
 
       const args: server.protocol.ChangeRequestArgs = {
         file: this.openFileNode!.path,
 
-        line: startPos.number - 1, // 0-based
-        offset: fromA - startPos.from, // column
+        line: startLine.number,
+        endLine: endLine.number,
 
-        endLine: endPos.number - 1, // 0-based
-        endOffset: toA - endPos.from, // column
+        offset: fromA - startLine.from + 1,
+        endOffset: toA - endLine.from + 1,
 
         insertString: inserted.toString(),
       };
@@ -271,8 +272,28 @@ export class TextFileEditorComponent implements OnInit {
       this.languageService.Edit(args, this.languageServer!);
     });
 
-    this.onSaveEvent();
+    if (update.docChanged) {
+      this.diagnosticsEvent();
+      this.onSaveEvent();
+    }
   });
+
+  private diagTimeout: any;
+  /**
+   * Debounces the request to the Language Service for file errors (Geterr).
+   * Only sends the request after the user has stopped typing for a set delay.
+   */
+  private diagnosticsEvent() {
+    if (this.diagTimeout) {
+      clearTimeout(this.diagTimeout);
+    }
+
+    this.diagTimeout = setTimeout(() => {
+      if (!this.openFileNode || !this.languageServer) return;
+
+      this.languageService.Error(this.openFileNode.path, this.languageServer);
+    }, 500);
+  }
 
   openFileNode: fileNode | null =
     this.appContext.getSnapshot().currentOpenFileInEditor;
@@ -360,6 +381,8 @@ export class TextFileEditorComponent implements OnInit {
         this.stringContent,
         this.languageServer
       );
+
+      this.languageService.Error(this.openFileNode.path, this.languageServer);
     }
 
     this.renderCodeMirror();

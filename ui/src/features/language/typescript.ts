@@ -69,28 +69,6 @@ function mapSeverity(
   }
 }
 
-/**
- * Returns truie if it's a diagnostic output
- */
-export function isTypescriptDiagnosticOutput(output: tsServerOutput) {
-  if (output?.body?.diagnostics) {
-    return true;
-  }
-
-  return false;
-}
-
-/**
- * Returns true if it's a completion entry
- */
-export function isTypescriptCompletionInfoOutput(output: tsServerOutput) {
-  if (output?.body?.entries) {
-    return true;
-  }
-
-  return false;
-}
-
 const tsKindToCmType: Record<string, string> = {
   // functions / calls
   function: 'function',
