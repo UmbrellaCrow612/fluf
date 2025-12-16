@@ -244,11 +244,48 @@ export class TextFileEditorComponent implements OnInit {
 
   codeMirrorView: EditorView | null = null;
 
+  changeToRequest(
+    doc: Text,
+    fromA: number,
+    toA: number,
+    inserted: Text
+  ): server.protocol.ChangeRequestArgs {
+    const startLine = doc.lineAt(fromA);
+    const endLine = doc.lineAt(toA);
+
+    return {
+      line: startLine.number,
+      offset: fromA - startLine.from + 1,
+
+      endLine: endLine.number,
+      endOffset: toA - endLine.from + 1,
+
+      insertString: inserted.length ? inserted.toString() : undefined,
+      file: this.openFileNode?.path!,
+    };
+  }
+
   /**
    * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    
+    if (!this.openFileNode || !this.languageServer) return;
+    update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+      const request = this.changeToRequest(
+        update.startState.doc,
+        fromA,
+        toA,
+        inserted
+      );
+
+      this.languageService.Edit(request, this.languageServer!);
+      this.diagnosticsEvent()
+    }, true);
+
+
+    if(update.docChanged){
+      this.onSaveEvent()
+    }
   });
 
   private diagTimeout: any;
@@ -265,9 +302,7 @@ export class TextFileEditorComponent implements OnInit {
       if (!this.openFileNode || !this.languageServer) return;
 
       this.languageService.Error(this.openFileNode.path, this.languageServer);
-
-      console.log('get err');
-    }, 1000);
+    }, 200);
   }
 
   openFileNode: fileNode | null =
