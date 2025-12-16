@@ -38,7 +38,10 @@ export interface ILanguageService {
    * @param langServer The specific language server to send it to
    * @returns Nothing
    */
-  Edit: (args: server.protocol.ChangeRequestArgs, langServer: LanguageServer) => void;
+  Edit: (
+    args: server.protocol.ChangeRequestArgs,
+    langServer: LanguageServer
+  ) => void;
 
   /**
    * Get completion information
@@ -49,9 +52,7 @@ export interface ILanguageService {
    * @returns Nothing
    */
   Completion: (
-    filePath: string,
-    lineNumber: number,
-    lineOffest: number,
+    args: server.protocol.CompletionsRequestArgs,
     langServer: LanguageServer
   ) => void;
 
@@ -67,14 +68,13 @@ export interface ILanguageService {
     callback: LanguageServiceCallback
   ) => voidCallback;
 
-
   /**
    * Get errors / syntax errors for a given file
    * @param filePath The file to get the the errors for
    * @param langServer The specific lang server to send it to
    * @returns Nothing
    */
-  Error: (filePath:string, langServer: LanguageServer) => void
+  Error: (filePath: string, langServer: LanguageServer) => void;
 }
 
 /**

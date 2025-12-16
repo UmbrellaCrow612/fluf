@@ -50,14 +50,12 @@ export class LanguageService implements ILanguageService {
   };
 
   Completion = (
-    filePath: string,
-    lineNumber: number,
-    lineOffest: number,
+    args: server.protocol.CompletionsRequestArgs,
     langServer: LanguageServer
   ) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.completion(filePath, lineNumber, lineOffest);
+        this.api.tsServer.completion(args);
         break;
 
       default:
