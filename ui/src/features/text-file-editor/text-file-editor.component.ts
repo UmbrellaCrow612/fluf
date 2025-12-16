@@ -131,7 +131,6 @@ export class TextFileEditorComponent implements OnInit {
       this.codeMirrorView.state,
       (diagnosticMap, completions) => {
         if (!this.openFileNode) return;
-
         this.completions = completions;
 
         const originalPath = this.openFileNode.path;

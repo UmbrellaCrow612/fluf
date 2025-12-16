@@ -607,9 +607,7 @@
 /**
  * Used to stream the completion cmd into tsserver
  * @callback tsServerCompletion
- * @param {string} filePath - The path to the file
- * @param {number} line - The line to get the completion for
- * @param {number} offest - Column of the line charcter at
+ * @param {import("typescript").server.protocol.CompletionsRequestArgs} args - The args needed to the server to send to stream
  * @returns {void} Nothing
  */
 

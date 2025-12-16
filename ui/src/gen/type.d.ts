@@ -698,7 +698,7 @@ export type tsServerCloseFile = (filePath: string) => void;
 /**
  * Used to stream the completion cmd into tsserver
  */
-export type tsServerCompletion = (filePath: string, line: number, offest: number) => void;
+export type tsServerCompletion = (args: import("typescript").server.protocol.CompletionsRequestArgs) => void;
 /**
  * Represents a shape of an object written to tsserver stdin stream - mainly typed from typescript.d.ts
  */

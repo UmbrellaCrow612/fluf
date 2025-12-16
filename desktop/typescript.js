@@ -246,25 +246,18 @@ const registerTsListeners = (ipcMain, win) => {
     write(cObj);
   });
 
-  ipcMain.on(
-    "tsserver:file:completion",
-    (event, filePath, lineNumber, lineOffest) => {
-      /** @type {import("./type").tsServerWritableObject}*/
-      let obj = {
-        seq: getNextSeq(),
-        type: "request",
-        command: commandTypes.CompletionInfo,
-        /** @type {import("typescript").server.protocol.CompletionsRequestArgs}*/ arguments:
-          {
-            file: filePath,
-            line: lineNumber,
-            offset: lineOffest,
-          },
-      };
+  ipcMain.on("tsserver:file:completion", (event, args) => {
+    /** @type {import("./type").tsServerWritableObject}*/
+    let obj = {
+      seq: getNextSeq(),
+      type: "request",
+      command: commandTypes.CompletionInfo,
+      /** @type {import("typescript").server.protocol.CompletionsRequestArgs}*/ arguments:
+        args,
+    };
 
-      write(obj);
-    }
-  );
+    write(obj);
+  });
 
   ipcMain.on("tsserver:file:error", (event, filePath) => {
     let eObj = s.Geterr(filePath);
