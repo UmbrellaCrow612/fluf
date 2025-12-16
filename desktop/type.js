@@ -468,7 +468,7 @@
 
 /**
  * Represents a diagnostic sent from ts server output
- * @typedef {Object} tsServerOutputDiagnostic
+ * @typedef {Object} tsServerOutputBodyDiagnostic
  * @property {{line:number, offset: number}} start - Cords of the start
  * @property {{line:number, offset: number}} end - Cords of the end
  * @property {string} text - Message
@@ -478,11 +478,81 @@
  */
 
 /**
+ * Mapped from enum into a object to use from `typescript.d.ts => enum ScriptElementKind`
+ * @typedef {Object} tsServerOutputBodyScriptElementKind
+ * @property {""} unknown
+ * @property {"warning"} warning
+ * @property {"keyword"} keyword
+ * @property {"script"} scriptElement
+ * @property {"module"} moduleElement
+ * @property {"class"} classElement
+ * @property {"local class"} localClassElement
+ * @property {"interface"} interfaceElement
+ * @property {"type"} typeElement
+ * @property {"enum"} enumElement
+ * @property {"enum member"} enumMemberElement
+ * @property {"var"} variableElement
+ * @property {"local var"} localVariableElement
+ * @property {"using"} variableUsingElement
+ * @property {"await using"} variableAwaitUsingElement
+ * @property {"function"} functionElement
+ * @property {"local function"} localFunctionElement
+ * @property {"method"} memberFunctionElement
+ * @property {"getter"} memberGetAccessorElement
+ * @property {"setter"} memberSetAccessorElement
+ * @property {"property"} memberVariableElement
+ * @property {"accessor"} memberAccessorVariableElement
+ * @property {"constructor"} constructorImplementationElement
+ * @property {"call"} callSignatureElement
+ * @property {"index"} indexSignatureElement
+ * @property {"construct"} constructSignatureElement
+ * @property {"parameter"} parameterElement
+ * @property {"type parameter"} typeParameterElement
+ * @property {"primitive type"} primitiveType
+ * @property {"label"} label
+ * @property {"alias"} alias
+ * @property {"const"} constElement
+ * @property {"let"} letElement
+ * @property {"directory"} directory
+ * @property {"external module name"} externalModuleName
+ * @property {"JSX attribute"} jsxAttribute
+ * @property {"string"} string
+ * @property {"link"} link
+ * @property {"link name"} linkName
+ * @property {"link text"} linkText
+ */
+
+/**
+ * Mapped from `typescript.d.ts -> export type CompletionEntry`
+ * @typedef {Object} tsServerOutputBodyCompletionEntry
+ * @property {tsServerOutputBodyScriptElementKind[keyof tsServerOutputBodyScriptElementKind]} [kind]
+ * @property {string} [kindModifiers]
+ * @property {string} [name]
+ * @property {string} [sortText]
+ * @property {string} [insertText]
+ * @property {string} [filterText]
+ * @property {boolean} [isSnippet]
+ * @property {import("typescript").server.protocol.TextSpan} [replacementSpan]
+ * @property {boolean} [hasAction]
+ * @property {string} [source]
+ * @property {any} [sourceDisplay] - if needed type 
+ * @property {any} [labelDetails] - if needed type
+ * @property {boolean} [isRecommended]
+ * @property {boolean} [isFromUncheckedFile]
+ * @property {boolean} [isPackageJsonImport]
+ * @property {boolean} [isImportStatementCompletion]
+ * @property {any} [data]
+ * @property {string[]} [commitCharacters]
+ */
+
+/**
  * The shape the body can be in
  * @typedef {Object} tsServerOutputBody
  * @property {number} [pid] - Optional could contain the PID number
  * @property {string} [file] - The file path
- * @property {tsServerOutputDiagnostic[]} [diagnostics] - List of diagnostics
+ * @property {tsServerOutputBodyDiagnostic[]} [diagnostics] - List of diagnostics
+ * @property {boolean} [isIncomplete] - From completion info
+ * @property {tsServerOutputBodyCompletionEntry[]} [entries] - From completion info entries
  */
 
 /**
@@ -523,8 +593,7 @@
 /**
  * Writes the file to the stream as being edited
  * @callback tsServerEditFile
- * @param {string} filePath - The path to the file
- * @param {string} newContent - The whole new content of the doc
+ * @param {import("typescript").server.protocol.ChangeRequestArgs} args
  * @returns {void} Nothing
  */
 
@@ -538,9 +607,7 @@
 /**
  * Used to stream the completion cmd into tsserver
  * @callback tsServerCompletion
- * @param {string} filePath - The path to the file
- * @param {number} line - The line to get the completion for
- * @param {number} offest - Column of the line charcter at
+ * @param {import("typescript").server.protocol.CompletionsRequestArgs} args - The args needed to the server to send to stream
  * @returns {void} Nothing
  */
 
@@ -554,6 +621,13 @@
  */
 
 /**
+ * Trigger error checking
+ * @callback tsServerError
+ * @param {string} filePath - The file to check
+ * @returns {void} Nothing
+ */
+
+/**
  * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
  * @typedef {Object} tsServer
  * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
@@ -561,6 +635,7 @@
  * @property {tsServerEditFile} editFile - Edit the file in the stream
  * @property {tsServerCloseFile} closeFile - Close file into the stream
  * @property {tsServerCompletion} completion - Get completion data of the current file and offest into the stream
+ * @property {tsServerError} errors - Trigger get error's / checking for a file
  */
 
 /**

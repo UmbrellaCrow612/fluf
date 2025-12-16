@@ -7,8 +7,13 @@ import {
   diagnosticType,
 } from './type';
 import { getElectronApi } from '../../utils';
-import { mapTypescriptDiagnosticToCodeMirrorDiagnostic } from './typescript';
+import {
+  mapTsServerOutputToCompletions,
+  mapTypescriptDiagnosticToCodeMirrorDiagnostic,
+} from './typescript';
 import { Diagnostic } from '@codemirror/lint';
+import { Completion } from '@codemirror/autocomplete';
+import { server } from 'typescript';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -23,6 +28,11 @@ export class LanguageService implements ILanguageService {
    * Contains a map of a files path and it's specific diagnsitic type and all the diagnostics for it
    */
   private fileAndDiagMap = new Map<string, Map<diagnosticType, Diagnostic[]>>();
+
+  /**
+   * List of current completions sent from tsserver
+   */
+  private completions: Completion[] = [];
 
   Open = (
     filePath: string,
@@ -40,14 +50,12 @@ export class LanguageService implements ILanguageService {
   };
 
   Completion = (
-    filePath: string,
-    lineNumber: number,
-    lineOffest: number,
+    args: server.protocol.CompletionsRequestArgs,
     langServer: LanguageServer
   ) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.completion(filePath, lineNumber, lineOffest);
+        this.api.tsServer.completion(args);
         break;
 
       default:
@@ -56,13 +64,12 @@ export class LanguageService implements ILanguageService {
   };
 
   Edit = (
-    filePath: string,
-    fileContent: string,
+    args: server.protocol.ChangeRequestArgs,
     langServer: LanguageServer
   ) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.editFile(filePath, fileContent);
+        this.api.tsServer.editFile(args);
         break;
 
       default:
@@ -78,24 +85,26 @@ export class LanguageService implements ILanguageService {
     switch (langServer) {
       case 'js/ts':
         let unsub = this.api.tsServer.onResponse((data) => {
+          let filePath = data?.body?.file ?? 'unkown';
+
           let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
             data,
             editorState
           );
 
-          let fp = data?.body?.file ?? 'unkown'; // whenever acessing always chain ? when acessing
-
-          let m = this.fileAndDiagMap.get(fp);
+          let m = this.fileAndDiagMap.get(filePath);
           if (!m) {
             let dm = new Map<diagnosticType, Diagnostic[]>();
             dm.set(data?.event ?? 'unkown', d);
-            this.fileAndDiagMap.set(fp, dm);
+            this.fileAndDiagMap.set(filePath, dm);
           } else {
-            let dm = this.fileAndDiagMap.get(fp);
+            let dm = this.fileAndDiagMap.get(filePath);
             dm?.set(data?.event ?? 'unkown', d);
           }
 
-          callback(this.fileAndDiagMap);
+          this.completions = mapTsServerOutputToCompletions(data);
+
+          callback(this.fileAndDiagMap, this.completions);
         });
 
         return () => {
@@ -104,6 +113,17 @@ export class LanguageService implements ILanguageService {
 
       default:
         return () => {};
+    }
+  };
+
+  Error = (filePath: string, langServer: LanguageServer) => {
+    switch (langServer) {
+      case 'js/ts':
+        this.api.tsServer.errors(filePath);
+        break;
+
+      default:
+        break;
     }
   };
 }

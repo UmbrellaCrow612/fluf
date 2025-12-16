@@ -46,11 +46,12 @@ const tsServer = {
   },
 
   closeFile: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
-  editFile: (filePath, content) => ipcRenderer.send("tsserver:file:edit", filePath, content),
+  editFile: (args) => ipcRenderer.send("tsserver:file:edit", args),
   openFile: (filePath, content) =>
     ipcRenderer.send("tsserver:file:open", filePath, content),
-  completion: (filePath, lineNumber, offest) =>
-    ipcRenderer.send("tsserver:file:completion", filePath, lineNumber, offest),
+  completion: (args) => ipcRenderer.send("tsserver:file:completion", args),
+
+  errors: (filePath) => ipcRenderer.send("tsserver:file:error", filePath),
 };
 
 /**

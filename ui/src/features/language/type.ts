@@ -1,6 +1,8 @@
 import { EditorState } from '@codemirror/state';
 import { tsServerOutputEvent, voidCallback } from '../../gen/type';
 import { Diagnostic } from '@codemirror/lint';
+import { Completion } from '@codemirror/autocomplete';
+import { server } from 'typescript';
 
 /**
  * Contains all the language server keys i.e list of server names that can be used or are currently impl to be used for intellisense in the editor
@@ -8,11 +10,10 @@ import { Diagnostic } from '@codemirror/lint';
 export type LanguageServer =
   /** Used for both TS typescript and JS javascript*/ 'js/ts';
 
-
 /**
  * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
  */
-export type diagnosticType = tsServerOutputEvent | "unkown"
+export type diagnosticType = tsServerOutputEvent | 'unkown';
 /**
  * Represents the standard a language service API has to impl be language agnostic and provide base methods needed to talk to any lang server this is the lsp protocol
  * under the hoodd it will routes said requests to the correct language server impl
@@ -33,14 +34,12 @@ export interface ILanguageService {
 
   /**
    * Edit a file
-   * @param filePath The path to the fil;e
-   * @param fileContent The files content
+   * @param {server.protocol.ChangeRequestArgs} args List of options needed to update the backend view
    * @param langServer The specific language server to send it to
    * @returns Nothing
    */
   Edit: (
-    filePath: string,
-    fileContent: string,
+    args: server.protocol.ChangeRequestArgs,
     langServer: LanguageServer
   ) => void;
 
@@ -53,9 +52,7 @@ export interface ILanguageService {
    * @returns Nothing
    */
   Completion: (
-    filePath: string,
-    lineNumber: number,
-    lineOffest: number,
+    args: server.protocol.CompletionsRequestArgs,
     langServer: LanguageServer
   ) => void;
 
@@ -70,17 +67,26 @@ export interface ILanguageService {
     editorState: EditorState,
     callback: LanguageServiceCallback
   ) => voidCallback;
+
+  /**
+   * Get errors / syntax errors for a given file
+   * @param filePath The file to get the the errors for
+   * @param langServer The specific lang server to send it to
+   * @returns Nothing
+   */
+  Error: (filePath: string, langServer: LanguageServer) => void;
 }
 
 /**
  * Runs when the lang server responds and it's specific response it then parsed and passed to you
  * @param {Map<string, Map<diagnosticType, Diagnostic[]>>} fileAndDiagMap Contains a map of files and another map that for the specifc file has a diag type and it's diagnostics
+ * @param {Map<string, Completion[]>} fileAndCompletionMap Contains a map of specific file and all it's auto complete info
  * @returns {void} Nothing
  */
 export type LanguageServiceCallback = (
-  fileAndDiagMap: Map<string, Map<diagnosticType, Diagnostic[]>>
+  fileAndDiagMap: Map<string, Map<diagnosticType, Diagnostic[]>>,
+  completions: Completion[]
 ) => void;
-
 
 /**
  * Since code mirror dose not export this we just copy it from index.d.ts of it this is for Serverity type within it

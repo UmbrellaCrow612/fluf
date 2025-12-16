@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Text } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
@@ -19,6 +19,8 @@ import { LanguageService } from '../language/language.service';
 import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 import { Diagnostic } from '@codemirror/lint';
+import { Completion } from '@codemirror/autocomplete';
+import { server } from 'typescript';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -34,6 +36,9 @@ export class TextFileEditorComponent implements OnInit {
     'code_mirror_container'
   );
   private readonly languageService = inject(LanguageService);
+
+  /** Local copy of completions from the server */
+  private completions: Completion[] = [];
 
   /**
    * Getv the syntax highlting extension for a given file extension
@@ -85,7 +90,7 @@ export class TextFileEditorComponent implements OnInit {
     filePath: string
   ) {
     const fileDiagnostics = diagnosticMap.get(filePath);
-    if (!fileDiagnostics) return []; 
+    if (!fileDiagnostics) return [];
 
     const allDiagnostics = [];
 
@@ -124,22 +129,20 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.languageService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
-      (data) => {
+      (diagnosticMap, completions) => {
         if (!this.openFileNode) return;
+        this.completions = completions;
 
         const originalPath = this.openFileNode.path;
         const normalizedPath = originalPath.replace(/\\/g, '/');
 
-        let m = data.get(normalizedPath);
+        let m = diagnosticMap.get(normalizedPath);
 
         if (!m) {
-          console.log(
-            'here 1 - Failed to find diagnostics for the normalized path.'
-          );
           return;
         }
 
-        let all = this.getDiagnosticsForFile(data, normalizedPath);
+        let all = this.getDiagnosticsForFile(diagnosticMap, normalizedPath);
 
         applyExternalDiagnostics(this.codeMirrorView!, all);
       }
@@ -147,16 +150,6 @@ export class TextFileEditorComponent implements OnInit {
 
     console.log('Language server started for ' + this.languageServer);
   }
-
-  private sendServerMessage = () => {
-    if (!this.languageServer || !this.openFileNode) return;
-
-    this.languageService.Edit(
-      this.openFileNode.path,
-      this.stringContent,
-      this.languageServer
-    );
-  };
 
   private theme = EditorView.theme(
     {
@@ -231,7 +224,7 @@ export class TextFileEditorComponent implements OnInit {
 
     this.saveTimeout = setTimeout(() => {
       this.handleSave();
-    }, 200);
+    }, 500);
   }
 
   private async handleSave() {
@@ -244,22 +237,72 @@ export class TextFileEditorComponent implements OnInit {
     await this.api.writeToFile(
       undefined,
       this.openFileNode.path,
-      this.stringContent
+      this.stringContent.replace(/\n/g, '\r\n')
     );
   }
 
   codeMirrorView: EditorView | null = null;
 
+  changeToRequest(
+    doc: Text,
+    fromA: number,
+    toA: number,
+    inserted: Text
+  ): server.protocol.ChangeRequestArgs {
+    const startLine = doc.lineAt(fromA);
+    const endLine = doc.lineAt(toA);
+
+    return {
+      line: startLine.number,
+      offset: fromA - startLine.from + 1,
+
+      endLine: endLine.number,
+      endOffset: toA - endLine.from + 1,
+
+      insertString: inserted.length ? inserted.toString() : undefined,
+      file: this.openFileNode?.path!,
+    };
+  }
+
   /**
-   * Keeps state updated whenever doc changes
+   * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    if (update.docChanged) {
-      this.stringContent = update.state.doc.toString();
-      this.onSaveEvent();
-      this.sendServerMessage();
+    if (!this.openFileNode || !this.languageServer) return;
+    update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+      const request = this.changeToRequest(
+        update.startState.doc,
+        fromA,
+        toA,
+        inserted
+      );
+
+      this.languageService.Edit(request, this.languageServer!);
+      this.diagnosticsEvent()
+    }, true);
+
+
+    if(update.docChanged){
+      this.onSaveEvent()
     }
   });
+
+  private diagTimeout: any;
+  /**
+   * Debounces the request to the Language Service for file errors (Geterr).
+   * Only sends the request after the user has stopped typing for a set delay.
+   */
+  private diagnosticsEvent() {
+    if (this.diagTimeout) {
+      clearTimeout(this.diagTimeout);
+    }
+
+    this.diagTimeout = setTimeout(() => {
+      if (!this.openFileNode || !this.languageServer) return;
+
+      this.languageService.Error(this.openFileNode.path, this.languageServer);
+    }, 200);
+  }
 
   openFileNode: fileNode | null =
     this.appContext.getSnapshot().currentOpenFileInEditor;
@@ -301,9 +344,9 @@ export class TextFileEditorComponent implements OnInit {
       doc: this.stringContent,
       extensions: [
         basicSetup,
-        this.updateListener,
         this.theme,
         language,
+        this.updateListener,
         externalDiagnosticsExtension(),
       ],
     });
@@ -330,10 +373,9 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    this.stringContent = await this.api.readFile(
-      undefined,
-      this.openFileNode.path
-    );
+    this.stringContent = (
+      await this.api.readFile(undefined, this.openFileNode.path)
+    ).replace(/\r\n/g, '\n');
 
     this.languageServer = this.getLanguageServer(this.openFileNode.extension);
 
@@ -347,6 +389,8 @@ export class TextFileEditorComponent implements OnInit {
         this.stringContent,
         this.languageServer
       );
+
+      this.languageService.Error(this.openFileNode!.path, this.languageServer!);
     }
 
     this.renderCodeMirror();
