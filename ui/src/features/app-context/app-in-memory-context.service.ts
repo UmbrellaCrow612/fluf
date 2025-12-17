@@ -116,6 +116,10 @@ export class InMemoryContextService {
   /**
    * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
    */
-  readonly refreshDirectory =
-    signal<InMemoryAppContext['refreshDirectory']>(0);
+  readonly refreshDirectory = signal<InMemoryAppContext['refreshDirectory']>(0);
+
+  /**
+   * Exposes problems signal
+   */
+  readonly problems = signal<InMemoryAppContext['problems']>(new Map());
 }

@@ -5,6 +5,7 @@ import {
   ILanguageService,
   LanguageServiceCallback,
   diagnosticType,
+  fileDiagnosticMap,
 } from './type';
 import { getElectronApi } from '../../utils';
 import {
@@ -26,7 +27,7 @@ export class LanguageService implements ILanguageService {
   /**
    * Contains a map of a files path and it's specific diagnsitic type and all the diagnostics for it
    */
-  private fileAndDiagMap = new Map<string, Map<diagnosticType, FlufDiagnostic[]>>();
+  private fileAndDiagMap: fileDiagnosticMap = new Map();
 
   /**
    * List of current completions sent from tsserver
@@ -103,7 +104,11 @@ export class LanguageService implements ILanguageService {
 
           this.completions = mapTsServerOutputToCompletions(data);
 
-          callback(this.fileAndDiagMap, this.completions);
+          // we use structutred clone to give a map of a diffrent refrence becuase ctx setting new map keeps same ref we pass from here  so it dosent trigger computed fields
+          callback(
+            structuredClone(this.fileAndDiagMap),
+            structuredClone(this.completions)
+          );
         });
 
         return () => {
