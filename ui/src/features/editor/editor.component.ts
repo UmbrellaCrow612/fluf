@@ -218,7 +218,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.unSub = await this.api.onDirectoryChange(
         init.selectedDirectoryPath,
         (_) => {
-          this.inMemoryContextService.update('refreshDirectory', true);
+          this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
         }
       );
     }
@@ -276,7 +276,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           this.unSub = await this.api.onDirectoryChange(
             ctx.selectedDirectoryPath,
             (_) => {
-              this.inMemoryContextService.update('refreshDirectory', true);
+              this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
             }
           );
         }
