@@ -1,5 +1,5 @@
 import { fileNode, shellInformation } from '../../gen/type';
-import { Diagnostic } from '@codemirror/lint';
+import { FlufDiagnostic } from '../diagnostic/type';
 /**
  * Represents what elements from the side bar can be in a active state i.e the elements that can be clicked to show said render component off
  */
@@ -155,5 +155,5 @@ export type InMemoryAppContext = {
   /**
    * Contains a list of all specific file's by there path and a map of specific diagnostic error types and then all the diagnostic's of that type
    */
-  problems: Map<string, Map<string, Diagnostic[]>>;
+  problems: Map<string, Map<string, FlufDiagnostic[]>>;
 };

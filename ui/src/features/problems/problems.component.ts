@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import { Diagnostic } from '@codemirror/lint';
 import { ProblemItemComponent } from './problem-item/problem-item.component';
+import { FlufDiagnostic } from '../diagnostic/type';
 
 @Component({
   selector: 'app-problems',
@@ -13,7 +13,7 @@ export class ProblemsComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly destroyRef = inject(DestroyRef);
 
-  problems: Map<string, Map<string, Diagnostic[]>> =
+  problems: Map<string, Map<string, FlufDiagnostic[]>> =
     this.inMemoryContextService.getSnapShot().problems;
 
   ngOnInit(): void {
@@ -30,7 +30,7 @@ export class ProblemsComponent implements OnInit {
     return Array.from(this.problems.keys());
   }
 
-  getDiagnosticsForFile(filePath: string): Diagnostic[] {
+  getDiagnosticsForFile(filePath: string): FlufDiagnostic[] {
     let m = this.problems.get(filePath);
     if (!m) return [];
 

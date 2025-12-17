@@ -1,5 +1,5 @@
-import { Component, input, OnInit } from '@angular/core';
-import { Diagnostic } from '@codemirror/lint';
+import { Component, input } from '@angular/core';
+import { FlufDiagnostic } from '../../diagnostic/type';
 
 /**
  * Render a files list of problems / diagnostics
@@ -19,7 +19,7 @@ export class ProblemItemComponent {
   /**
    * All the diagnostics put together for this file
    */
-  diagnostics = input.required<Diagnostic[]>();
+  diagnostics = input.required<FlufDiagnostic[]>();
 
   /**
    * Whether the child diagnostics are collapsed
@@ -28,5 +28,20 @@ export class ProblemItemComponent {
 
   toggleCollapse() {
     this.collapsed = !this.collapsed;
+  }
+
+  /**
+   * Format line and column information for display
+   */
+  getLineInfo(diagnostic: FlufDiagnostic): string {
+    const start = `${diagnostic.startLine}:${diagnostic.startColumn}`;
+    
+    // Only show end position if it's different from start
+    if (diagnostic.endLine !== diagnostic.startLine || 
+        diagnostic.endColumn !== diagnostic.startColumn) {
+      return `[${start} - ${diagnostic.endLine}:${diagnostic.endColumn}]`;
+    }
+    
+    return `[${start}]`;
   }
 }

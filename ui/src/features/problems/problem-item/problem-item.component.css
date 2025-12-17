@@ -35,6 +35,14 @@
   background-color: rgba(100, 100, 100, 0.1);
 }
 
+/* Line number styling */
+.problem_line_info {
+  color: #858585;
+  font-size: 11px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
 /* Text color for severity */
 .severity-hint {
   color: #a0a0a0;
@@ -59,4 +67,5 @@
 .problem_source {
   font-style: italic;
   color: #888;
+  flex-shrink: 0;
 }
