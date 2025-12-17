@@ -1,5 +1,5 @@
 import { EditorState } from '@codemirror/state';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   LanguageServer,
   ILanguageService,
@@ -23,7 +23,6 @@ import { server } from 'typescript';
 })
 export class LanguageService implements ILanguageService {
   private readonly api = getElectronApi();
-
   /**
    * Contains a map of a files path and it's specific diagnsitic type and all the diagnostics for it
    */

@@ -1,1 +1,8 @@
-<p>problems works!</p>
+<div class="container">
+  @for (file of getFiles(); track file) {
+  <app-problem-item
+    [filePath]="file"
+    [diagnostics]="getDiagnosticsForFile(file)"
+  />
+  }
+</div>

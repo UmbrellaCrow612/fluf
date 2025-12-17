@@ -1,11 +1,39 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { Diagnostic } from '@codemirror/lint';
+import { ProblemItemComponent } from './problem-item/problem-item.component';
 
 @Component({
   selector: 'app-problems',
-  imports: [],
+  imports: [ProblemItemComponent],
   templateUrl: './problems.component.html',
   styleUrl: './problems.component.css',
 })
-export class ProblemsComponent {
+export class ProblemsComponent implements OnInit {
+  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly destroyRef = inject(DestroyRef);
 
+  problems: Map<string, Map<string, Diagnostic[]>> =
+    this.inMemoryContextService.getSnapShot().problems;
+
+  ngOnInit(): void {
+    this.inMemoryContextService.autoSub(
+      'problems',
+      (ctx) => {
+        this.problems = ctx.problems;
+      },
+      this.destroyRef
+    );
+  }
+
+  getFiles(): string[] {
+    return Array.from(this.problems.keys());
+  }
+
+  getDiagnosticsForFile(filePath: string): Diagnostic[] {
+    const fileMap = this.problems.get(filePath);
+    if (!fileMap) return [];
+
+    return Array.from(fileMap.values()).flat();
+  }
 }

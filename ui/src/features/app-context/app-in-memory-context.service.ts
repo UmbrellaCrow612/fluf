@@ -5,6 +5,8 @@ import { voidCallback } from '../../gen/type';
 /**
  * Represents information that dosent need to be persisted between sessions but within the lifecycle of the app, i.e until a refresh
  * but has the same structure to notify those who want it it's data when it changes
+ * 
+ * SHOULD not use any other services / injection as it's a base service
  */
 @Injectable({
   providedIn: 'root',
@@ -23,6 +25,7 @@ export class InMemoryContextService {
     isCreateFileOrFolderActive: null,
     isEditorResize: null,
     refreshDirectory: null,
+    problems: new Map()
   };
 
   /**

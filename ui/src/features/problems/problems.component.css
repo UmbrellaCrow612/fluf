@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.container {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+
+  padding: 10px;
+
+  overflow-y: auto;
+
+  color: white;
+}
