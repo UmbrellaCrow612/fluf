@@ -18,9 +18,6 @@ export type sideBarActiveElement =
  */
 export type fileEditorBottomActiveElement =
   | 'terminal'
-  | 'debug-console'
-  | 'ports'
-  | 'output'
   | 'problems';
 
 /**
