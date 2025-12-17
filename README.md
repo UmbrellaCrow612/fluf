@@ -1,19 +1,32 @@
 # **Flufy**
 
-![Flufy UI Preview](assets/ui.png)
+![Flufy UI Preview](assets/latest-ui-img.png)
 
-A simple text editor with desktop packaging support using Electron.
+A simple text editor written in electron and angular
 
 ---
 
-## **Feature Goals**
+## Features
 
-- Open a folder
-- Display all files and folders in a sidebar
-- Create new files or folders
-- View files or folders by clicking on them
-- Edit text content in files
-- Use a custom build script to build the Angular app and package it with Electron
+- File explorer
+
+- Create and delete files/folders
+
+- View files in editor
+
+- TypeScript server LSP support / UI errors
+
+- Search file contents with Ripgrep
+
+- Search specific folders with FSearch
+
+- Search for specific files with FSearch
+
+- Basic Git view to show working tree information
+
+- Node PTY integrated terminals
+
+- View text files, images, and PDFs with syntax highlighting, code editing, and saving
 
 ---
 
