@@ -1,5 +1,4 @@
 import { EditorState } from '@codemirror/state';
-import { Diagnostic } from '@codemirror/lint';
 import {
   tsServerOutput,
   tsServerOutputBodyCompletionEntry,
@@ -7,6 +6,7 @@ import {
 } from '../../gen/type';
 import { CodeMirrorSeverity, diagnosticType } from './type';
 import { Completion } from '@codemirror/autocomplete';
+import { FlufDiagnostic } from '../diagnostic/type';
 
 /**
  * Convert typescript diagnostics to code mirror diagnostics
@@ -16,8 +16,8 @@ import { Completion } from '@codemirror/autocomplete';
 export function mapTypescriptDiagnosticToCodeMirrorDiagnostic(
   from: tsServerOutput,
   state: EditorState
-): Diagnostic[] {
-  const diagnostics: Diagnostic[] = [];
+): FlufDiagnostic[] {
+  const diagnostics: FlufDiagnostic[] = [];
 
   const bodyDiagnostics = from?.body?.diagnostics;
   if (!bodyDiagnostics || !from?.body || !from?.body?.file) return [];
@@ -32,6 +32,10 @@ export function mapTypescriptDiagnosticToCodeMirrorDiagnostic(
       severity: mapSeverity(d.category),
       message: d.text,
       source: 'typescript',
+      startLine: d.start.line,
+      startColumn: d.start.offset,
+      endLine: d.end.line,
+      endColumn: d.end.offset
     });
   }
 

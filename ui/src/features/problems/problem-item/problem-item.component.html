@@ -1,0 +1,17 @@
+<div class="problem_item">
+  <span class="problem_item_file" (click)="toggleCollapse()">
+    {{ filePath() }}
+  </span>
+
+  @if (!collapsed) {
+    @for (item of diagnostics(); track $index) {
+      <div class="problem_item_child severity-{{ item.severity }}">
+        <span class="problem_line_info">{{ getLineInfo(item) }}</span>
+        <span class="problem_message">{{ item.message }}</span>
+        @if (item.source) {
+          <span class="problem_source">{{ item.source }}</span>
+        }
+      </div>
+    }
+  }
+</div>

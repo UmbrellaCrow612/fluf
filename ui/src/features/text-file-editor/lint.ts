@@ -1,10 +1,11 @@
 import { Extension, StateField, StateEffect } from "@codemirror/state";
-import { linter, Diagnostic, LintSource, lintGutter } from "@codemirror/lint";
+import { linter, LintSource, lintGutter } from "@codemirror/lint";
 import { EditorView } from "@codemirror/view";
+import { FlufDiagnostic } from "../diagnostic/type";
 
-const setDiagnostics = StateEffect.define<Diagnostic[]>();
+const setDiagnostics = StateEffect.define<FlufDiagnostic[]>();
 
-const externalDiagnosticField = StateField.define<Diagnostic[]>({
+const externalDiagnosticField = StateField.define<FlufDiagnostic[]>({
   create() {
     return [];
   },
@@ -32,7 +33,7 @@ export function externalDiagnosticsExtension(): Extension {
   ];
 }
 
-export function applyExternalDiagnostics(view: EditorView, diagnostics: Diagnostic[]) {
+export function applyExternalDiagnostics(view: EditorView, diagnostics: FlufDiagnostic[]) {
   view.dispatch({
     effects: [setDiagnostics.of(diagnostics)]
   });

@@ -18,9 +18,10 @@ import { diagnosticType, LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
 import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
-import { Diagnostic } from '@codemirror/lint';
 import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { FlufDiagnostic } from '../diagnostic/type';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -36,6 +37,8 @@ export class TextFileEditorComponent implements OnInit {
     'code_mirror_container'
   );
   private readonly languageService = inject(LanguageService);
+  private readonly inMemoryContextService = inject(InMemoryContextService)
+
 
   /** Local copy of completions from the server */
   private completions: Completion[] = [];
@@ -86,7 +89,7 @@ export class TextFileEditorComponent implements OnInit {
   private languageServer: LanguageServer | null = null;
 
   getDiagnosticsForFile(
-    diagnosticMap: Map<string, Map<diagnosticType, Diagnostic[]>>,
+    diagnosticMap: Map<string, Map<diagnosticType, FlufDiagnostic[]>>,
     filePath: string
   ) {
     const fileDiagnostics = diagnosticMap.get(filePath);
@@ -130,6 +133,8 @@ export class TextFileEditorComponent implements OnInit {
       this.languageServer,
       this.codeMirrorView.state,
       (diagnosticMap, completions) => {
+        this.inMemoryContextService.update("problems", diagnosticMap)
+
         if (!this.openFileNode) return;
         this.completions = completions;
 

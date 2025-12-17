@@ -11,9 +11,9 @@ import {
   mapTsServerOutputToCompletions,
   mapTypescriptDiagnosticToCodeMirrorDiagnostic,
 } from './typescript';
-import { Diagnostic } from '@codemirror/lint';
 import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
+import { FlufDiagnostic } from '../diagnostic/type';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -23,11 +23,10 @@ import { server } from 'typescript';
 })
 export class LanguageService implements ILanguageService {
   private readonly api = getElectronApi();
-
   /**
    * Contains a map of a files path and it's specific diagnsitic type and all the diagnostics for it
    */
-  private fileAndDiagMap = new Map<string, Map<diagnosticType, Diagnostic[]>>();
+  private fileAndDiagMap = new Map<string, Map<diagnosticType, FlufDiagnostic[]>>();
 
   /**
    * List of current completions sent from tsserver
@@ -94,7 +93,7 @@ export class LanguageService implements ILanguageService {
 
           let m = this.fileAndDiagMap.get(filePath);
           if (!m) {
-            let dm = new Map<diagnosticType, Diagnostic[]>();
+            let dm = new Map<diagnosticType, FlufDiagnostic[]>();
             dm.set(data?.event ?? 'unkown', d);
             this.fileAndDiagMap.set(filePath, dm);
           } else {

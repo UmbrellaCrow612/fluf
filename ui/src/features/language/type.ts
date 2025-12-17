@@ -1,8 +1,8 @@
 import { EditorState } from '@codemirror/state';
 import { tsServerOutputEvent, voidCallback } from '../../gen/type';
-import { Diagnostic } from '@codemirror/lint';
 import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
+import { FlufDiagnostic } from '../diagnostic/type';
 
 /**
  * Contains all the language server keys i.e list of server names that can be used or are currently impl to be used for intellisense in the editor
@@ -79,12 +79,12 @@ export interface ILanguageService {
 
 /**
  * Runs when the lang server responds and it's specific response it then parsed and passed to you
- * @param {Map<string, Map<diagnosticType, Diagnostic[]>>} fileAndDiagMap Contains a map of files and another map that for the specifc file has a diag type and it's diagnostics
- * @param {Map<string, Completion[]>} fileAndCompletionMap Contains a map of specific file and all it's auto complete info
+ * @param  fileAndDiagMap Contains a map of files and another map that for the specifc file has a diag type and it's diagnostics
+ * @param  fileAndCompletionMap Contains a map of specific file and all it's auto complete info
  * @returns {void} Nothing
  */
 export type LanguageServiceCallback = (
-  fileAndDiagMap: Map<string, Map<diagnosticType, Diagnostic[]>>,
+  fileAndDiagMap: Map<string, Map<diagnosticType, FlufDiagnostic[]>>,
   completions: Completion[]
 ) => void;
 
