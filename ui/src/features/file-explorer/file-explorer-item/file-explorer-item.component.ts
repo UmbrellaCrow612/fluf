@@ -164,7 +164,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
   onRightClick(event: MouseEvent) {
     event.preventDefault();
 
-    this.inMemoryContextService.update('currentActiveContextMenu', {
+    this.inMemoryContextService.currentActiveContextMenu.set({
       data: this.fileNode(),
       key: 'file-explorer-file-node-context-menu',
       pos: {

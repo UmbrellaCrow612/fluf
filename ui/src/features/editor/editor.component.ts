@@ -5,6 +5,7 @@ import {
 import {
   AfterViewInit,
   Component,
+  computed,
   DestroyRef,
   inject,
   OnDestroy,
@@ -58,6 +59,11 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private unSub: unSub | null = null;
   private selectedDir = this.appContext.getSnapshot().selectedDirectoryPath;
   private mainEditorActiveElement: editorMainActiveElement | null = null;
+
+  /** Checks if it should show ctx */
+  isContextMenuActive = computed(
+    () => this.inMemoryContextService.currentActiveContextMenu() != null
+  );
 
   /**
    * Used to indicate if it should show bottom which contains terminal etc
@@ -195,8 +201,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   isLeftActive = false;
   sideBarActivateElement: sideBarActiveElement = null;
 
-  isContextMenuActive: boolean | null = null;
-
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
 
@@ -259,13 +263,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       (ctx) => {
         this.isLeftActive = ctx.sideBarActiveElement != null;
         this.sideBarActivateElement = ctx.sideBarActiveElement;
-      },
-      this.destroyRef
-    );
-    this.inMemoryContextService.autoSub(
-      'currentActiveContextMenu',
-      (ctx) => {
-        this.isContextMenuActive = ctx.currentActiveContextMenu != null;
       },
       this.destroyRef
     );

@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   ElementRef,
   inject,
   OnDestroy,
@@ -12,6 +13,7 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
 import { NgComponentOutlet } from '@angular/common';
 import { FileExplorerFileNodeContextMenuComponent } from '../file-explorer/file-explorer-file-node-context-menu/file-explorer-file-node-context-menu.component';
 import { ImageEditorContextMenuComponent } from '../img-editor/image-editor-context-menu/image-editor-context-menu.component';
+import { Renderable } from '../ngComponentOutlet/type';
 
 @Component({
   selector: 'app-context-menu',
@@ -21,10 +23,6 @@ import { ImageEditorContextMenuComponent } from '../img-editor/image-editor-cont
 })
 export class ContextMenuComponent implements OnInit, AfterViewInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
-  /**
-   * The current data when the dialog is rendered
-   */
-  private readonly snapshot = this.inMemoryContextService.getSnapShot();
 
   /**
    * Ref to the dialog html element
@@ -35,40 +33,31 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
   /**
    * List of all custom context menus to render in the dialog wrapper
    */
-  elements: {
-    /** The specific compponent to render */
-    component: Type<any>;
-    /** The callback that returns when it should be rendered based on a condition */
-    condition: () => boolean;
-  }[] = [
+  elements: Renderable[] = [
     {
       component: FileExplorerFileNodeContextMenuComponent,
-      condition: () => {
-        return (
-          typeof this.snapshot.currentActiveContextMenu?.key == 'string' &&
-          this.snapshot.currentActiveContextMenu?.key ==
-            'file-explorer-file-node-context-menu'
-        );
-      },
+      condition: computed(
+        () =>
+          this.inMemoryContextService.currentActiveContextMenu()?.key ==
+          'file-explorer-file-node-context-menu'
+      ),
     },
     {
       component: ImageEditorContextMenuComponent,
-      condition: () => {
-        return (
-          typeof this.snapshot.currentActiveContextMenu?.key == 'string' &&
-          this.snapshot.currentActiveContextMenu?.key ==
-            'image-editor-img-context-menu'
-        );
-      },
+      condition: computed(
+        () =>
+          this.inMemoryContextService.currentActiveContextMenu()?.key ==
+          'image-editor-img-context-menu'
+      ),
     },
   ];
 
   /**
-   * Gets the context menu to render or undefined
+   * Computed signal for the component to render
    */
-  get renderComponent(): Type<any> | undefined {
-    return this.elements.find((x) => x.condition())?.component;
-  }
+  renderComponent = computed<Type<any> | null>(() => {
+    return this.elements.find((x) => x.condition())?.component ?? null;
+  });
 
   ngOnInit(): void {
     const dialog = this.dialogRef()!.nativeElement;
@@ -89,7 +78,7 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
     if (isClickedOutside) {
       dialog.close();
       dialog.removeEventListener('click', this.handleClickOutside);
-      this.inMemoryContextService.update('currentActiveContextMenu', null);
+      this.inMemoryContextService.currentActiveContextMenu.set(null);
     }
   };
 
@@ -102,7 +91,7 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
    * Position the dialog
    */
   private positionDialog(dialog: HTMLDialogElement) {
-    const ctx = this.snapshot.currentActiveContextMenu;
+    const ctx = this.inMemoryContextService.currentActiveContextMenu();
     if (!ctx) return;
 
     const { mouseX, mouseY } = ctx.pos;

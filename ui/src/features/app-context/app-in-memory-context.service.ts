@@ -1,11 +1,13 @@
-import { DestroyRef, Injectable } from '@angular/core';
+import { DestroyRef, Injectable, signal } from '@angular/core';
 import { InMemoryAppContext, InMemoryAppContextCallback } from './type';
 import { voidCallback } from '../../gen/type';
 
 /**
  * Represents information that dosent need to be persisted between sessions but within the lifecycle of the app, i.e until a refresh
- * but has the same structure to notify those who want it it's data when it changes
+ * but has the same structure to notify those who want it it's data when it changes.
  * 
+ * Thin of it as a central store containing all signals that we can acesses from anywhere
+ *
  * SHOULD not use any other services / injection as it's a base service
  */
 @Injectable({
@@ -25,7 +27,7 @@ export class InMemoryContextService {
     isCreateFileOrFolderActive: null,
     isEditorResize: null,
     refreshDirectory: null,
-    problems: new Map()
+    problems: new Map(),
   };
 
   /**
@@ -101,4 +103,13 @@ export class InMemoryContextService {
       }
     }
   }
+
+  // =========================== Refactor ===============================
+  // we will slowly introduce signals test each field then after all are added remove the above
+
+  /**
+   * Exposes the signal for currentActiveContextMenu field in ctx - used to react to / compute the value for this field throughout the app
+   */
+  readonly currentActiveContextMenu =
+    signal<InMemoryAppContext['currentActiveContextMenu']>(null);
 }
