@@ -1,5 +1,4 @@
-import { JsonPipe } from '@angular/common';
-import { Component, input } from '@angular/core';
+import { Component, input, OnInit } from '@angular/core';
 import { Diagnostic } from '@codemirror/lint';
 
 /**
@@ -7,7 +6,7 @@ import { Diagnostic } from '@codemirror/lint';
  */
 @Component({
   selector: 'app-problem-item',
-  imports: [JsonPipe],
+  imports: [],
   templateUrl: './problem-item.component.html',
   styleUrl: './problem-item.component.css',
 })
@@ -21,4 +20,13 @@ export class ProblemItemComponent {
    * All the diagnostics put together for this file
    */
   diagnostics = input.required<Diagnostic[]>();
+
+  /**
+   * Whether the child diagnostics are collapsed
+   */
+  collapsed = false;
+
+  toggleCollapse() {
+    this.collapsed = !this.collapsed;
+  }
 }

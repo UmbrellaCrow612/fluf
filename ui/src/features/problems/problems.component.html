@@ -1,8 +1,14 @@
-<div class="container">
+<div class="container scroll_bar">
   @for (file of getFiles(); track file) {
+
+  <!---->
+  @if (getDiagnosticsForFile(file).length > 0) {
   <app-problem-item
     [filePath]="file"
     [diagnostics]="getDiagnosticsForFile(file)"
   />
+  }
+
+  <!---->
   }
 </div>

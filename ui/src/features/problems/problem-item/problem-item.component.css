@@ -1,0 +1,62 @@
+.problem_item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "Consolas", monospace;
+  font-size: 13px;
+}
+
+.problem_item_file {
+  font-weight: bold;
+  color: #9cdcfe;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.problem_item_file:hover {
+  background-color: rgba(211, 211, 211, 0.247);
+}
+
+.problem_item_child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.problem_item_child:hover {
+  background-color: rgba(100, 100, 100, 0.1);
+}
+
+/* Text color for severity */
+.severity-hint {
+  color: #a0a0a0;
+}
+
+.severity-info {
+  color: #3794ff;
+}
+
+.severity-warning {
+  color: #ff8800;
+}
+
+.severity-error {
+  color: #f44747;
+}
+
+.problem_message {
+  flex: 1;
+}
+
+.problem_source {
+  font-style: italic;
+  color: #888;
+}

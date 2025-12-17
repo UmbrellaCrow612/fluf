@@ -31,9 +31,9 @@ export class ProblemsComponent implements OnInit {
   }
 
   getDiagnosticsForFile(filePath: string): Diagnostic[] {
-    const fileMap = this.problems.get(filePath);
-    if (!fileMap) return [];
+    let m = this.problems.get(filePath);
+    if (!m) return [];
 
-    return Array.from(fileMap.values()).flat();
+    return Array.from(m.values()).flat();
   }
 }
