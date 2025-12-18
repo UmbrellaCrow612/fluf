@@ -19,6 +19,6 @@ export class SelectDirectoryComponent {
       return;
     }
 
-    this.appContext.update('selectedDirectoryPath', res.filePaths[0]);
+    this.appContext.selectedDirectoryPath.set(res.filePaths[0]);
   }
 }

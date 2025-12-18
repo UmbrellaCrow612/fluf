@@ -39,7 +39,9 @@ export class FileExplorerComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
-  selectedDirectorPath: string | null = null;
+  selectedDirectorPath = computed(() =>
+    this.appContext.selectedDirectoryPath()
+  );
   directoryFileNodes = computed(() => this.appContext.directoryFileNodes());
   isExplorerActive = false;
   disableCreateFileOrFolder = computed(() =>
@@ -52,33 +54,29 @@ export class FileExplorerComponent implements OnInit {
         await this.merge();
       }
     });
+
+    effect(async () => {
+      this.appContext.selectedDirectoryPath();
+      await this.readDir();
+    });
   }
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
 
     // set inital state based on ctx
-    this.selectedDirectorPath = init.selectedDirectoryPath;
     this.isExplorerActive =
-      init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
+      init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath();
 
     await this.readDir();
 
     // Subscribe to changes update local state
     this.appContext.autoSub(
-      'selectedDirectoryPath',
-      async (ctx) => {
-        this.selectedDirectorPath = ctx.selectedDirectoryPath;
-        await this.readDir();
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
       'fileExplorerActiveFileOrFolder',
       (ctx) => {
         this.isExplorerActive =
           ctx.fileExplorerActiveFileOrFolder?.path ===
-          this.selectedDirectorPath;
+          this.selectedDirectorPath();
       },
       this.destroyRef
     );
@@ -88,7 +86,7 @@ export class FileExplorerComponent implements OnInit {
    * Reads selected folder path and sets file nodes globally
    */
   async readDir() {
-    let nodes = await this.api.readDir(undefined, this.selectedDirectorPath!);
+    let nodes = await this.api.readDir(undefined, this.selectedDirectorPath()!);
     this.appContext.directoryFileNodes.set(nodes);
   }
 
@@ -102,7 +100,7 @@ export class FileExplorerComponent implements OnInit {
       children: [],
       expanded: false,
       isDirectory: true,
-      path: this.selectedDirectorPath!,
+      path: this.selectedDirectorPath()!,
       parentPath: '',
       name: 'Root',
       mode: 'default',
@@ -131,7 +129,7 @@ export class FileExplorerComponent implements OnInit {
         children: [],
         expanded: false,
         isDirectory: true,
-        path: this.selectedDirectorPath!,
+        path: this.selectedDirectorPath()!,
         parentPath: '',
         name: 'Root',
         mode: 'default',
@@ -163,7 +161,7 @@ export class FileExplorerComponent implements OnInit {
       return;
     }
 
-    const isRootActive = activeNode.path === this.selectedDirectorPath;
+    const isRootActive = activeNode.path === this.selectedDirectorPath();
 
     // Construct the new file node
     const newFileNode: fileNode = {
@@ -206,7 +204,7 @@ export class FileExplorerComponent implements OnInit {
   private async merge() {
     let newNodes = await this.api.readDir(
       undefined,
-      this.selectedDirectorPath!
+      this.selectedDirectorPath()!
     );
     let updatedNodes = await this.mergeNodes(
       this.directoryFileNodes() ?? [],

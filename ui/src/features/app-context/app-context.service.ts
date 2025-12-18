@@ -188,4 +188,11 @@ export class ContextService {
   readonly directoryFileNodes = signal<AppContext['directoryFileNodes']>(
     this.restoreField('directoryFileNodes', null)
   );
+
+  /**
+   * Exposes selectedDirectoryPath signal
+   */
+  readonly selectedDirectoryPath = signal<AppContext['selectedDirectoryPath']>(
+    this.restoreField('selectedDirectoryPath', null)
+  );
 }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -26,10 +26,10 @@ import { ripGrepResult } from '../../gen/type';
   templateUrl: './side-search.component.html',
   styleUrl: './side-search.component.css',
 })
-export class SideSearchComponent implements OnInit {
+export class SideSearchComponent {
   private readonly api = getElectronApi();
   private readonly appContext = inject(ContextService);
-  private searchDir: string | null = null;
+  private searchDir = computed(() => this.appContext.selectedDirectoryPath());
 
   showExtraSearchOptions = false;
 
@@ -53,11 +53,6 @@ export class SideSearchComponent implements OnInit {
     this.showExtraSearchOptions = !this.showExtraSearchOptions;
   }
 
-  async ngOnInit() {
-    let init = this.appContext.getSnapshot();
-    this.searchDir = init.selectedDirectoryPath;
-  }
-
   /**
    * Runs when want to search dir for term
    */
@@ -73,7 +68,7 @@ export class SideSearchComponent implements OnInit {
 
     this.ripGrepResult = await this.api.ripGrep(undefined, {
       searchTerm: term,
-      searchPath: this.searchDir!,
+      searchPath: this.searchDir()!,
       caseInsensitive: true,
       excludes: exclude,
       includes: include,

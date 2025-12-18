@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
 import {
   FormControl,
@@ -17,8 +17,9 @@ import { fsearchOptions, fsearchResult } from '../../gen/type';
 })
 export class SideFileSearchComponent {
   private readonly appContext = inject(ContextService);
-  private readonly selectedDir =
-    this.appContext.getSnapshot().selectedDirectoryPath;
+  private readonly selectedDir = computed(() =>
+    this.appContext.selectedDirectoryPath()
+  );
   private readonly api = getElectronApi();
 
   showOptions = false;
@@ -36,7 +37,7 @@ export class SideFileSearchComponent {
     /** set as plain string sbut need to be normalised to string[] split via , */
     ext: new FormControl<string | null>(null),
     excludeExt: new FormControl<string | null>(null),
-    excludeDir: new FormControl<string | null>("node_modules,bin"),
+    excludeDir: new FormControl<string | null>('node_modules,bin'),
     /** */
 
     minSize: new FormControl(0),
@@ -89,7 +90,7 @@ export class SideFileSearchComponent {
     };
 
     const options: fsearchOptions = {
-      directory: this.selectedDir!,
+      directory: this.selectedDir()!,
       term: form.term.value!,
       partial: form.partial.value!,
       ignoreCase: form.ignoreCase.value!,

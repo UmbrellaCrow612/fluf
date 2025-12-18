@@ -1,11 +1,10 @@
-import {
-  editorMainActiveElement,
-} from './../app-context/type';
+import { editorMainActiveElement } from './../app-context/type';
 import {
   AfterViewInit,
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnDestroy,
   OnInit,
@@ -56,9 +55,26 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly api = getElectronApi();
   private readonly keyService = inject(HotKeyService);
 
+  constructor() {
+    effect(async () => {
+      if (
+        !this.isDirectoryBeingWatched &&
+        this.appContext.selectedDirectoryPath()
+      ) {
+        this.isDirectoryBeingWatched = true;
+        this.unSub = await this.api.onDirectoryChange(
+          this.appContext.selectedDirectoryPath()!,
+          (_) => {
+            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+          }
+        );
+      }
+    });
+  }
+
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
-  private selectedDir = this.appContext.getSnapshot().selectedDirectoryPath;
+  private selectedDir = computed(() => this.appContext.selectedDirectoryPath());
   private mainEditorActiveElement: editorMainActiveElement | null = null;
 
   /** Checks if it should show ctx */
@@ -85,7 +101,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       condition: computed(() => {
         return (
           this.appContext.sideBarActiveElement() == 'file-explorer' &&
-          typeof this.selectedDir == 'string'
+          typeof this.selectedDir() == 'string'
         );
       }),
     },
@@ -94,7 +110,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       condition: computed(() => {
         return (
           this.appContext.sideBarActiveElement() == 'search' &&
-          typeof this.selectedDir == 'string'
+          typeof this.selectedDir() == 'string'
         );
       }),
     },
@@ -103,7 +119,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       condition: computed(() => {
         return (
           this.appContext.sideBarActiveElement() == 'search-folders' &&
-          typeof this.selectedDir == 'string'
+          typeof this.selectedDir() == 'string'
         );
       }),
     },
@@ -112,7 +128,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       condition: computed(() => {
         return (
           this.appContext.sideBarActiveElement() == 'source-control' &&
-          typeof this.selectedDir == 'string'
+          typeof this.selectedDir() == 'string'
         );
       }),
     },
@@ -121,14 +137,14 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       condition: computed(() => {
         return (
           this.appContext.sideBarActiveElement() == 'search-files' &&
-          typeof this.selectedDir == 'string'
+          typeof this.selectedDir() == 'string'
         );
       }),
     },
     {
       component: SelectDirectoryComponent,
       condition: computed(() => {
-        return !this.selectedDir; // TODO - change this to selected Dir signal
+        return !this.selectedDir();
       }),
     },
   ];
@@ -200,10 +216,10 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.mainEditorActiveElement = init.editorMainActiveElement;
 
     // if dir selected watch it
-    if (init.selectedDirectoryPath) {
+    if (this.selectedDir()) {
       this.isDirectoryBeingWatched = true;
       this.unSub = await this.api.onDirectoryChange(
-        init.selectedDirectoryPath,
+        this.selectedDir()!,
         (_) => {
           this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
         }
@@ -242,23 +258,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       'displayFileEditorBottom',
       (ctx) => {
         this.showBottom = ctx.displayFileEditorBottom ? true : false;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'selectedDirectoryPath',
-      async (ctx) => {
-        this.selectedDir = ctx.selectedDirectoryPath;
-
-        if (!this.isDirectoryBeingWatched && ctx.selectedDirectoryPath) {
-          this.isDirectoryBeingWatched = true;
-          this.unSub = await this.api.onDirectoryChange(
-            ctx.selectedDirectoryPath,
-            (_) => {
-              this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
-            }
-          );
-        }
       },
       this.destroyRef
     );

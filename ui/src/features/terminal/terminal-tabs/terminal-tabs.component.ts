@@ -48,7 +48,7 @@ export class TerminalTabsComponent implements OnInit {
 
     let newTerm = await this.api.createShell(
       undefined,
-      ctx.selectedDirectoryPath!
+      this.appContext.selectedDirectoryPath()!
     );
 
     if (newTerm) {
