@@ -2,7 +2,7 @@
   <div class="left scroll_bar">
     @for (btn of btnsList; track $index) {
     <button
-      [class.active]="activeElement() === btn.element"
+      [class.active]="activeEl() === btn.element"
       (click)="buttonClicked(btn)"
     >
       {{ btn.label }}
@@ -11,6 +11,6 @@
   </div>
 
   <div class="right">
-    <ng-container *ngComponentOutlet="activeComponent()" />
+    <ng-container *ngComponentOutlet="renderCompo()" />
   </div>
 </div>

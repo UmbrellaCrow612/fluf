@@ -5,8 +5,11 @@ import { voidCallback } from '../../gen/type';
 const LOCAL_STORAGE_KEY = 'app-context';
 
 /**
- * Service that provides access to application context, persists it,
- * and allows subscribing to changes.
+ * Service that provides access to application context, persists it.
+ *
+ * Think of it as a central store that can be accessed from anywhere for application wide state
+ *
+ * SHOULD not use any other services as it's a base service
  */
 @Injectable({
   providedIn: 'root',
@@ -222,4 +225,11 @@ export class ContextService {
   readonly displayFileEditorBottom = signal<
     AppContext['displayFileEditorBottom']
   >(this.restoreField('displayFileEditorBottom', null));
+
+  /**
+   * Exposes fileEditorBottomActiveElement signal
+   */
+  readonly fileEditorBottomActiveElement = signal<
+    AppContext['fileEditorBottomActiveElement']
+  >(this.restoreField('fileEditorBottomActiveElement', null));
 }
