@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -11,31 +11,18 @@ import { sideBarActiveElement } from '../app-context/type';
   templateUrl: './side-bar.component.html',
   styleUrl: './side-bar.component.css',
 })
-export class SideBarComponent implements OnInit {
+export class SideBarComponent {
   private readonly _appCtx = inject(ContextService);
-  private readonly destroyRef = inject(DestroyRef);
 
   /**
    * Keeps track of the current active side bar element
    */
-  activeElement: sideBarActiveElement | null = null;
-
-  ngOnInit(): void {
-    this.activeElement = this._appCtx.getSnapshot().sideBarActiveElement;
-
-    this._appCtx.autoSub(
-      'sideBarActiveElement',
-      (ctx) => {
-        this.activeElement = ctx.sideBarActiveElement;
-      },
-      this.destroyRef
-    );
-  }
+  activeElement = computed(() => this._appCtx.sideBarActiveElement());
 
   private toggleElement(element: sideBarActiveElement) {
-    const newValue = this.activeElement === element ? null : element;
+    const newValue = this.activeElement() === element ? null : element;
 
-    this._appCtx.update('sideBarActiveElement', newValue);
+    this._appCtx.sideBarActiveElement.set(newValue)
   }
 
   toggleFileExplorer() {
@@ -62,7 +49,7 @@ export class SideBarComponent implements OnInit {
     this.toggleElement('search-folders');
   }
 
-  toggleSearchFiles(){
+  toggleSearchFiles() {
     this.toggleElement('search-files');
   }
 }

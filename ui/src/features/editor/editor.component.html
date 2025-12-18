@@ -4,11 +4,11 @@
     <app-side-bar />
 
     <div class="side" id="editor_resize_container">
-      @if (isLeftActive) {
+      @if (isLeftActive()) {
       <div class="left">
         <!---->
-        @if (sideBarElementCompo) {
-        <ng-container *ngComponentOutlet="sideBarElementCompo" />
+        @if (activeSideBarComponent()) {
+        <ng-container *ngComponentOutlet="activeSideBarComponent()" />
         }
         <!---->
       </div>

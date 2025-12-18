@@ -1,10 +1,6 @@
-import { DestroyRef, Injectable } from '@angular/core';
-import {
-  AppContext,
-  AppContextCallback,
-} from './type';
+import { DestroyRef, effect, Injectable, signal } from '@angular/core';
+import { AppContext, AppContextCallback } from './type';
 import { voidCallback } from '../../gen/type';
-
 
 const LOCAL_STORAGE_KEY = 'app-context';
 
@@ -27,13 +23,20 @@ export class ContextService {
     fileEditorBottomActiveElement: null,
     shells: null,
     currentActiveShellId: null,
-    editorMainActiveElement: null
+    editorMainActiveElement: null,
   };
 
   private subscriptions = new Map<keyof AppContext, Set<AppContextCallback>>();
 
   constructor() {
-    this.restoreState();
+    this.restoreState(); // TODO REMOE AT THE END
+
+    // ============= refactored =-====
+
+    // effect(() => {
+    //   console.log('Persisted state ');
+    //   this.persist();
+    // });
   }
 
   /**
@@ -129,4 +132,53 @@ export class ContextService {
   getSnapshot(): AppContext {
     return structuredClone(this._ctx);
   }
+
+  // ==================================== Refactored =======================================
+  // I will write the signal api below one by one then once it's done delete the above
+
+  // for now persistncae wont work for new fields we add we will need to fix the below tand remove the old way of doing it
+
+  /**
+   * Reads the signals and then saves them
+   */
+  private persist() {
+    const snapshot: Partial<AppContext> = {
+      sideBarActiveElement: this.sideBarActiveElement(),
+      // TODO add more as you migrate
+    };
+
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
+    } catch (err) {
+      console.warn('[ContextService] Failed to persist context', err);
+    }
+  }
+
+  /**
+   * Restore the state of a given field
+   * @param key The specific field to restore
+   * @param fallback A fallback value if it's invalid
+   * @returns Value
+   */
+  private restoreField<K extends keyof AppContext>(
+    key: K,
+    fallback: AppContext[K]
+  ): AppContext[K] {
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!raw) return fallback;
+
+      const saved = JSON.parse(raw) as Partial<AppContext>;
+      return saved[key] ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  /**
+   * Exposes sideBarActiveElement signal
+   */
+  readonly sideBarActiveElement = signal<AppContext['sideBarActiveElement']>(
+    this.restoreField('sideBarActiveElement', null)
+  );
 }

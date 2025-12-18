@@ -1,5 +1,4 @@
 import {
-  sideBarActiveElement,
   editorMainActiveElement,
 } from './../app-context/type';
 import {
@@ -10,6 +9,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  Signal,
   Type,
 } from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
@@ -33,6 +33,7 @@ import { OpenFileContainerBottomComponent } from '../open-files/open-file-contai
 import { ImageEditorComponent } from '../img-editor/image-editor.component';
 import { DocumentEditorComponent } from '../document-editor/document-editor.component';
 import { TextFileEditorComponent } from '../text-file-editor/text-file-editor.component';
+import { Renderable } from '../ngComponentOutlet/type';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -78,74 +79,63 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /**
    * List of all components that can be rendered in the side bar
    */
-  sideBarElements: {
-    /** The component class to render */
-    component: Type<any>;
-
-    /**
-     * Callback that runs the conditions to render the component
-     */
-    condition: () => boolean;
-  }[] = [
+  sideBarElements: Renderable[] = [
     {
       component: FileExplorerComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'file-explorer' &&
+          this.appContext.sideBarActiveElement() == 'file-explorer' &&
           typeof this.selectedDir == 'string'
         );
-      },
+      }),
     },
     {
       component: SideSearchComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'search' &&
+          this.appContext.sideBarActiveElement() == 'search' &&
           typeof this.selectedDir == 'string'
         );
-      },
+      }),
     },
     {
       component: SideFolderSearchComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'search-folders' &&
+          this.appContext.sideBarActiveElement() == 'search-folders' &&
           typeof this.selectedDir == 'string'
         );
-      },
+      }),
     },
     {
       component: SideGitComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'source-control' &&
+          this.appContext.sideBarActiveElement() == 'source-control' &&
           typeof this.selectedDir == 'string'
         );
-      },
+      }),
     },
     {
       component: SideFileSearchComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'search-files' &&
+          this.appContext.sideBarActiveElement() == 'search-files' &&
           typeof this.selectedDir == 'string'
         );
-      },
+      }),
     },
     {
       component: SelectDirectoryComponent,
-      condition: () => {
-        return !this.selectedDir;
-      },
+      condition: computed(() => {
+        return !this.selectedDir; // TODO - change this to selected Dir signal
+      }),
     },
   ];
 
-  /**
-   * Gets the side bar element to render
-   */
-  get sideBarElementCompo(): Type<any> | undefined {
-    return this.sideBarElements.find((x) => x.condition())?.component;
-  }
+  activeSideBarComponent = computed(() => {
+    return this.sideBarElements.find((e) => e.condition())?.component ?? null;
+  });
 
   /**
    * List of components that will be rendered as the main compponent
@@ -198,15 +188,12 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   });
 
-  isLeftActive = false;
-  sideBarActivateElement: sideBarActiveElement = null;
+  isLeftActive = computed(() => this.appContext.sideBarActiveElement() != null);
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
 
     // set stored state
-    this.isLeftActive = init.sideBarActiveElement != null;
-    this.sideBarActivateElement = init.sideBarActiveElement;
     this.showOpenFileTabs =
       init.openFiles && init.openFiles.length > 0 ? true : false;
     this.showBottom = init.displayFileEditorBottom ? true : false;
@@ -255,14 +242,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       'displayFileEditorBottom',
       (ctx) => {
         this.showBottom = ctx.displayFileEditorBottom ? true : false;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'sideBarActiveElement',
-      (ctx) => {
-        this.isLeftActive = ctx.sideBarActiveElement != null;
-        this.sideBarActivateElement = ctx.sideBarActiveElement;
       },
       this.destroyRef
     );
