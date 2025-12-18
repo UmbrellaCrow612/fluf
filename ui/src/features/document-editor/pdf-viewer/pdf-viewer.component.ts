@@ -1,8 +1,7 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { ContextService } from '../../app-context/app-context.service';
 import { PdfService } from './pdf.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser'; 
-import { fileNode } from '../../../gen/type';
 
 @Component({
   selector: 'app-pdf-viewer',
@@ -13,31 +12,17 @@ import { fileNode } from '../../../gen/type';
 })
 export class PdfViewerComponent implements OnInit {
  private readonly appContext = inject(ContextService);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly pdfService = inject(PdfService);
   
   private readonly sanitizer = inject(DomSanitizer);
 
-  currentFileNode: fileNode | null = null;
+  currentFileNode = computed(() => this.appContext.currentOpenFileInEditor())
   isLoading = false;
   error: string | null = null;
   
   sanitizedObjectUrl: SafeResourceUrl | null = null; 
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
-
-    this.currentFileNode = init.currentOpenFileInEditor;
-    
-    this.appContext.autoSub(
-      'currentOpenFileInEditor',
-      async (ctx) => {
-        this.currentFileNode = ctx.currentOpenFileInEditor;
-        await this.render();
-      },
-      this.destroyRef
-    );
-
     await this.render();
   }
 
@@ -51,12 +36,12 @@ export class PdfViewerComponent implements OnInit {
     try {
       this.sanitizedObjectUrl = null; 
 
-      if (!this.currentFileNode) {
+      if (!this.currentFileNode()) {
         this.error = 'No file selected';
         return;
       }
 
-      const pdfUrlString = this.pdfService.getLocalPdfUrl(this.currentFileNode.path);
+      const pdfUrlString = this.pdfService.getLocalPdfUrl(this.currentFileNode()!.path);
       
       this.sanitizedObjectUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrlString);
     } catch (error: any) {

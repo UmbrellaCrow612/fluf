@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, OnInit } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -14,29 +14,18 @@ import { fileNode } from '../../../../gen/type';
   templateUrl: './file-tab-item.component.html',
   styleUrl: './file-tab-item.component.css',
 })
-export class FileTabItemComponent implements OnInit {
+export class FileTabItemComponent {
   private readonly appContext = inject(ContextService);
-  private readonly destroyRef = inject(DestroyRef);
 
   fileNode = input.required<fileNode>();
-  isActive = false;
 
-  ngOnInit(): void {
-    let ctx = this.appContext.getSnapshot();
-    this.isActive = ctx.currentOpenFileInEditor?.path === this.fileNode().path;
-
-    this.appContext.autoSub(
-      'currentOpenFileInEditor',
-      (ctx) => {
-        this.isActive =
-          ctx.currentOpenFileInEditor?.path === this.fileNode().path;
-      },
-      this.destroyRef
-    );
-  }
+  isActive = computed(() => {
+    let current = this.appContext.currentOpenFileInEditor();
+    return current?.path === this.fileNode().path;
+  });
 
   tabItemClicked() {
-    this.appContext.update('currentOpenFileInEditor', this.fileNode());
+    this.appContext.currentOpenFileInEditor.set(this.fileNode());
 
     let isImg = hasImageExtension(this.fileNode().extension);
     if (isImg) {
@@ -56,13 +45,13 @@ export class FileTabItemComponent implements OnInit {
   removeTabItem(event: MouseEvent) {
     event.stopPropagation();
 
-    const ctx = this.appContext.getSnapshot();
-    const files = this.appContext.openFiles() ?? []
+    const currentActiveNode = this.appContext.currentOpenFileInEditor();
+    const files = this.appContext.openFiles() ?? [];
 
     removeFileIfExists(files, this.fileNode());
     this.appContext.openFiles.set(structuredClone(files)); // dfo this becuase of js refrence bs
 
-    if (ctx.currentOpenFileInEditor?.path === this.fileNode().path) {
+    if (currentActiveNode?.path === this.fileNode().path) {
       if (files.length > 0) {
         let isImg = hasImageExtension(files[0].extension);
         if (isImg) {
@@ -78,9 +67,9 @@ export class FileTabItemComponent implements OnInit {
           this.appContext.update('editorMainActiveElement', 'text-file-editor');
         }
 
-        this.appContext.update('currentOpenFileInEditor', files[0]);
+        this.appContext.currentOpenFileInEditor.set(files[0]);
       } else {
-        this.appContext.update('currentOpenFileInEditor', null);
+        this.appContext.currentOpenFileInEditor.set(null);
         this.appContext.update('editorMainActiveElement', null);
       }
     }

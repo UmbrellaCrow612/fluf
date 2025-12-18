@@ -208,4 +208,11 @@ export class ContextService {
   readonly openFiles = signal<AppContext['openFiles']>(
     this.restoreField('openFiles', null)
   );
+
+  /**
+   * Exposes currentOpenFileInEditor signal
+   */
+  readonly currentOpenFileInEditor = signal<
+    AppContext['currentOpenFileInEditor']
+  >(this.restoreField('currentOpenFileInEditor', null));
 }
