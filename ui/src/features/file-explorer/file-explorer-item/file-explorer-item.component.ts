@@ -85,7 +85,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     let nodes = this.appContext.getSnapshot().directoryFileNodes;
     removeCreateNodes(nodes!);
 
-    this.inMemoryContextService.update('isCreateFileOrFolderActive', false);
+    this.inMemoryContextService.isCreateFileOrFolderActive.set(false);
     this.appContext.update('directoryFileNodes', nodes);
   }
 

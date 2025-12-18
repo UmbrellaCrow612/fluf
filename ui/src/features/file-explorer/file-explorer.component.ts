@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -35,7 +35,7 @@ export class FileExplorerComponent implements OnInit {
   selectedDirectorPath: string | null = null;
   directoryFileNodes: fileNode[] | null = null;
   isExplorerActive = false;
-  disableCreateFileOrFolder: boolean | null = null;
+  disableCreateFileOrFolder = computed(() => this.inMemoryAppContext.isCreateFileOrFolderActive())
 
   constructor() {
     effect(async () => {
@@ -54,7 +54,6 @@ export class FileExplorerComponent implements OnInit {
     this.directoryFileNodes = init.directoryFileNodes;
     this.isExplorerActive =
       init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
-    this.disableCreateFileOrFolder = inMemeoryInit.isCreateFileOrFolderActive;
 
     await this.readDir();
 
@@ -80,13 +79,6 @@ export class FileExplorerComponent implements OnInit {
         this.isExplorerActive =
           ctx.fileExplorerActiveFileOrFolder?.path ===
           this.selectedDirectorPath;
-      },
-      this.destroyRef
-    );
-    this.inMemoryAppContext.autoSub(
-      'isCreateFileOrFolderActive',
-      (ctx) => {
-        this.disableCreateFileOrFolder = ctx.isCreateFileOrFolderActive;
       },
       this.destroyRef
     );
@@ -203,7 +195,7 @@ export class FileExplorerComponent implements OnInit {
       }
     }
 
-    this.inMemoryAppContext.update('isCreateFileOrFolderActive', true);
+    this.inMemoryAppContext.isCreateFileOrFolderActive.set(true);
     this.appContext.update('directoryFileNodes', nodes);
   }
 

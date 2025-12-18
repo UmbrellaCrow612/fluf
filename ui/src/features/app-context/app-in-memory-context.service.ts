@@ -122,4 +122,10 @@ export class InMemoryContextService {
    * Exposes problems signal
    */
   readonly problems = signal<InMemoryAppContext['problems']>(new Map());
+
+
+  /**
+   * Exposes signal for isCreateFileOrFolderActive
+   */
+  readonly isCreateFileOrFolderActive = signal<InMemoryAppContext["isCreateFileOrFolderActive"]>(null)
 }
