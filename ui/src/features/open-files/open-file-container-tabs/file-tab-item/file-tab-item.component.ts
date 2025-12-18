@@ -57,10 +57,10 @@ export class FileTabItemComponent implements OnInit {
     event.stopPropagation();
 
     const ctx = this.appContext.getSnapshot();
-    const files = ctx.openFiles ?? [];
+    const files = this.appContext.openFiles() ?? []
 
     removeFileIfExists(files, this.fileNode());
-    this.appContext.update('openFiles', files);
+    this.appContext.openFiles.set(structuredClone(files)); // dfo this becuase of js refrence bs
 
     if (ctx.currentOpenFileInEditor?.path === this.fileNode().path) {
       if (files.length > 0) {

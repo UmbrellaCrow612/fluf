@@ -87,14 +87,12 @@ export class FileExplorerItemComponent implements AfterViewInit {
     event.preventDefault();
 
     if (!this.fileNode().isDirectory) {
-      let ctx = this.appContext.getSnapshot();
-
       this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
 
-      let files = ctx.openFiles ?? [];
+      let files = this.appContext.openFiles() ?? []
       addUniqueFile(files, this.fileNode());
 
-      this.appContext.update('openFiles', files);
+      this.appContext.openFiles.set(structuredClone(files)); // becuase of js refrence bs
       this.appContext.update('currentOpenFileInEditor', this.fileNode());
 
       let isImg = hasImageExtension(this.fileNode().extension);

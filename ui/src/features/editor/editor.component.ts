@@ -90,7 +90,10 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /**
    * Indicates if it should show the tabs of open file component
    */
-  showOpenFileTabs = false;
+  showOpenFileTabs = computed(() => {
+    let openFiles = this.appContext.openFiles()
+    return openFiles && openFiles.length > 0 ? true : false;
+  });
 
   /**
    * List of all components that can be rendered in the side bar
@@ -210,8 +213,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     let init = this.appContext.getSnapshot();
 
     // set stored state
-    this.showOpenFileTabs =
-      init.openFiles && init.openFiles.length > 0 ? true : false;
     this.showBottom = init.displayFileEditorBottom ? true : false;
     this.mainEditorActiveElement = init.editorMainActiveElement;
 
@@ -243,14 +244,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       'editorMainActiveElement',
       (ctx) => {
         this.mainEditorActiveElement = ctx.editorMainActiveElement;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'openFiles',
-      (ctx) => {
-        this.showOpenFileTabs =
-          ctx.openFiles && ctx.openFiles.length > 0 ? true : false;
       },
       this.destroyRef
     );

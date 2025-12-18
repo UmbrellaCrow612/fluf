@@ -142,16 +142,15 @@ export class ContextService {
    * Reads the signals and then saves them
    */
   private persist() {
-    const snapshot: Partial<AppContext> = {
-      sideBarActiveElement: this.sideBarActiveElement(),
-      // TODO add more as you migrate
-    };
-
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
-    } catch (err) {
-      console.warn('[ContextService] Failed to persist context', err);
-    }
+    // const snapshot: AppContext = {
+    //   sideBarActiveElement: this.sideBarActiveElement(),
+    //   // TODO add more as you migrate
+    // };
+    // try {
+    //   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
+    // } catch (err) {
+    //   console.warn('[ContextService] Failed to persist context', err);
+    // }
   }
 
   /**
@@ -202,4 +201,11 @@ export class ContextService {
   readonly fileExplorerActiveFileOrFolder = signal<
     AppContext['fileExplorerActiveFileOrFolder']
   >(this.restoreField('fileExplorerActiveFileOrFolder', null));
+
+  /**
+   * Exposes openFiles signal
+   */
+  readonly openFiles = signal<AppContext['openFiles']>(
+    this.restoreField('openFiles', null)
+  );
 }
