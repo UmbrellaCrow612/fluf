@@ -47,7 +47,6 @@ export class FileExplorerComponent implements OnInit {
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
-    let inMemeoryInit = this.inMemoryAppContext.getSnapShot();
 
     // set inital state based on ctx
     this.selectedDirectorPath = init.selectedDirectoryPath;

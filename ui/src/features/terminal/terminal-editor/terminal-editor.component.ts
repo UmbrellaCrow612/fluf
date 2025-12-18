@@ -1,6 +1,7 @@
 import {
   Component,
   DestroyRef,
+  effect,
   inject,
   OnDestroy,
   OnInit,
@@ -26,6 +27,20 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly inMemoryAppContext = inject(InMemoryContextService)
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
+
+
+  constructor(){
+    effect(async () => {
+      let isEditorResize = this.inMemoryAppContext.isEditorResize()
+      if (isEditorResize && this.fitAddon && this.terminal) {
+          this.fitAddon.fit();
+          await this.api.resizeShell(undefined, this.currentActiveShellId!, {
+            cols: this.terminal.cols,
+            rows: this.terminal.rows,
+          });
+        }
+    })
+  }
 
   private terminal: Terminal | null = null;
   private fitAddon: FitAddon | null = null;
@@ -57,20 +72,6 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
           ctx.shells?.find((x) => x.id == this.currentActiveShellId) ?? null;
 
         await this.initShell();
-      },
-      this.destroyRef
-    );
-
-    this.inMemoryAppContext.autoSub(
-      'isEditorResize',
-      async (ctx) => {
-        if (ctx.isEditorResize && this.fitAddon && this.terminal) {
-          this.fitAddon.fit();
-          await this.api.resizeShell(undefined, this.currentActiveShellId!, {
-            cols: this.terminal.cols,
-            rows: this.terminal.rows,
-          });
-        }
       },
       this.destroyRef
     );
