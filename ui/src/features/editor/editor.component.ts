@@ -85,13 +85,15 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /**
    * Used to indicate if it should show bottom which contains terminal etc
    */
-  showBottom = false;
+  showBottom = computed(() =>
+    this.appContext.displayFileEditorBottom() ? true : false
+  );
 
   /**
    * Indicates if it should show the tabs of open file component
    */
   showOpenFileTabs = computed(() => {
-    let openFiles = this.appContext.openFiles()
+    let openFiles = this.appContext.openFiles();
     return openFiles && openFiles.length > 0 ? true : false;
   });
 
@@ -213,7 +215,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     let init = this.appContext.getSnapshot();
 
     // set stored state
-    this.showBottom = init.displayFileEditorBottom ? true : false;
     this.mainEditorActiveElement = init.editorMainActiveElement;
 
     // if dir selected watch it
@@ -231,10 +232,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.keyService.autoSub(
       {
         callback: (ctx) => {
-          this.appContext.update(
-            'displayFileEditorBottom',
-            !ctx.displayFileEditorBottom
-          );
+          this.appContext.displayFileEditorBottom.set(!this.showBottom());
         },
         keys: ['Control', 'j'],
       },
@@ -244,13 +242,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       'editorMainActiveElement',
       (ctx) => {
         this.mainEditorActiveElement = ctx.editorMainActiveElement;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'displayFileEditorBottom',
-      (ctx) => {
-        this.showBottom = ctx.displayFileEditorBottom ? true : false;
       },
       this.destroyRef
     );

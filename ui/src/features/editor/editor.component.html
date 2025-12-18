@@ -22,7 +22,7 @@
             <ng-container *ngComponentOutlet="mainCompToRender" />
           </div>
           <!---->
-          @if (showBottom) {
+          @if (showBottom()) {
           <app-open-file-container-bottom />
           }
         </div>
