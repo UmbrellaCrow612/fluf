@@ -246,4 +246,11 @@ export class ContextService {
   readonly currentActiveShellId = signal<AppContext['currentActiveShellId']>(
     this.restoreField('currentActiveShellId', null)
   );
+
+  /**
+   * Exposes the editorMainActiveElement signal
+   */
+  readonly editorMainActiveElement = signal<
+    AppContext['editorMainActiveElement']
+  >(this.restoreField('editorMainActiveElement', null));
 }

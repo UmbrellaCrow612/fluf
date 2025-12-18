@@ -97,17 +97,17 @@ export class FileExplorerItemComponent implements AfterViewInit {
 
       let isImg = hasImageExtension(this.fileNode().extension);
       if (isImg) {
-        this.appContext.update('editorMainActiveElement', 'image-editor');
+        this.appContext.editorMainActiveElement.set('image-editor');
         return;
       }
 
       let isDoc = hasDocumentExtension(this.fileNode().extension);
       if (isDoc) {
-        this.appContext.update('editorMainActiveElement', 'document-editor');
+        this.appContext.editorMainActiveElement.set('document-editor');
         return;
       }
 
-      this.appContext.update('editorMainActiveElement', 'text-file-editor');
+      this.appContext.editorMainActiveElement.set('text-file-editor');
       return;
     }
 

@@ -1,4 +1,3 @@
-import { editorMainActiveElement } from './../app-context/type';
 import {
   AfterViewInit,
   Component,
@@ -75,7 +74,9 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
   private selectedDir = computed(() => this.appContext.selectedDirectoryPath());
-  private mainEditorActiveElement: editorMainActiveElement | null = null;
+  private mainEditorActiveElement = computed(() =>
+    this.appContext.editorMainActiveElement()
+  );
 
   /** Checks if it should show ctx */
   isContextMenuActive = computed(
@@ -161,33 +162,33 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /**
    * List of components that will be rendered as the main compponent
    */
-  mainComponents: { component: Type<any>; codition: () => boolean }[] = [
+  mainComponents: Renderable[] = [
     {
-      codition: () => {
-        return this.mainEditorActiveElement == 'text-file-editor';
-      },
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'text-file-editor'
+      ),
       component: TextFileEditorComponent,
     },
     {
       component: ImageEditorComponent,
-      codition: () => {
-        return this.mainEditorActiveElement == 'image-editor';
-      },
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'image-editor'
+      ),
     },
     {
       component: DocumentEditorComponent,
-      codition: () => {
-        return this.mainEditorActiveElement == 'document-editor';
-      },
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'document-editor'
+      ),
     },
   ];
 
-  get mainCompToRender(): Type<any> {
+  mainCompToRender: Signal<Type<any>> = computed(() => {
     return (
-      this.mainComponents.find((x) => x.codition())?.component ??
+      this.mainComponents.find((x) => x.condition())?.component ??
       EditorHomePageComponent
     );
-  }
+  });
 
   private resizer = new Resizer({
     direction: 'horizontal',
@@ -212,11 +213,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   isLeftActive = computed(() => this.appContext.sideBarActiveElement() != null);
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
-
-    // set stored state
-    this.mainEditorActiveElement = init.editorMainActiveElement;
-
     // if dir selected watch it
     if (this.selectedDir()) {
       this.isDirectoryBeingWatched = true;
@@ -235,13 +231,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           this.appContext.displayFileEditorBottom.set(!this.showBottom());
         },
         keys: ['Control', 'j'],
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'editorMainActiveElement',
-      (ctx) => {
-        this.mainEditorActiveElement = ctx.editorMainActiveElement;
       },
       this.destroyRef
     );

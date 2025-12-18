@@ -29,17 +29,17 @@ export class FileTabItemComponent {
 
     let isImg = hasImageExtension(this.fileNode().extension);
     if (isImg) {
-      this.appContext.update('editorMainActiveElement', 'image-editor');
+      this.appContext.editorMainActiveElement.set('image-editor');
       return;
     }
 
     let isDoc = hasDocumentExtension(this.fileNode().extension);
     if (isDoc) {
-      this.appContext.update('editorMainActiveElement', 'document-editor');
+      this.appContext.editorMainActiveElement.set('document-editor');
       return;
     }
 
-    this.appContext.update('editorMainActiveElement', 'text-file-editor');
+    this.appContext.editorMainActiveElement.set('text-file-editor');
   }
 
   removeTabItem(event: MouseEvent) {
@@ -55,22 +55,22 @@ export class FileTabItemComponent {
       if (files.length > 0) {
         let isImg = hasImageExtension(files[0].extension);
         if (isImg) {
-          this.appContext.update('editorMainActiveElement', 'image-editor');
+          this.appContext.editorMainActiveElement.set('image-editor');
         }
 
         let isDoc = hasDocumentExtension(files[0].extension);
         if (isDoc) {
-          this.appContext.update('editorMainActiveElement', 'document-editor');
+          this.appContext.editorMainActiveElement.set('document-editor');
         }
 
         if (!isDoc && !isImg) {
-          this.appContext.update('editorMainActiveElement', 'text-file-editor');
+          this.appContext.editorMainActiveElement.set('text-file-editor');
         }
 
         this.appContext.currentOpenFileInEditor.set(files[0]);
       } else {
         this.appContext.currentOpenFileInEditor.set(null);
-        this.appContext.update('editorMainActiveElement', null);
+        this.appContext.editorMainActiveElement.set(null);
       }
     }
   }
