@@ -34,7 +34,7 @@ export class TerminalTabsComponent {
       shells.unshift(newTerm);
 
       this.appContext.shells.set(structuredClone(shells)); // for js compute refrence to be diffrent
-      this.appContext.update('currentActiveShellId', newTerm.id);
+      this.appContext.currentActiveShellId.set(newTerm.id);
     }
   }
 }

@@ -91,7 +91,7 @@ export class HotKeyService {
    * Run all hot keys registered
    */
   private async runSubs(): Promise<void> {
-    const ctx = this._context.getSnapshot();
+    const ctx = this._context.getSnapShot();
     for (const item of this._subs) {
       if (this.arrayMatchesSet(item.keys, this._keys)) {
         await item.callback(ctx);
