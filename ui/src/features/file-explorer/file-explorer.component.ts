@@ -36,14 +36,17 @@ import { fileNode, fileNodeMode } from '../../gen/type';
 export class FileExplorerComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryAppContext = inject(InMemoryContextService);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
   selectedDirectorPath = computed(() =>
     this.appContext.selectedDirectoryPath()
   );
   directoryFileNodes = computed(() => this.appContext.directoryFileNodes());
-  isExplorerActive = false;
+  isExplorerActive = computed(
+    () =>
+      this.appContext.fileExplorerActiveFileOrFolder()?.path ===
+      this.appContext.selectedDirectoryPath()
+  );
   disableCreateFileOrFolder = computed(() =>
     this.inMemoryAppContext.isCreateFileOrFolderActive()
   );
@@ -62,24 +65,7 @@ export class FileExplorerComponent implements OnInit {
   }
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
-
-    // set inital state based on ctx
-    this.isExplorerActive =
-      init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath();
-
     await this.readDir();
-
-    // Subscribe to changes update local state
-    this.appContext.autoSub(
-      'fileExplorerActiveFileOrFolder',
-      (ctx) => {
-        this.isExplorerActive =
-          ctx.fileExplorerActiveFileOrFolder?.path ===
-          this.selectedDirectorPath();
-      },
-      this.destroyRef
-    );
   }
 
   /**
@@ -96,7 +82,7 @@ export class FileExplorerComponent implements OnInit {
   collapseFolders() {
     let nodes = this.directoryFileNodes();
     collapseAllFileNodesToRoot(nodes ?? []);
-    this.appContext.update('fileExplorerActiveFileOrFolder', {
+    this.appContext.fileExplorerActiveFileOrFolder.set({
       children: [],
       expanded: false,
       isDirectory: true,
@@ -125,7 +111,7 @@ export class FileExplorerComponent implements OnInit {
 
     if (target === container) {
       /*Clicked empty space so set the file or folder focus in side bar to root node */
-      this.appContext.update('fileExplorerActiveFileOrFolder', {
+      this.appContext.fileExplorerActiveFileOrFolder.set({
         children: [],
         expanded: false,
         isDirectory: true,
@@ -151,10 +137,8 @@ export class FileExplorerComponent implements OnInit {
   }
 
   createFileOrFolder(mode: fileNodeMode) {
-    const ctx = this.appContext.getSnapshot();
-
     const nodes = this.directoryFileNodes() ?? [];
-    const activeNode = ctx.fileExplorerActiveFileOrFolder;
+    const activeNode = this.appContext.fileExplorerActiveFileOrFolder();
 
     if (!activeNode) {
       console.log('No file or folder in focus');

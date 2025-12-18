@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   DestroyRef,
   ElementRef,
   inject,
@@ -31,7 +32,7 @@ import { fileNode } from '../../../gen/type';
   templateUrl: './file-explorer-item.component.html',
   styleUrl: './file-explorer-item.component.css',
 })
-export class FileExplorerItemComponent implements OnInit, AfterViewInit {
+export class FileExplorerItemComponent implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly appContext = inject(ContextService);
   private readonly api = getElectronApi();
@@ -51,7 +52,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
    * Indicates if the item is clicked on show focus state either if the current file is shown
    * as the current edit file or if it is just a folder clicked in explorer
    */
-  isFocused = false;
+  isFocused = computed(() => this.appContext.fileExplorerActiveFileOrFolder()?.path === this.fileNode().path);
 
   getFileExt = getFileExtension;
 
@@ -59,21 +60,6 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
    * Input rendered when making a file
    */
   createInput = viewChild<ElementRef<HTMLInputElement>>('create_input');
-
-  ngOnInit(): void {
-    this.isFocused =
-      this.appContext.getSnapshot().fileExplorerActiveFileOrFolder?.path ===
-      this.fileNode().path;
-
-    this.appContext.autoSub(
-      'fileExplorerActiveFileOrFolder',
-      (ctx) => {
-        this.isFocused =
-          ctx.fileExplorerActiveFileOrFolder?.path === this.fileNode().path;
-      },
-      this.destroyRef
-    );
-  }
 
   ngAfterViewInit(): void {
     if (this.createInput()) {
@@ -103,7 +89,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     if (!this.fileNode().isDirectory) {
       let ctx = this.appContext.getSnapshot();
 
-      this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
+      this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
 
       let files = ctx.openFiles ?? [];
       addUniqueFile(files, this.fileNode());
@@ -131,14 +117,14 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
 
     if (this.fileNode().expanded) {
       collapseNodeByPath(previousNodes!, this.fileNode().path);
-      this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
+      this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
       this.appContext.directoryFileNodes.set(previousNodes);
       return;
     }
 
     if (!this.fileNode().expanded && this.fileNode().children.length > 0) {
       expandNodeByPath(previousNodes!, this.fileNode().path!);
-      this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
+      this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
       this.appContext.directoryFileNodes.set(previousNodes);
       return;
     }
@@ -154,7 +140,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
       newChildrenNodes
     );
 
-    this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
+    this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
     this.appContext.directoryFileNodes.set(previousNodes);
   }
 
@@ -204,7 +190,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
         const suc = await this.api.createFile(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.update('fileExplorerActiveFileOrFolder', {
+          this.appContext.fileExplorerActiveFileOrFolder.set({
             children: [],
             expanded: false,
             isDirectory: false,
@@ -237,7 +223,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
         const suc = await this.api.createDirectory(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.update('fileExplorerActiveFileOrFolder', {
+          this.appContext.fileExplorerActiveFileOrFolder.set({
             children: [],
             expanded: false,
             isDirectory: true,

@@ -384,7 +384,7 @@ export class TextFileEditorComponent implements OnInit {
 
     this.languageServer = this.getLanguageServer(this.openFileNode.extension);
 
-    this.appContext.update('fileExplorerActiveFileOrFolder', this.openFileNode);
+    this.appContext.fileExplorerActiveFileOrFolder.set(this.openFileNode);
     this.isLoading = false;
 
     if (this.languageServer) {

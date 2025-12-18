@@ -37,7 +37,7 @@
     class="file_explorer_file_tree_container scroll_bar"
     (click)="fileExplorerScrollContainerClicked($event)"
     (dblclick)="fileExplorerScrollContainerDoubleClicked($event)"
-    [class.file_explorer_file_tree_active]="isExplorerActive"
+    [class.file_explorer_file_tree_active]="isExplorerActive()"
   >
     @for (file of directoryFileNodes(); track file.path) {
     <app-file-explorer-item [fileNode]="file" [depth]="0" />

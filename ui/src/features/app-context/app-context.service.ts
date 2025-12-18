@@ -195,4 +195,11 @@ export class ContextService {
   readonly selectedDirectoryPath = signal<AppContext['selectedDirectoryPath']>(
     this.restoreField('selectedDirectoryPath', null)
   );
+
+  /**
+   * Exposes fileExplorerActiveFileOrFolder signal
+   */
+  readonly fileExplorerActiveFileOrFolder = signal<
+    AppContext['fileExplorerActiveFileOrFolder']
+  >(this.restoreField('fileExplorerActiveFileOrFolder', null));
 }
