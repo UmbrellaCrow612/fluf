@@ -85,7 +85,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     let nodes = this.appContext.getSnapshot().directoryFileNodes;
     removeCreateNodes(nodes!);
 
-    this.inMemoryContextService.update('isCreateFileOrFolderActive', false);
+    this.inMemoryContextService.isCreateFileOrFolderActive.set(false);
     this.appContext.update('directoryFileNodes', nodes);
   }
 
@@ -164,7 +164,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
   onRightClick(event: MouseEvent) {
     event.preventDefault();
 
-    this.inMemoryContextService.update('currentActiveContextMenu', {
+    this.inMemoryContextService.currentActiveContextMenu.set({
       data: this.fileNode(),
       key: 'file-explorer-file-node-context-menu',
       pos: {

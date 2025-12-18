@@ -9,7 +9,4 @@ import { InMemoryContextService } from '../../app-context/app-in-memory-context.
 })
 export class FileExplorerFileNodeContextMenuComponent {
   private readonly inMemoryContextService = inject(InMemoryContextService)
-  private readonly snapshot = this.inMemoryContextService.getSnapShot();
-
-  
 }

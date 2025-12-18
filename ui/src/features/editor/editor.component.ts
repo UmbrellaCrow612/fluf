@@ -5,6 +5,7 @@ import {
 import {
   AfterViewInit,
   Component,
+  computed,
   DestroyRef,
   inject,
   OnDestroy,
@@ -58,6 +59,11 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private unSub: unSub | null = null;
   private selectedDir = this.appContext.getSnapshot().selectedDirectoryPath;
   private mainEditorActiveElement: editorMainActiveElement | null = null;
+
+  /** Checks if it should show ctx */
+  isContextMenuActive = computed(
+    () => this.inMemoryContextService.currentActiveContextMenu() != null
+  );
 
   /**
    * Used to indicate if it should show bottom which contains terminal etc
@@ -195,8 +201,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   isLeftActive = false;
   sideBarActivateElement: sideBarActiveElement = null;
 
-  isContextMenuActive: boolean | null = null;
-
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
 
@@ -214,7 +218,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.unSub = await this.api.onDirectoryChange(
         init.selectedDirectoryPath,
         (_) => {
-          this.inMemoryContextService.update('refreshDirectory', true);
+          this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
         }
       );
     }
@@ -262,13 +266,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       this.destroyRef
     );
-    this.inMemoryContextService.autoSub(
-      'currentActiveContextMenu',
-      (ctx) => {
-        this.isContextMenuActive = ctx.currentActiveContextMenu != null;
-      },
-      this.destroyRef
-    );
     this.appContext.autoSub(
       'selectedDirectoryPath',
       async (ctx) => {
@@ -279,7 +276,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           this.unSub = await this.api.onDirectoryChange(
             ctx.selectedDirectoryPath,
             (_) => {
-              this.inMemoryContextService.update('refreshDirectory', true);
+              this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
             }
           );
         }

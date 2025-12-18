@@ -1,11 +1,13 @@
-import { DestroyRef, Injectable } from '@angular/core';
+import { DestroyRef, Injectable, signal } from '@angular/core';
 import { InMemoryAppContext, InMemoryAppContextCallback } from './type';
 import { voidCallback } from '../../gen/type';
 
 /**
  * Represents information that dosent need to be persisted between sessions but within the lifecycle of the app, i.e until a refresh
- * but has the same structure to notify those who want it it's data when it changes
- * 
+ * but has the same structure to notify those who want it it's data when it changes.
+ *
+ * Thin of it as a central store containing all signals that we can acesses from anywhere
+ *
  * SHOULD not use any other services / injection as it's a base service
  */
 @Injectable({
@@ -13,92 +15,29 @@ import { voidCallback } from '../../gen/type';
 })
 export class InMemoryContextService {
   /**
-   * Specific field and all it's callbacks to run when said field changes
+   * Exposes the signal for currentActiveContextMenu field in ctx - used to react to / compute the value for this field throughout the app
    */
-  private readonly subs = new Map<
-    keyof InMemoryAppContext,
-    Set<InMemoryAppContextCallback>
-  >();
-
-  private readonly appContext: InMemoryAppContext = {
-    currentActiveContextMenu: null,
-    isCreateFileOrFolderActive: null,
-    isEditorResize: null,
-    refreshDirectory: null,
-    problems: new Map()
-  };
+  readonly currentActiveContextMenu =
+    signal<InMemoryAppContext['currentActiveContextMenu']>(null);
 
   /**
-   * Subscribe to a specific field and run custom logic when it changes
-   * @param key The specific field to sub to
-   * @param callback The callback to run
-   * @param destroyRef The angular destroy ref to auto unsub on destroy
-   * @returns {void} Nothing
+   * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
    */
-  autoSub(
-    key: keyof InMemoryAppContext,
-    callback: InMemoryAppContextCallback,
-    destroyRef: DestroyRef
-  ): void {
-    let unsub = this.sub(key, callback);
-    destroyRef.onDestroy(unsub);
-  }
+  readonly refreshDirectory = signal<InMemoryAppContext['refreshDirectory']>(0);
 
   /**
-   * Subscribe to a specific field to and run custom logic
-   * @param key The specific field to subscribe to
-   * @param callback
-   * @returns {voidCallback} A unsub function to remove the callback
+   * Exposes problems signal
    */
-  sub(
-    key: keyof InMemoryAppContext,
-    callback: InMemoryAppContextCallback
-  ): voidCallback {
-    let set = this.subs.get(key);
-    if (!set) {
-      set = new Set<InMemoryAppContextCallback>();
-      this.subs.set(key, set);
-    }
-
-    set.add(callback);
-
-    return () => set.delete(callback);
-  }
+  readonly problems = signal<InMemoryAppContext['problems']>(new Map());
 
   /**
-   * Update a specific field with a value of the correct type.
-   * Automatically notifies subscribers for that field.
+   * Exposes signal for isCreateFileOrFolderActive
    */
-  update<K extends keyof InMemoryAppContext>(
-    key: K,
-    value: InMemoryAppContext[K]
-  ): void {
-    this.appContext[key] = value;
-    this.notify(key);
-  }
+  readonly isCreateFileOrFolderActive =
+    signal<InMemoryAppContext['isCreateFileOrFolderActive']>(null);
 
   /**
-   * Get a snap shot of the current app ctx
-   * @returns {InMemoryAppContext}
+   * Exposes signal isEditorResize
    */
-  getSnapShot(): InMemoryAppContext {
-    return structuredClone(this.appContext);
-  }
-
-  /**
-   * Run all callbacks for a specific
-   * @param key The specific field being updated to notify
-   */
-  private async notify(key: keyof InMemoryAppContext) {
-    let callbacks = Array.from(this.subs.get(key) ?? []);
-    let snapShot = this.getSnapShot();
-
-    for (let i = 0; i < callbacks.length; i++) {
-      try {
-        await callbacks[i](snapShot);
-      } catch (error) {
-        console.error('In memeory callback' + JSON.stringify(error));
-      }
-    }
-  }
+  readonly isEditorResize = signal<InMemoryAppContext['isEditorResize']>(null);
 }

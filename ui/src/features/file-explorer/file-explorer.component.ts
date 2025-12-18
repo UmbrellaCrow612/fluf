@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -28,25 +28,31 @@ import { fileNode, fileNodeMode } from '../../gen/type';
 })
 export class FileExplorerComponent implements OnInit {
   private readonly appContext = inject(ContextService);
-  private readonly inMemoryApppContext = inject(InMemoryContextService)
+  private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
   selectedDirectorPath: string | null = null;
   directoryFileNodes: fileNode[] | null = null;
   isExplorerActive = false;
-  disableCreateFileOrFolder: boolean | null = null;
+  disableCreateFileOrFolder = computed(() => this.inMemoryAppContext.isCreateFileOrFolderActive())
+
+  constructor() {
+    effect(async () => {
+      if (this.inMemoryAppContext.refreshDirectory()) {
+        await this.merge();
+      }
+    });
+  }
 
   async ngOnInit() {
     let init = this.appContext.getSnapshot();
-    let inMemeoryInit = this.inMemoryApppContext.getSnapShot();
 
     // set inital state based on ctx
     this.selectedDirectorPath = init.selectedDirectoryPath;
     this.directoryFileNodes = init.directoryFileNodes;
     this.isExplorerActive =
       init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
-    this.disableCreateFileOrFolder = inMemeoryInit.isCreateFileOrFolderActive;
 
     await this.readDir();
 
@@ -75,22 +81,6 @@ export class FileExplorerComponent implements OnInit {
       },
       this.destroyRef
     );
-    this.inMemoryApppContext.autoSub(
-      'isCreateFileOrFolderActive',
-      (ctx) => {
-        this.disableCreateFileOrFolder = ctx.isCreateFileOrFolderActive;
-      },
-      this.destroyRef
-    );
-    this.inMemoryApppContext.autoSub(
-      'refreshDirectory',
-      async (ctx) => {
-        if (ctx.refreshDirectory) {
-          await this.merge();
-        }
-      },
-      this.destroyRef
-    );
   }
 
   /**
@@ -98,7 +88,7 @@ export class FileExplorerComponent implements OnInit {
    */
   async readDir() {
     let nodes = await this.api.readDir(undefined, this.selectedDirectorPath!);
-    this.directoryFileNodes = nodes
+    this.directoryFileNodes = nodes;
 
     this.appContext.update('directoryFileNodes', nodes);
   }
@@ -117,7 +107,7 @@ export class FileExplorerComponent implements OnInit {
       parentPath: '',
       name: 'Root',
       mode: 'default',
-      extension: ""
+      extension: '',
     });
     this.appContext.update('directoryFileNodes', ctx.directoryFileNodes);
   }
@@ -126,7 +116,7 @@ export class FileExplorerComponent implements OnInit {
    * Runs when refresh button clicked - re reads nodes and updates global state
    */
   refreshClicked() {
-    this.inMemoryApppContext.update('refreshDirectory', true);
+    this.inMemoryAppContext.refreshDirectory.update((p) => p + 1);
   }
 
   /**
@@ -146,7 +136,7 @@ export class FileExplorerComponent implements OnInit {
         parentPath: '',
         name: 'Root',
         mode: 'default',
-        extension: ""
+        extension: '',
       });
     }
   }
@@ -185,7 +175,7 @@ export class FileExplorerComponent implements OnInit {
       path: activeNode.path,
       parentPath: activeNode.parentPath,
       mode: mode,
-      extension: ""
+      extension: '',
     };
 
     if (isRootActive) {
@@ -204,7 +194,7 @@ export class FileExplorerComponent implements OnInit {
       }
     }
 
-    this.inMemoryApppContext.update('isCreateFileOrFolderActive', true);
+    this.inMemoryAppContext.isCreateFileOrFolderActive.set(true);
     this.appContext.update('directoryFileNodes', nodes);
   }
 

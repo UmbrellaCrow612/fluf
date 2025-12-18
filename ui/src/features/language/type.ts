@@ -14,6 +14,12 @@ export type LanguageServer =
  * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
  */
 export type diagnosticType = tsServerOutputEvent | 'unkown';
+
+/**
+ * Represents a file path as a key then a map of specific diagnostics as keys then all of them
+ */
+export type fileDiagnosticMap = Map<string, Map<diagnosticType, FlufDiagnostic[]>>
+
 /**
  * Represents the standard a language service API has to impl be language agnostic and provide base methods needed to talk to any lang server this is the lsp protocol
  * under the hoodd it will routes said requests to the correct language server impl
@@ -84,7 +90,7 @@ export interface ILanguageService {
  * @returns {void} Nothing
  */
 export type LanguageServiceCallback = (
-  fileAndDiagMap: Map<string, Map<diagnosticType, FlufDiagnostic[]>>,
+  fileAndDiagMap: fileDiagnosticMap,
   completions: Completion[]
 ) => void;
 

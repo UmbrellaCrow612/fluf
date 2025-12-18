@@ -1,5 +1,6 @@
 import { fileNode, shellInformation } from '../../gen/type';
 import { FlufDiagnostic } from '../diagnostic/type';
+import { fileDiagnosticMap } from '../language/type';
 /**
  * Represents what elements from the side bar can be in a active state i.e the elements that can be clicked to show said render component off
  */
@@ -142,10 +143,9 @@ export type InMemoryAppContext = {
   isEditorResize: boolean | null;
 
   /**
-   * Indicates if it should refresh / reread nodes and update the current nodes with updated folder nodes -
-   * keeps expanded state and adds / removes children based on new state
+   * Indicates if a directory being watched should be refreshed - whenever the number changes i.e increments it means it should be re read
    */
-  refreshDirectory: boolean | null;
+  refreshDirectory: number;
 
   /**
    * Represents whether a file or folder creator is active
@@ -155,5 +155,5 @@ export type InMemoryAppContext = {
   /**
    * Contains a list of all specific file's by there path and a map of specific diagnostic error types and then all the diagnostic's of that type
    */
-  problems: Map<string, Map<string, FlufDiagnostic[]>>;
+  problems: fileDiagnosticMap;
 };

@@ -15,7 +15,7 @@ export class ImageEditorComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly inMemoryContextService = inject(InMemoryContextService);
-  private readonly imageService = inject(ImageService)
+  private readonly imageService = inject(ImageService);
 
   currentActiveFileNode: fileNode | null = null;
   imgSrc: string | null = null;
@@ -72,7 +72,7 @@ export class ImageEditorComponent implements OnInit {
         this.currentObjectUrl = null;
       }
 
-      let response = await this.imageService.getLocalImg(node.path)
+      let response = await this.imageService.getLocalImg(node.path);
 
       if (!response.ok) {
         this.error = `Failed HTTP ${response.status}`;
@@ -84,7 +84,6 @@ export class ImageEditorComponent implements OnInit {
       this.currentObjectUrl = URL.createObjectURL(blob);
 
       this.imgSrc = this.currentObjectUrl;
-      
     } catch (err: any) {
       this.error = err?.message || 'Unknown error';
     } finally {
@@ -98,7 +97,7 @@ export class ImageEditorComponent implements OnInit {
   onRightClick(event: MouseEvent) {
     event.preventDefault();
 
-    this.inMemoryContextService.update('currentActiveContextMenu', {
+    this.inMemoryContextService.currentActiveContextMenu.set({
       data: this.currentActiveFileNode,
       key: 'image-editor-img-context-menu',
       pos: {

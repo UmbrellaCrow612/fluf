@@ -14,7 +14,7 @@ import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { diagnosticType, LanguageServer } from '../language/type';
+import { diagnosticType, fileDiagnosticMap, LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
 import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
@@ -89,7 +89,7 @@ export class TextFileEditorComponent implements OnInit {
   private languageServer: LanguageServer | null = null;
 
   getDiagnosticsForFile(
-    diagnosticMap: Map<string, Map<diagnosticType, FlufDiagnostic[]>>,
+    diagnosticMap: fileDiagnosticMap,
     filePath: string
   ) {
     const fileDiagnostics = diagnosticMap.get(filePath);
@@ -133,7 +133,7 @@ export class TextFileEditorComponent implements OnInit {
       this.languageServer,
       this.codeMirrorView.state,
       (diagnosticMap, completions) => {
-        this.inMemoryContextService.update("problems", diagnosticMap)
+        this.inMemoryContextService.problems.set(diagnosticMap)
 
         if (!this.openFileNode) return;
         this.completions = completions;

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 import { getElectronApi } from '../../../utils';
 import { fileNode } from '../../../gen/type';
@@ -12,35 +12,38 @@ import { fileNode } from '../../../gen/type';
 export class ImageEditorContextMenuComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly api = getElectronApi();
-  private fileNode: fileNode | null = null;
+
+  private data = computed(
+    () => this.inMemoryContextService.currentActiveContextMenu()?.data as fileNode
+  );
 
   error: string | null = null;
 
   ngOnInit(): void {
     this.error = null;
 
-    this.fileNode = this.inMemoryContextService.getSnapShot()
-      .currentActiveContextMenu?.data as fileNode;
-
-    if (!this.fileNode.path) {
-      this.error = 'Data invalid';
-    }
-  }
-
-  async copyImgToClipBoard() {
-    if (!this.fileNode) {
+    if (!this.data) {
       this.error = 'Data invalid';
       return;
     }
 
-    let suc = await this.api.writeImageToClipboard(
-      undefined,
-      this.fileNode.path
-    );
+    if (!this.data()?.path) {
+      this.error = 'Data invalid';
+      return;
+    }
+  }
+
+  async copyImgToClipBoard() {
+    if (!this.data) {
+      this.error = 'Data invalid';
+      return;
+    }
+
+    let suc = await this.api.writeImageToClipboard(undefined, this.data().path);
     if (!suc) {
       this.error = 'Failed to copy image';
     } else {
-      this.inMemoryContextService.update("currentActiveContextMenu", null)
+      this.inMemoryContextService.currentActiveContextMenu.set(null)
     }
   }
 }
