@@ -181,4 +181,11 @@ export class ContextService {
   readonly sideBarActiveElement = signal<AppContext['sideBarActiveElement']>(
     this.restoreField('sideBarActiveElement', null)
   );
+
+  /**
+   * Exposes directoryFileNodes signal
+   */
+  readonly directoryFileNodes = signal<AppContext['directoryFileNodes']>(
+    this.restoreField('directoryFileNodes', null)
+  );
 }

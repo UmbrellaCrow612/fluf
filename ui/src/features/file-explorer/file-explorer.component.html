@@ -1,5 +1,5 @@
 <div class="file_explorer_container">
-  @if (selectedDirectorPath && directoryFileNodes) {
+  @if (selectedDirectorPath && directoryFileNodes()) {
   <div class="file_explorer_top scroll_bar">
     <span> File Explorer </span>
     <div class="file_explorer_buttons">
@@ -39,7 +39,7 @@
     (dblclick)="fileExplorerScrollContainerDoubleClicked($event)"
     [class.file_explorer_file_tree_active]="isExplorerActive"
   >
-    @for (file of directoryFileNodes; track file.path) {
+    @for (file of directoryFileNodes(); track file.path) {
     <app-file-explorer-item [fileNode]="file" [depth]="0" />
     }
   </div>

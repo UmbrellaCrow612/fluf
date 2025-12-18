@@ -82,11 +82,11 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
   }
 
   onCreateInputBlur() {
-    let nodes = this.appContext.getSnapshot().directoryFileNodes;
-    removeCreateNodes(nodes!);
+    let nodes = this.appContext.directoryFileNodes();
+    removeCreateNodes(nodes ?? []);
 
     this.inMemoryContextService.isCreateFileOrFolderActive.set(false);
-    this.appContext.update('directoryFileNodes', nodes);
+    this.appContext.directoryFileNodes.set(nodes);
   }
 
   onInputChange(event: Event) {
@@ -127,19 +127,19 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    let previousNodes = this.appContext.getSnapshot().directoryFileNodes;
+    let previousNodes = this.appContext.directoryFileNodes();
 
     if (this.fileNode().expanded) {
       collapseNodeByPath(previousNodes!, this.fileNode().path);
       this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
-      this.appContext.update('directoryFileNodes', previousNodes);
+      this.appContext.directoryFileNodes.set(previousNodes);
       return;
     }
 
     if (!this.fileNode().expanded && this.fileNode().children.length > 0) {
       expandNodeByPath(previousNodes!, this.fileNode().path!);
       this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
-      this.appContext.update('directoryFileNodes', previousNodes);
+      this.appContext.directoryFileNodes.set(previousNodes);
       return;
     }
 
@@ -155,7 +155,7 @@ export class FileExplorerItemComponent implements OnInit, AfterViewInit {
     );
 
     this.appContext.update('fileExplorerActiveFileOrFolder', this.fileNode());
-    this.appContext.update('directoryFileNodes', previousNodes);
+    this.appContext.directoryFileNodes.set(previousNodes);
   }
 
   /**
