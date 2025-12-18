@@ -1,15 +1,13 @@
 import {
-  sideBarActiveElement,
-  editorMainActiveElement,
-} from './../app-context/type';
-import {
   AfterViewInit,
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnDestroy,
   OnInit,
+  Signal,
   Type,
 } from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
@@ -33,6 +31,7 @@ import { OpenFileContainerBottomComponent } from '../open-files/open-file-contai
 import { ImageEditorComponent } from '../img-editor/image-editor.component';
 import { DocumentEditorComponent } from '../document-editor/document-editor.component';
 import { TextFileEditorComponent } from '../text-file-editor/text-file-editor.component';
+import { Renderable } from '../ngComponentOutlet/type';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -55,10 +54,29 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly api = getElectronApi();
   private readonly keyService = inject(HotKeyService);
 
+  constructor() {
+    effect(async () => {
+      if (
+        !this.isDirectoryBeingWatched &&
+        this.appContext.selectedDirectoryPath()
+      ) {
+        this.isDirectoryBeingWatched = true;
+        this.unSub = await this.api.onDirectoryChange(
+          this.appContext.selectedDirectoryPath()!,
+          (_) => {
+            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+          }
+        );
+      }
+    });
+  }
+
   private isDirectoryBeingWatched = false;
   private unSub: unSub | null = null;
-  private selectedDir = this.appContext.getSnapshot().selectedDirectoryPath;
-  private mainEditorActiveElement: editorMainActiveElement | null = null;
+  private selectedDir = computed(() => this.appContext.selectedDirectoryPath());
+  private mainEditorActiveElement = computed(() =>
+    this.appContext.editorMainActiveElement()
+  );
 
   /** Checks if it should show ctx */
   isContextMenuActive = computed(
@@ -68,115 +86,109 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   /**
    * Used to indicate if it should show bottom which contains terminal etc
    */
-  showBottom = false;
+  showBottom = computed(() =>
+    this.appContext.displayFileEditorBottom() ? true : false
+  );
 
   /**
    * Indicates if it should show the tabs of open file component
    */
-  showOpenFileTabs = false;
+  showOpenFileTabs = computed(() => {
+    let openFiles = this.appContext.openFiles();
+    return openFiles && openFiles.length > 0 ? true : false;
+  });
 
   /**
    * List of all components that can be rendered in the side bar
    */
-  sideBarElements: {
-    /** The component class to render */
-    component: Type<any>;
-
-    /**
-     * Callback that runs the conditions to render the component
-     */
-    condition: () => boolean;
-  }[] = [
+  sideBarElements: Renderable[] = [
     {
       component: FileExplorerComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'file-explorer' &&
-          typeof this.selectedDir == 'string'
+          this.appContext.sideBarActiveElement() == 'file-explorer' &&
+          typeof this.selectedDir() == 'string'
         );
-      },
+      }),
     },
     {
       component: SideSearchComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'search' &&
-          typeof this.selectedDir == 'string'
+          this.appContext.sideBarActiveElement() == 'search' &&
+          typeof this.selectedDir() == 'string'
         );
-      },
+      }),
     },
     {
       component: SideFolderSearchComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'search-folders' &&
-          typeof this.selectedDir == 'string'
+          this.appContext.sideBarActiveElement() == 'search-folders' &&
+          typeof this.selectedDir() == 'string'
         );
-      },
+      }),
     },
     {
       component: SideGitComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'source-control' &&
-          typeof this.selectedDir == 'string'
+          this.appContext.sideBarActiveElement() == 'source-control' &&
+          typeof this.selectedDir() == 'string'
         );
-      },
+      }),
     },
     {
       component: SideFileSearchComponent,
-      condition: () => {
+      condition: computed(() => {
         return (
-          this.sideBarActivateElement == 'search-files' &&
-          typeof this.selectedDir == 'string'
+          this.appContext.sideBarActiveElement() == 'search-files' &&
+          typeof this.selectedDir() == 'string'
         );
-      },
+      }),
     },
     {
       component: SelectDirectoryComponent,
-      condition: () => {
-        return !this.selectedDir;
-      },
+      condition: computed(() => {
+        return !this.selectedDir();
+      }),
     },
   ];
 
-  /**
-   * Gets the side bar element to render
-   */
-  get sideBarElementCompo(): Type<any> | undefined {
-    return this.sideBarElements.find((x) => x.condition())?.component;
-  }
+  activeSideBarComponent = computed(() => {
+    return this.sideBarElements.find((e) => e.condition())?.component ?? null;
+  });
 
   /**
    * List of components that will be rendered as the main compponent
    */
-  mainComponents: { component: Type<any>; codition: () => boolean }[] = [
+  mainComponents: Renderable[] = [
     {
-      codition: () => {
-        return this.mainEditorActiveElement == 'text-file-editor';
-      },
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'text-file-editor'
+      ),
       component: TextFileEditorComponent,
     },
     {
       component: ImageEditorComponent,
-      codition: () => {
-        return this.mainEditorActiveElement == 'image-editor';
-      },
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'image-editor'
+      ),
     },
     {
       component: DocumentEditorComponent,
-      codition: () => {
-        return this.mainEditorActiveElement == 'document-editor';
-      },
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'document-editor'
+      ),
     },
   ];
 
-  get mainCompToRender(): Type<any> {
+  mainCompToRender: Signal<Type<any>> = computed(() => {
     return (
-      this.mainComponents.find((x) => x.codition())?.component ??
+      this.mainComponents.find((x) => x.condition())?.component ??
       EditorHomePageComponent
     );
-  }
+  });
 
   private resizer = new Resizer({
     direction: 'horizontal',
@@ -198,25 +210,14 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   });
 
-  isLeftActive = false;
-  sideBarActivateElement: sideBarActiveElement = null;
+  isLeftActive = computed(() => this.appContext.sideBarActiveElement() != null);
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
-
-    // set stored state
-    this.isLeftActive = init.sideBarActiveElement != null;
-    this.sideBarActivateElement = init.sideBarActiveElement;
-    this.showOpenFileTabs =
-      init.openFiles && init.openFiles.length > 0 ? true : false;
-    this.showBottom = init.displayFileEditorBottom ? true : false;
-    this.mainEditorActiveElement = init.editorMainActiveElement;
-
     // if dir selected watch it
-    if (init.selectedDirectoryPath) {
+    if (this.selectedDir()) {
       this.isDirectoryBeingWatched = true;
       this.unSub = await this.api.onDirectoryChange(
-        init.selectedDirectoryPath,
+        this.selectedDir()!,
         (_) => {
           this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
         }
@@ -227,59 +228,9 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.keyService.autoSub(
       {
         callback: (ctx) => {
-          this.appContext.update(
-            'displayFileEditorBottom',
-            !ctx.displayFileEditorBottom
-          );
+          this.appContext.displayFileEditorBottom.set(!this.showBottom());
         },
         keys: ['Control', 'j'],
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'editorMainActiveElement',
-      (ctx) => {
-        this.mainEditorActiveElement = ctx.editorMainActiveElement;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'openFiles',
-      (ctx) => {
-        this.showOpenFileTabs =
-          ctx.openFiles && ctx.openFiles.length > 0 ? true : false;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'displayFileEditorBottom',
-      (ctx) => {
-        this.showBottom = ctx.displayFileEditorBottom ? true : false;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'sideBarActiveElement',
-      (ctx) => {
-        this.isLeftActive = ctx.sideBarActiveElement != null;
-        this.sideBarActivateElement = ctx.sideBarActiveElement;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'selectedDirectoryPath',
-      async (ctx) => {
-        this.selectedDir = ctx.selectedDirectoryPath;
-
-        if (!this.isDirectoryBeingWatched && ctx.selectedDirectoryPath) {
-          this.isDirectoryBeingWatched = true;
-          this.unSub = await this.api.onDirectoryChange(
-            ctx.selectedDirectoryPath,
-            (_) => {
-              this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
-            }
-          );
-        }
       },
       this.destroyRef
     );

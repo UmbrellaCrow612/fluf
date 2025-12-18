@@ -1,132 +1,148 @@
-import { DestroyRef, Injectable } from '@angular/core';
-import {
-  AppContext,
-  AppContextCallback,
-} from './type';
-import { voidCallback } from '../../gen/type';
-
+import { effect, Injectable, signal } from '@angular/core';
+import { AppContext } from './type';
 
 const LOCAL_STORAGE_KEY = 'app-context';
 
 /**
- * Service that provides access to application context, persists it,
- * and allows subscribing to changes.
+ * Service that provides access to application context, persists it.
+ *
+ * Think of it as a central store that can be accessed from anywhere for application wide state
+ *
+ * SHOULD not use any other services as it's a base service
  */
 @Injectable({
   providedIn: 'root',
 })
 export class ContextService {
-  private _ctx: AppContext = {
-    sideBarActiveElement: null,
-    selectedDirectoryPath: null,
-    directoryFileNodes: null,
-    fileExplorerActiveFileOrFolder: null,
-    openFiles: null,
-    currentOpenFileInEditor: null,
-    displayFileEditorBottom: null,
-    fileEditorBottomActiveElement: null,
-    shells: null,
-    currentActiveShellId: null,
-    editorMainActiveElement: null
-  };
-
-  private subscriptions = new Map<keyof AppContext, Set<AppContextCallback>>();
-
   constructor() {
-    this.restoreState();
+    effect(() => {
+      this.persist();
+    });
   }
 
   /**
-   * Restore persisted context from localStorage
+   * Reads the signals and then saves them
    */
-  private restoreState() {
+  private persist() {
+    const snapshot = this.getSnapShot();
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
+    } catch (err) {
+      console.warn('[ContextService] Failed to persist context', err);
+    }
+  }
+
+  getSnapShot(): AppContext {
+    return {
+      sideBarActiveElement: this.sideBarActiveElement(),
+      currentActiveShellId: this.currentActiveShellId(),
+      currentOpenFileInEditor: this.currentOpenFileInEditor(),
+      directoryFileNodes: this.directoryFileNodes(),
+      displayFileEditorBottom: this.displayFileEditorBottom(),
+      editorMainActiveElement: this.editorMainActiveElement(),
+      fileEditorBottomActiveElement: this.fileEditorBottomActiveElement(),
+      fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
+      openFiles: this.openFiles(),
+      selectedDirectoryPath: this.selectedDirectoryPath(),
+      shells: this.shells(),
+    };
+  }
+
+  /**
+   * Restore the state of a given field
+   * @param key The specific field to restore
+   * @param fallback A fallback value if it's invalid
+   * @returns Value
+   */
+  private restoreField<K extends keyof AppContext>(
+    key: K,
+    fallback: AppContext[K]
+  ): AppContext[K] {
     try {
       const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (!raw) return;
+      if (!raw) return fallback;
 
       const saved = JSON.parse(raw) as Partial<AppContext>;
-      this._ctx = { ...this._ctx, ...saved };
-      console.log('[ContextService] Restored state from localStorage');
-    } catch (err) {
-      console.warn('[ContextService] Failed to restore context', err);
+      return saved[key] ?? fallback;
+    } catch {
+      return fallback;
     }
   }
 
   /**
-   * Persist the current context state to localStorage
+   * Exposes sideBarActiveElement signal
    */
-  private saveState() {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(this._ctx));
-    } catch (err) {
-      console.warn('[ContextService] Failed to save context', err);
-    }
-  }
+  readonly sideBarActiveElement = signal<AppContext['sideBarActiveElement']>(
+    this.restoreField('sideBarActiveElement', null)
+  );
 
   /**
-   * Subscribe to changes for a specific AppContext field
+   * Exposes directoryFileNodes signal
    */
-  sub<K extends keyof AppContext>(
-    key: K,
-    callback: AppContextCallback
-  ): voidCallback {
-    if (!this.subscriptions.has(key)) {
-      this.subscriptions.set(key, new Set());
-    }
-
-    const set = this.subscriptions.get(key)!;
-    set.add(callback);
-
-    return () => set.delete(callback);
-  }
+  readonly directoryFileNodes = signal<AppContext['directoryFileNodes']>(
+    this.restoreField('directoryFileNodes', null)
+  );
 
   /**
-   * Subscribe and automatically unsubscribe when the provided DestroyRef is destroyed
+   * Exposes selectedDirectoryPath signal
    */
-  autoSub<K extends keyof AppContext>(
-    key: K,
-    callback: AppContextCallback,
-    destroyRef: DestroyRef
-  ): void {
-    const unsubscribe = this.sub(key, callback);
-    destroyRef.onDestroy(unsubscribe);
-  }
+  readonly selectedDirectoryPath = signal<AppContext['selectedDirectoryPath']>(
+    this.restoreField('selectedDirectoryPath', null)
+  );
 
   /**
-   * Update part of the application context and notify subscribers
+   * Exposes fileExplorerActiveFileOrFolder signal
    */
-  async update<K extends keyof AppContext>(key: K, value: AppContext[K]) {
-    this._ctx[key] = value;
-    this.saveState();
-    await this.notify(key);
-  }
+  readonly fileExplorerActiveFileOrFolder = signal<
+    AppContext['fileExplorerActiveFileOrFolder']
+  >(this.restoreField('fileExplorerActiveFileOrFolder', null));
 
   /**
-   * Notify all subscribers for a specific AppContext field
+   * Exposes openFiles signal
    */
-  private async notify<K extends keyof AppContext>(key: K) {
-    const callbacks = this.subscriptions.get(key);
-    if (!callbacks || callbacks.size === 0) return;
+  readonly openFiles = signal<AppContext['openFiles']>(
+    this.restoreField('openFiles', null)
+  );
 
-    const ctx = this.getSnapshot();
+  /**
+   * Exposes currentOpenFileInEditor signal
+   */
+  readonly currentOpenFileInEditor = signal<
+    AppContext['currentOpenFileInEditor']
+  >(this.restoreField('currentOpenFileInEditor', null));
 
-    // Run all callbacks concurrently, safely catch errors
-    const promises = Array.from(callbacks).map(async (callback) => {
-      try {
-        await callback(ctx);
-      } catch (err) {
-        console.warn(
-          `[ContextService] Error in callback for "${String(key)}":`,
-          err
-        );
-      }
-    });
+  /**
+   * Exposes displayFileEditorBottom signal
+   */
+  readonly displayFileEditorBottom = signal<
+    AppContext['displayFileEditorBottom']
+  >(this.restoreField('displayFileEditorBottom', null));
 
-    // Wait for all async callbacks to complete (optional)
-    await Promise.all(promises);
-  }
+  /**
+   * Exposes fileEditorBottomActiveElement signal
+   */
+  readonly fileEditorBottomActiveElement = signal<
+    AppContext['fileEditorBottomActiveElement']
+  >(this.restoreField('fileEditorBottomActiveElement', null));
 
-  getSnapshot(): AppContext {
-    return structuredClone(this._ctx);
-  }
+  /**
+   * Exposes shells signal
+   */
+  readonly shells = signal<AppContext['shells']>(
+    this.restoreField('shells', null)
+  );
+
+  /**
+   * Exposes currentActiveShellId signal
+   */
+  readonly currentActiveShellId = signal<AppContext['currentActiveShellId']>(
+    this.restoreField('currentActiveShellId', null)
+  );
+
+  /**
+   * Exposes the editorMainActiveElement signal
+   */
+  readonly editorMainActiveElement = signal<
+    AppContext['editorMainActiveElement']
+  >(this.restoreField('editorMainActiveElement', null));
 }

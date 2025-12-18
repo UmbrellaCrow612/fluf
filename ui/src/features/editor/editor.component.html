@@ -4,25 +4,25 @@
     <app-side-bar />
 
     <div class="side" id="editor_resize_container">
-      @if (isLeftActive) {
+      @if (isLeftActive()) {
       <div class="left">
         <!---->
-        @if (sideBarElementCompo) {
-        <ng-container *ngComponentOutlet="sideBarElementCompo" />
+        @if (activeSideBarComponent()) {
+        <ng-container *ngComponentOutlet="activeSideBarComponent()" />
         }
         <!---->
       </div>
       }
       <div class="right">
-        @if (showOpenFileTabs) {
+        @if (showOpenFileTabs()) {
         <app-open-file-container-tabs />
         }
         <div class="main_wrappper" id="main_resize_container">
           <div class="ng_container_wrapper">
-            <ng-container *ngComponentOutlet="mainCompToRender" />
+            <ng-container *ngComponentOutlet="mainCompToRender()" />
           </div>
           <!---->
-          @if (showBottom) {
+          @if (showBottom()) {
           <app-open-file-container-bottom />
           }
         </div>

@@ -1,4 +1,11 @@
-import { Component, computed, DestroyRef, effect, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -29,13 +36,20 @@ import { fileNode, fileNodeMode } from '../../gen/type';
 export class FileExplorerComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryAppContext = inject(InMemoryContextService);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
-  selectedDirectorPath: string | null = null;
-  directoryFileNodes: fileNode[] | null = null;
-  isExplorerActive = false;
-  disableCreateFileOrFolder = computed(() => this.inMemoryAppContext.isCreateFileOrFolderActive())
+  selectedDirectorPath = computed(() =>
+    this.appContext.selectedDirectoryPath()
+  );
+  directoryFileNodes = computed(() => this.appContext.directoryFileNodes());
+  isExplorerActive = computed(
+    () =>
+      this.appContext.fileExplorerActiveFileOrFolder()?.path ===
+      this.appContext.selectedDirectoryPath()
+  );
+  disableCreateFileOrFolder = computed(() =>
+    this.inMemoryAppContext.isCreateFileOrFolderActive()
+  );
 
   constructor() {
     effect(async () => {
@@ -43,73 +57,42 @@ export class FileExplorerComponent implements OnInit {
         await this.merge();
       }
     });
+
+    effect(async () => {
+      this.appContext.selectedDirectoryPath();
+      await this.readDir();
+    });
   }
 
   async ngOnInit() {
-    let init = this.appContext.getSnapshot();
-
-    // set inital state based on ctx
-    this.selectedDirectorPath = init.selectedDirectoryPath;
-    this.directoryFileNodes = init.directoryFileNodes;
-    this.isExplorerActive =
-      init.fileExplorerActiveFileOrFolder?.path === this.selectedDirectorPath;
-
     await this.readDir();
-
-    // Subscribe to changes update local state
-    this.appContext.autoSub(
-      'selectedDirectoryPath',
-      async (ctx) => {
-        this.selectedDirectorPath = ctx.selectedDirectoryPath;
-        await this.readDir();
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'directoryFileNodes',
-      (ctx) => {
-        this.directoryFileNodes = ctx.directoryFileNodes;
-      },
-      this.destroyRef
-    );
-    this.appContext.autoSub(
-      'fileExplorerActiveFileOrFolder',
-      (ctx) => {
-        this.isExplorerActive =
-          ctx.fileExplorerActiveFileOrFolder?.path ===
-          this.selectedDirectorPath;
-      },
-      this.destroyRef
-    );
   }
 
   /**
    * Reads selected folder path and sets file nodes globally
    */
   async readDir() {
-    let nodes = await this.api.readDir(undefined, this.selectedDirectorPath!);
-    this.directoryFileNodes = nodes;
-
-    this.appContext.update('directoryFileNodes', nodes);
+    let nodes = await this.api.readDir(undefined, this.selectedDirectorPath()!);
+    this.appContext.directoryFileNodes.set(nodes);
   }
 
   /**
    * Runs when colapse folders is clicked will un expand all folder all the way to root
    */
   collapseFolders() {
-    let ctx = this.appContext.getSnapshot();
-    collapseAllFileNodesToRoot(ctx.directoryFileNodes!);
-    this.appContext.update('fileExplorerActiveFileOrFolder', {
+    let nodes = this.directoryFileNodes();
+    collapseAllFileNodesToRoot(nodes ?? []);
+    this.appContext.fileExplorerActiveFileOrFolder.set({
       children: [],
       expanded: false,
       isDirectory: true,
-      path: this.selectedDirectorPath!,
+      path: this.selectedDirectorPath()!,
       parentPath: '',
       name: 'Root',
       mode: 'default',
       extension: '',
     });
-    this.appContext.update('directoryFileNodes', ctx.directoryFileNodes);
+    this.appContext.directoryFileNodes.set(nodes);
   }
 
   /**
@@ -128,11 +111,11 @@ export class FileExplorerComponent implements OnInit {
 
     if (target === container) {
       /*Clicked empty space so set the file or folder focus in side bar to root node */
-      this.appContext.update('fileExplorerActiveFileOrFolder', {
+      this.appContext.fileExplorerActiveFileOrFolder.set({
         children: [],
         expanded: false,
         isDirectory: true,
-        path: this.selectedDirectorPath!,
+        path: this.selectedDirectorPath()!,
         parentPath: '',
         name: 'Root',
         mode: 'default',
@@ -154,17 +137,15 @@ export class FileExplorerComponent implements OnInit {
   }
 
   createFileOrFolder(mode: fileNodeMode) {
-    const ctx = this.appContext.getSnapshot();
-
-    const nodes = ctx.directoryFileNodes!;
-    const activeNode = ctx.fileExplorerActiveFileOrFolder;
+    const nodes = this.directoryFileNodes() ?? [];
+    const activeNode = this.appContext.fileExplorerActiveFileOrFolder();
 
     if (!activeNode) {
       console.log('No file or folder in focus');
       return;
     }
 
-    const isRootActive = activeNode.path === this.selectedDirectorPath;
+    const isRootActive = activeNode.path === this.selectedDirectorPath();
 
     // Construct the new file node
     const newFileNode: fileNode = {
@@ -195,7 +176,7 @@ export class FileExplorerComponent implements OnInit {
     }
 
     this.inMemoryAppContext.isCreateFileOrFolderActive.set(true);
-    this.appContext.update('directoryFileNodes', nodes);
+    this.appContext.directoryFileNodes.set(nodes);
   }
 
   /**
@@ -207,13 +188,13 @@ export class FileExplorerComponent implements OnInit {
   private async merge() {
     let newNodes = await this.api.readDir(
       undefined,
-      this.selectedDirectorPath!
+      this.selectedDirectorPath()!
     );
     let updatedNodes = await this.mergeNodes(
-      this.directoryFileNodes!,
+      this.directoryFileNodes() ?? [],
       newNodes
     );
-    this.appContext.update('directoryFileNodes', updatedNodes);
+    this.appContext.directoryFileNodes.set(updatedNodes);
   }
 
   /**

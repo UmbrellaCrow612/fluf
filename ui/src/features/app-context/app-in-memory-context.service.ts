@@ -1,12 +1,11 @@
-import { DestroyRef, Injectable, signal } from '@angular/core';
-import { InMemoryAppContext, InMemoryAppContextCallback } from './type';
-import { voidCallback } from '../../gen/type';
+import { Injectable, signal } from '@angular/core';
+import { InMemoryAppContext } from './type';
 
 /**
  * Represents information that dosent need to be persisted between sessions but within the lifecycle of the app, i.e until a refresh
  * but has the same structure to notify those who want it it's data when it changes.
  *
- * Thin of it as a central store containing all signals that we can acesses from anywhere
+ * Think of it as a central store containing all signals that we can acesses from anywhere
  *
  * SHOULD not use any other services / injection as it's a base service
  */

@@ -1,6 +1,6 @@
 <div class="container">
   <div class="scroll_container scroll_bar">
-    @for (tab of shells; track tab.id) {
+    @for (tab of shells(); track tab.id) {
     <app-terminal-tab-item [shell]="tab" />
     }
   </div>

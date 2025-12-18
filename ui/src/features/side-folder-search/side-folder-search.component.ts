@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import {
   FormControl,
   FormsModule,
@@ -29,8 +29,9 @@ import { fsearchOptions, fsearchResult } from '../../gen/type';
 export class SideFolderSearchComponent {
   private readonly api = getElectronApi();
   private readonly contextService = inject(ContextService);
-  private readonly selectedDir =
-    this.contextService.getSnapshot().selectedDirectoryPath;
+  private readonly selectedDir = computed(() =>
+    this.contextService.selectedDirectoryPath()
+  );
 
   searchInputControl = new FormControl('', {
     validators: [Validators.required],
@@ -52,8 +53,8 @@ export class SideFolderSearchComponent {
     open: false,
     partial: true,
     term: '',
-    directory: this.selectedDir!,
-    type: "folder"
+    directory: this.selectedDir()!,
+    type: 'folder',
   };
 
   results: fsearchResult[] = [];

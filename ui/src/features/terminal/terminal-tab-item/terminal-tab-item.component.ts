@@ -1,4 +1,9 @@
-import { Component, DestroyRef, inject, input, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -12,9 +17,8 @@ import { shellInformation } from '../../../gen/type';
   templateUrl: './terminal-tab-item.component.html',
   styleUrl: './terminal-tab-item.component.css',
 })
-export class TerminalTabItemComponent implements OnInit {
+export class TerminalTabItemComponent {
   private readonly appContext = inject(ContextService);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
 
   /**
@@ -25,24 +29,12 @@ export class TerminalTabItemComponent implements OnInit {
   /**
    * Indicates if the current terminal is the active one
    */
-  isActive: boolean = false;
-
-  ngOnInit(): void {
-    let init = this.appContext.getSnapshot();
-
-    this.isActive = init.currentActiveShellId === this.shell().id;
-
-    this.appContext.autoSub(
-      'currentActiveShellId',
-      (ctx) => {
-        this.isActive = ctx.currentActiveShellId === this.shell().id;
-      },
-      this.destroyRef
-    );
-  }
+  isActive = computed(
+    () => this.appContext.currentActiveShellId() === this.shell().id
+  );
 
   shellClicked() {
-    this.appContext.update('currentActiveShellId', this.shell().id);
+    this.appContext.currentActiveShellId.set(this.shell().id);
   }
 
   async killShell(event: Event) {
@@ -50,17 +42,15 @@ export class TerminalTabItemComponent implements OnInit {
 
     await this.api.killShellById(undefined, this.shell().id);
 
-    let init = this.appContext.getSnapshot();
-
     let updatedShells =
-      init?.shells?.filter((t) => t.id !== this.shell().id) ?? [];
+      this.appContext.shells()?.filter((t) => t.id !== this.shell().id) ?? [];
 
     if (updatedShells.length > 0) {
       let newActiveTerminalId = updatedShells[0].id;
-      this.appContext.update('currentActiveShellId', newActiveTerminalId);
+      this.appContext.currentActiveShellId.set(newActiveTerminalId);
     } else {
-      this.appContext.update('currentActiveShellId', null);
+      this.appContext.currentActiveShellId.set(null);
     }
-    this.appContext.update('shells', updatedShells);
+    this.appContext.shells.set(structuredClone(updatedShells)); // for js refrence to change so compute works
   }
 }

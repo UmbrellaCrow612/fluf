@@ -1,9 +1,8 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
 import { hasImageExtension } from './utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { ImageService } from './image.service';
-import { fileNode } from '../../gen/type';
 
 @Component({
   selector: 'app-image-editor',
@@ -17,17 +16,13 @@ export class ImageEditorComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly imageService = inject(ImageService);
 
-  currentActiveFileNode: fileNode | null = null;
+  currentActiveFileNode = computed(() => this.appContext.currentOpenFileInEditor())
   imgSrc: string | null = null;
   isLoading = false;
   error: string | null = null;
   private currentObjectUrl: string | null = null;
 
   async ngOnInit() {
-    const init = this.appContext.getSnapshot();
-
-    this.currentActiveFileNode = init.currentOpenFileInEditor;
-
     await this.render();
 
     this.destroyRef.onDestroy(() => {
@@ -36,15 +31,6 @@ export class ImageEditorComponent implements OnInit {
         this.currentObjectUrl = null;
       }
     });
-
-    this.appContext.autoSub(
-      'currentOpenFileInEditor',
-      async (ctx) => {
-        this.currentActiveFileNode = ctx.currentOpenFileInEditor;
-        await this.render();
-      },
-      this.destroyRef
-    );
   }
 
   /**
@@ -55,7 +41,7 @@ export class ImageEditorComponent implements OnInit {
     this.error = null;
 
     try {
-      const node = this.currentActiveFileNode;
+      const node = this.currentActiveFileNode();
       if (!node) {
         this.error = 'No file selected';
         return;
@@ -98,7 +84,7 @@ export class ImageEditorComponent implements OnInit {
     event.preventDefault();
 
     this.inMemoryContextService.currentActiveContextMenu.set({
-      data: this.currentActiveFileNode,
+      data: this.currentActiveFileNode(),
       key: 'image-editor-img-context-menu',
       pos: {
         mouseX: event.clientX,
