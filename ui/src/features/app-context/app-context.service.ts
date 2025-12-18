@@ -232,4 +232,18 @@ export class ContextService {
   readonly fileEditorBottomActiveElement = signal<
     AppContext['fileEditorBottomActiveElement']
   >(this.restoreField('fileEditorBottomActiveElement', null));
+
+  /**
+   * Exposes shells signal
+   */
+  readonly shells = signal<AppContext['shells']>(
+    this.restoreField('shells', null)
+  );
+
+  /**
+   * Exposes currentActiveShellId signal
+   */
+  readonly currentActiveShellId = signal<AppContext['currentActiveShellId']>(
+    this.restoreField('currentActiveShellId', null)
+  );
 }

@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
@@ -24,30 +25,37 @@ type UnsubscribeCallback = () => void;
 })
 export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly appContext = inject(ContextService);
-  private readonly inMemoryAppContext = inject(InMemoryContextService)
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly api = getElectronApi();
 
-
-  constructor(){
+  constructor() {
     effect(async () => {
-      let isEditorResize = this.inMemoryAppContext.isEditorResize()
+      let isEditorResize = this.inMemoryAppContext.isEditorResize();
       if (isEditorResize && this.fitAddon && this.terminal) {
-          this.fitAddon.fit();
-          await this.api.resizeShell(undefined, this.currentActiveShellId!, {
-            cols: this.terminal.cols,
-            rows: this.terminal.rows,
-          });
-        }
-    })
+        this.fitAddon.fit();
+        await this.api.resizeShell(undefined, this.currentActiveShellId()!, {
+          cols: this.terminal.cols,
+          rows: this.terminal.rows,
+        });
+      }
+    });
+
+    effect(async () => {
+      this.appContext.shells();
+      this.appContext.currentActiveShellId();
+
+      await this.initShell();
+    });
   }
 
   private terminal: Terminal | null = null;
   private fitAddon: FitAddon | null = null;
   private dispose: IDisposable | null = null;
 
-  currentActiveShell: shellInformation | null = null;
-  currentActiveShellId: string | null = null;
+  currentActiveShell = computed(() =>
+    this.appContext.shells()?.find((x) => x.id === this.currentActiveShellId())
+  );
+  currentActiveShellId = computed(() => this.appContext.currentActiveShellId());
 
   error: string | null = null;
   isLoading = false;
@@ -55,26 +63,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   unsSub: UnsubscribeCallback | null = null;
 
   async ngOnInit() {
-    const init = this.appContext.getSnapshot();
-
-    // Initial setup
-    this.currentActiveShellId = init.currentActiveShellId;
-    this.currentActiveShell =
-      init.shells?.find((x) => x.id == this.currentActiveShellId) ?? null;
-
     await this.initShell();
-
-    this.appContext.autoSub(
-      'currentActiveShellId',
-      async (ctx) => {
-        this.currentActiveShellId = ctx.currentActiveShellId;
-        this.currentActiveShell =
-          ctx.shells?.find((x) => x.id == this.currentActiveShellId) ?? null;
-
-        await this.initShell();
-      },
-      this.destroyRef
-    );
   }
 
   ngOnDestroy() {
@@ -106,7 +95,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.cleanupTerminal();
 
-    if (!this.currentActiveShell || !this.currentActiveShellId) {
+    if (!this.currentActiveShell() || !this.currentActiveShellId()) {
       this.error = 'No active terminal selected.';
       this.isLoading = false;
       return;
@@ -114,7 +103,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     const alive = await this.api.isShellActive(
       undefined,
-      this.currentActiveShellId
+      this.currentActiveShellId()!
     );
 
     if (!alive) {
@@ -125,12 +114,15 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.unsSub = this.api.onShellChange(this.currentActiveShellId, (data) => {
-      this.currentActiveShell?.history.push(data.chunk);
-      this.terminal?.write(data.chunk);
+    this.unsSub = this.api.onShellChange(
+      this.currentActiveShellId()!,
+      (data) => {
+        this.currentActiveShell()?.history.push(data.chunk);
+        this.terminal?.write(data.chunk);
 
-      this.updateCurrentInCtxDebounced();
-    });
+        this.updateCurrentInCtxDebounced();
+      }
+    );
 
     this.isLoading = false;
 
@@ -157,18 +149,18 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     requestAnimationFrame(async () => {
       this.fitAddon?.fit();
-      await this.api.resizeShell(undefined, this.currentActiveShellId!, {
+      await this.api.resizeShell(undefined, this.currentActiveShellId()!, {
         cols: this.terminal?.cols ?? 80,
         rows: this.terminal?.rows ?? 24,
       });
     });
 
-    this.terminal.write(this.currentActiveShell?.history.join('') ?? '');
+    this.terminal.write(this.currentActiveShell()?.history.join('') ?? '');
 
     this.dispose = this.terminal.onData(async (data) => {
       if (!this.currentActiveShellId) return;
 
-      await this.api.writeToShell(undefined, this.currentActiveShellId, data);
+      await this.api.writeToShell(undefined, this.currentActiveShellId()!, data);
 
       // Detect clear screen escape codes
       if (
@@ -176,7 +168,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
         data.includes('\x1b[3J') ||
         data.includes('\x1b[H\x1b[2J')
       ) {
-        await this.api.writeToShell(undefined, this.currentActiveShellId, '\r');
+        await this.api.writeToShell(undefined, this.currentActiveShellId()!, '\r');
       }
     });
   }
@@ -185,32 +177,33 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
    * Remove the current shell from ctx and render next one
    */
   private removeCurrentFromCtx() {
-    let init = this.appContext.getSnapshot();
-
     let updated =
-      init.shells?.filter((x) => x.id != this.currentActiveShellId) ?? [];
+      this.appContext
+        .shells()
+        ?.filter((x) => x.id != this.currentActiveShellId()) ?? [];
     let nextActiveId =
-      init.shells?.length != undefined && init.shells.length > 0
-        ? init.shells[0].id
+      this.appContext.shells()?.length != undefined &&
+      this.appContext.shells()!.length > 0
+        ? this.appContext.shells()![0].id
         : null;
 
-    this.appContext.update('shells', updated);
-    this.appContext.update('currentActiveShellId', nextActiveId);
+    this.appContext.shells.set(structuredClone(updated)); // for js refrence to be diff so compute works
+    this.appContext.currentActiveShellId.set(nextActiveId);
   }
 
   /**
    * Update glob state of current shell when it changes
    */
   private updateCurrentInCtx() {
-    let shells = this.appContext.getSnapshot().shells;
+    let shells = this.appContext.shells() ?? [];
 
     if (!shells) return;
 
-    let indexOf = shells.findIndex((x) => x.id == this.currentActiveShellId);
+    let indexOf = shells.findIndex((x) => x.id == this.currentActiveShellId());
 
     if (indexOf >= 0) {
-      shells[indexOf] = this.currentActiveShell!;
-      this.appContext.update('shells', shells);
+      shells[indexOf] = this.currentActiveShell()!;
+      this.appContext.shells.set(structuredClone(shells));
     }
   }
 
