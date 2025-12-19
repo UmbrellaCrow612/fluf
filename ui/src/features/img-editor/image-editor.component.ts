@@ -1,4 +1,11 @@
-import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
 import { hasImageExtension } from './utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
@@ -16,15 +23,22 @@ export class ImageEditorComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly imageService = inject(ImageService);
 
-  currentActiveFileNode = computed(() => this.appContext.currentOpenFileInEditor())
+  currentActiveFileNode = computed(() =>
+    this.appContext.currentOpenFileInEditor()
+  );
   imgSrc: string | null = null;
   isLoading = false;
   error: string | null = null;
   private currentObjectUrl: string | null = null;
 
-  async ngOnInit() {
-    await this.render();
+  constructor() {
+    effect(async () => {
+      this.currentActiveFileNode();
+      await this.render();
+    });
+  }
 
+  ngOnInit() {
     this.destroyRef.onDestroy(() => {
       if (this.currentObjectUrl) {
         URL.revokeObjectURL(this.currentObjectUrl);
