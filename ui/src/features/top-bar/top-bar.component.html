@@ -2,15 +2,22 @@
   <div class="flex">
     <span> Fluffy </span>
     <div>
-      <button mat-button matTooltip="Open a file or folder">File</button>
-      <button mat-button matTooltip="Edit history">Edit</button>
-      <button mat-button matTooltip="Edit history">Selection</button>
-      <button mat-button matTooltip="View more">View</button>
-      <button mat-button matTooltip="View more">Go</button>
-      <button mat-button matTooltip="Terminal actions">Terminal</button>
-      <button mat-button matTooltip="Help and assistance">Help</button>
+      @for (item of items; track $index) {
+      <button matButton [matMenuTriggerFor]="menu" [ariaLabel]="item.tooltip">
+        {{ item.label }}
+      </button>
+      <mat-menu #menu="matMenu">
+        @for (child of item.children; track $index) {
+        <button mat-menu-item (click)="child.onClick()">
+          <span>{{ child.label }}</span>
+        </button>
+        }
+      </mat-menu>
+      }
     </div>
   </div>
+
+  <!---->
   <div class="flex">
     <button mat-icon-button matTooltip="Minimize" (click)="minimize()">
       <mat-icon>minimize</mat-icon>

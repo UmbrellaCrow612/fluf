@@ -1,18 +1,39 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../utils';
 import { debounceTime, fromEvent, Subscription } from 'rxjs';
+import { MatMenuModule } from '@angular/material/menu';
+import { ContextService } from '../app-context/app-context.service';
+
+/** Represents a top bar item such as file -> then click open folder or file */
+type topBarItem = {
+  /** Text to render */
+  label: string;
+
+  /** Extra info  */
+  tooltip: string;
+
+  /** List of children to show in the menu */
+  children: {
+    /** Text to render */
+    label: string;
+
+    /** Method to run when clicked */
+    onClick: (() => void) | (() => Promise<void>);
+  }[];
+};
 
 @Component({
   selector: 'app-top-bar',
-  imports: [MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule],
   templateUrl: './top-bar.component.html',
   styleUrl: './top-bar.component.css',
 })
 export class TopBarComponent implements OnInit, OnDestroy {
   private readonly _api = getElectronApi();
+  private readonly appContext = inject(ContextService);
 
   /**
    * Holds window maximized state
@@ -22,7 +43,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.resizeSub = fromEvent(window, 'resize')
-      .pipe(debounceTime(250)) 
+      .pipe(debounceTime(250))
       .subscribe(() => {
         this.reloadMaxState();
       });
@@ -62,4 +83,37 @@ export class TopBarComponent implements OnInit, OnDestroy {
   close() {
     this._api.close();
   }
+
+  items: topBarItem[] = [
+    {
+      label: 'File',
+      tooltip: 'Open a file or folder',
+      children: [
+        {
+          label: 'Open folder',
+          onClick: async () => {
+            let res = await this._api.selectFolder();
+            if (res.canceled) return;
+
+            this.appContext.selectedDirectoryPath.set(res.filePaths[0]);
+            this.appContext.openFiles.set(null);
+            this.appContext.currentOpenFileInEditor.set(null);
+            this.appContext.editorMainActiveElement.set(null);
+            this.appContext.fileExplorerActiveFileOrFolder.set(null);
+          },
+        },
+
+        {
+          label: 'Exit',
+          onClick: () => {
+            this.appContext.selectedDirectoryPath.set(null);
+            this.appContext.openFiles.set(null);
+            this.appContext.currentOpenFileInEditor.set(null);
+            this.appContext.editorMainActiveElement.set(null);
+            this.appContext.fileExplorerActiveFileOrFolder.set(null);
+          },
+        },
+      ],
+    },
+  ];
 }
