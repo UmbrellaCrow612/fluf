@@ -1,5 +1,30 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+/** @type {import("./type").shellApi} */
+const shellApi = {
+  create: () => ipcRenderer.invoke("shell:create"),
+  kill: (pid) => ipcRenderer.invoke("shell:kill", pid),
+  resize: (pid, col, row) => ipcRenderer.invoke("shell:resize", pid, col, row),
+  write: (pid, chunk) => {
+    ipcRenderer.send("shell:write", pid, chunk);
+  },
+  onChange: (pid, callback) => {
+    /**
+     * make this a typed type in types
+     * @param {import("electron").IpcRendererEvent} event
+     * @param  {string} id
+     * @param {string} chunk
+     */
+    let listner = (event, id, chunk) => {
+      if (pid == id) callback(chunk);
+    };
+
+    ipcRenderer.on(`shell:change`, listner);
+
+    return () => ipcRenderer.removeListener("shell:change", listner);
+  },
+};
+
 /**
  * @type {import("./type").gitApi}
  */
@@ -73,33 +98,6 @@ const api = {
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
   normalize: (_event, path) => ipcRenderer.invoke("path:normalize", path),
 
-  createShell: (_event, dir) => ipcRenderer.invoke("shell:create", dir),
-  killShellById: (_event, shellId) => ipcRenderer.invoke("shell:kill", shellId),
-  writeToShell: (_event, shellId, cmd) =>
-    ipcRenderer.invoke("shell:write", shellId, cmd),
-  stopCmdInShell: (_event, shellId) =>
-    ipcRenderer.invoke("shell:stop", shellId),
-
-  onShellChange: (shellId, cb) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param {import("./type").shellChangeData} data
-     */
-    let listner = (_, data) => {
-      if (data.id == shellId) cb(data);
-    };
-
-    ipcRenderer.on("shell:change", listner);
-
-    return () => ipcRenderer.removeListener("shell:change", listner);
-  },
-
-  isShellActive: (_event, shellId) =>
-    ipcRenderer.invoke("shell:alive", shellId),
-
-  resizeShell: (_, shellId, data) =>
-    ipcRenderer.invoke("shell:resize", shellId, data),
-
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);
 
@@ -132,6 +130,8 @@ const api = {
 
   writeImageToClipboard: (_event, fp) =>
     ipcRenderer.invoke("clipboard:write:image", fp),
+
+  shellApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
