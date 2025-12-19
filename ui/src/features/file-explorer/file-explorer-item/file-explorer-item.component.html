@@ -21,22 +21,7 @@
   <mat-icon>folder</mat-icon>
   }
   <!---->
-
-  @if (!fileNode().isDirectory && getFileExt(fileNode().path) ==="html" ) {
-  <mat-icon>html</mat-icon>
-  }
-  <!---->
-
-  @if (!fileNode().isDirectory && getFileExt(fileNode().path) ==="css" ) {
-  <mat-icon>css</mat-icon>
-  }
-  <!---->
-
-  @if (!fileNode().isDirectory && getFileExt(fileNode().path) ==="js" ) {
-  <mat-icon>javascript</mat-icon>
-  }
-  <!---->
-  @if (!fileNode().isDirectory && !getFileExt(fileNode().path)) {
+  @if (!fileNode().isDirectory) {
   <mat-icon>description</mat-icon>
   }
 

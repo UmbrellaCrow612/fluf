@@ -16,6 +16,54 @@ export function collapseNodes(nodes: fileNode[]) {
 }
 
 /**
+ * Collapse a given node by it's path
+ * @param nodes The list of nodes
+ * @param targetPath The specific node to collapse
+ */
+export function collapseNodeByPath(
+  nodes: fileNode[],
+  targetPath: string
+): boolean {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      node.children = [];
+      node.expanded = false;
+      return true;
+    }
+
+    if (collapseNodeByPath(node.children, targetPath)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Expand a given node by its path
+ * @param nodes The list of nodes
+ * @param targetPath The specific node to expand
+ * @returns true if the node was found and expanded
+ */
+export function expandNodeByPath(
+  nodes: fileNode[],
+  targetPath: string
+): boolean {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      node.expanded = true;
+      return true;
+    }
+
+    if (expandNodeByPath(node.children, targetPath)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Adds the new node into the children set of the target node
  * @param nodes The list of nodes
  * @param targetNode The target node to put the new node within its children
@@ -46,6 +94,38 @@ export function pushNodeIntoChildren(
 }
 
 /**
+ * Push a list of nodes into a target node's children
+ * @param nodes The list of nodes
+ * @param targetPath The path of the node whose children will be added to
+ * @param newNodes The list of nodes to add
+ * @returns true if the node was found and children were added
+ */
+export function pushNodesIntoChildrenByPath(
+  nodes: fileNode[],
+  targetPath: string,
+  newNodes: fileNode[]
+): boolean {
+  for (const node of nodes) {
+    if (node.path === targetPath) {
+      node.children.unshift(...newNodes);
+      node.expanded = true; 
+      return true;
+    }
+
+    if (node.children.length > 0) {
+      const inserted = pushNodesIntoChildrenByPath(
+        node.children,
+        targetPath,
+        newNodes
+      );
+      if (inserted) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Get a target node's parent node
  * @param nodes The list of nodes
  * @param targetNode The target node whose parent you want
@@ -56,7 +136,7 @@ export function getNodeParent(
   targetNode: fileNode
 ): fileNode | null {
   for (const node of nodes) {
-    if (node.children.some(child => child.path === targetNode.path)) {
+    if (node.children.some((child) => child.path === targetNode.path)) {
       return node;
     }
 
@@ -70,4 +150,30 @@ export function getNodeParent(
   }
 
   return null;
+}
+
+/**
+ * Removes nodes which are not in mode `default`
+ * @param nodes The list of nodes
+ */
+export function removeCreateNodes(nodes: fileNode[]): fileNode[] {
+  return nodes
+    .filter((node) => node.mode === 'default')
+    .map((node) => ({
+      ...node,
+      children: removeCreateNodes(node.children),
+    }));
+}
+
+/**
+ * Add a new node to the nodes if it dose not have it - NOTE it is a first layer scan not a deep search if it dose not find it, it
+ * will unshift it to the nodes array else not
+ * @param nodes The list of nodes
+ * @param newNode
+ */
+export function addNodeIfNotExists(nodes: fileNode[], newNode: fileNode) {
+  let found = nodes.find((x) => x.path === newNode.path);
+  if (!found) {
+    nodes.unshift(newNode);
+  }
 }

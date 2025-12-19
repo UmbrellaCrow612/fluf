@@ -1,7 +1,6 @@
 import {
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   OnInit,
@@ -187,11 +186,62 @@ export class FileExplorerComponent implements OnInit {
    * - Removes stale nodes that no longer exist
    */
   private async merge() {
+    const rootPath = this.selectedDirectorPath();
+    if (!rootPath) {
+      console.error('No path');
+      return;
+    }
 
-    // read curent nodes root 
-    // go through each one if it dosent exit remove it 
-    // map over the new file name file path and opther fields keep expanded between them if not removed
-    // recuise read the nodes children freshly and do the same above
+    const latest = await this.api.readDir(undefined, rootPath);
+    const current = this.directoryFileNodes() ?? [];
+
+    const updatedNodes = await this.mergeNodes(current, latest);
+
     this.appContext.directoryFileNodes.set(updatedNodes);
+  }
+
+  private async mergeNodes(
+    currentNodes: fileNode[],
+    latestNodes: fileNode[]
+  ): Promise<fileNode[]> {
+    const currentMap = new Map<string, fileNode>(
+      currentNodes.map((node) => [node.path, node])
+    );
+
+    const result: fileNode[] = [];
+
+    for (const latest of latestNodes) {
+      const existing = currentMap.get(latest.path);
+
+      // New node
+      if (!existing) {
+        result.push({
+          ...latest,
+          expanded: false,
+          mode: 'default',
+          children: [],
+        });
+        continue;
+      }
+
+      // Existing node
+      const merged: fileNode = {
+        ...latest,
+        expanded: existing.expanded,
+        mode: existing.mode,
+        children: existing.children,
+      };
+
+      // Only recurse if directory is expanded
+      if (merged.isDirectory && merged.expanded) {
+        const childLatest = await this.api.readDir(undefined, merged.path);
+
+        merged.children = await this.mergeNodes(existing.children, childLatest);
+      }
+
+      result.push(merged);
+    }
+
+    return result;
   }
 }

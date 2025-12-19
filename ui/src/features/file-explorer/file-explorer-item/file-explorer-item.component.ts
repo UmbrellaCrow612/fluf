@@ -2,29 +2,25 @@ import {
   AfterViewInit,
   Component,
   computed,
-  DestroyRef,
   ElementRef,
   inject,
   input,
-  OnInit,
   viewChild,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  addUniqueFile,
-  appendChildrenToNode,
-  collapseNodeByPath,
-  expandNodeByPath,
-  getExtension,
-  getFileExtension,
-  removeCreateNodes,
-} from '../utils';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 import { hasImageExtension } from '../../img-editor/utils';
 import { hasDocumentExtension } from '../../document-editor/utils';
 import { fileNode } from '../../../gen/type';
+import {
+  addNodeIfNotExists,
+  collapseNodeByPath,
+  expandNodeByPath,
+  pushNodesIntoChildrenByPath,
+  removeCreateNodes,
+} from '../fileNode';
 
 @Component({
   selector: 'app-file-explorer-item',
@@ -33,7 +29,6 @@ import { fileNode } from '../../../gen/type';
   styleUrl: './file-explorer-item.component.css',
 })
 export class FileExplorerItemComponent implements AfterViewInit {
-  private readonly destroyRef = inject(DestroyRef);
   private readonly appContext = inject(ContextService);
   private readonly api = getElectronApi();
   private readonly inMemoryContextService = inject(InMemoryContextService);
@@ -52,9 +47,11 @@ export class FileExplorerItemComponent implements AfterViewInit {
    * Indicates if the item is clicked on show focus state either if the current file is shown
    * as the current edit file or if it is just a folder clicked in explorer
    */
-  isFocused = computed(() => this.appContext.fileExplorerActiveFileOrFolder()?.path === this.fileNode().path);
-
-  getFileExt = getFileExtension;
+  isFocused = computed(
+    () =>
+      this.appContext.fileExplorerActiveFileOrFolder()?.path ===
+      this.fileNode().path
+  );
 
   /**
    * Input rendered when making a file
@@ -67,6 +64,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
     }
   }
 
+  /** Runs when the user clicked outisde of the input */
   onCreateInputBlur() {
     let nodes = this.appContext.directoryFileNodes();
     removeCreateNodes(nodes ?? []);
@@ -82,6 +80,11 @@ export class FileExplorerItemComponent implements AfterViewInit {
 
   /**
    * Runs when a file explorer item is clicked
+   *
+   * - Expands it if it is a dir fetches children
+   * - Sets it as active node
+   * - adds it to open files tab
+   * other stuff
    */
   async itemClicked(event: Event) {
     event.preventDefault();
@@ -89,10 +92,10 @@ export class FileExplorerItemComponent implements AfterViewInit {
     if (!this.fileNode().isDirectory) {
       this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
 
-      let files = this.appContext.openFiles() ?? []
-      addUniqueFile(files, this.fileNode());
+      let openFiles = this.appContext.openFiles() ?? [];
+      addNodeIfNotExists(openFiles, this.fileNode());
 
-      this.appContext.openFiles.set(structuredClone(files)); // becuase of js refrence bs
+      this.appContext.openFiles.set(structuredClone(openFiles)); // becuase of js refrence bs
       this.appContext.currentOpenFileInEditor.set(this.fileNode());
 
       let isImg = hasImageExtension(this.fileNode().extension);
@@ -111,17 +114,21 @@ export class FileExplorerItemComponent implements AfterViewInit {
       return;
     }
 
-    let previousNodes = this.appContext.directoryFileNodes();
+    // clicked a dir folder
+
+    let previousNodes = this.appContext.directoryFileNodes() ?? [];
 
     if (this.fileNode().expanded) {
-      collapseNodeByPath(previousNodes!, this.fileNode().path);
+      collapseNodeByPath(previousNodes, this.fileNode().path);
+
       this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
       this.appContext.directoryFileNodes.set(previousNodes);
       return;
     }
 
     if (!this.fileNode().expanded && this.fileNode().children.length > 0) {
-      expandNodeByPath(previousNodes!, this.fileNode().path!);
+      expandNodeByPath(previousNodes!, this.fileNode().path);
+
       this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
       this.appContext.directoryFileNodes.set(previousNodes);
       return;
@@ -132,8 +139,8 @@ export class FileExplorerItemComponent implements AfterViewInit {
       this.fileNode().path
     );
 
-    appendChildrenToNode(
-      previousNodes!,
+    pushNodesIntoChildrenByPath(
+      previousNodes,
       this.fileNode().path,
       newChildrenNodes
     );
@@ -188,16 +195,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
         const suc = await this.api.createFile(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.fileExplorerActiveFileOrFolder.set({
-            children: [],
-            expanded: false,
-            isDirectory: false,
-            mode: 'default',
-            name: value!,
-            path: newPath,
-            parentPath: '',
-            extension: getExtension(value) ?? '',
-          });
+          this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
         } else {
           inputEl?.setCustomValidity('File creation operation failed');
           inputEl?.reportValidity();
@@ -221,16 +219,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
         const suc = await this.api.createDirectory(undefined, newPath);
         if (suc) {
           this.onCreateInputBlur();
-          this.appContext.fileExplorerActiveFileOrFolder.set({
-            children: [],
-            expanded: false,
-            isDirectory: true,
-            mode: 'default',
-            name: value!,
-            path: newPath,
-            parentPath: '',
-            extension: getExtension(value) ?? '',
-          });
+          this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
         } else {
           inputEl?.setCustomValidity('Folder creation operation failed');
           inputEl?.reportValidity();
