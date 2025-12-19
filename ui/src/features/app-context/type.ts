@@ -60,7 +60,8 @@ export type AppContext = {
   selectedDirectoryPath: string | null;
 
   /**
-   * The current focused / last clicked or last edited file (from editor) in the file explorer tree
+   * The current focused / last clicked or last edited file (from editor) in the file explorer tree, used as a singal toshow which file was clicked, is currently open in the editor or as a way to show where you would
+   * create a file or folder node
    */
   fileExplorerActiveFileOrFolder: fileNode | null;
 
