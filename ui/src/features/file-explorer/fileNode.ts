@@ -177,3 +177,14 @@ export function addNodeIfNotExists(nodes: fileNode[], newNode: fileNode) {
     nodes.unshift(newNode);
   }
 }
+/**
+ * Remove a node from the first-level nodes array if it exists
+ * @param nodes The list of nodes
+ * @param node The node to remove
+ */
+export function removeNodeIfExists(nodes: fileNode[], node: fileNode): void {
+  const index = nodes.findIndex((x) => x.path === node.path);
+  if (index !== -1) {
+    nodes.splice(index, 1);
+  }
+}
