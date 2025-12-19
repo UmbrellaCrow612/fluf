@@ -3,10 +3,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ContextService } from '../../../app-context/app-context.service';
-import { removeFileIfExists } from '../../../file-explorer/utils';
 import { hasImageExtension } from '../../../img-editor/utils';
 import { hasDocumentExtension } from '../../../document-editor/utils';
 import { fileNode } from '../../../../gen/type';
+import { removeNodeIfExists } from '../../../file-explorer/fileNode';
 
 @Component({
   selector: 'app-file-tab-item',
@@ -48,7 +48,7 @@ export class FileTabItemComponent {
     const currentActiveNode = this.appContext.currentOpenFileInEditor();
     const files = this.appContext.openFiles() ?? [];
 
-    removeFileIfExists(files, this.fileNode());
+    removeNodeIfExists(files, this.fileNode());
     this.appContext.openFiles.set(structuredClone(files)); // dfo this becuase of js refrence bs
 
     if (currentActiveNode?.path === this.fileNode().path) {

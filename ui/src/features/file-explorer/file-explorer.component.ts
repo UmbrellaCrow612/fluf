@@ -1,10 +1,10 @@
 import {
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   OnInit,
+  Signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,13 +13,9 @@ import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { CommonModule } from '@angular/common';
 import { FileExplorerItemComponent } from './file-explorer-item/file-explorer-item.component';
-import {
-  collapseAllFileNodesToRoot,
-  getParentNode,
-  pushChildrenToNode,
-} from './utils';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { fileNode, fileNodeMode } from '../../gen/type';
+import { collapseNodes, getNodeParent, pushNodeIntoChildren } from './fileNode';
 
 @Component({
   selector: 'app-file-explorer',
@@ -37,6 +33,23 @@ export class FileExplorerComponent implements OnInit {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly api = getElectronApi();
+
+  /**
+   * Represents the root node which represents the selected directory folder itself - typically used for creating files in the root
+   */
+  rootNode: Signal<fileNode> = computed(() => {
+    let node: fileNode = {
+      children: [],
+      expanded: false,
+      extension: '',
+      isDirectory: true,
+      mode: 'default',
+      name: 'Root node',
+      parentPath: this.selectedDirectorPath()!,
+      path: this.selectedDirectorPath()!,
+    };
+    return node;
+  });
 
   selectedDirectorPath = computed(() =>
     this.appContext.selectedDirectoryPath()
@@ -81,17 +94,9 @@ export class FileExplorerComponent implements OnInit {
    */
   collapseFolders() {
     let nodes = this.directoryFileNodes();
-    collapseAllFileNodesToRoot(nodes ?? []);
-    this.appContext.fileExplorerActiveFileOrFolder.set({
-      children: [],
-      expanded: false,
-      isDirectory: true,
-      path: this.selectedDirectorPath()!,
-      parentPath: '',
-      name: 'Root',
-      mode: 'default',
-      extension: '',
-    });
+    collapseNodes(nodes ?? []);
+
+    this.appContext.fileExplorerActiveFileOrFolder.set(this.rootNode());
     this.appContext.directoryFileNodes.set(nodes);
   }
 
@@ -111,16 +116,7 @@ export class FileExplorerComponent implements OnInit {
 
     if (target === container) {
       /*Clicked empty space so set the file or folder focus in side bar to root node */
-      this.appContext.fileExplorerActiveFileOrFolder.set({
-        children: [],
-        expanded: false,
-        isDirectory: true,
-        path: this.selectedDirectorPath()!,
-        parentPath: '',
-        name: 'Root',
-        mode: 'default',
-        extension: '',
-      });
+      this.appContext.fileExplorerActiveFileOrFolder.set(this.rootNode());
     }
   }
 
@@ -136,19 +132,24 @@ export class FileExplorerComponent implements OnInit {
     }
   }
 
+  /**
+   * Creates a file or folder node in the tree
+   * @param mode The specific type of node to create
+   */
   createFileOrFolder(mode: fileNodeMode) {
     const nodes = this.directoryFileNodes() ?? [];
     const activeNode = this.appContext.fileExplorerActiveFileOrFolder();
 
     if (!activeNode) {
+      // we need to know where we are creating the new node, which is the last clicked node's location
       console.log('No file or folder in focus');
       return;
     }
 
     const isRootActive = activeNode.path === this.selectedDirectorPath();
 
-    // Construct the new file node
-    const newFileNode: fileNode = {
+    // Construct the new node - this will handle file or folder render
+    const newNode: fileNode = {
       children: [],
       expanded: false,
       isDirectory: false,
@@ -160,18 +161,17 @@ export class FileExplorerComponent implements OnInit {
     };
 
     if (isRootActive) {
-      // Root node is not part of `nodes`, so push directly
-      nodes.push(newFileNode);
+      // here it means the main root was clicked i.e the empty space in file explorer meaning create it in the root folder
+      nodes.push(newNode);
     } else if (activeNode.isDirectory) {
-      // Push under the active directory
-      pushChildrenToNode(nodes, activeNode.path, [newFileNode]);
+      pushNodeIntoChildren(nodes, activeNode, newNode);
     } else {
-      // Active node is a file — find its parent
-      const parent = getParentNode(nodes, activeNode.path);
+      // Active node is a file — find its parent and push it to them
+      const parent = getNodeParent(nodes, activeNode);
       if (parent) {
-        pushChildrenToNode(nodes, parent.path, [newFileNode]);
+        pushNodeIntoChildren(nodes, activeNode, newNode);
       } else {
-        console.warn('Parent not found for active file node.');
+        console.error('Parent not found for active file node.');
       }
     }
 
@@ -186,54 +186,62 @@ export class FileExplorerComponent implements OnInit {
    * - Removes stale nodes that no longer exist
    */
   private async merge() {
-    let newNodes = await this.api.readDir(
-      undefined,
-      this.selectedDirectorPath()!
-    );
-    let updatedNodes = await this.mergeNodes(
-      this.directoryFileNodes() ?? [],
-      newNodes
-    );
+    const rootPath = this.selectedDirectorPath();
+    if (!rootPath) {
+      console.error('No path');
+      return;
+    }
+
+    const latest = await this.api.readDir(undefined, rootPath);
+    const current = this.directoryFileNodes() ?? [];
+
+    const updatedNodes = await this.mergeNodes(current, latest);
+
     this.appContext.directoryFileNodes.set(updatedNodes);
   }
 
-  /**
-   * Recursively merges new nodes into old nodes, fetching children when necessary.
-   */
   private async mergeNodes(
-    oldNodes: fileNode[],
-    newNodes: fileNode[]
+    currentNodes: fileNode[],
+    latestNodes: fileNode[]
   ): Promise<fileNode[]> {
-    const merged: fileNode[] = [];
-
-    for (const newNode of newNodes) {
-      const existing = oldNodes.find((n) => n.path === newNode.path);
-
-      if (!existing) {
-        const nodeToAdd: fileNode = { ...newNode };
-        merged.push(nodeToAdd);
-      } else {
-        existing.name = newNode.name;
-        existing.parentPath = newNode.parentPath;
-
-        if (existing.isDirectory && existing.expanded) {
-          const newChildren = await this.api.readDir(undefined, existing.path);
-          existing.children = await this.mergeNodes(
-            existing.children || [],
-            newChildren
-          );
-        } else {
-          existing.children = [];
-        }
-
-        merged.push(existing);
-      }
-    }
-
-    const filtered = merged.filter((m) =>
-      newNodes.some((n) => n.path === m.path)
+    const currentMap = new Map<string, fileNode>(
+      currentNodes.map((node) => [node.path, node])
     );
 
-    return filtered;
+    const result: fileNode[] = [];
+
+    for (const latest of latestNodes) {
+      const existing = currentMap.get(latest.path);
+
+      // New node
+      if (!existing) {
+        result.push({
+          ...latest,
+          expanded: false,
+          mode: 'default',
+          children: [],
+        });
+        continue;
+      }
+
+      // Existing node
+      const merged: fileNode = {
+        ...latest,
+        expanded: existing.expanded,
+        mode: existing.mode,
+        children: existing.children,
+      };
+
+      // Only recurse if directory is expanded
+      if (merged.isDirectory && merged.expanded) {
+        const childLatest = await this.api.readDir(undefined, merged.path);
+
+        merged.children = await this.mergeNodes(existing.children, childLatest);
+      }
+
+      result.push(merged);
+    }
+
+    return result;
   }
 }
