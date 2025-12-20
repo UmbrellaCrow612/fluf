@@ -564,7 +564,7 @@
  * Create a shell
  * @callback createShell
  * @param {string} directory - The directory to spawn it in
- * @returns {Promise<string>} - The PID of the shell
+ * @returns {Promise<number>} - The PID of the shell or -1 for failure
  */
 
 /**
@@ -607,6 +607,14 @@
  */
 
 /**
+ * Listen to when a shell exists either by user typeing exit or other reason
+ * @callback onShellExit
+ * @param {number} pid - The specific shell to listen to
+ * @param {voidCallback} callback - The method to run
+ * @returns {voidCallback} Unsub method
+ */
+
+/**
  * Contains all the method to interact with shell's for terminals to use
  * @typedef {Object} shellApi
  * @property {createShell} create - Create a shell process
@@ -614,6 +622,7 @@
  * @property {writeToShell} write - Write content to a specific shell
  * @property {resizeShell} resize - Resize 
  * @property {onShellChange} onChange - Listen to changes for a specific shell and run logic
+ * @property {onShellExit} onExit - Listen to a specific shell exit and run logic
  */
 
 /**

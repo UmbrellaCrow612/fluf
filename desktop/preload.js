@@ -2,26 +2,39 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 /** @type {import("./type").shellApi} */
 const shellApi = {
-  create: () => ipcRenderer.invoke("shell:create"),
-  kill: (pid) => ipcRenderer.invoke("shell:kill", pid),
-  resize: (pid, col, row) => ipcRenderer.invoke("shell:resize", pid, col, row),
-  write: (pid, chunk) => {
-    ipcRenderer.send("shell:write", pid, chunk);
+  create: (...args) => ipcRenderer.invoke("shell:create", args),
+  kill: (...args) => ipcRenderer.invoke("shell:kill", args),
+  resize: (...args) => ipcRenderer.invoke("shell:resize", args),
+  write: (...args) => {
+    ipcRenderer.send("shell:write", args);
   },
   onChange: (pid, callback) => {
     /**
-     * make this a typed type in types
      * @param {import("electron").IpcRendererEvent} event
      * @param  {string} id
      * @param {string} chunk
      */
-    let listner = (event, id, chunk) => {
+    let listener = (event, id, chunk) => {
       if (pid == id) callback(chunk);
     };
 
-    ipcRenderer.on(`shell:change`, listner);
+    ipcRenderer.on(`shell:change`, listener);
 
-    return () => ipcRenderer.removeListener("shell:change", listner);
+    return () => ipcRenderer.removeListener("shell:change", listener);
+  },
+
+  onExit: (pid, callback) => {
+    /**
+     * @param {import("electron").IpcRendererEvent} event
+     * @param  {number} id
+     */
+    let listener = (event, id) => {
+      if (pid === id) callback();
+    };
+
+    ipcRenderer.on("shell:exit", listener);
+
+    return () => ipcRenderer.removeListener("shell:exit", listener);
   },
 };
 

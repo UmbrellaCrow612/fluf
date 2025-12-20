@@ -35,6 +35,7 @@ const {
   stopLanguageServers,
 } = require("./language-server");
 const { registerTsListeners } = require("./typescript");
+const { cleanUpShells, registerShellListeners } = require("./shell");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -112,6 +113,7 @@ app.whenReady().then(() => {
   registerPdfListeners(ipcMain, protocol);
   registerImageListeners(ipcMain, protocol);
   registerTsListeners(ipcMain, mainWindow);
+  registerShellListeners(ipcMain, mainWindow);
 
   startLanguageServers();
 });
@@ -120,4 +122,5 @@ app.on("before-quit", () => {
   cleanUpWatchers();
   stopWatchingGitRepo();
   stopLanguageServers();
+  cleanUpShells();
 });
