@@ -48,7 +48,7 @@ const registerShellListeners = (ipcMain, win) => {
           return err;
         }
 
-        await fs.access(path.normalize(directory), fs.constants.F_OK);
+        await fs.access(path.normalize(directory));
 
         let pty = spawn(shell, [], {
           name: "xterm-color",

@@ -1,3 +1,4 @@
+import { voidCallback } from './../../../gen/type.d';
 import {
   Component,
   computed,
@@ -12,7 +13,6 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IDisposable, Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
-import { voidCallback } from '../../../gen/type';
 
 @Component({
   selector: 'app-terminal-editor',
@@ -56,7 +56,8 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   error: string | null = null;
   isLoading = false;
 
-  unsSub: voidCallback | null = null;
+  changeunSub: voidCallback | null = null;
+  exitUnSub: voidCallback | null = null;
 
   async ngOnInit() {
     await this.initShell();
@@ -67,9 +68,13 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   }
 
   private cleanupTerminal() {
-    if (this.unsSub) {
-      this.unsSub();
-      this.unsSub = null;
+    if (this.changeunSub) {
+      this.changeunSub();
+      this.changeunSub = null;
+    }
+    if (this.exitUnSub) {
+      this.exitUnSub();
+      this.exitUnSub = null;
     }
     if (this.dispose) {
       this.dispose.dispose();
@@ -97,10 +102,27 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.unsSub = this.api.shellApi.onChange(
+    this.changeunSub = this.api.shellApi.onChange(
       this.currentActiveShellId()!,
       (chunk) => {
         this.terminal?.write(chunk);
+      }
+    );
+
+    this.exitUnSub = this.api.shellApi.onExit(
+      this.currentActiveShellId()!,
+      () => {
+        let shells = this.inMemoryAppContext.shells() ?? [];
+
+        let filtered = shells.filter((x) => x !== this.currentActiveShellId());
+        this.inMemoryAppContext.shells.set(structuredClone(filtered));
+
+        if (filtered.length > 0) {
+          let next = filtered[0];
+          this.inMemoryAppContext.currentActiveShellId.set(next);
+        } else {
+          this.inMemoryAppContext.currentActiveShellId.set(null);
+        }
       }
     );
 
@@ -131,18 +153,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.dispose = this.terminal.onData((data) => {
       if (!this.currentActiveShellId()) return;
 
-      console.log(data)
-
       this.api.shellApi.write(this.currentActiveShellId()!, data);
-
-      // Detect clear screen escape codes
-      if (
-        data.includes('\x1b[2J') ||
-        data.includes('\x1b[3J') ||
-        data.includes('\x1b[H\x1b[2J')
-      ) {
-        this.api.shellApi.write(this.currentActiveShellId()!, '\r');
-      }
     });
   }
 }
