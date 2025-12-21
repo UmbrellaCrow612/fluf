@@ -36,8 +36,10 @@ run `npx tsc` to see for any errors and generating frontend ts types to use and 
 
 Building:
 
-- Build index.js and preload with es build excluding electron and node pty etc packs
-- Copy pack json, .env and es build into dist
-- Copy any external deps - for now typescriopt server source code into dist as well for lang suppport
-- Download any external binarys into bin
-- All files made for final packing
+- build index.js and preload with esbuild    dist
+- exclude electron, node pty ("@homebridge") from esbuild
+- copy over typescript source code 
+- copy over node pty (@homebridge)
+- copy over .env and pack json into dist
+- pack the app into asar
+- download electron binarys into dist 
