@@ -296,6 +296,7 @@ export class TextFileEditorComponent implements OnInit {
     }, true);
 
     if (update.docChanged) {
+      this.stringContent = update.state.doc.toString()
       this.onSaveEvent();
     }
   });
