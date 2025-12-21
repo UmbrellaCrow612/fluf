@@ -39,4 +39,22 @@ export class InMemoryContextService {
    * Exposes signal isEditorResize
    */
   readonly isEditorResize = signal<InMemoryAppContext['isEditorResize']>(null);
+
+  /**
+   * Exposes shells signal
+   */
+  readonly shells = signal<InMemoryAppContext['shells']>(null);
+
+  /**
+   * Exposes currentActiveShellId signal
+   */
+  readonly currentActiveShellId =
+    signal<InMemoryAppContext['currentActiveShellId']>(null);
+
+  /**
+   * Exposes terminalBuffers signal
+   */
+  readonly terminalBuffers = signal<InMemoryAppContext['terminalBuffers']>(
+    new Map()
+  );
 }

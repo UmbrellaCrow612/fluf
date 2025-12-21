@@ -188,85 +188,6 @@
  */
 
 /**
- * Data passed when shell out stream changes
- * @typedef {Object} shellChangeData
- * @property {string} chunk - The chunk of new information
- * @property {string} id - The id of the shell
- */
-
-/**
- * Custom callback logic you want to run when a shell changes it's data
- * @callback onShellChangeCallback
- * @param {shellChangeData} data - The new data
- * @returns {void} - Should not return enything
- */
-
-/**
- * Listen to when a shell changes it data either with output stream data or error data
- * @callback onShellChange
- * @param {string} shellId - The specific shell to subscribe to
- * @param {onShellChangeCallback} callback - The custom logic you want to run
- * @returns {() => void} - Unsubscribe method
- */
-
-/**
- * Information about a given shell
- * @typedef {Object} shellInformation
- * @property {string} id - The id of the shell
- * @property {"powershell.exe" | "bash"} shell - The shell spawned
- * @property {string[]} history - List of previous output data chunks
- */
-
-/**
- * @callback createShell
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} dir - The cwd to spawn it in
- * @returns {Promise<shellInformation | undefined>} Create a shell to run cmds in or nothing if it could not
- */
-
-/**
- * Write user input directly to ther shell input stream
- * @callback writeToShell
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} shellId - The shell to run the cmd in
- * @param {string} content - The content  to write to the shell buffer
- * @returns {Promise<boolean>} If it could or could not run the cmd
- */
-
-/**
- * Sends a Ctrl+C (interrupt) signal to the shell.
- * @callback stopCmdInShell
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} shellId
- * @returns {Promise<boolean>} True or false if it could
- */
-
-/**
- * Finds and kills a shell by its ID.
- * @callback killShellById
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} shellId
- * @returns {Promise<boolean>} True if the shell was found and the kill command was sent, false otherwise.
- */
-
-/**
- * Check if a shell is still alive and running
- * @callback isShellActive
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} shellId - The id of the shell to check
- * @returns {Promise<boolean>} True if the shell is still alive or false if not or dose not exist
- */
-
-/**
- * Resize the backend shell col and width
- * @callback resizeShell
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} shellId - The ID of the shell to change
- * @param {{cols:number, rows:number}} data - The new cols and rows
- * @returns {Promise<boolean>} If it could or could not resize the shell
- */
-
-/**
  * List of args to pass to ripgrep to search
  * @typedef {Object} ripgrepArgsOptions
  * @property {string} searchTerm - The search term to look for
@@ -638,6 +559,72 @@
  * @property {tsServerError} errors - Trigger get error's / checking for a file
  */
 
+
+/**
+ * Create a shell
+ * @callback createShell
+ * @param {string} directory - The directory to spawn it in
+ * @returns {Promise<number>} - The PID of the shell or -1 for failure
+ */
+
+/**
+ * Kill a specific shell by it's PID
+ * @callback killShell
+ * @param {number} pid - The unique identifier for it
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Write content to the shell
+ * @callback writeToShell
+ * @param {number} pid - The specific shell to write to
+ * @param {string} content - The content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Resize a shell col and row
+ * @callback resizeShell
+ * @param {number} pid - The id of shell
+ * @param {number} col - The new col size
+ * @param {number} row - The new row
+ * @returns {Promise<boolean>} Nothing
+ */
+
+/**
+ * Run custom logic when a shell outputs stuff to it's stdout
+ * @callback shellChangeCallback
+ * @param {string} chunk - The output stream
+ * @returns {void} Nothing
+ */
+
+/**
+ * Listen to changes for a specific shell and get it's output stream
+ * @callback onShellChange
+ * @param {number} pid - The shell to listen to
+ * @param {shellChangeCallback} callback - The callback to run
+ * @returns {voidCallback} UnSub method
+ */
+
+/**
+ * Listen to when a shell exists either by user typeing exit or other reason
+ * @callback onShellExit
+ * @param {number} pid - The specific shell to listen to
+ * @param {voidCallback} callback - The method to run
+ * @returns {voidCallback} Unsub method
+ */
+
+/**
+ * Contains all the method to interact with shell's for terminals to use
+ * @typedef {Object} shellApi
+ * @property {createShell} create - Create a shell process
+ * @property {killShell} kill - Stops a shell
+ * @property {writeToShell} write - Write content to a specific shell
+ * @property {resizeShell} resize - Resize 
+ * @property {onShellChange} onChange - Listen to changes for a specific shell and run logic
+ * @property {onShellExit} onExit - Listen to a specific shell exit and run logic
+ */
+
 /**
  * APIs exposed to the renderer process for using Electron functions.
  *
@@ -660,14 +647,6 @@
  * @property {deleteDirectory} deleteDirectory - Delete a folder directory by it's path is recursive
  * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  *
- * @property {killShellById} killShellById - Kill a specific shell by it's ID
- * @property {stopCmdInShell} stopCmdInShell - Runs Ctrl+C in the shell
- * @property {writeToShell} writeToShell - Write to a specific shells input stream
- * @property {createShell} createShell - Create a shell
- * @property {onShellChange} onShellChange - Run logic when data in the shell stream changes either regular data or error output
- * @property {isShellActive} isShellActive - Check if a shell is still alive
- * @property {resizeShell} resizeShell - Resize the backend shell col and width
- *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
  *
  * @property {gitApi} gitApi - Offers all the git func
@@ -678,6 +657,8 @@
  * @property {writeToFile} writeToFile - Write new content for a file, it writes the new content as the new content of the whole file
  *
  * @property {tsServer} tsServer - The ts / typescript language server
+ * 
+ * @property {shellApi} shellApi - Contains all methods to use shells
  */
 
 /**

@@ -22,5 +22,8 @@
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
     "umbr-binman": "^1.0.15"
+  },
+  "dependencies": {
+    "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1"
   }
 }

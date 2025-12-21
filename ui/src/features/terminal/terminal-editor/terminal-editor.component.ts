@@ -1,21 +1,19 @@
+import { voidCallback } from './../../../gen/type.d';
 import {
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   OnDestroy,
   OnInit,
+  untracked,
 } from '@angular/core';
-import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IDisposable, Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
-import { shellInformation } from '../../../gen/type';
-
-type UnsubscribeCallback = () => void;
+import { SerializeAddon } from '@xterm/addon-serialize';
 
 @Component({
   selector: 'app-terminal-editor',
@@ -24,7 +22,6 @@ type UnsubscribeCallback = () => void;
   styleUrl: './terminal-editor.component.css',
 })
 export class TerminalEditorComponent implements OnInit, OnDestroy {
-  private readonly appContext = inject(ContextService);
   private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly api = getElectronApi();
 
@@ -33,16 +30,17 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       let isEditorResize = this.inMemoryAppContext.isEditorResize();
       if (isEditorResize && this.fitAddon && this.terminal) {
         this.fitAddon.fit();
-        await this.api.resizeShell(undefined, this.currentActiveShellId()!, {
-          cols: this.terminal.cols,
-          rows: this.terminal.rows,
-        });
+
+        await this.api.shellApi.resize(
+          this.currentActiveShellId()!,
+          this.terminal.cols,
+          this.terminal.rows
+        );
       }
     });
 
     effect(async () => {
-      this.appContext.shells();
-      this.appContext.currentActiveShellId();
+      this.inMemoryAppContext.currentActiveShellId();
 
       await this.initShell();
     });
@@ -50,17 +48,19 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
   private terminal: Terminal | null = null;
   private fitAddon: FitAddon | null = null;
+  private serializeAddon: SerializeAddon | null = null;
   private dispose: IDisposable | null = null;
 
-  currentActiveShell = computed(() =>
-    this.appContext.shells()?.find((x) => x.id === this.currentActiveShellId())
+  currentActiveShellId = computed(() =>
+    this.inMemoryAppContext.currentActiveShellId()
   );
-  currentActiveShellId = computed(() => this.appContext.currentActiveShellId());
+  terminalBuffer = computed(() => this.inMemoryAppContext.terminalBuffers());
 
   error: string | null = null;
   isLoading = false;
 
-  unsSub: UnsubscribeCallback | null = null;
+  changeunSub: voidCallback | null = null;
+  exitUnSub: voidCallback | null = null;
 
   async ngOnInit() {
     await this.initShell();
@@ -71,9 +71,13 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   }
 
   private cleanupTerminal() {
-    if (this.unsSub) {
-      this.unsSub();
-      this.unsSub = null;
+    if (this.changeunSub) {
+      this.changeunSub();
+      this.changeunSub = null;
+    }
+    if (this.exitUnSub) {
+      this.exitUnSub();
+      this.exitUnSub = null;
     }
     if (this.dispose) {
       this.dispose.dispose();
@@ -84,6 +88,27 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.terminal = null;
     }
     this.fitAddon = null;
+    this.serializeAddon = null;
+  }
+
+  private saveTerminalBuffer() {
+    let pid = this.currentActiveShellId();
+    if (!pid) return;
+
+    let map = structuredClone(this.terminalBuffer());
+
+    map.set(pid, this.serializeAddon?.serialize() ?? '');
+
+    this.inMemoryAppContext.terminalBuffers.set(map);
+  }
+
+  private getStoredTerminalBuffer(): string {
+    let pid = this.currentActiveShellId();
+    if (!pid) return '';
+
+    let content = untracked(() => this.terminalBuffer().get(pid)) ?? '';
+
+    return content;
   }
 
   /**
@@ -95,32 +120,35 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.cleanupTerminal();
 
-    if (!this.currentActiveShell() || !this.currentActiveShellId()) {
+    if (!this.currentActiveShellId()) {
       this.error = 'No active terminal selected.';
       this.isLoading = false;
       return;
     }
 
-    const alive = await this.api.isShellActive(
-      undefined,
-      this.currentActiveShellId()!
+    this.changeunSub = this.api.shellApi.onChange(
+      this.currentActiveShellId()!,
+      (chunk) => {
+        this.terminal?.write(chunk, () => {
+          this.saveTerminalBuffer();
+        });
+      }
     );
 
-    if (!alive) {
-      this.error =
-        'The selected terminal process is no longer running. Please create a new one.';
-      this.isLoading = false;
-      this.removeCurrentFromCtx();
-      return;
-    }
-
-    this.unsSub = this.api.onShellChange(
+    this.exitUnSub = this.api.shellApi.onExit(
       this.currentActiveShellId()!,
-      (data) => {
-        this.currentActiveShell()?.history.push(data.chunk);
-        this.terminal?.write(data.chunk);
+      () => {
+        let shells = this.inMemoryAppContext.shells() ?? [];
 
-        this.updateCurrentInCtxDebounced();
+        let filtered = shells.filter((x) => x !== this.currentActiveShellId());
+        this.inMemoryAppContext.shells.set(structuredClone(filtered));
+
+        if (filtered.length > 0) {
+          let next = filtered[0];
+          this.inMemoryAppContext.currentActiveShellId.set(next);
+        } else {
+          this.inMemoryAppContext.currentActiveShellId.set(null);
+        }
       }
     );
 
@@ -143,77 +171,22 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.terminal = new Terminal();
     this.fitAddon = new FitAddon();
+    this.serializeAddon = new SerializeAddon();
 
     this.terminal.loadAddon(this.fitAddon);
+    this.terminal.loadAddon(this.serializeAddon);
+
     this.terminal.open(container);
 
-    requestAnimationFrame(async () => {
-      this.fitAddon?.fit();
-      await this.api.resizeShell(undefined, this.currentActiveShellId()!, {
-        cols: this.terminal?.cols ?? 80,
-        rows: this.terminal?.rows ?? 24,
-      });
+    let storedBuffer = this.getStoredTerminalBuffer();
+    this.terminal.write(storedBuffer);
+
+    this.terminal.focus();
+
+    this.dispose = this.terminal.onData((data) => {
+      if (!this.currentActiveShellId()) return;
+
+      this.api.shellApi.write(this.currentActiveShellId()!, data);
     });
-
-    this.terminal.write(this.currentActiveShell()?.history.join('') ?? '');
-
-    this.dispose = this.terminal.onData(async (data) => {
-      if (!this.currentActiveShellId) return;
-
-      await this.api.writeToShell(undefined, this.currentActiveShellId()!, data);
-
-      // Detect clear screen escape codes
-      if (
-        data.includes('\x1b[2J') ||
-        data.includes('\x1b[3J') ||
-        data.includes('\x1b[H\x1b[2J')
-      ) {
-        await this.api.writeToShell(undefined, this.currentActiveShellId()!, '\r');
-      }
-    });
-  }
-
-  /**
-   * Remove the current shell from ctx and render next one
-   */
-  private removeCurrentFromCtx() {
-    let updated =
-      this.appContext
-        .shells()
-        ?.filter((x) => x.id != this.currentActiveShellId()) ?? [];
-    let nextActiveId =
-      this.appContext.shells()?.length != undefined &&
-      this.appContext.shells()!.length > 0
-        ? this.appContext.shells()![0].id
-        : null;
-
-    this.appContext.shells.set(structuredClone(updated)); // for js refrence to be diff so compute works
-    this.appContext.currentActiveShellId.set(nextActiveId);
-  }
-
-  /**
-   * Update glob state of current shell when it changes
-   */
-  private updateCurrentInCtx() {
-    let shells = this.appContext.shells() ?? [];
-
-    if (!shells) return;
-
-    let indexOf = shells.findIndex((x) => x.id == this.currentActiveShellId());
-
-    if (indexOf >= 0) {
-      shells[indexOf] = this.currentActiveShell()!;
-      this.appContext.shells.set(structuredClone(shells));
-    }
-  }
-
-  private updateCurrentInCtxDebouncedTimeout: any = null;
-  private updateCurrentInCtxDebounced(delay = 200) {
-    if (this.updateCurrentInCtxDebouncedTimeout) {
-      clearTimeout(this.updateCurrentInCtxDebouncedTimeout);
-    }
-    this.updateCurrentInCtxDebouncedTimeout = setTimeout(() => {
-      this.updateCurrentInCtx();
-    }, delay);
   }
 }

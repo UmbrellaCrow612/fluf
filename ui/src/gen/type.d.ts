@@ -142,68 +142,6 @@ export type watchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, d
  */
 export type unwatchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
- * Data passed when shell out stream changes
- */
-export type shellChangeData = {
-    /**
-     * - The chunk of new information
-     */
-    chunk: string;
-    /**
-     * - The id of the shell
-     */
-    id: string;
-};
-/**
- * Custom callback logic you want to run when a shell changes it's data
- */
-export type onShellChangeCallback = (data: shellChangeData) => void;
-/**
- * Listen to when a shell changes it data either with output stream data or error data
- */
-export type onShellChange = (shellId: string, callback: onShellChangeCallback) => () => void;
-/**
- * Information about a given shell
- */
-export type shellInformation = {
-    /**
-     * - The id of the shell
-     */
-    id: string;
-    /**
-     * - The shell spawned
-     */
-    shell: "powershell.exe" | "bash";
-    /**
-     * - List of previous output data chunks
-     */
-    history: string[];
-};
-export type createShell = (event?: Electron.IpcMainInvokeEvent | undefined, dir: string) => Promise<shellInformation | undefined>;
-/**
- * Write user input directly to ther shell input stream
- */
-export type writeToShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, content: string) => Promise<boolean>;
-/**
- * Sends a Ctrl+C (interrupt) signal to the shell.
- */
-export type stopCmdInShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
-/**
- * Finds and kills a shell by its ID.
- */
-export type killShellById = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
-/**
- * Check if a shell is still alive and running
- */
-export type isShellActive = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string) => Promise<boolean>;
-/**
- * Resize the backend shell col and width
- */
-export type resizeShell = (event?: Electron.IpcMainInvokeEvent | undefined, shellId: string, data: {
-    cols: number;
-    rows: number;
-}) => Promise<boolean>;
-/**
  * List of args to pass to ripgrep to search
  */
 export type ripgrepArgsOptions = {
@@ -754,6 +692,63 @@ export type tsServer = {
     errors: tsServerError;
 };
 /**
+ * Create a shell
+ */
+export type createShell = (directory: string) => Promise<number>;
+/**
+ * Kill a specific shell by it's PID
+ */
+export type killShell = (pid: number) => Promise<boolean>;
+/**
+ * Write content to the shell
+ */
+export type writeToShell = (pid: number, content: string) => void;
+/**
+ * Resize a shell col and row
+ */
+export type resizeShell = (pid: number, col: number, row: number) => Promise<boolean>;
+/**
+ * Run custom logic when a shell outputs stuff to it's stdout
+ */
+export type shellChangeCallback = (chunk: string) => void;
+/**
+ * Listen to changes for a specific shell and get it's output stream
+ */
+export type onShellChange = (pid: number, callback: shellChangeCallback) => voidCallback;
+/**
+ * Listen to when a shell exists either by user typeing exit or other reason
+ */
+export type onShellExit = (pid: number, callback: voidCallback) => voidCallback;
+/**
+ * Contains all the method to interact with shell's for terminals to use
+ */
+export type shellApi = {
+    /**
+     * - Create a shell process
+     */
+    create: createShell;
+    /**
+     * - Stops a shell
+     */
+    kill: killShell;
+    /**
+     * - Write content to a specific shell
+     */
+    write: writeToShell;
+    /**
+     * - Resize
+     */
+    resize: resizeShell;
+    /**
+     * - Listen to changes for a specific shell and run logic
+     */
+    onChange: onShellChange;
+    /**
+     * - Listen to a specific shell exit and run logic
+     */
+    onExit: onShellExit;
+};
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 export type ElectronApi = {
@@ -826,34 +821,6 @@ export type ElectronApi = {
      */
     onDirectoryChange: onDirectoryChange;
     /**
-     * - Kill a specific shell by it's ID
-     */
-    killShellById: killShellById;
-    /**
-     * - Runs Ctrl+C in the shell
-     */
-    stopCmdInShell: stopCmdInShell;
-    /**
-     * - Write to a specific shells input stream
-     */
-    writeToShell: writeToShell;
-    /**
-     * - Create a shell
-     */
-    createShell: createShell;
-    /**
-     * - Run logic when data in the shell stream changes either regular data or error output
-     */
-    onShellChange: onShellChange;
-    /**
-     * - Check if a shell is still alive
-     */
-    isShellActive: isShellActive;
-    /**
-     * - Resize the backend shell col and width
-     */
-    resizeShell: resizeShell;
-    /**
      * - Search a folder files for a specific search term and get a list of matching results
      */
     ripGrep: ripGrep;
@@ -877,6 +844,10 @@ export type ElectronApi = {
      * - The ts / typescript language server
      */
     tsServer: tsServer;
+    /**
+     * - Contains all methods to use shells
+     */
+    shellApi: shellApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.
