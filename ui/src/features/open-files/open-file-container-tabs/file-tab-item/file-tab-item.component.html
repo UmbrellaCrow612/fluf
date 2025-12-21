@@ -1,6 +1,19 @@
-<div class="file_tab_item" [class.active]="isActive()" (click)="tabItemClicked()">
-  <span class="ellipses"> {{ fileNode().name }} </span>
-  <button mat-icon-button matTooltip="Close file" (click)="removeTabItem($event)">
+<div
+  class="file_tab_item"
+  [class.active]="isActive()"
+  (click)="tabItemClicked()"
+>
+  <span class="ellipses" [class.error]="hasErrors()">
+    {{ fileNode().name }}
+    @if(hasErrors()){
+    <span class="error-count">({{ errorCount() }})</span>
+    }
+  </span>
+  <button
+    mat-icon-button
+    matTooltip="Close file"
+    (click)="removeTabItem($event)"
+  >
     <mat-icon>close</mat-icon>
   </button>
 </div>

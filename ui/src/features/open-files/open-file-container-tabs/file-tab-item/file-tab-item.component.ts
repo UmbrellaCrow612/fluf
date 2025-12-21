@@ -1,4 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -7,21 +8,37 @@ import { hasImageExtension } from '../../../img-editor/utils';
 import { hasDocumentExtension } from '../../../document-editor/utils';
 import { fileNode } from '../../../../gen/type';
 import { removeNodeIfExists } from '../../../file-explorer/fileNode';
+import { InMemoryContextService } from '../../../app-context/app-in-memory-context.service';
 
 @Component({
   selector: 'app-file-tab-item',
-  imports: [MatIconModule, MatButtonModule, MatTooltipModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './file-tab-item.component.html',
   styleUrl: './file-tab-item.component.css',
 })
 export class FileTabItemComponent {
   private readonly appContext = inject(ContextService);
+  private readonly inMemoryContextService = inject(InMemoryContextService);
 
   fileNode = input.required<fileNode>();
 
   isActive = computed(() => {
     let current = this.appContext.currentOpenFileInEditor();
     return current?.path === this.fileNode().path;
+  });
+
+  errorCount = computed(() => {
+    const normalizedPath = this.fileNode().path.replace(/\\/g, '/');
+
+    let diagnostics = Array.from(
+      this.inMemoryContextService.problems().get(normalizedPath)?.values() ?? []
+    ).flat();
+
+    return diagnostics.length;
+  });
+
+  hasErrors = computed(() => {
+    return this.errorCount() > 0;
   });
 
   tabItemClicked() {
