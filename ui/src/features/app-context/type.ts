@@ -144,4 +144,10 @@ export type InMemoryAppContext = {
    * Contains the curent shell's PID that should be in the current UI as active
    */
   currentActiveShellId: number | null;
+
+
+  /**
+   * Contains a specific shell PID and it's stdout buffer collected
+   */
+  terminalBuffers: Map<number, string>;
 };

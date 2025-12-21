@@ -2,17 +2,18 @@ import { voidCallback } from './../../../gen/type.d';
 import {
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   OnDestroy,
   OnInit,
+  untracked,
 } from '@angular/core';
 import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IDisposable, Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
+import { SerializeAddon } from '@xterm/addon-serialize';
 
 @Component({
   selector: 'app-terminal-editor',
@@ -47,11 +48,13 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
   private terminal: Terminal | null = null;
   private fitAddon: FitAddon | null = null;
+  private serializeAddon: SerializeAddon | null = null;
   private dispose: IDisposable | null = null;
 
   currentActiveShellId = computed(() =>
     this.inMemoryAppContext.currentActiveShellId()
   );
+  terminalBuffer = computed(() => this.inMemoryAppContext.terminalBuffers());
 
   error: string | null = null;
   isLoading = false;
@@ -85,6 +88,27 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.terminal = null;
     }
     this.fitAddon = null;
+    this.serializeAddon = null;
+  }
+
+  private saveTerminalBuffer() {
+    let pid = this.currentActiveShellId();
+    if (!pid) return;
+
+    let map = structuredClone(this.terminalBuffer());
+
+    map.set(pid, this.serializeAddon?.serialize() ?? '');
+
+    this.inMemoryAppContext.terminalBuffers.set(map);
+  }
+
+  private getStoredTerminalBuffer(): string {
+    let pid = this.currentActiveShellId();
+    if (!pid) return '';
+
+    let content = untracked(() => this.terminalBuffer().get(pid)) ?? '';
+
+    return content;
   }
 
   /**
@@ -105,7 +129,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.changeunSub = this.api.shellApi.onChange(
       this.currentActiveShellId()!,
       (chunk) => {
-        this.terminal?.write(chunk);
+        this.terminal?.write(chunk, () => {
+          this.saveTerminalBuffer();
+        });
       }
     );
 
@@ -145,9 +171,16 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.terminal = new Terminal();
     this.fitAddon = new FitAddon();
+    this.serializeAddon = new SerializeAddon();
 
     this.terminal.loadAddon(this.fitAddon);
+    this.terminal.loadAddon(this.serializeAddon);
+
     this.terminal.open(container);
+
+    let storedBuffer = this.getStoredTerminalBuffer();
+    this.terminal.write(storedBuffer);
+
     this.terminal.focus();
 
     this.dispose = this.terminal.onData((data) => {

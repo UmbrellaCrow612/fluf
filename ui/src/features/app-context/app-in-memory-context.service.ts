@@ -50,4 +50,11 @@ export class InMemoryContextService {
    */
   readonly currentActiveShellId =
     signal<InMemoryAppContext['currentActiveShellId']>(null);
+
+  /**
+   * Exposes terminalBuffers signal
+   */
+  readonly terminalBuffers = signal<InMemoryAppContext['terminalBuffers']>(
+    new Map()
+  );
 }
