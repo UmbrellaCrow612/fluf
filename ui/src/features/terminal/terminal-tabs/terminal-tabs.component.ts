@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
+import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 
 @Component({
   selector: 'app-terminal-tabs',
@@ -18,23 +19,28 @@ import { getElectronApi } from '../../../utils';
   styleUrl: './terminal-tabs.component.css',
 })
 export class TerminalTabsComponent {
-  private readonly appContext = inject(ContextService);
+  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly contextService = inject(ContextService);
   private readonly api = getElectronApi();
 
-  shells = computed(() => this.appContext.shells());
+  shells = computed(() => this.inMemoryContextService.shells());
+
+  dir = computed(() => this.contextService.selectedDirectoryPath());
 
   async createNewTerminal() {
-    let newTerm = await this.api.createShell(
-      undefined,
-      this.appContext.selectedDirectoryPath()!
-    );
+    if(!this.dir()) return;
 
-    if (newTerm) {
-      let shells = this.shells() ?? [];
-      shells.unshift(newTerm);
+    let pid = await this.api.shellApi.create(this.dir()!);
 
-      this.appContext.shells.set(structuredClone(shells)); // for js compute refrence to be diffrent
-      this.appContext.currentActiveShellId.set(newTerm.id);
+    if(pid === -1) {
+      console.error("failed to create terminal shell")
+      return;
     }
+
+      let shells = this.shells() ?? [];
+      shells.unshift(pid);
+
+      this.inMemoryContextService.shells.set(structuredClone(shells)); // for js compute refrence to be diffrent
+      this.inMemoryContextService.currentActiveShellId.set(pid);
   }
 }

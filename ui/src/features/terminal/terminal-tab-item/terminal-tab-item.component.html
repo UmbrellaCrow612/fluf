@@ -1,12 +1,10 @@
-<div
-  class="tab_item"
-  [class.tab_active]="isActive()"
-  (click)="shellClicked()"
->
-  <span class="tab_text">
-    {{ shell().shell }}
-  </span>
-  <button class="close_btn" matTooltip="Close terminal session" (click)="killShell($event)">
+<div class="tab_item" [class.tab_active]="isActive()" (click)="shellClicked()">
+  <span class="tab_text"> Terminal </span>
+  <button
+    class="close_btn"
+    matTooltip="Close terminal session"
+    (click)="killShell($event)"
+  >
     <mat-icon>close</mat-icon>
   </button>
 </div>

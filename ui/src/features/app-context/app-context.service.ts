@@ -35,7 +35,6 @@ export class ContextService {
   getSnapShot(): AppContext {
     return {
       sideBarActiveElement: this.sideBarActiveElement(),
-      currentActiveShellId: this.currentActiveShellId(),
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
       directoryFileNodes: this.directoryFileNodes(),
       displayFileEditorBottom: this.displayFileEditorBottom(),
@@ -44,7 +43,6 @@ export class ContextService {
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
       openFiles: this.openFiles(),
       selectedDirectoryPath: this.selectedDirectoryPath(),
-      shells: this.shells(),
     };
   }
 
@@ -124,20 +122,6 @@ export class ContextService {
   readonly fileEditorBottomActiveElement = signal<
     AppContext['fileEditorBottomActiveElement']
   >(this.restoreField('fileEditorBottomActiveElement', null));
-
-  /**
-   * Exposes shells signal
-   */
-  readonly shells = signal<AppContext['shells']>(
-    this.restoreField('shells', null)
-  );
-
-  /**
-   * Exposes currentActiveShellId signal
-   */
-  readonly currentActiveShellId = signal<AppContext['currentActiveShellId']>(
-    this.restoreField('currentActiveShellId', null)
-  );
 
   /**
    * Exposes the editorMainActiveElement signal

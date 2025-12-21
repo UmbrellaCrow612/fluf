@@ -1,5 +1,4 @@
-import { fileNode, shellInformation } from '../../gen/type';
-import { FlufDiagnostic } from '../diagnostic/type';
+import { fileNode } from '../../gen/type';
 import { fileDiagnosticMap } from '../language/type';
 /**
  * Represents what elements from the side bar can be in a active state i.e the elements that can be clicked to show said render component off
@@ -86,16 +85,6 @@ export type AppContext = {
   fileEditorBottomActiveElement: fileEditorBottomActiveElement | null;
 
   /**
-   * List of active shells
-   */
-  shells: shellInformation[] | null;
-
-  /**
-   * The current active shell to see output and input cmds in
-   */
-  currentActiveShellId: string | null;
-
-  /**
    * Represents the main component to render in the middle of the text editor such as the file text editor or other components
    */
   editorMainActiveElement: editorMainActiveElement | null;
@@ -145,4 +134,14 @@ export type InMemoryAppContext = {
    * Contains a list of all specific file's by there path and a map of specific diagnostic error types and then all the diagnostic's of that type
    */
   problems: fileDiagnosticMap;
+
+  /**
+   * Contains a list of active shell's PID's
+   */
+  shells: number[] | null;
+
+  /**
+   * Contains the curent shell's PID that should be in the current UI as active
+   */
+  currentActiveShellId: number | null;
 };

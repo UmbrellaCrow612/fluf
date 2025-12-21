@@ -4,6 +4,7 @@
 const os = require("os");
 const fs = require("fs/promises");
 const { spawn } = require("@homebridge/node-pty-prebuilt-multiarch");
+const path = require("path")
 
 /**
  * Contains a map of shell PID and then the proccess
@@ -35,6 +36,7 @@ const registerShellListeners = (ipcMain, win) => {
   windowRef = win;
 
   ipcMain.handle(
+    // handles create, change and exit
     "shell:create",
     async (_, /** @type {string}*/ directory) => {
       /** Return -1 for error's */
@@ -46,7 +48,7 @@ const registerShellListeners = (ipcMain, win) => {
           return err;
         }
 
-        await fs.access(directory);
+        await fs.access(path.normalize(directory), fs.constants.F_OK);
 
         let pty = spawn(shell, [], {
           name: "xterm-color",
@@ -84,9 +86,68 @@ const registerShellListeners = (ipcMain, win) => {
 
         return pty.pid;
       } catch (error) {
-        console.error("Create shell failed " + JSON.stringify(error));
+        console.error(
+          "Create shell failed " +
+            JSON.stringify(error) +
+            " Directory path " +
+            directory
+        );
         return err;
       }
+    }
+  );
+
+  ipcMain.handle("shell:kill", (_, /** @type {number}*/ pid) => {
+    try {
+      let shell = shells.get(pid);
+      if (!shell) return false;
+
+      let disposes = shellDisposes.get(pid);
+      if (!disposes) return false;
+
+      shell.write("exit" + "\n");
+
+      disposes.forEach((x) => x.dispose());
+
+      shell.kill();
+
+      shells.delete(pid);
+      shellDisposes.delete(pid);
+    } catch (error) {
+      console.error("Failed to kill shell " + JSON.stringify(error));
+      return false;
+    }
+  });
+
+  ipcMain.handle(
+    "shell:resize",
+    (
+      _,
+      /** @type {number}*/ pid,
+      /** @type {number}*/ col,
+      /** @type {number}*/ row
+    ) => {
+      try {
+        let shell = shells.get(pid);
+        if (!shell) return false;
+
+        shell.resize(col, row);
+
+        return true;
+      } catch (error) {
+        console.error("Failed to resize shell " + JSON.stringify(error));
+        return false;
+      }
+    }
+  );
+
+  ipcMain.on(
+    "shell:write",
+    (event, /** @type {number}*/ pid, /** @type {string}*/ content) => {
+      let shell = shells.get(pid);
+      if (!shell) return;
+
+      shell.write(content);
     }
   );
 };
@@ -109,6 +170,7 @@ const cleanUpShells = () => {
   });
 
   a.forEach((x) => {
+    console.log("Killed shell " + x.pid)
     x.kill();
   });
 };

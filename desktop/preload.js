@@ -2,16 +2,16 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 /** @type {import("./type").shellApi} */
 const shellApi = {
-  create: (...args) => ipcRenderer.invoke("shell:create", args),
-  kill: (...args) => ipcRenderer.invoke("shell:kill", args),
-  resize: (...args) => ipcRenderer.invoke("shell:resize", args),
-  write: (...args) => {
-    ipcRenderer.send("shell:write", args);
+  create: (dir) => ipcRenderer.invoke("shell:create", dir),
+  kill: (pid) => ipcRenderer.invoke("shell:kill", pid),
+  resize: (pid, col, row) => ipcRenderer.invoke("shell:resize", pid, col, row),
+  write: (pid, chunk) => {
+    ipcRenderer.send("shell:write", pid, chunk);
   },
   onChange: (pid, callback) => {
     /**
      * @param {import("electron").IpcRendererEvent} event
-     * @param  {string} id
+     * @param  {number} id
      * @param {string} chunk
      */
     let listener = (event, id, chunk) => {

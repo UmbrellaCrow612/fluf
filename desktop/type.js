@@ -570,14 +570,14 @@
 /**
  * Kill a specific shell by it's PID
  * @callback killShell
- * @param {string} pid - The unique identifier for it
+ * @param {number} pid - The unique identifier for it
  * @returns {Promise<boolean>} If it could or could not
  */
 
 /**
  * Write content to the shell
  * @callback writeToShell
- * @param {string} pid - The specific shell to write to
+ * @param {number} pid - The specific shell to write to
  * @param {string} content - The content
  * @returns {void} Nothing
  */
@@ -585,10 +585,10 @@
 /**
  * Resize a shell col and row
  * @callback resizeShell
- * @param {string} pid - The id of shell
+ * @param {number} pid - The id of shell
  * @param {number} col - The new col size
  * @param {number} row - The new row
- * @returns {void} Nothing
+ * @returns {Promise<boolean>} Nothing
  */
 
 /**
@@ -601,7 +601,7 @@
 /**
  * Listen to changes for a specific shell and get it's output stream
  * @callback onShellChange
- * @param {string} pid - The shell to listen to
+ * @param {number} pid - The shell to listen to
  * @param {shellChangeCallback} callback - The callback to run
  * @returns {voidCallback} UnSub method
  */
