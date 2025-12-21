@@ -128,7 +128,7 @@ async function main() {
       bundle: true,
       platform: "node",
       target: ["node20"],
-      external: ["electron", "node-pty"],
+      external: ["electron", "@homebridge/node-pty-prebuilt-multiarch"],
       minify: true,
     });
 
