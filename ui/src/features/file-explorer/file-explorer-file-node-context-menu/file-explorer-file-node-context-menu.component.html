@@ -1,63 +1,10 @@
- <div class="context-menu">
-        <div class="context-menu-item">
-            <span class="icon">✎</span>
-            <span class="label">Rename</span>
-            <span class="keybinding">F2</span>
-        </div>
+@if (error) {
+<div>Error: {{ error }}</div>
+}
 
-        <div class="context-menu-item">
-            <span class="icon">📋</span>
-            <span class="label">Duplicate</span>
-        </div>
+<!---->
 
-        <div class="context-menu-item">
-            <span class="icon">✂️</span>
-            <span class="label">Cut</span>
-            <span class="keybinding">Ctrl+X</span>
-        </div>
+@if (!error) {
+<button (click)="deleteFile()">Delete</button>
 
-        <div class="context-menu-item">
-            <span class="icon">📋</span>
-            <span class="label">Copy</span>
-            <span class="keybinding">Ctrl+C</span>
-        </div>
-
-        <div class="context-menu-item">
-            <span class="icon">📌</span>
-            <span class="label">Paste</span>
-            <span class="keybinding">Ctrl+V</span>
-        </div>
-
-        <div class="context-menu-separator"></div>
-
-        <div class="context-menu-item">
-            <span class="icon">🗑️</span>
-            <span class="label">Delete</span>
-            <span class="keybinding">Del</span>
-        </div>
-
-        <div class="context-menu-item disabled">
-            <span class="icon">🔍</span>
-            <span class="label">Find in Folder</span>
-        </div>
-
-        <div class="context-menu-separator"></div>
-
-        <div class="context-menu-item">
-            <span class="icon">✓</span>
-            <span class="label">Copy Relative Path</span>
-        </div>
-
-        <div class="context-menu-item">
-            <span class="icon">🔗</span>
-            <span class="label">Copy Path</span>
-            <span class="keybinding">Ctrl+K Ctrl+C</span>
-        </div>
-
-        <div class="context-menu-separator"></div>
-
-        <div class="context-menu-item">
-            <span class="icon">⚙️</span>
-            <span class="label">Open Settings</span>
-        </div>
-    </div>
+}
