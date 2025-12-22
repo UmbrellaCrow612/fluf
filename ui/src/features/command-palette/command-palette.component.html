@@ -1,6 +1,15 @@
 <dialog #cmdPaletteDialog>
-  <p>Greetings, one and all!</p>
-  <form method="dialog">
-    <button>OK</button>
-  </form>
+  <div class="command-palette-container">
+    <div class="search-container">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Type a command or search..."
+        autofocus
+      />
+    </div>
+    <div class="results-container">
+      <!-- Command results will go here -->
+    </div>
+  </div>
 </dialog>
