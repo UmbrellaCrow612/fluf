@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { TerminalTabItemComponent } from '../terminal-tab-item/terminal-tab-item.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,24 +23,38 @@ export class TerminalTabsComponent {
   private readonly contextService = inject(ContextService);
   private readonly api = getElectronApi();
 
+  constructor() {
+    let previousValue = this.inMemoryContextService.createTerminal();
+
+    effect(() => {
+      const currentValue = this.inMemoryContextService.createTerminal();
+
+      // Only create terminal if the value actually changed (not on init)
+      if (currentValue !== previousValue) {
+        this.createNewTerminal();
+        previousValue = currentValue;
+      }
+    });
+  }
+
   shells = computed(() => this.inMemoryContextService.shells());
 
   dir = computed(() => this.contextService.selectedDirectoryPath());
 
   async createNewTerminal() {
-    if(!this.dir()) return;
+    if (!this.dir()) return;
 
     let pid = await this.api.shellApi.create(this.dir()!);
 
-    if(pid === -1) {
-      console.error("failed to create terminal shell")
+    if (pid === -1) {
+      console.error('failed to create terminal shell');
       return;
     }
 
-      let shells = this.shells() ?? [];
-      shells.unshift(pid);
+    let shells = this.shells() ?? [];
+    shells.unshift(pid);
 
-      this.inMemoryContextService.shells.set(structuredClone(shells)); // for js compute refrence to be diffrent
-      this.inMemoryContextService.currentActiveShellId.set(pid);
+    this.inMemoryContextService.shells.set(structuredClone(shells)); // for js compute refrence to be diffrent
+    this.inMemoryContextService.currentActiveShellId.set(pid);
   }
 }

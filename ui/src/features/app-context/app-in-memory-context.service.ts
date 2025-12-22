@@ -57,4 +57,9 @@ export class InMemoryContextService {
   readonly terminalBuffers = signal<InMemoryAppContext['terminalBuffers']>(
     new Map()
   );
+
+  /**
+   * Exposes createTerminal signal
+   */
+  readonly createTerminal = signal<InMemoryAppContext['createTerminal']>(0);
 }

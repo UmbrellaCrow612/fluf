@@ -145,9 +145,13 @@ export type InMemoryAppContext = {
    */
   currentActiveShellId: number | null;
 
-
   /**
    * Contains a specific shell PID and it's stdout buffer collected
    */
   terminalBuffers: Map<number, string>;
+
+  /**
+   * Used to indicate if a terminal should be created incrementing will trigger a creation
+   */
+  createTerminal: number;
 };
