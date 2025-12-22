@@ -76,6 +76,9 @@ A simple text editor written in electron and angular
 
    - The app should open successfully.
 
+For now you can only build for x64 and the current OS your on as `homebridge node pty` downloads specific binarys based on machine and can't be configured 
+so if you want to build for a specific platform you need to run the above script on said machine - for now github actions do that so in future after build publish the artifact for distribution 
+
 # External libs maintained by me
 
 Libarys that i wrote to use in flufy and are generic
