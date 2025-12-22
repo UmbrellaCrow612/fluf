@@ -108,7 +108,7 @@ export function pushNodesIntoChildrenByPath(
   for (const node of nodes) {
     if (node.path === targetPath) {
       node.children.unshift(...newNodes);
-      node.expanded = true; 
+      node.expanded = true;
       return true;
     }
 
@@ -187,4 +187,83 @@ export function removeNodeIfExists(nodes: fileNode[], node: fileNode): void {
   if (index !== -1) {
     nodes.splice(index, 1);
   }
+}
+
+/**
+ * Check if a given node exists within nodes (recursive)
+ * @param filePath The node file path to find
+ * @param nodes Nodes to check
+ */
+export function nodeExists(filePath: string, nodes: fileNode[]): boolean {
+  for (const node of nodes) {
+    if (node.path === filePath) {
+      return true;
+    }
+
+    if (node.children.length > 0) {
+      const foundInChildren = nodeExists(filePath, node.children);
+      if (foundInChildren) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Expands all nodes along the path to the given filePath
+ * @param filePath The target node file path
+ * @param nodes Root nodes
+ * @returns true if the node was found in this branch
+ */
+export function expandToNode(filePath: string, nodes: fileNode[]): boolean {
+  for (const node of nodes) {
+    // If this is the target node, expand it
+    if (node.path === filePath) {
+      node.expanded = true;
+      return true;
+    }
+
+    // Search children
+    if (node.children.length > 0) {
+      const foundInChildren = expandToNode(filePath, node.children);
+
+      if (foundInChildren) {
+        // Expand this node because target is in its subtree
+        node.expanded = true;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Gets a node by its path from a tree of nodes
+ * @param filePath The node file path
+ * @param nodes Root nodes
+ * @returns The found fileNode or null
+ */
+export function getNodeByPath(
+  filePath: string,
+  nodes: fileNode[]
+): fileNode | null {
+  for (const node of nodes) {
+    // Check current node
+    if (node.path === filePath) {
+      return node;
+    }
+
+    // Search children
+    if (node.children.length > 0) {
+      const found = getNodeByPath(filePath, node.children);
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return null;
 }
