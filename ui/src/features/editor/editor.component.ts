@@ -32,6 +32,7 @@ import { ImageEditorComponent } from '../img-editor/image-editor.component';
 import { DocumentEditorComponent } from '../document-editor/document-editor.component';
 import { TextFileEditorComponent } from '../text-file-editor/text-file-editor.component';
 import { Renderable } from '../ngComponentOutlet/type';
+import { CommandPaletteComponent } from "../command-palette/command-palette.component";
 type unSub = () => Promise<void>;
 
 @Component({
@@ -43,7 +44,8 @@ type unSub = () => Promise<void>;
     ContextMenuComponent,
     OpenFileContainerTabsComponent,
     OpenFileContainerBottomComponent,
-  ],
+    CommandPaletteComponent
+],
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css',
 })
@@ -77,6 +79,11 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private mainEditorActiveElement = computed(() =>
     this.appContext.editorMainActiveElement()
   );
+
+  /**
+   * Indicates if the cmd palette should be rendered or not
+   */
+  isCommandPaletteActive = computed(() => this.inMemoryContextService.showCommandPalette())
 
   /** Checks if it should show ctx */
   isContextMenuActive = computed(
