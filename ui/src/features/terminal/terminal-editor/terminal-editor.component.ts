@@ -178,8 +178,19 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.terminal.open(container);
 
+    this.fitAddon.fit();
+
+    this.api.shellApi.resize(
+      this.currentActiveShellId()!,
+      this.terminal.cols,
+      this.terminal.rows
+    );
+
     let storedBuffer = this.getStoredTerminalBuffer();
-    this.terminal.write(storedBuffer);
+    if (storedBuffer) {
+      this.terminal.clear();
+      this.terminal.write(storedBuffer);
+    }
 
     this.terminal.focus();
 
