@@ -6,6 +6,7 @@ import { getElectronApi } from '../../utils';
 import { debounceTime, fromEvent, Subscription } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
 import { ContextService } from '../app-context/app-context.service';
+import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 
 /** Represents a top bar item such as file -> then click open folder or file */
 type topBarItem = {
@@ -34,6 +35,7 @@ type topBarItem = {
 export class TopBarComponent implements OnInit, OnDestroy {
   private readonly _api = getElectronApi();
   private readonly appContext = inject(ContextService);
+  private readonly inMemoryContextService = inject(InMemoryContextService);
 
   /**
    * Holds window maximized state
@@ -114,6 +116,74 @@ export class TopBarComponent implements OnInit, OnDestroy {
           },
         },
       ],
+    },
+    {
+      label: 'View',
+      children: [
+        {
+          label: 'Problems',
+          onClick: () => {
+            this.appContext.displayFileEditorBottom.set(true);
+            this.appContext.fileEditorBottomActiveElement.set('problems');
+          },
+        },
+        {
+          label: 'Terminal',
+          onClick: () => {
+            this.appContext.displayFileEditorBottom.set(true);
+            this.appContext.fileEditorBottomActiveElement.set('terminal');
+          },
+        },
+        {
+          label: 'File explorer',
+          onClick: () => {
+            this.appContext.sideBarActiveElement.set('file-explorer');
+          },
+        },
+        {
+          label: 'Search',
+          onClick: () => {
+            this.appContext.sideBarActiveElement.set('search');
+          },
+        },
+        {
+          label: 'Search folders',
+          onClick: () => {
+            this.appContext.sideBarActiveElement.set('search-folders');
+          },
+        },
+        {
+          label: 'Search files',
+          onClick: () => {
+            this.appContext.sideBarActiveElement.set('search-files');
+          },
+        },
+        {
+          label: 'Version control',
+          onClick: () => {
+            this.appContext.sideBarActiveElement.set('source-control');
+          },
+        },
+      ],
+      tooltip: 'Hanldes UI view',
+    },
+    {
+      label: 'Terminal',
+      children: [
+        {
+          label: 'New terminal',
+          onClick: () => {
+            this.appContext.displayFileEditorBottom.set(true);
+            this.appContext.fileEditorBottomActiveElement.set('terminal');
+
+            setTimeout(() => {
+              // we need a slight delay for UI to catch up
+              this.inMemoryContextService.createTerminal.update((x) => x + 1);
+            }, 200);
+          },
+        },
+      ],
+      tooltip: 'Hanldes UI view',
     },
   ];
 }
