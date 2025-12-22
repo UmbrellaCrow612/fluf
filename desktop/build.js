@@ -108,7 +108,6 @@ async function main() {
   fs.cpSync(tsSrc, tsDest, { recursive: true });
 
   // Copy over node pty
-  // todo possibley runa specific npm i based on os and archecture
   log.info("Copying over @homebridge/node-pty-prebuilt-multiarch i.e node pty");
   if (!fs.existsSync(homebridgeSrc)) {
     log.error(
