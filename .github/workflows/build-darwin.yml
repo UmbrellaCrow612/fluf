@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: darwin-latest
 
     steps:
       # Step 1: Checkout repository
@@ -28,12 +28,13 @@ jobs:
       # Step 4: Install dependencies for Desktop
       - name: Install Desktop dependencies
         working-directory: ./desktop
-        run: npm ci
+        run:
+          npm ci
 
-      # Step 5: Rename .env.example to .env for Desktop
+      # Step 5: Setup Desktop .env (cross-platform)
       - name: Setup Desktop .env
         working-directory: ./desktop
-        run: mv .env.example .env
+        run: node -e "require('fs').copyFileSync('.env.example', '.env')"
 
       # Step 6: Run the build script
       - name: Build for Linux
