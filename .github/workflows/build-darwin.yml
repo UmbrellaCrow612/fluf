@@ -37,5 +37,5 @@ jobs:
         run: node -e "require('fs').copyFileSync('.env.example', '.env')"
 
       # Step 6: Run the build script
-      - name: Build for Linux
+      - name: Build for Darwin
         run: node ./scripts/build.js --platform=darwin
