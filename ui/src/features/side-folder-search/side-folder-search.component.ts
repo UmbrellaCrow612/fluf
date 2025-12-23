@@ -10,7 +10,7 @@ import { ContextService } from '../app-context/app-context.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { CommonModule } from '@angular/common';
+
 import { fsearchOptions, fsearchResult } from '../../gen/type';
 
 @Component({
@@ -20,9 +20,8 @@ import { fsearchOptions, fsearchResult } from '../../gen/type';
     ReactiveFormsModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckboxModule,
-    CommonModule,
-  ],
+    MatCheckboxModule
+],
   templateUrl: './side-folder-search.component.html',
   styleUrl: './side-folder-search.component.css',
 })
