@@ -1,0 +1,69 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: Consolas, "Courier New", monospace;
+
+  color: #cccccc;
+  background-color: #1e1e1e;
+
+  border: 1px solid #3c3c3c;
+  border-radius: 2px;
+
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: #7a7a7a;
+}
+
+.input:focus {
+  border-color: #007acc; /* VS Code blue */
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.result-item:hover {
+  background-color: #2a2d2e;
+}
+
+.file-name {
+  font-size: 13px;
+  color: #d4d4d4;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-path {
+  font-size: 11px;
+  color: #8c8c8c;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

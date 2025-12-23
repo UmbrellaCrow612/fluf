@@ -121,6 +121,12 @@ export class TopBarComponent implements OnInit, OnDestroy {
       label: 'View',
       children: [
         {
+          label: 'Command Palette',
+          onClick: () => {
+            this.inMemoryContextService.showCommandPalette.update((x) => !x);
+          },
+        },
+        {
           label: 'Problems',
           onClick: () => {
             this.appContext.displayFileEditorBottom.set(true);

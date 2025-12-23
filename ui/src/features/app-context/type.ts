@@ -154,4 +154,9 @@ export type InMemoryAppContext = {
    * Used to indicate if a terminal should be created incrementing will trigger a creation
    */
   createTerminal: number;
+
+  /**
+   * Used to indicate if the command palette should be visible or not
+   */
+  showCommandPalette: boolean
 };

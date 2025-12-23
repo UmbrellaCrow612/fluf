@@ -659,6 +659,7 @@
  * @property {tsServer} tsServer - The ts / typescript language server
  * 
  * @property {shellApi} shellApi - Contains all methods to use shells
+ * 
  */
 
 /**

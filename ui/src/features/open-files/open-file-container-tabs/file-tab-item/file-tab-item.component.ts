@@ -1,5 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -12,7 +12,7 @@ import { InMemoryContextService } from '../../../app-context/app-in-memory-conte
 
 @Component({
   selector: 'app-file-tab-item',
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatTooltipModule],
+  imports: [MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './file-tab-item.component.html',
   styleUrl: './file-tab-item.component.css',
 })

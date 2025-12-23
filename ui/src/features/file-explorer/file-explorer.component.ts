@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { CommonModule } from '@angular/common';
+
 import { FileExplorerItemComponent } from './file-explorer-item/file-explorer-item.component';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { fileNode, fileNodeMode } from '../../gen/type';
@@ -23,9 +23,8 @@ import { collapseNodes, getNodeParent, pushNodeIntoChildren } from './fileNode';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    CommonModule,
-    FileExplorerItemComponent,
-  ],
+    FileExplorerItemComponent
+],
   templateUrl: './file-explorer.component.html',
   styleUrl: './file-explorer.component.css',
 })

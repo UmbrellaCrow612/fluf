@@ -62,4 +62,10 @@ export class InMemoryContextService {
    * Exposes createTerminal signal
    */
   readonly createTerminal = signal<InMemoryAppContext['createTerminal']>(0);
+
+  /**
+   * Exposes showCommandPalette signal
+   */
+  readonly showCommandPalette =
+    signal<InMemoryAppContext['showCommandPalette']>(false);
 }
