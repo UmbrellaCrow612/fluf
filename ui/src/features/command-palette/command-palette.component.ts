@@ -44,26 +44,4 @@ export class CommandPaletteComponent implements OnInit {
 
     element.showModal();
   }
-
-
-  // make a list of items that have label thats fuxxy matched and then a user types what want renders a item component like vscode 
-  // default have preface search:file:term
-  // terminal:open
-  // so we have it like that with auto complete
-  // like how h sites do it when you type the tag like it auto completes fill tag in them they put there search term
-
-  // design will be action:..action..:<any> match fuzy based on it 
-  // for example a user types terminal:lists cmds like opne close then they slowly fill it in and press eneter 
-  // default it will be search:file:term:
-  // there wont be a bottom just the search input and auto completes below
-  // or based on that it renders difrent component outlet like 
-  // terminal: - then render terminal-cmd-component whichj display list of all of it's cmds then as they type more it filters them so you pass
-  // <terminal-cmd searchTerm />
-  /**
-   * each renderable component would be 
-   * {
-   *  component
-   *  signalRender computed => searchTerm contains -> input search term
-   * }
-   */
 }
