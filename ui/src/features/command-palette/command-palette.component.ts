@@ -13,6 +13,7 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
 
 import { form, Field, required, email } from '@angular/forms/signals';
 import { SearchFileCommandComponent } from './search-file-command/search-file-command.component';
+import { NgComponentOutlet } from '@angular/common';
 
 /**
  * Represents a command that can be selected for auto complete
@@ -39,7 +40,7 @@ type Command = {
  */
 @Component({
   selector: 'app-command-palette',
-  imports: [Field],
+  imports: [Field, NgComponentOutlet],
   templateUrl: './command-palette.component.html',
   styleUrl: './command-palette.component.css',
 })
@@ -57,10 +58,7 @@ export class CommandPaletteComponent implements OnInit {
   });
 
   /** If the auto complete drop down should be shown */
-  showDropDown = signal(false)
-
-  /** Holds for invalid state  */
-  formInvalid = computed(() => this.searchFrom.term().invalid());
+  showDropDown = signal(false);
 
   /**
    * Refrence to the views dialog html element
@@ -92,7 +90,7 @@ export class CommandPaletteComponent implements OnInit {
   /**
    * Holds the current command chosen and renders it's component for itF
    */
-  currentActiveCommand = signal<Type<any> | null>(null);
+  currentActiveCommandComponent = signal<Type<any> | null>(null);
 
   ngOnInit(): void {
     let element = this.dialog()?.nativeElement;
@@ -116,8 +114,12 @@ export class CommandPaletteComponent implements OnInit {
 
   commandClicked(command: Command) {
     this.searchFrom.term().setControlValue('');
-    this.showDropDown.set(false)
-    this.currentActiveCommand.set(command.component);
+    this.showDropDown.set(false);
+    this.currentActiveCommandComponent.set(command.component);
+  }
+
+  onInput() {
+    this.showDropDown.set(true);
   }
 
   /**

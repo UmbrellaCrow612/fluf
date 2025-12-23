@@ -7,13 +7,19 @@
         placeholder="Type a command or search..."
         autofocus
         [field]="searchFrom.term"
-        [class.error]="formInvalid()"
+        (input)="onInput()"
+        (focus)="onInput()"
       />
 
       @if (showDropDown()) {
       <div class="drop-down">
         @for (cmd of filteredCommandList(); track $index) {
-        <div (click)="commandClicked(cmd)">
+        <div
+          tabindex="0"
+          (click)="commandClicked(cmd)"
+          (keydown.enter)="commandClicked(cmd)"
+          (keydown.space)="commandClicked(cmd); $event.preventDefault()"
+        >
           {{ cmd.prefix }}
         </div>
         }
@@ -21,19 +27,7 @@
       }
     </form>
     <div class="results-container scroll_bar">
-      @if (formInvalid()) {
-      <!---->
-      @for (err of this.searchFrom.term().errors(); track $index) {
-      <div>
-        {{ err.message }}
-      </div>
-      }
-      <!---->
-      }
-
-      <!---->
-
-      @if (!formInvalid()) { lorem }
+      <ng-container *ngComponentOutlet="currentActiveCommandComponent()" />
     </div>
   </div>
 </dialog>
