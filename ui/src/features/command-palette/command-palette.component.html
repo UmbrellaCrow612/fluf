@@ -11,7 +11,13 @@
       />
 
       @if (showDropDown()) {
-      <div class="drop-down">dropdown</div>
+      <div class="drop-down">
+        @for (cmd of filteredCommandList(); track $index) {
+        <div (click)="commandClicked(cmd)">
+          {{ cmd.prefix }}
+        </div>
+        }
+      </div>
       }
     </form>
     <div class="results-container scroll_bar">
