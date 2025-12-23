@@ -67,10 +67,10 @@ export class FileExplorerItemComponent implements AfterViewInit {
   /** Runs when the user clicked outisde of the input */
   onCreateInputBlur() {
     let nodes = this.appContext.directoryFileNodes();
-    removeCreateNodes(nodes ?? []);
+    let newNodes = removeCreateNodes(nodes ?? []);
 
     this.inMemoryContextService.isCreateFileOrFolderActive.set(false);
-    this.appContext.directoryFileNodes.set(nodes);
+    this.appContext.directoryFileNodes.set(newNodes);
   }
 
   onInputChange(event: Event) {

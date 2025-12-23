@@ -1,15 +1,33 @@
 <dialog #cmdPaletteDialog>
   <div class="command-palette-container">
-    <div class="search-container">
-      <input 
-        type="text" 
-        class="search-input" 
+    <form class="search-container">
+      <input
+        type="text"
+        class="search-input"
         placeholder="Type a command or search..."
         autofocus
+        [field]="searchFrom.term"
+        [class.error]="formInvalid()"
       />
-    </div>
+
+      @if (showDropDown()) {
+      <div class="drop-down">dropdown</div>
+      }
+    </form>
     <div class="results-container scroll_bar">
-      lorem1000
+      @if (formInvalid()) {
+      <!---->
+      @for (err of this.searchFrom.term().errors(); track $index) {
+      <div>
+        {{ err.message }}
+      </div>
+      }
+      <!---->
+      }
+
+      <!---->
+
+      @if (!formInvalid()) { lorem }
     </div>
   </div>
 </dialog>
