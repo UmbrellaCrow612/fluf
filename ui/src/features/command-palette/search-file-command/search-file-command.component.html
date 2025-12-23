@@ -1,1 +1,32 @@
-<p>search-file-command works!</p>
+<form (submit)="onInput($event)">
+  <input
+    #searchFileInput
+    type="text"
+    class="input"
+    placeholder="Search files by name"
+    (input)="onInput($event)"
+  />
+</form>
+
+<div class="results">
+  @if (isLoading()) {
+  <div class="state">Loading…</div>
+  }
+
+  <!---->
+  @if (!isLoading() && error()) {
+  <div class="state error">Error {{ error() }}</div>
+  }
+
+  <!---->
+  @if (!isLoading() && !error()) { @for (item of results(); track $index) {
+  <div class="result-item">
+    <div class="file-name" title="{{ item.name }}">
+      {{ item.name }}
+    </div>
+    <div class="file-path" title="{{ item.path }}">
+      {{ item.path }}
+    </div>
+  </div>
+  } }
+</div>

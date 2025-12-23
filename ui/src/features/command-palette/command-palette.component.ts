@@ -53,9 +53,7 @@ export class CommandPaletteComponent implements OnInit {
   });
 
   /** Form holds model with validation rules */
-  searchFrom = form(this.searchCommandModal, (schemaPath) => {
-    required(schemaPath.term, { message: 'Term is required' });
-  });
+  searchFrom = form(this.searchCommandModal);
 
   /** If the auto complete drop down should be shown */
   showDropDown = signal(false);
