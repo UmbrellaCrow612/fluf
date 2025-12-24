@@ -92,11 +92,25 @@
  */
 
 /**
- * Normalise a path
- * @callback normalize
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} path - The path to normalize
- * @returns {Promise<string>} - The normalised path
+ * Contains all helpers todo with path
+ * @typedef {Object} pathApi
+ * @property {normalizePath} normalize - Calls path normalize
+ * @property {relativePath} relative - Calls path relative
+ */
+
+/**
+ * Method to fix a filepath
+ * @callback normalizePath
+ * @param {string} path - The file path string
+ * @returns {Promise<string>} The normalized path or empty string
+ */
+
+/**
+ * Get the relative path
+ * @callback relativePath
+ * @param {string} from 
+ * @param {string} to
+ * @returns {Promise<string>} The relative path or empty string
  */
 
 /**
@@ -638,7 +652,6 @@
  * @property {close} close - Close the window
  * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
  * @property {restore} restore - Restores the window back to beofre it was maximized
- * @property {normalize} normalize - Normalize a path string
  * @property {createFile} createFile - Create a file at the target path
  * @property {fileExists} fileExists - Check if a file exists
  * @property {directoryExists} directoryExists - Check if a folder exists
@@ -659,6 +672,8 @@
  * @property {tsServer} tsServer - The ts / typescript language server
  * 
  * @property {shellApi} shellApi - Contains all methods to use shells
+ * 
+ * @property {pathApi} pathApi - Contains all path utils 
  * 
  */
 

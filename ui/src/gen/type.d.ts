@@ -80,9 +80,26 @@ export type isMaximized = (event?: Electron.IpcMainInvokeEvent | undefined) => P
  */
 export type restore = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
 /**
- * Normalise a path
+ * Contains all helpers todo with path
  */
-export type normalize = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<string>;
+export type pathApi = {
+    /**
+     * - Calls path normalize
+     */
+    normalize: normalizePath;
+    /**
+     * - Calls path relative
+     */
+    relative: relativePath;
+};
+/**
+ * Method to fix a filepath
+ */
+export type normalizePath = (path: string) => Promise<string>;
+/**
+ * Get the relative path
+ */
+export type relativePath = (from: string, to: string) => Promise<string>;
 /**
  * Create a file
  */
@@ -789,10 +806,6 @@ export type ElectronApi = {
      */
     restore: restore;
     /**
-     * - Normalize a path string
-     */
-    normalize: normalize;
-    /**
      * - Create a file at the target path
      */
     createFile: createFile;
@@ -848,6 +861,10 @@ export type ElectronApi = {
      * - Contains all methods to use shells
      */
     shellApi: shellApi;
+    /**
+     * - Contains all path utils
+     */
+    pathApi: pathApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

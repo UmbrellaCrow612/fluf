@@ -63,6 +63,9 @@ export class SearchFileCommandComponent implements AfterViewInit {
       let res = await this.api.fsearch(undefined, {
         directory: dir,
         term: term,
+        hidden: true,
+        partial: true,
+        type: 'file',
       });
 
       this.results.set(res);
@@ -75,6 +78,6 @@ export class SearchFileCommandComponent implements AfterViewInit {
 
   onInput(event: Event) {
     event.preventDefault();
-    this.debounce()
+    this.debounce();
   }
 }

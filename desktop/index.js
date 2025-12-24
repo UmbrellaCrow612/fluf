@@ -36,6 +36,7 @@ const {
 } = require("./language-server");
 const { registerTsListeners } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
+const { registerPathListeners } = require("./path");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -93,8 +94,6 @@ app.whenReady().then(() => {
 
   ipcMain.handle("exists", existsImpl);
 
-  ipcMain.handle("path:normalize", normalizeImpl);
-
   ipcMain.handle("window:isMaximized", isMaximizedImpl);
 
   ipcMain.handle("dir:watch", watchDirectoryImpl);
@@ -114,6 +113,7 @@ app.whenReady().then(() => {
   registerImageListeners(ipcMain, protocol);
   registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);
+  registerPathListeners(ipcMain)
 
   startLanguageServers();
 });

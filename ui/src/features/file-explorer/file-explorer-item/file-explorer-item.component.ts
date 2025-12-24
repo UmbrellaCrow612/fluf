@@ -172,10 +172,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
     if (!value) return;
 
     const parentPath = this.fileNode().path;
-    const newPath = await this.api.normalize(
-      undefined,
-      `${parentPath}/${value}`
-    );
+    const newPath = await this.api.pathApi.normalize(`${parentPath}/${value}`);
 
     try {
       if (this.fileNode().mode === 'createFile') {
