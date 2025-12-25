@@ -11,6 +11,7 @@ import { getElectronApi } from '../../../utils';
 import { ContextService } from '../../app-context/app-context.service';
 import { fsearchResult } from '../../../gen/type';
 import { OpenFileOrFolderInExplorer } from '../../file-explorer/helper';
+import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 
 @Component({
   selector: 'app-search-file-command',
@@ -21,6 +22,7 @@ import { OpenFileOrFolderInExplorer } from '../../file-explorer/helper';
 export class SearchFileCommandComponent implements AfterViewInit {
   private readonly api = getElectronApi();
   private readonly contextService = inject(ContextService);
+  private readonly inMemoryContextService = inject(InMemoryContextService);
 
   private readonly selectedDir = computed(() =>
     this.contextService.selectedDirectoryPath()
@@ -84,5 +86,6 @@ export class SearchFileCommandComponent implements AfterViewInit {
 
   async selectFile(file: fsearchResult) {
     await OpenFileOrFolderInExplorer(file.path, this.contextService);
+    this.inMemoryContextService.showCommandPalette.set(false);
   }
 }
