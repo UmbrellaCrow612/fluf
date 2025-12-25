@@ -6,6 +6,9 @@ const { contextBridge, ipcRenderer } = require("electron");
 const pathApi = {
   normalize: (fp) => ipcRenderer.invoke("path:normalize", fp),
   relative: (f, t) => ipcRenderer.invoke("path:relative", f, t),
+  sep: () => ipcRenderer.invoke("path:sep"),
+  join: (...args) => ipcRenderer.invoke("path:join", ...args),
+  isAbsolute: (p) => ipcRenderer.invoke("path:isabsolute", p)
 };
 
 /** @type {import("./type").shellApi} */

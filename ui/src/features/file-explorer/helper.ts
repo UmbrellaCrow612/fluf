@@ -18,6 +18,7 @@ const electronApi = getElectronApi();
  * - Sets the current side bar active elements to explorer
  * - Find the given node by search through the current nodes and expanding to it
  * - Sets it as active
+ * - If it could not find it - recursive fetch nodes until it find it then does the above
  * @param filePath The path to the file to open in editor explorer
  * @param ctx The app ctx
  */
@@ -35,12 +36,26 @@ export async function OpenFileOrFolderInExplorer(
 
   let exists = nodeExists(filePath, nodes);
   if (!exists) {
-    // the parent folder if this is hit will aways be a sub folde rnot yet opened as root dir awlays fetches eveything within it
-    // get the parent folder that would have it from the file path provided from root so if root is c:/dev/resize and the provided one c:/dev/resize/parentOnefolder/file.txt
-    // we get the fiorst folder from root which is parentOnefolder
-    // then it makes c:/dev/resize/parentOnefolder as the path we need
-    // we then recusive fetch nodes making tree for that until we fetch the given file or folder nodes as part of it's children
-    // then we replace global nodes
+    // we will have at least the first folder decendent if the given file path is within this project, as reading selected dir itself will read the first decendent node
+
+    let parentPath = await getFirstFolderAfterBase(selectedDir, filePath);
+    console.log(parentPath);
+
+    let node = getNodeByPath(parentPath, nodes);
+    console.log(node);
+
+    if (!node) {
+      console.error('First decent folder path not found in root folder');
+      return;
+    }
+
+    // recuisve fetch child for the given nodes and it's children until we find the filepath passed in the children
+
+    for(const children of node.children){
+      let newChildren = await electronApi.readDir(undefined, parentPath)
+    }
+
+    return;
   }
 
   expandToNode(filePath, nodes);
@@ -61,4 +76,41 @@ export async function OpenFileOrFolderInExplorer(
     ctx.openFiles.set(openFiles);
     ctx.currentOpenFileInEditor.set(node);
   }
+}
+
+/**
+ * Gets the first folder after the base path from a descendant path
+ * @param {string} basePath - The base path (e.g., 'C:/dev/resize')
+ * @param {string} descendantPath - A path that is a descendant of the base path (e.g., 'C:/dev/resize/one/two.js')
+ * @returns {Promise<string>} The path up to and including the first folder after the base path (e.g., 'C:/dev/resize/one/')
+ */
+async function getFirstFolderAfterBase(
+  basePath: string,
+  descendantPath: string
+): Promise<string> {
+  const normalizedBase = await electronApi.pathApi.normalize(basePath);
+  const normalizedDescendant = await electronApi.pathApi.normalize(
+    descendantPath
+  );
+
+  const relativePath = await electronApi.pathApi.relative(
+    normalizedBase,
+    normalizedDescendant
+  );
+
+  if (
+    relativePath.startsWith('..') ||
+    (await electronApi.pathApi.isAbsolute(relativePath))
+  ) {
+    throw new Error('descendantPath is not a descendant of basePath');
+  }
+
+  let seperator = await electronApi.pathApi.sep();
+
+  const segments = relativePath.split(seperator);
+  const firstFolder = segments[0];
+
+  const result = await electronApi.pathApi.join(normalizedBase, firstFolder);
+
+  return result;
 }

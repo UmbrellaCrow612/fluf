@@ -30,6 +30,18 @@ const registerPathListeners = (ipcMain) => {
       return "";
     }
   });
+
+  ipcMain.handle("path:sep", () => {
+    return path.sep;
+  });
+
+  ipcMain.handle("path:join", (event, /** @type {any} */ ...args) => {
+    return path.join(...args);
+  });
+
+  ipcMain.handle("path:isabsolute", (event, p) => {
+    return path.isAbsolute(p);
+  });
 };
 
 module.exports = { registerPathListeners };

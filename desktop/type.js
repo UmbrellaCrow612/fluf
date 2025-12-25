@@ -96,6 +96,30 @@
  * @typedef {Object} pathApi
  * @property {normalizePath} normalize - Calls path normalize
  * @property {relativePath} relative - Calls path relative
+ * @property {pathSep} sep - Calls path sep
+ * @property {pathJoin} join - Calls path join
+ * @property {pathIsabsolute} isAbsolute - Calls path absolute
+ */
+
+/**
+ * Calls path absolute
+ * @callback pathIsabsolute
+ * @param {string} path
+ * @returns {Promise<boolean>}
+ */
+
+/**
+ * Calls path.join
+ *
+ * @callback pathJoin
+ * @param {...string} args - Path segments to join
+ * @returns {Promise<string>} Joined path
+ */
+
+/**
+ * Get the path seperator calls path.sep
+ * @callback pathSep
+ * @returns {Promise<string>}
  */
 
 /**

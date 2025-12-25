@@ -91,7 +91,31 @@ export type pathApi = {
      * - Calls path relative
      */
     relative: relativePath;
+    /**
+     * - Calls path sep
+     */
+    sep: pathSep;
+    /**
+     * - Calls path join
+     */
+    join: pathJoin;
+    /**
+     * - Calls path absolute
+     */
+    isAbsolute: pathIsabsolute;
 };
+/**
+ * Calls path absolute
+ */
+export type pathIsabsolute = (path: string) => Promise<boolean>;
+/**
+ * Calls path.join
+ */
+export type pathJoin = (...args: string[]) => Promise<string>;
+/**
+ * Get the path seperator calls path.sep
+ */
+export type pathSep = () => Promise<string>;
 /**
  * Method to fix a filepath
  */

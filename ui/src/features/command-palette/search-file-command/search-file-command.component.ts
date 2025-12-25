@@ -10,6 +10,7 @@ import {
 import { getElectronApi } from '../../../utils';
 import { ContextService } from '../../app-context/app-context.service';
 import { fsearchResult } from '../../../gen/type';
+import { OpenFileOrFolderInExplorer } from '../../file-explorer/helper';
 
 @Component({
   selector: 'app-search-file-command',
@@ -79,5 +80,9 @@ export class SearchFileCommandComponent implements AfterViewInit {
   onInput(event: Event) {
     event.preventDefault();
     this.debounce();
+  }
+
+  async selectFile(file: fsearchResult) {
+    await OpenFileOrFolderInExplorer(file.path, this.contextService);
   }
 }
