@@ -23,12 +23,12 @@ import { collapseNodes, getNodeParent, pushNodeIntoChildren } from './fileNode';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    FileExplorerItemComponent
-],
+    FileExplorerItemComponent,
+  ],
   templateUrl: './file-explorer.component.html',
   styleUrl: './file-explorer.component.css',
 })
-export class FileExplorerComponent implements OnInit {
+export class FileExplorerComponent {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly api = getElectronApi();
@@ -71,14 +71,24 @@ export class FileExplorerComponent implements OnInit {
     });
 
     effect(async () => {
-      this.appContext.selectedDirectoryPath();
-      await this.readDir();
+      const currentPath = this.appContext.selectedDirectoryPath();
+      const existingNodes = this.directoryFileNodes();
+
+      // If path changed OR we don't have nodes yet
+      if (currentPath !== this.previousDirectoryPath) {
+        this.previousDirectoryPath = currentPath;
+
+        // If we already have nodes, merge instead of full reload
+        if (existingNodes && existingNodes.length > 0) {
+          await this.merge();
+        } else {
+          await this.readDir();
+        }
+      }
     });
   }
 
-  async ngOnInit() {
-    await this.readDir();
-  }
+  private previousDirectoryPath: string | null | undefined = undefined;
 
   /**
    * Reads selected folder path and sets file nodes globally
