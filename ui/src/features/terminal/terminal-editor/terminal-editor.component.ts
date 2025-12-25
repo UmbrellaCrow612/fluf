@@ -79,16 +79,19 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       this.exitUnSub();
       this.exitUnSub = null;
     }
+
     if (this.dispose) {
       this.dispose.dispose();
       this.dispose = null;
     }
+
+    this.fitAddon = null;
+    this.serializeAddon = null;
+
     if (this.terminal) {
       this.terminal.dispose();
       this.terminal = null;
     }
-    this.fitAddon = null;
-    this.serializeAddon = null;
   }
 
   private saveTerminalBuffer() {
@@ -117,6 +120,8 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   async initShell() {
     this.error = null;
     this.isLoading = true;
+
+    console.log("Render shell")
 
     this.cleanupTerminal();
 

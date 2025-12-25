@@ -19,8 +19,10 @@
   }
 
   <!---->
-  @if (!isLoading() && !error()) { @for (item of results(); track $index) {
-  <div class="result-item">
+  @if (!isLoading() && !error()) { 
+    <!---->
+    @for (item of results(); track $index) {
+  <div class="result-item" (click)="selectFile(item)">
     <div class="file-name" title="{{ item.name }}">
       {{ item.name }}
     </div>
@@ -28,5 +30,7 @@
       {{ item.path }}
     </div>
   </div>
-  } }
+  } 
+  <!---->
+}
 </div>

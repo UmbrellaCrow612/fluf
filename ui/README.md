@@ -42,4 +42,3 @@ Sometimes types generated from `desktop` change and `npm run start` does not cat
   The `:host` wrapper acts as an HTML element itself, so these properties help ensure proper flex behavior.
 
 - When creating terminals make sure to not `ctrl c ` the electron processes but quit with the x button to kill all procsses\
-- When setting inital ctx from app context name it `init` and when passing callback for autosub name the param `ctx`

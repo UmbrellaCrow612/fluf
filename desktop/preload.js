@@ -1,5 +1,16 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+/**
+ * @type {import("./type").pathApi}
+ */
+const pathApi = {
+  normalize: (fp) => ipcRenderer.invoke("path:normalize", fp),
+  relative: (f, t) => ipcRenderer.invoke("path:relative", f, t),
+  sep: () => ipcRenderer.invoke("path:sep"),
+  join: (...args) => ipcRenderer.invoke("path:join", ...args),
+  isAbsolute: (p) => ipcRenderer.invoke("path:isabsolute", p)
+};
+
 /** @type {import("./type").shellApi} */
 const shellApi = {
   create: (dir) => ipcRenderer.invoke("shell:create", dir),
@@ -109,7 +120,6 @@ const api = {
   selectFolder: (_event) => ipcRenderer.invoke("dir:select"),
   exists: (_event, path) => ipcRenderer.invoke("exists", path),
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
-  normalize: (_event, path) => ipcRenderer.invoke("path:normalize", path),
 
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);
@@ -145,6 +155,7 @@ const api = {
     ipcRenderer.invoke("clipboard:write:image", fp),
 
   shellApi,
+  pathApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

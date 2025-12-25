@@ -92,11 +92,49 @@
  */
 
 /**
- * Normalise a path
- * @callback normalize
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} path - The path to normalize
- * @returns {Promise<string>} - The normalised path
+ * Contains all helpers todo with path
+ * @typedef {Object} pathApi
+ * @property {normalizePath} normalize - Calls path normalize
+ * @property {relativePath} relative - Calls path relative
+ * @property {pathSep} sep - Calls path sep
+ * @property {pathJoin} join - Calls path join
+ * @property {pathIsabsolute} isAbsolute - Calls path absolute
+ */
+
+/**
+ * Calls path absolute
+ * @callback pathIsabsolute
+ * @param {string} path
+ * @returns {Promise<boolean>}
+ */
+
+/**
+ * Calls path.join
+ *
+ * @callback pathJoin
+ * @param {...string} args - Path segments to join
+ * @returns {Promise<string>} Joined path
+ */
+
+/**
+ * Get the path seperator calls path.sep
+ * @callback pathSep
+ * @returns {Promise<string>}
+ */
+
+/**
+ * Method to fix a filepath
+ * @callback normalizePath
+ * @param {string} path - The file path string
+ * @returns {Promise<string>} The normalized path or empty string
+ */
+
+/**
+ * Get the relative path
+ * @callback relativePath
+ * @param {string} from 
+ * @param {string} to
+ * @returns {Promise<string>} The relative path or empty string
  */
 
 /**
@@ -638,7 +676,6 @@
  * @property {close} close - Close the window
  * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
  * @property {restore} restore - Restores the window back to beofre it was maximized
- * @property {normalize} normalize - Normalize a path string
  * @property {createFile} createFile - Create a file at the target path
  * @property {fileExists} fileExists - Check if a file exists
  * @property {directoryExists} directoryExists - Check if a folder exists
@@ -659,6 +696,8 @@
  * @property {tsServer} tsServer - The ts / typescript language server
  * 
  * @property {shellApi} shellApi - Contains all methods to use shells
+ * 
+ * @property {pathApi} pathApi - Contains all path utils 
  * 
  */
 
