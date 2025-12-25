@@ -80,6 +80,7 @@ const createWindow = () => {
 app.whenReady().then(() => {
   createWindow();
 
+  // move to fs 
   ipcMain.handle("file:read", readFileImpl);
   ipcMain.handle("file:create", createFileImpl);
   ipcMain.handle("file:exists", fileExistsImpl);
@@ -98,12 +99,18 @@ app.whenReady().then(() => {
 
   ipcMain.handle("dir:watch", watchDirectoryImpl);
   ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
+   // move to fs 
 
+
+   // move ot window 
   ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
+    // move ot window 
 
+
+    // move into ripgrep.js
   ipcMain.handle("ripgrep:search", ripGrepImpl);
 
   registerGitListeners(ipcMain);
