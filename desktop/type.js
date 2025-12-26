@@ -12,6 +12,7 @@
  * @property {readDir} readDir - Read directory
  * @property {createDirectory} createDirectory - Create a folder
  * @property {selectFolder} selectFolder - Use electron select folder
+ * @property {onFsChange} onChange - Listen to a file or folder path change and run logic
  */
 
 /**
@@ -68,6 +69,21 @@
  * Opens a folder selection dialog and returns the selected path.
  * @callback selectFolder
  * @returns {Promise<import("electron").OpenDialogReturnValue>} - A promise that resolves with the dialog result, including the selected path or a flag indicating cancellation.
+ */
+
+/**
+ * Specific function you want to run when it changes
+ * @callback onFsChangeCallback
+ * @param {import("fs/promises").FileChangeInfo<string>} event - The watcher event
+ * @returns {void}
+ */
+
+/**
+ * Listen to a specific dir and run custom logic
+ * @callback onFsChange
+ * @param {string} path - The path to watch
+ * @param {onFsChangeCallback} callback - The logic you want to run
+ * @returns {voidCallback} unsub function
  */
 
 /**
@@ -173,46 +189,6 @@
  * @param {string} from
  * @param {string} to
  * @returns {Promise<string>} The relative path or empty string
- */
-
-/**
- * Data passed to the callback when a directory changes
- * @typedef {Object} directoryChangedData
- * @property {string} dirPath - The directory being watched
- * @property {"rename" | "change"} eventType - The type of change (rename = added/deleted)
- * @property {string|null} filename - The file that changed (may be null)
- */
-
-/**
- * The specific callback logic you want to run when a directory changes.
- * @callback onDirectoryChangeCallback
- * @param {directoryChangedData} data - Information about the change
- * @returns {void}
- */
-
-/**
- * Listen to a specific directory and fire off custom logic when the directory changes,
- * either when a file is added, removed, or modified.
- * @callback onDirectoryChange
- * @param {string} directoryPath - The path to the directory you want to listen to
- * @param {onDirectoryChangeCallback} callback - The logic to run when the directory changes
- * @returns {Promise<() => Promise<void>>} - A function to unsubscribe from the directory watcher is async
- */
-
-/**
- * Watches a specific directory and emits change events
- * @callback watchDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The path to the directory to watch
- * @returns {Promise<boolean>} True or false if it was watched
- */
-
-/**
- * Unwatches a directory
- * @callback unwatchDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The directory to unwatch if it has been watched
- * @returns {Promise<boolean>} True or flase if it was un watched
  */
 
 /**
@@ -647,7 +623,6 @@
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
- * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
  *

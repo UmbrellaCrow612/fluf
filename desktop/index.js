@@ -1,11 +1,6 @@
 const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
-const {
-  watchDirectoryImpl,
-  unwatchDirectoryImpl,
-  cleanUpWatchers,
-} = require("./ipcFuncs");
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
@@ -20,7 +15,7 @@ const {
 const { registerTsListeners } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
-const { registerFsListeners } = require("./fs");
+const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
 
 /**
@@ -64,11 +59,6 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-
-  ipcMain.handle("dir:watch", watchDirectoryImpl); // move to send events handle
-  ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
-  // move to fs
-
   // move into ripgrep.js
   ipcMain.handle("ripgrep:search", ripGrepImpl);
 
@@ -80,7 +70,7 @@ app.whenReady().then(() => {
   registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);
   registerPathListeners(ipcMain);
-  registerFsListeners(ipcMain);
+  registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain)
 
   startLanguageServers();

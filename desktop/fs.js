@@ -8,10 +8,25 @@ const { logger } = require("./logger");
 const { dialog } = require("electron");
 
 /**
+ * Ref to the main window
+ * @type {import("electron").BrowserWindow | null}
+ */
+let mainWindowRef = null;
+
+/**
+ * Contains a map of specific path and it's abort controller to stop the watcher for it
+ * @type {Map<string, AbortController>}
+ */
+const watcherAbortsMap = new Map();
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
+ * @param {import("electron").BrowserWindow | null} mainWindow
  */
-const registerFsListeners = (ipcMain) => {
+const registerFsListeners = (ipcMain, mainWindow) => {
+  mainWindowRef = mainWindow;
+
   ipcMain.handle("file:read", async (_, fp) => {
     try {
       if (!fp) return "";
@@ -141,8 +156,62 @@ const registerFsListeners = (ipcMain) => {
       properties: ["openDirectory"],
     });
   });
+
+  ipcMain.on("fs:watch", async (event, pp) => {
+    try {
+      let norm = path.normalize(path.resolve(pp));
+
+      if (watcherAbortsMap.has(norm)) {
+        logger.info("Path already being watched " + norm);
+        return;
+      }
+
+      const ac = new AbortController();
+      watcherAbortsMap.set(norm, ac);
+
+      let watcher = fs.watch(norm, {
+        signal: ac.signal,
+        recursive: true,
+        encoding: "utf-8",
+      });
+
+      for await (const event of watcher) {
+        if (mainWindowRef) {
+          mainWindowRef.webContents.send("fs:change", pp, event);
+        }
+      }
+    } catch (/** @type {any}*/ error) {
+      if (error.name === "AbortError") return;
+      console.error("Failed to watch directory " + JSON.stringify(error));
+    }
+  });
+
+  ipcMain.on("fs:unwatch", (event, pp) => {
+    try {
+      let norm = path.normalize(path.resolve(pp));
+
+      let abort = watcherAbortsMap.get(norm);
+      if (!abort) return;
+
+      abort.abort();
+    } catch (error) {
+      console.error("Failed to un watch directory " + JSON.stringify(error));
+    }
+  });
+};
+
+/**
+ * If any directory are being watch or files stop listening to them
+ */
+const cleanUpWatchers = () => {
+  let a = Array.from(watcherAbortsMap.values());
+
+  a.forEach((x) => {
+    x.abort();
+  });
 };
 
 module.exports = {
   registerFsListeners,
+  cleanUpWatchers,
 };

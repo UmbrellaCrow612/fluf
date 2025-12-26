@@ -5,18 +5,10 @@ const { contextBridge, ipcRenderer } = require("electron");
  */
 const chromeWindowApi = {
   isMaximized: () => ipcRenderer.invoke("window:ismaximized"),
-  minimize: () => {
-    ipcRenderer.send("window:minimize");
-  },
-  maximize: () => {
-    ipcRenderer.send("window:maximize");
-  },
-  close: () => {
-    ipcRenderer.send("window:close")
-  },
-  restore: () => {
-    ipcRenderer.send("window:restore")
-  }
+  minimize: () => ipcRenderer.send("window:minimize"),
+  maximize: () => ipcRenderer.send("window:maximize"),
+  close: () => ipcRenderer.send("window:close"),
+  restore: () => ipcRenderer.send("window:restore"),
 };
 
 /**
@@ -31,6 +23,27 @@ const fsApi = {
   readDir: (path) => ipcRenderer.invoke("dir:read", path),
   createDirectory: (p) => ipcRenderer.invoke("dir:create", p),
   selectFolder: () => ipcRenderer.invoke("dir:select"),
+
+  onChange: (path, callback) => {
+    /**
+     * @param {import("electron").IpcRendererEvent} _
+     * @param {string} changedPath - The dir changed
+     * @param {import("fs/promises").FileChangeInfo<string>} event
+     */
+    let listener = (_, changedPath, event) => {
+      if (path === changedPath) {
+        callback(event);
+      }
+    };
+
+    ipcRenderer.on("fs:change", listener);
+    ipcRenderer.send("fs:watch", path);
+
+    return () => {
+      ipcRenderer.removeListener("fs:change", listener);
+      ipcRenderer.send("fs:unwatch", path);
+    };
+  },
 };
 
 /**
@@ -140,24 +153,6 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  onDirectoryChange: async (dirPath, cb) => {
-    await ipcRenderer.invoke("dir:watch", dirPath);
-
-    /**
-     * @param {import("./type").directoryChangedData} data
-     */
-    const listener = (/** @type {any} */ _, data) => {
-      if (data.dirPath === dirPath) cb(data);
-    };
-
-    ipcRenderer.on("dir:changed", listener);
-
-    return async () => {
-      ipcRenderer.removeListener("dir:changed", listener);
-      await ipcRenderer.invoke("dir:unwatch", dirPath);
-    };
-  },
-
   ripGrep: (_event, options) => ipcRenderer.invoke("ripgrep:search", options),
 
   fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
