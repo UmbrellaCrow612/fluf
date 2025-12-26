@@ -59,31 +59,31 @@ export class TopBarComponent implements OnInit, OnDestroy {
    * Re checks if a window is maximized for reestore
    */
   async reloadMaxState() {
-    this.isMaximized = await this._api.isMaximized();
+    this.isMaximized = await this._api.chromeWindowApi.isMaximized();
   }
   /**
    * Minimizes screen window
    */
-  async minimize() {
-    this._api.minimize();
+  minimize() {
+    this._api.chromeWindowApi.minimize();
   }
 
   /**
    * Maximizes screen window
    */
-  async maximize() {
-    this._api.maximize();
+  maximize() {
+    this._api.chromeWindowApi.maximize();
   }
 
-  async restore() {
-    this._api.restore();
+  restore() {
+    this._api.chromeWindowApi.restore();
   }
 
   /**
    * Closes screen window
    */
   close() {
-    this._api.close();
+    this._api.chromeWindowApi.close();
   }
 
   items: topBarItem[] = [
@@ -94,7 +94,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
         {
           label: 'Open folder',
           onClick: async () => {
-            let res = await this._api.selectFolder();
+            let res = await this._api.fsApi.selectFolder();
             if (res.canceled) return;
 
             this.appContext.selectedDirectoryPath.set(res.filePaths[0]);

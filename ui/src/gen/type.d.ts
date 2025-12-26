@@ -1,14 +1,84 @@
 /**
- * Reads the contents of a file.
- *
- * In the main world, you don't need to worry about the `event` argument — it's specific to Electron's main process.
- * Simply ignore it and provide any other arguments after it.
+ * Contains all the fs api's using node fs and other file related utils
  */
-export type readFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<string>;
+export type fsApi = {
+    /**
+     * - Calls fs read file
+     */
+    readFile: readFile;
+    /**
+     * - Calls fs write
+     */
+    write: writeToFile;
+    /**
+     * - Calls fs create
+     */
+    createFile: createFile;
+    /**
+     * - Checks if a path exists
+     */
+    exists: fsExists;
+    /**
+     * - Remove a path
+     */
+    remove: fsRemove;
+    /**
+     * - Read directory
+     */
+    readDir: readDir;
+    /**
+     * - Create a folder
+     */
+    createDirectory: createDirectory;
+    /**
+     * - Use electron select folder
+     */
+    selectFolder: selectFolder;
+    /**
+     * - Listen to a file or folder path change and run logic
+     */
+    onChange: onFsChange;
+};
+/**
+ * Reads the contents of a file.
+ */
+export type readFile = (filePath: string) => Promise<string>;
+/**
+ * Write new content to a file
+ */
+export type writeToFile = (filePath: string, content: string) => Promise<boolean>;
+/**
+ * Create a file
+ */
+export type createFile = (destionationPath: string) => Promise<boolean>;
+/**
+ * Check if a given path exists
+ */
+export type fsExists = (path: string) => Promise<boolean>;
+/**
+ * Remove a file or folder
+ */
+export type fsRemove = (path: string) => Promise<boolean>;
 /**
  * Reads a folder content not recursive
  */
-export type readDir = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<Array<fileNode>>;
+export type readDir = (directoryPath: string) => Promise<fileNode[]>;
+/**
+ * Create a folder at a given path
+ */
+export type createDirectory = (directoryPath: string) => Promise<boolean>;
+/**
+ * Opens a folder selection dialog and returns the selected path.
+ */
+export type selectFolder = () => Promise<import("electron").OpenDialogReturnValue>;
+/**
+ * Specific function you want to run when it changes
+ */
+export type onFsChangeCallback = (event: import("fs/promises").FileChangeInfo<string>) => void;
+/**
+ * Listen to a specific dir and run custom logic
+ */
+export type onFsChange = (path: string, callback: onFsChangeCallback) => voidCallback;
 /**
  * Represents a file or folder read from a directory
  */
@@ -52,33 +122,50 @@ export type fileNode = {
  */
 export type fileNodeMode = "createFile" | "createFolder" | "default";
 /**
- * Opens a folder selection dialog and returns the selected path.
+ * Contains all utils related to the electron chroium window
  */
-export type selectFolder = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<import("electron").OpenDialogReturnValue>;
-/**
- * Checks if a file or folder exists
- */
-export type exists = (event?: Electron.IpcMainInvokeEvent | undefined, path: string) => Promise<boolean>;
-/**
- * Minimizes the window
- */
-export type minimize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
-/**
- * Maximize a window
- */
-export type maximize = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
-/**
- * Close the window
- */
-export type close = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+export type chromeWindowApi = {
+    /**
+     * - If the window if full screen
+     */
+    isMaximized: chromeWindowIsMaximized;
+    /**
+     * - Minimize the window
+     */
+    minimize: chromeWindowMinimize;
+    /**
+     * - Maximize the window
+     */
+    maximize: chromeWindowMaximize;
+    /**
+     * - Closes the window
+     */
+    close: chromeWindowClose;
+    /**
+     * - Restore the window
+     */
+    restore: chromeWindowRestore;
+};
 /**
  * Checks if the window is maximized
  */
-export type isMaximized = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
+export type chromeWindowIsMaximized = () => Promise<boolean>;
+/**
+ * Minimizes the window
+ */
+export type chromeWindowMinimize = () => void;
+/**
+ * Maximize the window
+ */
+export type chromeWindowMaximize = () => void;
+/**
+ * Close the window
+ */
+export type chromeWindowClose = () => void;
 /**
  * Restores the browsers window back to beofre it was maximized
  */
-export type restore = (event?: Electron.IpcMainInvokeEvent | undefined) => void;
+export type chromeWindowRestore = () => void;
 /**
  * Contains all helpers todo with path
  */
@@ -124,64 +211,6 @@ export type normalizePath = (path: string) => Promise<string>;
  * Get the relative path
  */
 export type relativePath = (from: string, to: string) => Promise<string>;
-/**
- * Create a file
- */
-export type createFile = (event?: Electron.IpcMainInvokeEvent | undefined, destionationPath: string) => Promise<boolean>;
-/**
- * Check if a file exists at a given path
- */
-export type fileExists = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
-/**
- * Check if a folder exists
- */
-export type directoryExists = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
-/**
- * Create a folder at a given path
- */
-export type createDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
-/**
- * Delete a file by it's path
- */
-export type deleteFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
-/**
- * Delete an directory by it's path - recusive delete
- */
-export type deleteDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
-/**
- * Data passed to the callback when a directory changes
- */
-export type directoryChangedData = {
-    /**
-     * - The directory being watched
-     */
-    dirPath: string;
-    /**
-     * - The type of change (rename = added/deleted)
-     */
-    eventType: "rename" | "change";
-    /**
-     * - The file that changed (may be null)
-     */
-    filename: string | null;
-};
-/**
- * The specific callback logic you want to run when a directory changes.
- */
-export type onDirectoryChangeCallback = (data: directoryChangedData) => void;
-/**
- * Listen to a specific directory and fire off custom logic when the directory changes,
- * either when a file is added, removed, or modified.
- */
-export type onDirectoryChange = (directoryPath: string, callback: onDirectoryChangeCallback) => Promise<() => Promise<void>>;
-/**
- * Watches a specific directory and emits change events
- */
-export type watchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
-/**
- * Unwatches a directory
- */
-export type unwatchDirectory = (event?: Electron.IpcMainInvokeEvent | undefined, directoryPath: string) => Promise<boolean>;
 /**
  * List of args to pass to ripgrep to search
  */
@@ -477,10 +506,6 @@ export type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options:
  * Write a image to clipboard to be pasted elsewhere
  */
 export type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
-/**
- * Write new content to a file
- */
-export type writeToFile = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string, content: string) => Promise<boolean>;
 /**
  * List of what the value of the event field can be
  */
@@ -794,70 +819,6 @@ export type shellApi = {
  */
 export type ElectronApi = {
     /**
-     * - Reads the contents of a file.
-     */
-    readFile: readFile;
-    /**
-     * - Reads the contents of a directory.
-     */
-    readDir: readDir;
-    /**
-     * - Opens a dialog and allows the user to choose a folder to select
-     */
-    selectFolder: selectFolder;
-    /**
-     * - Check if a file or folder exists
-     */
-    exists: exists;
-    /**
-     * - Minimizes the screen window
-     */
-    minimize: minimize;
-    /**
-     * - Maximize a window
-     */
-    maximize: maximize;
-    /**
-     * - Close the window
-     */
-    close: close;
-    /**
-     * - Check if the window screen is fully maximized
-     */
-    isMaximized: isMaximized;
-    /**
-     * - Restores the window back to beofre it was maximized
-     */
-    restore: restore;
-    /**
-     * - Create a file at the target path
-     */
-    createFile: createFile;
-    /**
-     * - Check if a file exists
-     */
-    fileExists: fileExists;
-    /**
-     * - Check if a folder exists
-     */
-    directoryExists: directoryExists;
-    /**
-     * - Create a directory folder at a given path
-     */
-    createDirectory: createDirectory;
-    /**
-     * - Delete a file by it's file path
-     */
-    deleteFile: deleteFile;
-    /**
-     * - Delete a folder directory by it's path is recursive
-     */
-    deleteDirectory: deleteDirectory;
-    /**
-     * - Listen to a specific directory change and run custom logic
-     */
-    onDirectoryChange: onDirectoryChange;
-    /**
      * - Search a folder files for a specific search term and get a list of matching results
      */
     ripGrep: ripGrep;
@@ -874,10 +835,6 @@ export type ElectronApi = {
      */
     writeImageToClipboard: writeImageToClipboard;
     /**
-     * - Write new content for a file, it writes the new content as the new content of the whole file
-     */
-    writeToFile: writeToFile;
-    /**
      * - The ts / typescript language server
      */
     tsServer: tsServer;
@@ -889,6 +846,14 @@ export type ElectronApi = {
      * - Contains all path utils
      */
     pathApi: pathApi;
+    /**
+     * - Contains all file fs utils
+     */
+    fsApi: fsApi;
+    /**
+     * - Contains all utils for chroium window itself
+     */
+    chromeWindowApi: chromeWindowApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.
