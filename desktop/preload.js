@@ -37,13 +37,15 @@ const fsApi = {
     };
 
     ipcRenderer.on("fs:change", listener);
+
     ipcRenderer.send("fs:watch", path);
 
     return () => {
       ipcRenderer.removeListener("fs:change", listener);
-      ipcRenderer.send("fs:unwatch", path);
     };
   },
+
+  stopWatching: (path) => ipcRenderer.send("fs:unwatch", path),
 };
 
 /**

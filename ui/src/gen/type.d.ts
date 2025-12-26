@@ -35,9 +35,14 @@ export type fsApi = {
      */
     selectFolder: selectFolder;
     /**
-     * - Listen to a file or folder path change and run logic
+     * - Listen to a file or folder path change and run logic - will start watching the given path it'  not being watched then
+     * register the callback to be run when it changes, also returns a unsub method, does NOT stop watching the path, but no longer run, the callback defined by removing it
      */
     onChange: onFsChange;
+    /**
+     * - Stops watching a given path
+     */
+    stopWatching: fsStopWatching;
 };
 /**
  * Reads the contents of a file.
@@ -79,6 +84,10 @@ export type onFsChangeCallback = (event: import("fs/promises").FileChangeInfo<st
  * Listen to a specific dir and run custom logic
  */
 export type onFsChange = (path: string, callback: onFsChangeCallback) => voidCallback;
+/**
+ * Stop watching a given path it it is being watched
+ */
+export type fsStopWatching = (path: string) => void;
 /**
  * Represents a file or folder read from a directory
  */

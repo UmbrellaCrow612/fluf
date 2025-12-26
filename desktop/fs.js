@@ -191,7 +191,10 @@ const registerFsListeners = (ipcMain, mainWindow) => {
       let norm = path.normalize(path.resolve(pp));
 
       let abort = watcherAbortsMap.get(norm);
-      if (!abort) return;
+      if (!abort) {
+        logger.info("Path not being watched");
+        return;
+      }
 
       abort.abort();
     } catch (error) {

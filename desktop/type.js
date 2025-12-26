@@ -12,7 +12,9 @@
  * @property {readDir} readDir - Read directory
  * @property {createDirectory} createDirectory - Create a folder
  * @property {selectFolder} selectFolder - Use electron select folder
- * @property {onFsChange} onChange - Listen to a file or folder path change and run logic
+ * @property {onFsChange} onChange - Listen to a file or folder path change and run logic - will start watching the given path it'  not being watched then 
+ * register the callback to be run when it changes, also returns a unsub method, does NOT stop watching the path, but no longer run, the callback defined by removing it
+ * @property {fsStopWatching} stopWatching - Stops watching a given path
  */
 
 /**
@@ -84,6 +86,13 @@
  * @param {string} path - The path to watch
  * @param {onFsChangeCallback} callback - The logic you want to run
  * @returns {voidCallback} unsub function
+ */
+
+/**
+ * Stop watching a given path it it is being watched
+ * @callback fsStopWatching
+ * @param {string} path - The path being watched
+ * @returns {void} Nothing
  */
 
 /**
