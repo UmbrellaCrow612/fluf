@@ -1,6 +1,14 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").fsApi}
+ */
+const fsApi = {
+  readFile: (fp) => ipcRenderer.invoke("file:read", fp),
+  write: (fp, c) => ipcRenderer.invoke("file:write", fp, c),
+};
+
+/**
  * @type {import("./type").pathApi}
  */
 const pathApi = {
@@ -8,7 +16,7 @@ const pathApi = {
   relative: (f, t) => ipcRenderer.invoke("path:relative", f, t),
   sep: () => ipcRenderer.invoke("path:sep"),
   join: (...args) => ipcRenderer.invoke("path:join", ...args),
-  isAbsolute: (p) => ipcRenderer.invoke("path:isabsolute", p)
+  isAbsolute: (p) => ipcRenderer.invoke("path:isabsolute", p),
 };
 
 /** @type {import("./type").shellApi} */
@@ -107,9 +115,6 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  writeToFile: (_event, fp, content) =>
-    ipcRenderer.invoke("file:write", fp, content),
-  readFile: (_event, filepath) => ipcRenderer.invoke("file:read", filepath),
   createFile: (_event, path) => ipcRenderer.invoke("file:create", path),
   fileExists: (_event, fp) => ipcRenderer.invoke("file:exists", fp),
   deleteFile: (_event, fp) => ipcRenderer.invoke("file:delete", fp),
@@ -156,6 +161,7 @@ const api = {
 
   shellApi,
   pathApi,
+  fsApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

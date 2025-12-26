@@ -8,38 +8,6 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * @type {import("./type").readFile}
- */
-const readFileImpl = async (_event = undefined, filePath) => {
-  if (!filePath) {
-    console.log("File path not passed");
-    return "";
-  }
-
-  try {
-    let fc = await fsp.readFile(filePath, { encoding: "utf-8" });
-    return fc;
-  } catch (error) {
-    console.log(error);
-    return "";
-  }
-};
-
-/** @type {import("./type").writeToFile} */
-const writeToFileImpl = async (event, filePath, content) => {
-  try {
-    await fsp.access(filePath)
-
-    await fsp.writeFile(filePath, content, 'utf8');
-
-    return true;
-  } catch (error) {
-    console.error('Error writing to file:', error);
-    return false;
-  }
-};
-
-/**
  * Gets the extension from a filename.
  * @param {string} filename
  * @returns {string|null} The extension without the dot, or null if none.
@@ -297,7 +265,6 @@ const cleanUpWatchers = () => {
 };
 
 module.exports = {
-  readFileImpl,
   readDirImpl,
   selectFolderImpl,
   existsImpl,
@@ -316,5 +283,4 @@ module.exports = {
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
-  writeToFileImpl
 };

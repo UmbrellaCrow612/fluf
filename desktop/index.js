@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
 const {
-  readFileImpl,
   readDirImpl,
   selectFolderImpl,
   existsImpl,
@@ -21,7 +20,6 @@ const {
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
-  writeToFileImpl,
 } = require("./ipcFuncs");
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
@@ -37,6 +35,7 @@ const {
 const { registerTsListeners } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
+const { registerFsListeners } = require("./fs");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -81,11 +80,9 @@ app.whenReady().then(() => {
   createWindow();
 
   // move to fs 
-  ipcMain.handle("file:read", readFileImpl);
   ipcMain.handle("file:create", createFileImpl);
   ipcMain.handle("file:exists", fileExistsImpl);
   ipcMain.handle("file:delete", deleteFileImpl);
-  ipcMain.handle("file:write", writeToFileImpl);
 
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
@@ -121,6 +118,7 @@ app.whenReady().then(() => {
   registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);
   registerPathListeners(ipcMain)
+  registerFsListeners(ipcMain)
 
   startLanguageServers();
 });

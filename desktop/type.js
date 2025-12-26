@@ -2,15 +2,25 @@
 // type.d.ts file any changes made in type.js run npx tsc in desktop to update the UI side types they are purley generated and should only be edited via the ts cmd stated before
 
 /**
+ * Contains all the fs api's using node fs
+ * @typedef {Object} fsApi
+ * @property {readFile} readFile - Calls fs read file
+ * @property {writeToFile} write - Calls fs write
+ */
+
+/**
  * Reads the contents of a file.
- *
- * In the main world, you don't need to worry about the `event` argument — it's specific to Electron's main process.
- * Simply ignore it and provide any other arguments after it.
- *
  * @callback readFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron event argument (used in the main process; can be ignored in the main world).
  * @param {string} filePath - The path to the file to read.
  * @returns {Promise<string>} - A promise that resolves with the file’s content.
+ */
+
+/**
+ * Write new content to a file
+ * @callback writeToFile
+ * @param {string} filePath - The path to the file
+ * @param {string} content - The new content for the file
+ * @returns {Promise<boolean>} If it could or could not write to the file
  */
 
 /**
@@ -132,7 +142,7 @@
 /**
  * Get the relative path
  * @callback relativePath
- * @param {string} from 
+ * @param {string} from
  * @param {string} to
  * @returns {Promise<string>} The relative path or empty string
  */
@@ -409,15 +419,6 @@
  */
 
 /**
- * Write new content to a file
- * @callback writeToFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} filePath - The path to the file
- * @param {string} content - The new content for the file
- * @returns {Promise<boolean>} If it could or could not write to the file
- */
-
-/**
  * List of what the value of the event field can be
  * @typedef {"projectLoadingStart" | "projectLoadingFinish" |
  * "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" |
@@ -494,7 +495,7 @@
  * @property {import("typescript").server.protocol.TextSpan} [replacementSpan]
  * @property {boolean} [hasAction]
  * @property {string} [source]
- * @property {any} [sourceDisplay] - if needed type 
+ * @property {any} [sourceDisplay] - if needed type
  * @property {any} [labelDetails] - if needed type
  * @property {boolean} [isRecommended]
  * @property {boolean} [isFromUncheckedFile]
@@ -597,7 +598,6 @@
  * @property {tsServerError} errors - Trigger get error's / checking for a file
  */
 
-
 /**
  * Create a shell
  * @callback createShell
@@ -658,7 +658,7 @@
  * @property {createShell} create - Create a shell process
  * @property {killShell} kill - Stops a shell
  * @property {writeToShell} write - Write content to a specific shell
- * @property {resizeShell} resize - Resize 
+ * @property {resizeShell} resize - Resize
  * @property {onShellChange} onChange - Listen to changes for a specific shell and run logic
  * @property {onShellExit} onExit - Listen to a specific shell exit and run logic
  */
@@ -667,7 +667,6 @@
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
- * @property {readFile} readFile - Reads the contents of a file.
  * @property {readDir} readDir - Reads the contents of a directory.
  * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
  * @property {exists} exists - Check if a file or folder exists
@@ -691,14 +690,15 @@
  * @property {fsearch} fsearch - Search for files or folders really fast
  *
  * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
- * @property {writeToFile} writeToFile - Write new content for a file, it writes the new content as the new content of the whole file
  *
  * @property {tsServer} tsServer - The ts / typescript language server
- * 
+ *
  * @property {shellApi} shellApi - Contains all methods to use shells
- * 
- * @property {pathApi} pathApi - Contains all path utils 
- * 
+ *
+ * @property {pathApi} pathApi - Contains all path utils
+ *
+ * @property {fsApi} fsApi - Contains all file fs utils
+ *
  */
 
 /**
