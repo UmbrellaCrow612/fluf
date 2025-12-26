@@ -71,8 +71,10 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
         this.unSub = this.api.fsApi.onChange(
           this.appContext.selectedDirectoryPath()!,
           (event) => {
-            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
-            console.log('Dir changed');
+            if (event.eventType == 'change' || event.eventType == 'rename') {
+              this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+              console.log('Dir changed');
+            }
           }
         );
       }
@@ -235,8 +237,10 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.unSub = this.api.fsApi.onChange(
         this.appContext.selectedDirectoryPath()!,
         (event) => {
-          this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
-          console.log('Dir changed');
+          if (event.eventType == 'change' || event.eventType == 'rename') {
+            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+            console.log('Dir changed');
+          }
         }
       );
     }
