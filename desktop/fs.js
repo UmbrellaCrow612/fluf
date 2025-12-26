@@ -4,6 +4,7 @@
 
 const path = require("path");
 const fs = require("fs/promises");
+const { logger } = require("./logger");
 
 /**
  * Registers all fs related listeners
@@ -20,7 +21,7 @@ const registerFsListeners = (ipcMain) => {
 
       return await fs.readFile(p, { encoding: "utf-8" });
     } catch (error) {
-      console.error("Failed to read file " + JSON.stringify(error));
+      logger.error("Failed to read file " + JSON.stringify(error));
       return "";
     }
   });
@@ -37,7 +38,7 @@ const registerFsListeners = (ipcMain) => {
 
       return true;
     } catch (error) {
-      console.error("Failed to write to file " + JSON.stringify(error));
+      logger.error("Failed to write to file " + JSON.stringify(error));
       return false;
     }
   });
