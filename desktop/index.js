@@ -11,7 +11,6 @@ const {
   isMaximizedImpl,
   restoreImpl,
   normalizeImpl,
-  createFileImpl,
   fileExistsImpl,
   directoryExistsImpl,
   createDirectoryImpl,
@@ -80,7 +79,6 @@ app.whenReady().then(() => {
   createWindow();
 
   // move to fs 
-  ipcMain.handle("file:create", createFileImpl);
   ipcMain.handle("file:exists", fileExistsImpl);
   ipcMain.handle("file:delete", deleteFileImpl);
 

@@ -42,6 +42,21 @@ const registerFsListeners = (ipcMain) => {
       return false;
     }
   });
+
+  ipcMain.handle("file:create", async (event, fp) => {
+    try {
+      if (!fp) return false;
+
+      let p = path.normalize(path.resolve(fp));
+
+      await fs.writeFile(p, "", { encoding: "utf-8", flag: "wx" });
+
+      return true;
+    } catch (error) {
+      logger.error("Failed to create file " + JSON.stringify(error));
+      return false;
+    }
+  });
 };
 
 module.exports = {

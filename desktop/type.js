@@ -6,6 +6,7 @@
  * @typedef {Object} fsApi
  * @property {readFile} readFile - Calls fs read file
  * @property {writeToFile} write - Calls fs write
+ * @property {createFile} createFile - Calls fs create
  */
 
 /**
@@ -30,6 +31,13 @@
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron event argument (used in the main process; can be ignored in the main world).
  * @param {string} directoryPath - The path to the directory to read.
  * @returns {Promise<Array<fileNode>>} - A promise that resolves to a list of file nodes
+ */
+
+/**
+ * Create a file
+ * @callback createFile
+ * @param {string} destionationPath - The path to where the file should be created
+ * @returns {Promise<boolean>} - True or false if it was able to be created
  */
 
 /**
@@ -145,14 +153,6 @@
  * @param {string} from
  * @param {string} to
  * @returns {Promise<string>} The relative path or empty string
- */
-
-/**
- * Create a file
- * @callback createFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} destionationPath - The path to where the file should be created
- * @returns {Promise<boolean>} - True or false if it was able to be created
  */
 
 /**
@@ -675,7 +675,6 @@
  * @property {close} close - Close the window
  * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
  * @property {restore} restore - Restores the window back to beofre it was maximized
- * @property {createFile} createFile - Create a file at the target path
  * @property {fileExists} fileExists - Check if a file exists
  * @property {directoryExists} directoryExists - Check if a folder exists
  * @property {createDirectory} createDirectory - Create a directory folder at a given path

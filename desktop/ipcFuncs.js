@@ -126,21 +126,6 @@ const normalizeImpl = async (_event = undefined, p) => {
 };
 
 /**
- * @type {import("./type").createFile}
- */
-const createFileImpl = async (_event = undefined, destinationPath) => {
-  try {
-    await fsp.mkdir(path.dirname(destinationPath), { recursive: true });
-
-    await fsp.writeFile(destinationPath, "");
-    return true;
-  } catch (error) {
-    console.error("Error creating file:", error);
-    return false;
-  }
-};
-
-/**
  * @type {import("./type").fileExists}
  */
 const fileExistsImpl = async (_event = undefined, fp) => {

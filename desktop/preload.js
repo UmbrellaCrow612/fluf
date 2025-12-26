@@ -6,6 +6,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 const fsApi = {
   readFile: (fp) => ipcRenderer.invoke("file:read", fp),
   write: (fp, c) => ipcRenderer.invoke("file:write", fp, c),
+  createFile: (fp) => ipcRenderer.invoke("file:create", fp),
 };
 
 /**
@@ -115,7 +116,6 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  createFile: (_event, path) => ipcRenderer.invoke("file:create", path),
   fileExists: (_event, fp) => ipcRenderer.invoke("file:exists", fp),
   deleteFile: (_event, fp) => ipcRenderer.invoke("file:delete", fp),
   readDir: (_event, dirPath) => ipcRenderer.invoke("dir:read", dirPath),
