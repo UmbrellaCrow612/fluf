@@ -59,14 +59,14 @@ export class TextFileEditorComponent implements OnInit {
    */
   private getLanguageExtension(ext: string) {
     switch (ext.toLowerCase()) {
-      case 'html':
+      case '.html':
         return html();
-      case 'css':
+      case '.css':
         return css();
-      case 'js':
-      case 'mjs':
-      case 'cjs':
-      case 'ts':
+      case '.js':
+      case '.mjs':
+      case '.cjs':
+      case '.ts':
         return javascript();
       default:
         return []; // No highlighting fallback
@@ -83,10 +83,10 @@ export class TextFileEditorComponent implements OnInit {
    */
   private getLanguageServer(extension: string): LanguageServer | null {
     switch (extension) {
-      case 'js':
-      case 'mjs':
-      case 'cjs':
-      case 'ts':
+      case '.js':
+      case '.mjs':
+      case '.cjs':
+      case '.ts':
         return 'js/ts';
 
       default:
