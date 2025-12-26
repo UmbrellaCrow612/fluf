@@ -16,10 +16,7 @@ import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import {
-  fileDiagnosticMap,
-  LanguageServer,
-} from '../language/type';
+import { fileDiagnosticMap, LanguageServer } from '../language/type';
 import { LanguageService } from '../language/language.service';
 import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
@@ -62,14 +59,14 @@ export class TextFileEditorComponent implements OnInit {
    */
   private getLanguageExtension(ext: string) {
     switch (ext.toLowerCase()) {
-      case 'html':
+      case '.html':
         return html();
-      case 'css':
+      case '.css':
         return css();
-      case 'js':
-      case 'mjs':
-      case 'cjs':
-      case 'ts':
+      case '.js':
+      case '.mjs':
+      case '.cjs':
+      case '.ts':
         return javascript();
       default:
         return []; // No highlighting fallback
@@ -86,10 +83,10 @@ export class TextFileEditorComponent implements OnInit {
    */
   private getLanguageServer(extension: string): LanguageServer | null {
     switch (extension) {
-      case 'js':
-      case 'mjs':
-      case 'cjs':
-      case 'ts':
+      case '.js':
+      case '.mjs':
+      case '.cjs':
+      case '.ts':
         return 'js/ts';
 
       default:
@@ -248,8 +245,7 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    await this.api.writeToFile(
-      undefined,
+    await this.api.fsApi.write(
       this.openFileNode()!.path,
       this.stringContent.replace(/\n/g, '\r\n')
     );
@@ -296,7 +292,7 @@ export class TextFileEditorComponent implements OnInit {
     }, true);
 
     if (update.docChanged) {
-      this.stringContent = update.state.doc.toString()
+      this.stringContent = update.state.doc.toString();
       this.onSaveEvent();
     }
   });
@@ -376,7 +372,7 @@ export class TextFileEditorComponent implements OnInit {
     }
 
     this.stringContent = (
-      await this.api.readFile(undefined, this.openFileNode()!.path)
+      await this.api.fsApi.readFile(this.openFileNode()!.path)
     ).replace(/\r\n/g, '\n');
 
     this.languageServer = this.getLanguageServer(

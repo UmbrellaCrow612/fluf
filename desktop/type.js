@@ -2,24 +2,97 @@
 // type.d.ts file any changes made in type.js run npx tsc in desktop to update the UI side types they are purley generated and should only be edited via the ts cmd stated before
 
 /**
+ * Contains all the fs api's using node fs and other file related utils
+ * @typedef {Object} fsApi
+ * @property {readFile} readFile - Calls fs read file
+ * @property {writeToFile} write - Calls fs write
+ * @property {createFile} createFile - Calls fs create
+ * @property {fsExists} exists - Checks if a path exists
+ * @property {fsRemove} remove - Remove a path
+ * @property {readDir} readDir - Read directory
+ * @property {createDirectory} createDirectory - Create a folder
+ * @property {selectFolder} selectFolder - Use electron select folder
+ * @property {onFsChange} onChange - Listen to a file or folder path change and run logic - will start watching the given path it'  not being watched then 
+ * register the callback to be run when it changes, also returns a unsub method, does NOT stop watching the path, but no longer run, the callback defined by removing it
+ * @property {fsStopWatching} stopWatching - Stops watching a given path
+ */
+
+/**
  * Reads the contents of a file.
- *
- * In the main world, you don't need to worry about the `event` argument — it's specific to Electron's main process.
- * Simply ignore it and provide any other arguments after it.
- *
  * @callback readFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron event argument (used in the main process; can be ignored in the main world).
  * @param {string} filePath - The path to the file to read.
  * @returns {Promise<string>} - A promise that resolves with the file’s content.
  */
 
 /**
+ * Write new content to a file
+ * @callback writeToFile
+ * @param {string} filePath - The path to the file
+ * @param {string} content - The new content for the file
+ * @returns {Promise<boolean>} If it could or could not write to the file
+ */
+
+/**
+ * Create a file
+ * @callback createFile
+ * @param {string} destionationPath - The path to where the file should be created
+ * @returns {Promise<boolean>} - True or false if it was able to be created
+ */
+
+/**
+ * Check if a given path exists
+ * @callback fsExists
+ * @param {string} path - The file path to the file to check if it exists
+ * @returns {Promise<boolean>} - True or false
+ */
+
+/**
+ * Remove a file or folder
+ * @callback fsRemove
+ * @param {string} path - The path to remove
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
  * Reads a folder content not recursive
- *
  * @callback readDir
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron event argument (used in the main process; can be ignored in the main world).
  * @param {string} directoryPath - The path to the directory to read.
- * @returns {Promise<Array<fileNode>>} - A promise that resolves to a list of file nodes
+ * @returns {Promise<fileNode[]>} - List of file nodes
+ */
+
+/**
+ * Create a folder at a given path
+ * @callback createDirectory
+ * @param {string} directoryPath - Path to create the directory at
+ * @returns {Promise<boolean>} - True or false
+ */
+
+/**
+ * Opens a folder selection dialog and returns the selected path.
+ * @callback selectFolder
+ * @returns {Promise<import("electron").OpenDialogReturnValue>} - A promise that resolves with the dialog result, including the selected path or a flag indicating cancellation.
+ */
+
+/**
+ * Specific function you want to run when it changes
+ * @callback onFsChangeCallback
+ * @param {import("fs/promises").FileChangeInfo<string>} event - The watcher event
+ * @returns {void}
+ */
+
+/**
+ * Listen to a specific dir and run custom logic
+ * @callback onFsChange
+ * @param {string} path - The path to watch
+ * @param {onFsChangeCallback} callback - The logic you want to run
+ * @returns {voidCallback} unsub function
+ */
+
+/**
+ * Stop watching a given path it it is being watched
+ * @callback fsStopWatching
+ * @param {string} path - The path being watched
+ * @returns {void} Nothing
  */
 
 /**
@@ -42,52 +115,42 @@
  */
 
 /**
- * Opens a folder selection dialog and returns the selected path.
- * @callback selectFolder
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @returns {Promise<import("electron").OpenDialogReturnValue>} - A promise that resolves with the dialog result, including the selected path or a flag indicating cancellation.
+ * Contains all utils related to the electron chroium window
+ * @typedef {Object} chromeWindowApi
+ * @property {chromeWindowIsMaximized} isMaximized - If the window if full screen
+ * @property {chromeWindowMinimize} minimize - Minimize the window
+ * @property {chromeWindowMaximize} maximize - Maximize the window
+ * @property {chromeWindowClose} close - Closes the window
+ * @property {chromeWindowRestore} restore - Restore the window
  */
 
 /**
- * Checks if a file or folder exists
- * @callback exists
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} path - The file or folder path to check if it exists
- * @returns {Promise<boolean>} - True or false if it exists
+ * Checks if the window is maximized
+ * @callback chromeWindowIsMaximized
+ * @returns {Promise<boolean>} True or false
  */
 
 /**
  * Minimizes the window
- * @callback minimize
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback chromeWindowMinimize
  * @returns {void} Nothing
  */
 
 /**
- * Maximize a window
- * @callback maximize
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * Maximize the window
+ * @callback chromeWindowMaximize
  * @returns {void} Nothing
  */
 
 /**
  * Close the window
- * @callback close
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback chromeWindowClose
  * @returns {void} Nothing
  */
 
 /**
- * Checks if the window is maximized
- * @callback isMaximized
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @returns {Promise<boolean>} True or false
- */
-
-/**
  * Restores the browsers window back to beofre it was maximized
- * @callback restore
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback chromeWindowRestore
  * @returns {void} Nothing
  */
 
@@ -132,97 +195,9 @@
 /**
  * Get the relative path
  * @callback relativePath
- * @param {string} from 
+ * @param {string} from
  * @param {string} to
  * @returns {Promise<string>} The relative path or empty string
- */
-
-/**
- * Create a file
- * @callback createFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} destionationPath - The path to where the file should be created
- * @returns {Promise<boolean>} - True or false if it was able to be created
- */
-
-/**
- * Check if a file exists at a given path
- * @callback fileExists
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} filePath - The file path to the file to check if it exists
- * @returns {Promise<boolean>} - True or false
- */
-
-/**
- * Check if a folder exists
- * @callback directoryExists
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The path to the folder to check
- * @returns {Promise<boolean>} True or false
- */
-
-/**
- * Create a folder at a given path
- * @callback createDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - Path to create the directory at
- * @returns {Promise<boolean>} - True or false
- */
-
-/**
- * Delete a file by it's path
- * @callback deleteFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} filePath - The path to the file to delete
- * @returns {Promise<boolean>} True or false if the file was deleted
- */
-
-/**
- * Delete an directory by it's path - recusive delete
- * @callback deleteDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The path to the directory to delete
- * @returns {Promise<boolean>} True or false if it was deleted
- */
-
-/**
- * Data passed to the callback when a directory changes
- * @typedef {Object} directoryChangedData
- * @property {string} dirPath - The directory being watched
- * @property {"rename" | "change"} eventType - The type of change (rename = added/deleted)
- * @property {string|null} filename - The file that changed (may be null)
- */
-
-/**
- * The specific callback logic you want to run when a directory changes.
- * @callback onDirectoryChangeCallback
- * @param {directoryChangedData} data - Information about the change
- * @returns {void}
- */
-
-/**
- * Listen to a specific directory and fire off custom logic when the directory changes,
- * either when a file is added, removed, or modified.
- * @callback onDirectoryChange
- * @param {string} directoryPath - The path to the directory you want to listen to
- * @param {onDirectoryChangeCallback} callback - The logic to run when the directory changes
- * @returns {Promise<() => Promise<void>>} - A function to unsubscribe from the directory watcher is async
- */
-
-/**
- * Watches a specific directory and emits change events
- * @callback watchDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The path to the directory to watch
- * @returns {Promise<boolean>} True or false if it was watched
- */
-
-/**
- * Unwatches a directory
- * @callback unwatchDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The directory to unwatch if it has been watched
- * @returns {Promise<boolean>} True or flase if it was un watched
  */
 
 /**
@@ -409,15 +384,6 @@
  */
 
 /**
- * Write new content to a file
- * @callback writeToFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} filePath - The path to the file
- * @param {string} content - The new content for the file
- * @returns {Promise<boolean>} If it could or could not write to the file
- */
-
-/**
  * List of what the value of the event field can be
  * @typedef {"projectLoadingStart" | "projectLoadingFinish" |
  * "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" |
@@ -494,7 +460,7 @@
  * @property {import("typescript").server.protocol.TextSpan} [replacementSpan]
  * @property {boolean} [hasAction]
  * @property {string} [source]
- * @property {any} [sourceDisplay] - if needed type 
+ * @property {any} [sourceDisplay] - if needed type
  * @property {any} [labelDetails] - if needed type
  * @property {boolean} [isRecommended]
  * @property {boolean} [isFromUncheckedFile]
@@ -597,7 +563,6 @@
  * @property {tsServerError} errors - Trigger get error's / checking for a file
  */
 
-
 /**
  * Create a shell
  * @callback createShell
@@ -658,7 +623,7 @@
  * @property {createShell} create - Create a shell process
  * @property {killShell} kill - Stops a shell
  * @property {writeToShell} write - Write content to a specific shell
- * @property {resizeShell} resize - Resize 
+ * @property {resizeShell} resize - Resize
  * @property {onShellChange} onChange - Listen to changes for a specific shell and run logic
  * @property {onShellExit} onExit - Listen to a specific shell exit and run logic
  */
@@ -667,22 +632,6 @@
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
- * @property {readFile} readFile - Reads the contents of a file.
- * @property {readDir} readDir - Reads the contents of a directory.
- * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
- * @property {exists} exists - Check if a file or folder exists
- * @property {minimize} minimize - Minimizes the screen window
- * @property {maximize} maximize - Maximize a window
- * @property {close} close - Close the window
- * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
- * @property {restore} restore - Restores the window back to beofre it was maximized
- * @property {createFile} createFile - Create a file at the target path
- * @property {fileExists} fileExists - Check if a file exists
- * @property {directoryExists} directoryExists - Check if a folder exists
- * @property {createDirectory} createDirectory - Create a directory folder at a given path
- * @property {deleteFile} deleteFile - Delete a file by it's file path
- * @property {deleteDirectory} deleteDirectory - Delete a folder directory by it's path is recursive
- * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
  *
@@ -691,14 +640,17 @@
  * @property {fsearch} fsearch - Search for files or folders really fast
  *
  * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
- * @property {writeToFile} writeToFile - Write new content for a file, it writes the new content as the new content of the whole file
  *
  * @property {tsServer} tsServer - The ts / typescript language server
- * 
+ *
  * @property {shellApi} shellApi - Contains all methods to use shells
- * 
- * @property {pathApi} pathApi - Contains all path utils 
- * 
+ *
+ * @property {pathApi} pathApi - Contains all path utils
+ *
+ * @property {fsApi} fsApi - Contains all file fs utils
+ *
+ * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
+ *
  */
 
 /**

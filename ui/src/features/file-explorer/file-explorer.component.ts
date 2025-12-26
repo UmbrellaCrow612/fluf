@@ -94,7 +94,7 @@ export class FileExplorerComponent {
    * Reads selected folder path and sets file nodes globally
    */
   async readDir() {
-    let nodes = await this.api.readDir(undefined, this.selectedDirectorPath()!);
+    let nodes = await this.api.fsApi.readDir(this.selectedDirectorPath()!);
     this.appContext.directoryFileNodes.set(nodes);
   }
 
@@ -201,7 +201,7 @@ export class FileExplorerComponent {
       return;
     }
 
-    const latest = await this.api.readDir(undefined, rootPath);
+    const latest = await this.api.fsApi.readDir(rootPath);
     const current = this.directoryFileNodes() ?? [];
 
     const updatedNodes = await this.mergeNodes(current, latest);
@@ -243,7 +243,7 @@ export class FileExplorerComponent {
 
       // Only recurse if directory is expanded
       if (merged.isDirectory && merged.expanded) {
-        const childLatest = await this.api.readDir(undefined, merged.path);
+        const childLatest = await this.api.fsApi.readDir(merged.path);
 
         merged.children = await this.mergeNodes(existing.children, childLatest);
       }

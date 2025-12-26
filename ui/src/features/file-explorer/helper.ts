@@ -101,7 +101,7 @@ async function recursiveFetchUntilFound(
   // Fetch children for this node if it's a directory
   if (node.isDirectory) {
     try {
-      const newChildren = await electronApi.readDir(undefined, node.path);
+      const newChildren = await electronApi.fsApi.readDir(node.path);
 
       // Update the node's children
       node.children = newChildren;

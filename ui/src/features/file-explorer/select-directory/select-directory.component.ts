@@ -14,7 +14,7 @@ export class SelectDirectoryComponent {
   private readonly api = getElectronApi();
 
   async openFolder() {
-    let res = await this.api.selectFolder();
+    let res = await this.api.fsApi.selectFolder();
     if (res.canceled) {
       return;
     }

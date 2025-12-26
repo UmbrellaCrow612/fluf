@@ -134,10 +134,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
       return;
     }
 
-    let newChildrenNodes = await this.api.readDir(
-      undefined,
-      this.fileNode().path
-    );
+    let newChildrenNodes = await this.api.fsApi.readDir(this.fileNode().path);
 
     pushNodesIntoChildrenByPath(
       previousNodes,
@@ -176,20 +173,17 @@ export class FileExplorerItemComponent implements AfterViewInit {
 
     try {
       if (this.fileNode().mode === 'createFile') {
-        const fileExists = await this.api.fileExists(undefined, newPath);
-        const folderExists = await this.api.directoryExists(undefined, newPath);
+        const exists = await this.api.fsApi.exists(newPath);
 
-        if (fileExists || folderExists) {
+        if (exists) {
           inputEl?.setCustomValidity(
-            folderExists
-              ? 'A folder with this name already exists'
-              : 'A file with this name already exists'
+            'A folder  or file with this name already exists'
           );
           inputEl?.reportValidity();
           return;
         }
 
-        const suc = await this.api.createFile(undefined, newPath);
+        const suc = await this.api.fsApi.createFile(newPath);
         if (suc) {
           this.onCreateInputBlur();
           this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
@@ -200,20 +194,17 @@ export class FileExplorerItemComponent implements AfterViewInit {
       }
 
       if (this.fileNode().mode === 'createFolder') {
-        const folderExists = await this.api.directoryExists(undefined, newPath);
-        const fileExists = await this.api.fileExists(undefined, newPath);
+        const exists = await this.api.fsApi.exists(newPath);
 
-        if (folderExists || fileExists) {
+        if (exists) {
           inputEl?.setCustomValidity(
-            folderExists
-              ? 'A folder with this name already exists'
-              : 'A file with this name already exists'
+            'A folder or file with this name already exists'
           );
           inputEl?.reportValidity();
           return;
         }
 
-        const suc = await this.api.createDirectory(undefined, newPath);
+        const suc = await this.api.fsApi.createDirectory(newPath);
         if (suc) {
           this.onCreateInputBlur();
           this.inMemoryContextService.refreshDirectory.update((p) => p + 1);

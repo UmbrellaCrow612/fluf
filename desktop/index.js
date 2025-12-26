@@ -1,28 +1,6 @@
 const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
-const {
-  readFileImpl,
-  readDirImpl,
-  selectFolderImpl,
-  existsImpl,
-  minimizeImpl,
-  maximizeImpl,
-  closeImpl,
-  isMaximizedImpl,
-  restoreImpl,
-  normalizeImpl,
-  createFileImpl,
-  fileExistsImpl,
-  directoryExistsImpl,
-  createDirectoryImpl,
-  deleteFileImpl,
-  deletDirectoryImpl,
-  watchDirectoryImpl,
-  unwatchDirectoryImpl,
-  cleanUpWatchers,
-  writeToFileImpl,
-} = require("./ipcFuncs");
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners, stopWatchingGitRepo } = require("./git");
@@ -37,6 +15,8 @@ const {
 const { registerTsListeners } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
+const { registerFsListeners, cleanUpWatchers } = require("./fs");
+const { registerWindowListener } = require("./window");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -79,31 +59,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-
-  ipcMain.handle("file:read", readFileImpl);
-  ipcMain.handle("file:create", createFileImpl);
-  ipcMain.handle("file:exists", fileExistsImpl);
-  ipcMain.handle("file:delete", deleteFileImpl);
-  ipcMain.handle("file:write", writeToFileImpl);
-
-  ipcMain.handle("dir:read", readDirImpl);
-  ipcMain.handle("dir:select", selectFolderImpl);
-  ipcMain.handle("dir:exists", directoryExistsImpl);
-  ipcMain.handle("dir:create", createDirectoryImpl);
-  ipcMain.handle("dir:delete", deletDirectoryImpl);
-
-  ipcMain.handle("exists", existsImpl);
-
-  ipcMain.handle("window:isMaximized", isMaximizedImpl);
-
-  ipcMain.handle("dir:watch", watchDirectoryImpl);
-  ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
-
-  ipcMain.on("window:minimize", minimizeImpl);
-  ipcMain.on("window:maximize", maximizeImpl);
-  ipcMain.on("window:close", closeImpl);
-  ipcMain.on("window:restore", restoreImpl);
-
+  // move into ripgrep.js
   ipcMain.handle("ripgrep:search", ripGrepImpl);
 
   registerGitListeners(ipcMain);
@@ -113,7 +69,9 @@ app.whenReady().then(() => {
   registerImageListeners(ipcMain, protocol);
   registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);
-  registerPathListeners(ipcMain)
+  registerPathListeners(ipcMain);
+  registerFsListeners(ipcMain, mainWindow);
+  registerWindowListener(ipcMain)
 
   startLanguageServers();
 });

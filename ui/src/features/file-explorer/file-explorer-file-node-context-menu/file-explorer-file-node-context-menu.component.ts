@@ -28,22 +28,12 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
   async deleteFile() {
     let node = this.contextMenuFileNode() as fileNode;
 
-    if (!node.isDirectory) {
-      let suc = await this.api.deleteFile(undefined, node.path);
-      if (!suc) {
-        this.error = 'Failed to delete file';
-        return;
-      }
-
-      this.inMemoryContextService.currentActiveContextMenu.set(null);
-    } else {
-      let suc = await this.api.deleteDirectory(undefined, node.path);
-      if (!suc) {
-        this.error = 'Failed to delete folder';
-        return;
-      }
-
-      this.inMemoryContextService.currentActiveContextMenu.set(null);
+    let suc = await this.api.fsApi.remove(node.path);
+    if (!suc) {
+      this.error = 'Failed to delete file';
+      return;
     }
+
+    this.inMemoryContextService.currentActiveContextMenu.set(null);
   }
 }

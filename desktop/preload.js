@@ -1,6 +1,54 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").chromeWindowApi}
+ */
+const chromeWindowApi = {
+  isMaximized: () => ipcRenderer.invoke("window:ismaximized"),
+  minimize: () => ipcRenderer.send("window:minimize"),
+  maximize: () => ipcRenderer.send("window:maximize"),
+  close: () => ipcRenderer.send("window:close"),
+  restore: () => ipcRenderer.send("window:restore"),
+};
+
+/**
+ * @type {import("./type").fsApi}
+ */
+const fsApi = {
+  readFile: (fp) => ipcRenderer.invoke("file:read", fp),
+  write: (fp, c) => ipcRenderer.invoke("file:write", fp, c),
+  createFile: (fp) => ipcRenderer.invoke("file:create", fp),
+  exists: (path) => ipcRenderer.invoke("fs:exists", path),
+  remove: (path) => ipcRenderer.invoke("fs:remove", path),
+  readDir: (path) => ipcRenderer.invoke("dir:read", path),
+  createDirectory: (p) => ipcRenderer.invoke("dir:create", p),
+  selectFolder: () => ipcRenderer.invoke("dir:select"),
+
+  onChange: (path, callback) => {
+    /**
+     * @param {import("electron").IpcRendererEvent} _
+     * @param {string} changedPath - The dir changed
+     * @param {import("fs/promises").FileChangeInfo<string>} event
+     */
+    let listener = (_, changedPath, event) => {
+      if (path === changedPath) {
+        callback(event);
+      }
+    };
+
+    ipcRenderer.on("fs:change", listener);
+
+    ipcRenderer.send("fs:watch", path);
+
+    return () => {
+      ipcRenderer.removeListener("fs:change", listener);
+    };
+  },
+
+  stopWatching: (path) => ipcRenderer.send("fs:unwatch", path),
+};
+
+/**
  * @type {import("./type").pathApi}
  */
 const pathApi = {
@@ -8,7 +56,7 @@ const pathApi = {
   relative: (f, t) => ipcRenderer.invoke("path:relative", f, t),
   sep: () => ipcRenderer.invoke("path:sep"),
   join: (...args) => ipcRenderer.invoke("path:join", ...args),
-  isAbsolute: (p) => ipcRenderer.invoke("path:isabsolute", p)
+  isAbsolute: (p) => ipcRenderer.invoke("path:isabsolute", p),
 };
 
 /** @type {import("./type").shellApi} */
@@ -107,43 +155,6 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  writeToFile: (_event, fp, content) =>
-    ipcRenderer.invoke("file:write", fp, content),
-  readFile: (_event, filepath) => ipcRenderer.invoke("file:read", filepath),
-  createFile: (_event, path) => ipcRenderer.invoke("file:create", path),
-  fileExists: (_event, fp) => ipcRenderer.invoke("file:exists", fp),
-  deleteFile: (_event, fp) => ipcRenderer.invoke("file:delete", fp),
-  readDir: (_event, dirPath) => ipcRenderer.invoke("dir:read", dirPath),
-  createDirectory: (_event, fp) => ipcRenderer.invoke("dir:create", fp),
-  directoryExists: (_event, fp) => ipcRenderer.invoke("dir:exists", fp),
-  deleteDirectory: (_event, dp) => ipcRenderer.invoke("dir:delete", dp),
-  selectFolder: (_event) => ipcRenderer.invoke("dir:select"),
-  exists: (_event, path) => ipcRenderer.invoke("exists", path),
-  isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
-
-  onDirectoryChange: async (dirPath, cb) => {
-    await ipcRenderer.invoke("dir:watch", dirPath);
-
-    /**
-     * @param {import("./type").directoryChangedData} data
-     */
-    const listener = (/** @type {any} */ _, data) => {
-      if (data.dirPath === dirPath) cb(data);
-    };
-
-    ipcRenderer.on("dir:changed", listener);
-
-    return async () => {
-      ipcRenderer.removeListener("dir:changed", listener);
-      await ipcRenderer.invoke("dir:unwatch", dirPath);
-    };
-  },
-
-  minimize: (_event) => ipcRenderer.send("window:minimize"),
-  maximize: (_event) => ipcRenderer.send("window:maximize"),
-  close: (_event) => ipcRenderer.send("window:close"),
-  restore: (_event) => ipcRenderer.send("window:restore"),
-
   ripGrep: (_event, options) => ipcRenderer.invoke("ripgrep:search", options),
 
   fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
@@ -156,6 +167,8 @@ const api = {
 
   shellApi,
   pathApi,
+  fsApi,
+  chromeWindowApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

@@ -33,6 +33,7 @@ import { DocumentEditorComponent } from '../document-editor/document-editor.comp
 import { TextFileEditorComponent } from '../text-file-editor/text-file-editor.component';
 import { Renderable } from '../ngComponentOutlet/type';
 import { CommandPaletteComponent } from '../command-palette/command-palette.component';
+import { voidCallback } from '../../gen/type';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -62,11 +63,18 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
         !this.isDirectoryBeingWatched &&
         this.appContext.selectedDirectoryPath()
       ) {
+        if (this.unSub) {
+          this.unSub();
+        }
         this.isDirectoryBeingWatched = true;
-        this.unSub = await this.api.onDirectoryChange(
+
+        this.unSub = this.api.fsApi.onChange(
           this.appContext.selectedDirectoryPath()!,
-          (_) => {
-            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+          (event) => {
+            if (event.eventType == 'change' || event.eventType == 'rename') {
+              this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+              console.log('Dir changed');
+            }
           }
         );
       }
@@ -74,7 +82,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private isDirectoryBeingWatched = false;
-  private unSub: unSub | null = null;
+  private unSub: voidCallback | null = null;
   private selectedDir = computed(() => this.appContext.selectedDirectoryPath());
   private mainEditorActiveElement = computed(() =>
     this.appContext.editorMainActiveElement()
@@ -225,10 +233,14 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     // if dir selected watch it
     if (this.selectedDir()) {
       this.isDirectoryBeingWatched = true;
-      this.unSub = await this.api.onDirectoryChange(
-        this.selectedDir()!,
-        (_) => {
-          this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+
+      this.unSub = this.api.fsApi.onChange(
+        this.appContext.selectedDirectoryPath()!,
+        (event) => {
+          if (event.eventType == 'change' || event.eventType == 'rename') {
+            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+            console.log('Dir changed');
+          }
         }
       );
     }
@@ -263,9 +275,9 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  async ngOnDestroy() {
+  ngOnDestroy() {
     if (this.unSub) {
-      await this.unSub();
+      this.unSub();
     }
   }
 }
