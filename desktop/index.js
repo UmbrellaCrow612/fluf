@@ -2,13 +2,11 @@ const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
 const {
-  selectFolderImpl,
   minimizeImpl,
   maximizeImpl,
   closeImpl,
   isMaximizedImpl,
   restoreImpl,
-  createDirectoryImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
@@ -70,9 +68,6 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-
-  ipcMain.handle("dir:select", selectFolderImpl);
-  ipcMain.handle("dir:create", createDirectoryImpl);
 
   ipcMain.handle("window:isMaximized", isMaximizedImpl);
 

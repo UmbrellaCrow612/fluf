@@ -2,7 +2,7 @@
 // type.d.ts file any changes made in type.js run npx tsc in desktop to update the UI side types they are purley generated and should only be edited via the ts cmd stated before
 
 /**
- * Contains all the fs api's using node fs
+ * Contains all the fs api's using node fs and other file related utils
  * @typedef {Object} fsApi
  * @property {readFile} readFile - Calls fs read file
  * @property {writeToFile} write - Calls fs write
@@ -10,6 +10,8 @@
  * @property {fsExists} exists - Checks if a path exists
  * @property {fsRemove} remove - Remove a path
  * @property {readDir} readDir - Read directory
+ * @property {createDirectory} createDirectory - Create a folder 
+ * @property {selectFolder} selectFolder - Use electron select folder 
  */
 
 /**
@@ -56,6 +58,19 @@
  */
 
 /**
+ * Create a folder at a given path
+ * @callback createDirectory
+ * @param {string} directoryPath - Path to create the directory at
+ * @returns {Promise<boolean>} - True or false
+ */
+
+/**
+ * Opens a folder selection dialog and returns the selected path.
+ * @callback selectFolder
+ * @returns {Promise<import("electron").OpenDialogReturnValue>} - A promise that resolves with the dialog result, including the selected path or a flag indicating cancellation.
+ */
+
+/**
  * Represents a file or folder read from a directory
  * @typedef {object} fileNode
  * @property {string} name - The name of the file or folder
@@ -74,12 +89,7 @@
  * @typedef {"createFile" | "createFolder" | "default"} fileNodeMode
  */
 
-/**
- * Opens a folder selection dialog and returns the selected path.
- * @callback selectFolder
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @returns {Promise<import("electron").OpenDialogReturnValue>} - A promise that resolves with the dialog result, including the selected path or a flag indicating cancellation.
- */
+
 
 /**
  * Minimizes the window
@@ -160,14 +170,6 @@
  * @param {string} from
  * @param {string} to
  * @returns {Promise<string>} The relative path or empty string
- */
-
-/**
- * Create a folder at a given path
- * @callback createDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - Path to create the directory at
- * @returns {Promise<boolean>} - True or false
  */
 
 /**
@@ -642,13 +644,11 @@
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
- * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
  * @property {minimize} minimize - Minimizes the screen window
  * @property {maximize} maximize - Maximize a window
  * @property {close} close - Close the window
  * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
  * @property {restore} restore - Restores the window back to beofre it was maximized
- * @property {createDirectory} createDirectory - Create a directory folder at a given path
  * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results

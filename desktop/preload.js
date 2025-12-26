@@ -10,6 +10,8 @@ const fsApi = {
   exists: (path) => ipcRenderer.invoke("fs:exists", path),
   remove: (path) => ipcRenderer.invoke("fs:remove", path),
   readDir: (path) => ipcRenderer.invoke("dir:read", path),
+  createDirectory: (p) => ipcRenderer.invoke("dir:create", p),
+  selectFolder: () => ipcRenderer.invoke("dir:select")
 };
 
 /**
@@ -119,8 +121,7 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  createDirectory: (_event, fp) => ipcRenderer.invoke("dir:create", fp),
-  selectFolder: (_event) => ipcRenderer.invoke("dir:select"),
+  
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
 
   onDirectoryChange: async (dirPath, cb) => {

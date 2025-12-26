@@ -5,6 +5,7 @@
 const path = require("path");
 const fs = require("fs/promises");
 const { logger } = require("./logger");
+const { dialog } = require("electron");
 
 /**
  * Registers all fs related listeners
@@ -120,6 +121,25 @@ const registerFsListeners = (ipcMain) => {
       logger.error("Failed to read directory", JSON.stringify(error));
       return [];
     }
+  });
+
+  ipcMain.handle("dir:create", async (_, dp) => {
+    try {
+      let p = path.normalize(path.resolve(dp));
+
+      await fs.mkdir(p, { recursive: true });
+
+      return true;
+    } catch (error) {
+      logger.error("Failed to create folder " + JSON.stringify(error));
+      return false;
+    }
+  });
+
+  ipcMain.handle("dir:select", async () => {
+    return await dialog.showOpenDialog({
+      properties: ["openDirectory"],
+    });
   });
 };
 

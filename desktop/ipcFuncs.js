@@ -22,15 +22,6 @@ function getExtension(filename) {
 }
 
 /**
- * @type {import("./type").selectFolder}
- */
-const selectFolderImpl = async (_event = undefined) => {
-  return await dialog.showOpenDialog({
-    properties: ["openDirectory"],
-  });
-};
-
-/**
  * @type {import("./type").minimize}
  */
 const minimizeImpl = (_event = undefined) => {
@@ -73,21 +64,6 @@ const restoreImpl = (_event = undefined) => {
   const webContents = _event.sender;
   const win = BrowserWindow.fromWebContents(webContents);
   win.restore();
-};
-
-/**
- * @type {import("./type").createDirectory}
- */
-const createDirectoryImpl = async (_event = undefined, fp) => {
-  try {
-    await fsp.mkdir(fp, { recursive: false });
-    return true; // folder created
-  } catch (err) {
-    if (err.code === "EEXIST") {
-      return false;
-    }
-    throw err;
-  }
 };
 
 /**
@@ -142,13 +118,11 @@ const cleanUpWatchers = () => {
 };
 
 module.exports = {
-  selectFolderImpl,
   minimizeImpl,
   maximizeImpl,
   closeImpl,
   isMaximizedImpl,
   restoreImpl,
-  createDirectoryImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
