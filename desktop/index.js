@@ -2,10 +2,8 @@ const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
 const {
-  minimizeImpl,
   maximizeImpl,
   closeImpl,
-  isMaximizedImpl,
   restoreImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
@@ -26,6 +24,7 @@ const { registerTsListeners } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
 const { registerFsListeners } = require("./fs");
+const { registerWindowListener } = require("./window");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -69,14 +68,11 @@ const createWindow = () => {
 app.whenReady().then(() => {
   createWindow();
 
-  ipcMain.handle("window:isMaximized", isMaximizedImpl);
-
-  ipcMain.handle("dir:watch", watchDirectoryImpl);
+  ipcMain.handle("dir:watch", watchDirectoryImpl); // move to send events handle
   ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
   // move to fs
 
   // move ot window
-  ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
@@ -94,6 +90,7 @@ app.whenReady().then(() => {
   registerShellListeners(ipcMain, mainWindow);
   registerPathListeners(ipcMain);
   registerFsListeners(ipcMain);
+  registerWindowListener(ipcMain)
 
   startLanguageServers();
 });

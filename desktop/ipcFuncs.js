@@ -22,15 +22,6 @@ function getExtension(filename) {
 }
 
 /**
- * @type {import("./type").minimize}
- */
-const minimizeImpl = (_event = undefined) => {
-  const webContents = _event?.sender;
-  const win = BrowserWindow.fromWebContents(webContents);
-  win?.minimize();
-};
-
-/**
  * @type {import("./type").maximize}
  */
 const maximizeImpl = (_event = undefined) => {
@@ -46,15 +37,6 @@ const closeImpl = (_event = undefined) => {
   const webContents = _event.sender;
   const win = BrowserWindow.fromWebContents(webContents);
   win.close();
-};
-
-/**
- * @type {import("./type").isMaximized}
- */
-const isMaximizedImpl = async (_event = undefined) => {
-  const webContents = _event.sender;
-  const win = BrowserWindow.fromWebContents(webContents);
-  return win.isMaximized();
 };
 
 /**
@@ -118,10 +100,8 @@ const cleanUpWatchers = () => {
 };
 
 module.exports = {
-  minimizeImpl,
   maximizeImpl,
   closeImpl,
-  isMaximizedImpl,
   restoreImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,

@@ -10,8 +10,8 @@
  * @property {fsExists} exists - Checks if a path exists
  * @property {fsRemove} remove - Remove a path
  * @property {readDir} readDir - Read directory
- * @property {createDirectory} createDirectory - Create a folder 
- * @property {selectFolder} selectFolder - Use electron select folder 
+ * @property {createDirectory} createDirectory - Create a folder
+ * @property {selectFolder} selectFolder - Use electron select folder
  */
 
 /**
@@ -89,12 +89,22 @@
  * @typedef {"createFile" | "createFolder" | "default"} fileNodeMode
  */
 
+/**
+ * Contains all utils related to the electron chroium window
+ * @typedef {Object} chromeWindowApi
+ * @property {chromeWindowIsMaximized} isMaximized - If the window if full screen
+ * @property {chromeWindowMinimize} minimize - Minimize the window
+ */
 
+/**
+ * Checks if the window is maximized
+ * @callback chromeWindowIsMaximized
+ * @returns {Promise<boolean>} True or false
+ */
 
 /**
  * Minimizes the window
- * @callback minimize
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback chromeWindowMinimize
  * @returns {void} Nothing
  */
 
@@ -110,13 +120,6 @@
  * @callback close
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @returns {void} Nothing
- */
-
-/**
- * Checks if the window is maximized
- * @callback isMaximized
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @returns {Promise<boolean>} True or false
  */
 
 /**
@@ -644,10 +647,8 @@
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
- * @property {minimize} minimize - Minimizes the screen window
  * @property {maximize} maximize - Maximize a window
  * @property {close} close - Close the window
- * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
  * @property {restore} restore - Restores the window back to beofre it was maximized
  * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  *
@@ -666,6 +667,8 @@
  * @property {pathApi} pathApi - Contains all path utils
  *
  * @property {fsApi} fsApi - Contains all file fs utils
+ *
+ * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  */
 

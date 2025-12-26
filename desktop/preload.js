@@ -1,5 +1,16 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+
+/**
+ * @type {import("./type").chromeWindowApi}
+ */
+const chromeWindowApi = {
+  isMaximized: () => ipcRenderer.invoke("window:ismaximized"),
+  minimize: () => {
+    ipcRenderer.send("window:minimize")
+  }
+}
+
 /**
  * @type {import("./type").fsApi}
  */
@@ -121,9 +132,6 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  
-  isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
-
   onDirectoryChange: async (dirPath, cb) => {
     await ipcRenderer.invoke("dir:watch", dirPath);
 
@@ -142,7 +150,6 @@ const api = {
     };
   },
 
-  minimize: (_event) => ipcRenderer.send("window:minimize"),
   maximize: (_event) => ipcRenderer.send("window:maximize"),
   close: (_event) => ipcRenderer.send("window:close"),
   restore: (_event) => ipcRenderer.send("window:restore"),
@@ -160,6 +167,7 @@ const api = {
   shellApi,
   pathApi,
   fsApi,
+  chromeWindowApi
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
