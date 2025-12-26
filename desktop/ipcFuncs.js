@@ -22,55 +22,12 @@ function getExtension(filename) {
 }
 
 /**
- * @type {import("./type").readDir}
- */
-const readDirImpl = async (_event = undefined, directoryPath) => {
-  let items = await fsp.readdir(directoryPath, { withFileTypes: true });
-
-  // Map to include metadata
-  /**@type {Array<import("./type").fileNode>} */
-  let mappedItems = items.map((item) => ({
-    name: item.name,
-    path: path.join(directoryPath, item.name),
-    isDirectory: item.isDirectory(),
-    children: [],
-    expanded: false,
-    parentPath: directoryPath,
-    mode: "default",
-    extension: getExtension(item.name) ?? "",
-  }));
-
-  // Sort: folders first, then files — both alphabetically
-  mappedItems.sort((a, b) => {
-    // If one is a folder and the other is not
-    if (a.isDirectory && !b.isDirectory) return -1;
-    if (!a.isDirectory && b.isDirectory) return 1;
-    // Otherwise, sort alphabetically by name
-    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-  });
-
-  return mappedItems;
-};
-
-/**
  * @type {import("./type").selectFolder}
  */
 const selectFolderImpl = async (_event = undefined) => {
   return await dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
-};
-
-/**
- * @type {import("./type").exists}
- */
-const existsImpl = async (_event = undefined, path) => {
-  try {
-    return fs.existsSync(path);
-  } catch (error) {
-    console.log("Error with exists function " + error);
-    return false;
-  }
 };
 
 /**
@@ -119,39 +76,6 @@ const restoreImpl = (_event = undefined) => {
 };
 
 /**
- * @type {import("./type").normalize}
- */
-const normalizeImpl = async (_event = undefined, p) => {
-  return path.normalize(p);
-};
-
-/**
- * @type {import("./type").fileExists}
- */
-const fileExistsImpl = async (_event = undefined, fp) => {
-  try {
-    const stats = await fsp.stat(fp);
-    return stats.isFile();
-  } catch (err) {
-    if (err.code === "ENOENT") return false;
-    throw err;
-  }
-};
-
-/**
- * @type {import("./type").directoryExists}
- */
-const directoryExistsImpl = async (_event = undefined, fp) => {
-  try {
-    const stats = await fsp.stat(fp);
-    return stats.isDirectory();
-  } catch (err) {
-    if (err.code === "ENOENT") return false;
-    throw err;
-  }
-};
-
-/**
  * @type {import("./type").createDirectory}
  */
 const createDirectoryImpl = async (_event = undefined, fp) => {
@@ -163,38 +87,6 @@ const createDirectoryImpl = async (_event = undefined, fp) => {
       return false;
     }
     throw err;
-  }
-};
-
-/**
- * @type {import("./type").deleteFile}
- */
-const deleteFileImpl = async (_event = undefined, fp) => {
-  try {
-    const resolvedPath = path.resolve(fp);
-
-    await fsp.unlink(resolvedPath);
-
-    return true;
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
-};
-
-/**
- * @type {import("./type").deleteDirectory}
- */
-const deletDirectoryImpl = async (_event = undefined, dp) => {
-  try {
-    const resolvedPath = path.resolve(dp);
-
-    await fsp.rm(resolvedPath, { recursive: true, force: false });
-
-    return true;
-  } catch (error) {
-    console.log(error);
-    return false;
   }
 };
 
@@ -250,21 +142,13 @@ const cleanUpWatchers = () => {
 };
 
 module.exports = {
-  readDirImpl,
   selectFolderImpl,
-  existsImpl,
   minimizeImpl,
   maximizeImpl,
   closeImpl,
   isMaximizedImpl,
   restoreImpl,
-  normalizeImpl,
-  createFileImpl,
-  fileExistsImpl,
-  directoryExistsImpl,
   createDirectoryImpl,
-  deleteFileImpl,
-  deletDirectoryImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,

@@ -43,7 +43,7 @@ const registerFsListeners = (ipcMain) => {
     }
   });
 
-  ipcMain.handle("file:create", async (event, fp) => {
+  ipcMain.handle("file:create", async (_, fp) => {
     try {
       if (!fp) return false;
 
@@ -55,6 +55,70 @@ const registerFsListeners = (ipcMain) => {
     } catch (error) {
       logger.error("Failed to create file " + JSON.stringify(error));
       return false;
+    }
+  });
+
+  ipcMain.handle("fs:exists", async (_, fp) => {
+    try {
+      let p = path.normalize(path.resolve(fp));
+
+      await fs.access(p);
+
+      return true;
+    } catch (error) {
+      logger.error("Failed to check if a file exists" + JSON.stringify(error));
+      return false;
+    }
+  });
+
+  ipcMain.handle("fs:remove", async (_, fp) => {
+    try {
+      let p = path.normalize(path.resolve(fp));
+
+      await fs.access(p);
+
+      await fs.rm(p, { recursive: true });
+
+      return true;
+    } catch (error) {
+      logger.error("Failed to remove path " + JSON.stringify(error));
+      return false;
+    }
+  });
+
+  ipcMain.handle("dir:read", async (_, dp) => {
+    try {
+      const p = path.normalize(path.resolve(dp));
+
+      await fs.access(p);
+
+      const res = await fs.readdir(p, {
+        encoding: "utf-8",
+        withFileTypes: true,
+      });
+
+      res.sort((a, b) => {
+        if (a.isDirectory() && !b.isDirectory()) return -1;
+        if (!a.isDirectory() && b.isDirectory()) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      /** @type {import("./type").fileNode[]} */
+      const filenodes = res.map((item) => ({
+        name: item.name,
+        path: path.resolve(p, item.name),
+        parentPath: p,
+        isDirectory: item.isDirectory(),
+        children: [],
+        expanded: false,
+        mode: "default",
+        extension: item.isDirectory() ? "" : path.extname(item.name),
+      }));
+
+      return filenodes;
+    } catch (error) {
+      logger.error("Failed to read directory", JSON.stringify(error));
+      return [];
     }
   });
 };

@@ -7,6 +7,9 @@ const fsApi = {
   readFile: (fp) => ipcRenderer.invoke("file:read", fp),
   write: (fp, c) => ipcRenderer.invoke("file:write", fp, c),
   createFile: (fp) => ipcRenderer.invoke("file:create", fp),
+  exists: (path) => ipcRenderer.invoke("fs:exists", path),
+  remove: (path) => ipcRenderer.invoke("fs:remove", path),
+  readDir: (path) => ipcRenderer.invoke("dir:read", path),
 };
 
 /**
@@ -116,14 +119,8 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  fileExists: (_event, fp) => ipcRenderer.invoke("file:exists", fp),
-  deleteFile: (_event, fp) => ipcRenderer.invoke("file:delete", fp),
-  readDir: (_event, dirPath) => ipcRenderer.invoke("dir:read", dirPath),
   createDirectory: (_event, fp) => ipcRenderer.invoke("dir:create", fp),
-  directoryExists: (_event, fp) => ipcRenderer.invoke("dir:exists", fp),
-  deleteDirectory: (_event, dp) => ipcRenderer.invoke("dir:delete", dp),
   selectFolder: (_event) => ipcRenderer.invoke("dir:select"),
-  exists: (_event, path) => ipcRenderer.invoke("exists", path),
   isMaximized: (_event) => ipcRenderer.invoke("window:isMaximized"),
 
   onDirectoryChange: async (dirPath, cb) => {

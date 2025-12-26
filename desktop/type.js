@@ -7,6 +7,9 @@
  * @property {readFile} readFile - Calls fs read file
  * @property {writeToFile} write - Calls fs write
  * @property {createFile} createFile - Calls fs create
+ * @property {fsExists} exists - Checks if a path exists
+ * @property {fsRemove} remove - Remove a path
+ * @property {readDir} readDir - Read directory
  */
 
 /**
@@ -25,19 +28,31 @@
  */
 
 /**
- * Reads a folder content not recursive
- *
- * @callback readDir
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron event argument (used in the main process; can be ignored in the main world).
- * @param {string} directoryPath - The path to the directory to read.
- * @returns {Promise<Array<fileNode>>} - A promise that resolves to a list of file nodes
- */
-
-/**
  * Create a file
  * @callback createFile
  * @param {string} destionationPath - The path to where the file should be created
  * @returns {Promise<boolean>} - True or false if it was able to be created
+ */
+
+/**
+ * Check if a given path exists
+ * @callback fsExists
+ * @param {string} path - The file path to the file to check if it exists
+ * @returns {Promise<boolean>} - True or false
+ */
+
+/**
+ * Remove a file or folder
+ * @callback fsRemove
+ * @param {string} path - The path to remove
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Reads a folder content not recursive
+ * @callback readDir
+ * @param {string} directoryPath - The path to the directory to read.
+ * @returns {Promise<fileNode[]>} - List of file nodes
  */
 
 /**
@@ -64,14 +79,6 @@
  * @callback selectFolder
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @returns {Promise<import("electron").OpenDialogReturnValue>} - A promise that resolves with the dialog result, including the selected path or a flag indicating cancellation.
- */
-
-/**
- * Checks if a file or folder exists
- * @callback exists
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} path - The file or folder path to check if it exists
- * @returns {Promise<boolean>} - True or false if it exists
  */
 
 /**
@@ -156,43 +163,11 @@
  */
 
 /**
- * Check if a file exists at a given path
- * @callback fileExists
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} filePath - The file path to the file to check if it exists
- * @returns {Promise<boolean>} - True or false
- */
-
-/**
- * Check if a folder exists
- * @callback directoryExists
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The path to the folder to check
- * @returns {Promise<boolean>} True or false
- */
-
-/**
  * Create a folder at a given path
  * @callback createDirectory
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} directoryPath - Path to create the directory at
  * @returns {Promise<boolean>} - True or false
- */
-
-/**
- * Delete a file by it's path
- * @callback deleteFile
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} filePath - The path to the file to delete
- * @returns {Promise<boolean>} True or false if the file was deleted
- */
-
-/**
- * Delete an directory by it's path - recusive delete
- * @callback deleteDirectory
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directoryPath - The path to the directory to delete
- * @returns {Promise<boolean>} True or false if it was deleted
  */
 
 /**
@@ -667,19 +642,13 @@
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
- * @property {readDir} readDir - Reads the contents of a directory.
  * @property {selectFolder} selectFolder - Opens a dialog and allows the user to choose a folder to select
- * @property {exists} exists - Check if a file or folder exists
  * @property {minimize} minimize - Minimizes the screen window
  * @property {maximize} maximize - Maximize a window
  * @property {close} close - Close the window
  * @property {isMaximized} isMaximized - Check if the window screen is fully maximized
  * @property {restore} restore - Restores the window back to beofre it was maximized
- * @property {fileExists} fileExists - Check if a file exists
- * @property {directoryExists} directoryExists - Check if a folder exists
  * @property {createDirectory} createDirectory - Create a directory folder at a given path
- * @property {deleteFile} deleteFile - Delete a file by it's file path
- * @property {deleteDirectory} deleteDirectory - Delete a folder directory by it's path is recursive
  * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results

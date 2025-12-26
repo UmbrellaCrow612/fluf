@@ -2,20 +2,13 @@ const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
 const {
-  readDirImpl,
   selectFolderImpl,
-  existsImpl,
   minimizeImpl,
   maximizeImpl,
   closeImpl,
   isMaximizedImpl,
   restoreImpl,
-  normalizeImpl,
-  fileExistsImpl,
-  directoryExistsImpl,
   createDirectoryImpl,
-  deleteFileImpl,
-  deletDirectoryImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
@@ -78,34 +71,23 @@ const createWindow = () => {
 app.whenReady().then(() => {
   createWindow();
 
-  // move to fs 
-  ipcMain.handle("file:exists", fileExistsImpl);
-  ipcMain.handle("file:delete", deleteFileImpl);
-
-  ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
-  ipcMain.handle("dir:exists", directoryExistsImpl);
   ipcMain.handle("dir:create", createDirectoryImpl);
-  ipcMain.handle("dir:delete", deletDirectoryImpl);
-
-  ipcMain.handle("exists", existsImpl);
 
   ipcMain.handle("window:isMaximized", isMaximizedImpl);
 
   ipcMain.handle("dir:watch", watchDirectoryImpl);
   ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
-   // move to fs 
+  // move to fs
 
-
-   // move ot window 
+  // move ot window
   ipcMain.on("window:minimize", minimizeImpl);
   ipcMain.on("window:maximize", maximizeImpl);
   ipcMain.on("window:close", closeImpl);
   ipcMain.on("window:restore", restoreImpl);
-    // move ot window 
+  // move ot window
 
-
-    // move into ripgrep.js
+  // move into ripgrep.js
   ipcMain.handle("ripgrep:search", ripGrepImpl);
 
   registerGitListeners(ipcMain);
@@ -115,8 +97,8 @@ app.whenReady().then(() => {
   registerImageListeners(ipcMain, protocol);
   registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);
-  registerPathListeners(ipcMain)
-  registerFsListeners(ipcMain)
+  registerPathListeners(ipcMain);
+  registerFsListeners(ipcMain);
 
   startLanguageServers();
 });
