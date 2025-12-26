@@ -2,9 +2,6 @@ const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
 const {
-  maximizeImpl,
-  closeImpl,
-  restoreImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
@@ -71,12 +68,6 @@ app.whenReady().then(() => {
   ipcMain.handle("dir:watch", watchDirectoryImpl); // move to send events handle
   ipcMain.handle("dir:unwatch", unwatchDirectoryImpl);
   // move to fs
-
-  // move ot window
-  ipcMain.on("window:maximize", maximizeImpl);
-  ipcMain.on("window:close", closeImpl);
-  ipcMain.on("window:restore", restoreImpl);
-  // move ot window
 
   // move into ripgrep.js
   ipcMain.handle("ripgrep:search", ripGrepImpl);

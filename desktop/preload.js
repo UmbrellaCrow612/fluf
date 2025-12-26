@@ -1,15 +1,23 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-
 /**
  * @type {import("./type").chromeWindowApi}
  */
 const chromeWindowApi = {
   isMaximized: () => ipcRenderer.invoke("window:ismaximized"),
   minimize: () => {
-    ipcRenderer.send("window:minimize")
+    ipcRenderer.send("window:minimize");
+  },
+  maximize: () => {
+    ipcRenderer.send("window:maximize");
+  },
+  close: () => {
+    ipcRenderer.send("window:close")
+  },
+  restore: () => {
+    ipcRenderer.send("window:restore")
   }
-}
+};
 
 /**
  * @type {import("./type").fsApi}
@@ -22,7 +30,7 @@ const fsApi = {
   remove: (path) => ipcRenderer.invoke("fs:remove", path),
   readDir: (path) => ipcRenderer.invoke("dir:read", path),
   createDirectory: (p) => ipcRenderer.invoke("dir:create", p),
-  selectFolder: () => ipcRenderer.invoke("dir:select")
+  selectFolder: () => ipcRenderer.invoke("dir:select"),
 };
 
 /**
@@ -150,10 +158,6 @@ const api = {
     };
   },
 
-  maximize: (_event) => ipcRenderer.send("window:maximize"),
-  close: (_event) => ipcRenderer.send("window:close"),
-  restore: (_event) => ipcRenderer.send("window:restore"),
-
   ripGrep: (_event, options) => ipcRenderer.invoke("ripgrep:search", options),
 
   fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
@@ -167,7 +171,7 @@ const api = {
   shellApi,
   pathApi,
   fsApi,
-  chromeWindowApi
+  chromeWindowApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

@@ -94,6 +94,9 @@
  * @typedef {Object} chromeWindowApi
  * @property {chromeWindowIsMaximized} isMaximized - If the window if full screen
  * @property {chromeWindowMinimize} minimize - Minimize the window
+ * @property {chromeWindowMaximize} maximize - Maximize the window
+ * @property {chromeWindowClose} close - Closes the window
+ * @property {chromeWindowRestore} restore - Restore the window
  */
 
 /**
@@ -109,23 +112,20 @@
  */
 
 /**
- * Maximize a window
- * @callback maximize
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * Maximize the window
+ * @callback chromeWindowMaximize
  * @returns {void} Nothing
  */
 
 /**
  * Close the window
- * @callback close
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback chromeWindowClose
  * @returns {void} Nothing
  */
 
 /**
  * Restores the browsers window back to beofre it was maximized
- * @callback restore
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback chromeWindowRestore
  * @returns {void} Nothing
  */
 
@@ -647,9 +647,6 @@
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
- * @property {maximize} maximize - Maximize a window
- * @property {close} close - Close the window
- * @property {restore} restore - Restores the window back to beofre it was maximized
  * @property {onDirectoryChange} onDirectoryChange - Listen to a specific directory change and run custom logic
  *
  * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results

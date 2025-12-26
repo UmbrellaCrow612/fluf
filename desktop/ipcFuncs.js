@@ -2,51 +2,7 @@
  * File contains all our impl of electron api funcs to be exposed in the electron api to render
  */
 
-const { dialog, BrowserWindow } = require("electron");
-const fsp = require("fs/promises");
 const fs = require("fs");
-const path = require("path");
-
-/**
- * Gets the extension from a filename.
- * @param {string} filename
- * @returns {string|null} The extension without the dot, or null if none.
- */
-function getExtension(filename) {
-  if (typeof filename !== "string") return null;
-
-  const lastDot = filename.lastIndexOf(".");
-  if (lastDot === -1 || lastDot === filename.length - 1) return null;
-
-  return filename.slice(lastDot + 1).toLowerCase();
-}
-
-/**
- * @type {import("./type").maximize}
- */
-const maximizeImpl = (_event = undefined) => {
-  const webContents = _event.sender;
-  const win = BrowserWindow.fromWebContents(webContents);
-  win.maximize();
-};
-
-/**
- * @type {close}
- */
-const closeImpl = (_event = undefined) => {
-  const webContents = _event.sender;
-  const win = BrowserWindow.fromWebContents(webContents);
-  win.close();
-};
-
-/**
- * @type {import("./type").restore}
- */
-const restoreImpl = (_event = undefined) => {
-  const webContents = _event.sender;
-  const win = BrowserWindow.fromWebContents(webContents);
-  win.restore();
-};
 
 /**
  * List of watchers active by key directory path and value the watcher
@@ -100,9 +56,6 @@ const cleanUpWatchers = () => {
 };
 
 module.exports = {
-  maximizeImpl,
-  closeImpl,
-  restoreImpl,
   watchDirectoryImpl,
   unwatchDirectoryImpl,
   cleanUpWatchers,
