@@ -82,7 +82,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
 
       return true;
     } catch (error) {
-      logger.error("Failed to check if a file exists" + JSON.stringify(error));
+      logger.error("Failed to check if a file exists " + JSON.stringify(error));
       return false;
     }
   });
