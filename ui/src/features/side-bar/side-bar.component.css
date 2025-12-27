@@ -2,7 +2,7 @@
   width: 75px;
   height: 100%;
 
-  background-color: rgb(14, 13, 13);
+  background-color: var(--color-background);
 
   display: flex;
   flex-direction: column;
@@ -22,5 +22,5 @@
 }
 
 .active {
-  background-color: rgb(83, 80, 80);
+  background-color: var(--color-surface);
 }
