@@ -17,7 +17,7 @@ let abortController = null;
  * Ref to the main window
  * @type {import("electron").BrowserWindow | null}
  */
-let mainWindowRef = null
+let mainWindowRef = null;
 
 /**
  * Parses the stdout from `git status` and returns a structured JSON object.
@@ -126,11 +126,9 @@ function parseGitStatus(stdout) {
  */
 function runGitCommand(args, cwd, timeOut = 5000) {
   return new Promise((resolve, reject) => {
-    if (!cwd || !fs.existsSync(cwd) || !fs.statSync(cwd).isDirectory()) {
-      return reject(new Error("Invalid working directory"));
-    }
-
-    const gitProc = spawn("git", args, { cwd });
+    const gitProc = spawn("git", args, {
+      cwd: path.normalize(path.resolve(cwd)),
+    });
 
     let stdoutData = "";
     let stderrData = "";
@@ -174,7 +172,7 @@ function runGitCommand(args, cwd, timeOut = 5000) {
  * @param {import("electron").BrowserWindow} mainWindow
  */
 const registerGitListeners = (ipcMain, mainWindow) => {
-  mainWindowRef = mainWindow
+  mainWindowRef = mainWindow;
 
   ipcMain.handle("has:git", async () => {
     try {
@@ -227,12 +225,14 @@ const registerGitListeners = (ipcMain, mainWindow) => {
       });
 
       for await (const event of watcher) {
-        if(mainWindowRef){
-          mainWindowRef.webContents.send("git:change", event)
+        if (mainWindowRef) {
+          mainWindowRef.webContents.send("git:change", event);
         }
       }
       return true;
-    } catch (error) {
+    } catch (/** @type {any}*/ error) {
+      if (error.name === "AbortError") return false;
+
       logger.error("Failed to watch git repo " + JSON.stringify(error));
       return false;
     }
