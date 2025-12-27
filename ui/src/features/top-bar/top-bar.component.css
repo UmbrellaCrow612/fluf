@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 30px;
-  background-color: var(--color-background);
+  padding: var(--spacing-2) var(--spacing-8);
+  background-color: var(--color-background-secondary);
   color: var(--color-text-primary);
 
   width: 100%;
@@ -22,5 +22,5 @@ mat-tooltip {
 .flex {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--spacing-2);
 }
