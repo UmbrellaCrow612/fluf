@@ -8,18 +8,6 @@ const path = require("path");
 const { logger } = require("./logger");
 
 /**
- * Abort controller used to watch the git repo
- * @type {null | AbortController}
- */
-let abortController = null;
-
-/**
- * Ref to the main window
- * @type {import("electron").BrowserWindow | null}
- */
-let mainWindowRef = null;
-
-/**
  * Parses the stdout from `git status` and returns a structured JSON object.
  *
  * @param {string} stdout - The raw stdout string from `git status`
@@ -169,11 +157,8 @@ function runGitCommand(args, cwd, timeOut = 5000) {
 /**
  * Registers all listeners and handlers for git
  * @param {import("electron").IpcMain} ipcMain
- * @param {import("electron").BrowserWindow} mainWindow
  */
-const registerGitListeners = (ipcMain, mainWindow) => {
-  mainWindowRef = mainWindow;
-
+const registerGitListeners = (ipcMain) => {
   ipcMain.handle("has:git", async () => {
     try {
       const version = await runGitCommand(["--version"], process.cwd());
@@ -208,36 +193,6 @@ const registerGitListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.on("git:watch", async (event, dir) => {
-    try {
-      let p = path.normalize(path.resolve(dir));
-
-      if (abortController) {
-        logger.info("Repo already watched for git watch" + p);
-        return;
-      }
-      abortController = new AbortController();
-
-      let watcher = fs.watch(p, {
-        recursive: true,
-        encoding: "utf-8",
-        signal: abortController.signal,
-      });
-
-      for await (const event of watcher) {
-        if (mainWindowRef) {
-          mainWindowRef.webContents.send("git:change", event);
-        }
-      }
-      return true;
-    } catch (/** @type {any}*/ error) {
-      if (error.name === "AbortError") return false;
-
-      logger.error("Failed to watch git repo " + JSON.stringify(error));
-      return false;
-    }
-  });
-
   ipcMain.handle("git:status", async (event, dir) => {
     try {
       const stdout = await runGitCommand(
@@ -250,16 +205,6 @@ const registerGitListeners = (ipcMain, mainWindow) => {
       console.error("Error checking git status:", err);
       return null;
     }
-  });
-
-  ipcMain.on("git:unwatch", () => {
-    if (!abortController) {
-      logger.info("Repo not being watched for git ");
-      return;
-    }
-
-    abortController.abort();
-    abortController = null;
   });
 };
 
