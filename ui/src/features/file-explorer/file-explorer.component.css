@@ -16,8 +16,8 @@
   gap: 5px;
 
   padding: 10px;
-  background-color: rgb(20, 20, 20);
-  color: white;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
 }
 
 .file_explorer_top {
@@ -33,7 +33,7 @@
   justify-content: space-between;
 
   padding: 0px 10px;
-  font-size: 0.9em;
+  font-size: var(--text-sm);
   text-align: center;
 }
 
@@ -58,6 +58,6 @@
 }
 
 .file_explorer_file_tree_active {
-  border: 1px solid white;
+  border: 1px solid var(--color-text-primary);
   border-radius: 5px;
 }
