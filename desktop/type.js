@@ -12,7 +12,7 @@
  * @property {readDir} readDir - Read directory
  * @property {createDirectory} createDirectory - Create a folder
  * @property {selectFolder} selectFolder - Use electron select folder
- * @property {onFsChange} onChange - Listen to a file or folder path change and run logic - will start watching the given path it'  not being watched then 
+ * @property {onFsChange} onChange - Listen to a file or folder path change and run logic - will start watching the given path it'  not being watched then
  * register the callback to be run when it changes, also returns a unsub method, does NOT stop watching the path, but no longer run, the callback defined by removing it
  * @property {fsStopWatching} stopWatching - Stops watching a given path
  */
@@ -239,29 +239,6 @@
  */
 
 /**
- * Checks if the OS has git installed
- * @callback hasGit
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @returns {Promise<boolean>} If the OS has git or not
- */
-
-/**
- * Checks if the given folder has git Initialized
- * @callback isGitInitialized
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directory - The folder to check
- * @returns {Promise<boolean>} If it has it or not
- */
-
-/**
- * Initialize git into a given folder
- * @callback initializeGit
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directory - The folder to init git in
- * @returns {Promise<{success:boolean, error:string | null}>} Success or failure
- */
-
-/**
  * Callback structure for callback
  * @callback voidCallback
  * @returns {void}
@@ -323,13 +300,33 @@
  */
 
 /**
+ * Checks if the OS has git installed
+ * @callback hasGit
+ * @returns {Promise<boolean>} If the OS has git or not
+ */
+
+/**
+ * Checks if the given folder has git Initialized
+ * @callback isGitInitialized
+ * @param {string} directory - The folder to check
+ * @returns {Promise<boolean>} If it has it or not
+ */
+
+/**
+ * Initialize git into a given folder
+ * @callback initializeGit
+ * @param {string} directory - The folder to init git in
+ * @returns {Promise<{success:boolean, error:string | null}>} Success or failure
+ */
+
+/**
  * Object that contains all the git helper functions
  * @typedef {Object} gitApi
  * @property {hasGit} hasGit - Checks if the OS has GIT
  * @property {isGitInitialized} isGitInitialized - Checks if a folder has git tracking
  * @property {initializeGit} initializeGit - Init git inot a folder
  * @property {onGitChange} onGitChange - Listen to changes and run custom logic
- * @property {watchGitRepo} watchGitRepo - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
+ * @property {watchGitRepo} watchGitRepo - Beings to watch the git repo
  * @property {gitStatus} gitStatus - Run git status in a folder and get the result
  */
 
