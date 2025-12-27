@@ -304,13 +304,26 @@
  */
 
 /**
+ * @callback onGitChangeCallback
+ */
+
+/**
+ * Listen to when the git repo changes being watched
+ * @callback onGitChange
+ * @param {string} dir - The directory
+ * @param {onGitChangeCallback} callback - The logic to run
+ * @returns {voidCallback} UnSub methodF
+ */
+
+/**
  * Object that contains all the git helper functions
  * @typedef {Object} gitApi
  * @property {hasGit} hasGit - Checks if the OS has GIT
  * @property {isGitInitialized} isGitInitialized - Checks if a folder has git tracking
  * @property {initializeGit} initializeGit - Init git inot a folder
- * @property {stopWatchingGitRepo} stopWatching 
+ * @property {stopWatchingGitRepo} stopWatching
  * @property {gitStatus} gitStatus - Run git status in a folder and get the result
+ * @property {onGitChange} onChange - Listen to changes and run logic
  */
 
 /**
