@@ -2,15 +2,15 @@
   width: 75px;
   height: 100%;
 
-  background-color: var(--color-background);
+  background-color: var(--color-background-secondary);
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
 
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: var(--spacing-3);
+  padding-bottom: var(--spacing-3);
 }
 
 .top,
@@ -18,9 +18,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: var(--spacing-2);
 }
 
 .active {
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-active);
 }
