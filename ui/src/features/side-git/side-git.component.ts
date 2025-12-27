@@ -1,8 +1,16 @@
-import { Component, computed, inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  NgZone,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
 import { MatButtonModule } from '@angular/material/button';
 import { gitStatusResult, voidCallback } from '../../gen/type';
+import { FileChangeInfo } from 'fs/promises';
 
 @Component({
   selector: 'app-side-git',
@@ -13,8 +21,9 @@ import { gitStatusResult, voidCallback } from '../../gen/type';
 export class SideGitComponent implements OnInit, OnDestroy {
   private readonly api = getElectronApi();
   private readonly contextService = inject(ContextService);
+  private readonly ngZone = inject(NgZone);
 
-  selectedDir = computed(() => this.contextService.selectedDirectoryPath())
+  selectedDir = computed(() => this.contextService.selectedDirectoryPath());
 
   errorMessage: string | null = null;
   isLoading = false;
@@ -42,7 +51,6 @@ export class SideGitComponent implements OnInit, OnDestroy {
     }
 
     this.isGitInit = await this.api.gitApi.isGitInitialized(
-      undefined,
       this.selectedDir()!
     );
     if (!this.isGitInit) {
@@ -50,14 +58,10 @@ export class SideGitComponent implements OnInit, OnDestroy {
       return;
     }
 
-    await this.api.gitApi.watchGitRepo(undefined, this.selectedDir()!);
-    this.gitStatusResult = await this.api.gitApi.gitStatus(
-      undefined,
-      this.selectedDir()!
-    );
+    this.gitStatusResult = await this.api.gitApi.gitStatus(this.selectedDir()!);
 
-    this.unSub = this.api.gitApi.onGitChange((data) => {
-      this.gitStatusResult = data;
+    this.unSub = this.api.fsApi.onChange(this.selectedDir()!, (event) => {
+      this.runGitStatus(event);
     });
 
     this.isLoading = false;
@@ -68,19 +72,44 @@ export class SideGitComponent implements OnInit, OnDestroy {
   async createGitRepo() {
     this.isCreatingGitRepo = true;
 
-    let res = await this.api.gitApi.initializeGit(undefined, this.selectedDir()!);
-    if (!res.success) {
-      this.creatingGitError = res.error;
+    let suc = await this.api.gitApi.initializeGit(this.selectedDir()!);
+    if (!suc) {
+      this.creatingGitError = 'Failed';
       this.isCreatingGitRepo = false;
+      return;
     }
 
     this.isCreatingGitRepo = false;
     this.isGitInit = true;
-    await this.api.gitApi.watchGitRepo(undefined, this.selectedDir()!);
-    this.gitStatusResult = await this.api.gitApi.gitStatus(
-      undefined,
-      this.selectedDir()!
-    );
+
+    this.unSub = this.api.fsApi.onChange(this.selectedDir()!, (event) => {
+      this.runGitStatus(event);
+    });
+  }
+
+  private runGitStatus(event: FileChangeInfo<string>) {
+    const eventType = event.eventType;
+    const filePath = event.filename;
+
+    if (eventType !== 'change' && eventType !== 'rename') {
+      return;
+    }
+
+    if (!filePath) {
+      return;
+    }
+
+    if (filePath.includes('.git')) {
+      return;
+    }
+
+    console.log('yo');
+
+    this.api.gitApi.gitStatus(this.selectedDir()!).then((x) => {
+      this.ngZone.run(() => {
+        this.gitStatusResult = x;
+      });
+    });
   }
 
   ngOnDestroy(): void {

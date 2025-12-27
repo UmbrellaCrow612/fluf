@@ -3,7 +3,7 @@ const { loadEnv } = require("./env");
 const path = require("path");
 const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
-const { registerGitListeners, stopWatchingGitRepo } = require("./git");
+const { registerGitListeners } = require("./git");
 const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
@@ -78,7 +78,6 @@ app.whenReady().then(() => {
 
 app.on("before-quit", () => {
   cleanUpWatchers();
-  stopWatchingGitRepo();
   stopLanguageServers();
   cleanUpShells();
 });

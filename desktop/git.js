@@ -3,8 +3,9 @@
  */
 
 const { spawn } = require("child_process");
-const fs = require("fs");
+const fs = require("fs/promises");
 const path = require("path");
+const { logger } = require("./logger");
 
 /**
  * Parses the stdout from `git status` and returns a structured JSON object.
@@ -87,7 +88,9 @@ function parseGitStatus(stdout) {
         if (file) {
           /** @type {import("./type").gitFileEntry} */
           const entry = {
-            status: /** @type {import("./type").gitFileStatus} */ (status || "untracked"),
+            status: /** @type {import("./type").gitFileStatus} */ (
+              status || "untracked"
+            ),
             file,
           };
 
@@ -111,11 +114,9 @@ function parseGitStatus(stdout) {
  */
 function runGitCommand(args, cwd, timeOut = 5000) {
   return new Promise((resolve, reject) => {
-    if (!cwd || !fs.existsSync(cwd) || !fs.statSync(cwd).isDirectory()) {
-      return reject(new Error("Invalid working directory"));
-    }
-
-    const gitProc = spawn("git", args, { cwd });
+    const gitProc = spawn("git", args, {
+      cwd: path.normalize(path.resolve(cwd)),
+    });
 
     let stdoutData = "";
     let stderrData = "";
@@ -153,139 +154,61 @@ function runGitCommand(args, cwd, timeOut = 5000) {
   });
 }
 
-/** @type {import("./type").hasGit} */
-const hasGitImpl = async (_event) => {
-  try {
-    const version = await runGitCommand(["--version"], process.cwd());
-    return version.startsWith("git");
-  } catch {
-    return false;
-  }
-};
-
-/** @type {import("./type").initializeGit} */
-const initializeGitImpl = async (_event, dir) => {
-  if (!_event || !dir) {
-    return { error: "Params", success: false };
-  }
-
-  try {
-    await runGitCommand(["init"], dir);
-    return { error: null, success: true };
-  } catch (/** @type {any} */ err) {
-    return { error: err?.message, success: false };
-  }
-};
-
-/** @type {import("./type").isGitInitialized} */
-const isGitInitializedImpl = async (_event, dir) => {
-  if (!dir) {
-    console.log("Param dir not passed");
-    return false;
-  }
-
-  return fs.existsSync(path.join(dir, ".git"));
-};
-
-/**
- * Unsub watcher logic
- * @type {import("./type").voidCallback | null}
- */
-let gitWatcher = null;
-/** Flag to track if watch logic has been run  */
-let isWatchingGitRepo = false;
-
-/** @type {import("./type").watchGitRepo} */
-const watchGitRepoImpl = async (_event, dir) => {
-  if (isWatchingGitRepo) {
-    console.log("Already watching git repo");
-    return true;
-  }
-
-  if (!dir || !fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
-    console.log("Invalid directory:", dir);
-    return false;
-  }
-
-  const sender = _event?.sender;
-
-  /** @type {NodeJS.Timeout | null} */
-  let debounceTimer = null;
-  const debounceDelay = 500;
-
-  const notifyChange = async () => {
-    try {
-      const stdout = await runGitCommand(["status"], dir);
-
-      let data = parseGitStatus(stdout);
-      sender?.send("git:change", data);
-    } catch (err) {
-      console.error("Error checking git status:", err);
-    }
-  };
-
-  const debounceNotify = () => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => notifyChange(), debounceDelay);
-  };
-
-  const watcher = fs.watch(dir, { recursive: true }, (_, filename) => {
-    if (filename) {
-      const parts = filename.split(path.sep);
-      if (parts.some((part) => part.startsWith("."))) {
-        return;
-      }
-      debounceNotify();
-    }
-  });
-
-  gitWatcher = () => watcher.close();
-  isWatchingGitRepo = true;
-
-  console.log("Watching repository for changes:", dir);
-
-  return true;
-};
-
-/** @type {import("./type").gitStatus} */
-const gitStatusImpl = async (_event, dir) => {
-  try {
-    const stdout = await runGitCommand(["status"], dir);
-
-    return parseGitStatus(stdout);
-  } catch (err) {
-    console.error("Error checking git status:", err);
-    return null;
-  }
-};
-
-/**
- * Stops watching files
- */
-function stopWatchingGitRepo() {
-  if (gitWatcher) {
-    gitWatcher();
-    gitWatcher = null;
-    isWatchingGitRepo = false;
-    console.log("Stopped watching repository");
-    return true;
-  }
-  return false;
-}
-
 /**
  * Registers all listeners and handlers for git
  * @param {import("electron").IpcMain} ipcMain
  */
 const registerGitListeners = (ipcMain) => {
-  ipcMain.handle("has:git", hasGitImpl);
-  ipcMain.handle("git:init", initializeGitImpl);
-  ipcMain.handle("git:is:init", isGitInitializedImpl);
-  ipcMain.handle("git:watch", watchGitRepoImpl);
-  ipcMain.handle("git:status", gitStatusImpl);
+  ipcMain.handle("has:git", async () => {
+    try {
+      const version = await runGitCommand(["--version"], process.cwd());
+      return version.startsWith("git");
+    } catch {
+      return false;
+    }
+  });
+
+  ipcMain.handle("git:init", async (event, dir) => {
+    let p = path.normalize(path.resolve(dir));
+
+    try {
+      await runGitCommand(["init"], p);
+
+      return true;
+    } catch (error) {
+      logger.error(
+        "Failed to init git repo " + p + " " + JSON.stringify(error)
+      );
+      return false;
+    }
+  });
+
+  ipcMain.handle("git:is:init", async (event, dir) => {
+    let gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
+
+    try {
+      await fs.access(gitPath);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  });
+
+  ipcMain.handle("git:status", async (event, dir) => {
+    try {
+      const stdout = await runGitCommand(
+        ["status"],
+        path.normalize(path.resolve(dir))
+      );
+
+      return parseGitStatus(stdout);
+    } catch (err) {
+      logger.error("Failed to check status " + JSON.stringify(err));
+      return null;
+    }
+  });
 };
 
 module.exports = {
   registerGitListeners,
-  stopWatchingGitRepo,
 };
