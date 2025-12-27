@@ -188,6 +188,7 @@ const registerGitListeners = (ipcMain) => {
 
     try {
       await fs.access(gitPath);
+      return true;
     } catch (error) {
       return false;
     }
@@ -202,7 +203,7 @@ const registerGitListeners = (ipcMain) => {
 
       return parseGitStatus(stdout);
     } catch (err) {
-      console.error("Error checking git status:", err);
+      logger.error("Failed to check status " + JSON.stringify(err));
       return null;
     }
   });

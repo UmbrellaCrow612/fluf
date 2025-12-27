@@ -300,21 +300,6 @@ export type ripGrepResult = {
  */
 export type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
 /**
- * Checks if the OS has git installed
- */
-export type hasGit = (event?: Electron.IpcMainInvokeEvent | undefined) => Promise<boolean>;
-/**
- * Checks if the given folder has git Initialized
- */
-export type isGitInitialized = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
-/**
- * Initialize git into a given folder
- */
-export type initializeGit = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<{
-    success: boolean;
-    error: string | null;
-}>;
-/**
  * Callback structure for callback
  */
 export type voidCallback = () => void;
@@ -361,21 +346,21 @@ export type gitStatusResult = {
     clean: boolean;
 };
 /**
- * Callback to run when git changes
- */
-export type onGitChangeCallback = (data: gitStatusResult) => void;
-/**
- * Listen to when git changes i.e files modified and run custom logic
- */
-export type onGitChange = (callback: onGitChangeCallback) => voidCallback;
-/**
- * Begins watching the git reppo if there is one, can be called multiple times safeley
- */
-export type watchGitRepo = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<boolean>;
-/**
  * Runs git status in the current project and returns the result
  */
-export type gitStatus = (event?: Electron.IpcMainInvokeEvent | undefined, directory: string) => Promise<gitStatusResult | null>;
+export type gitStatus = (directory: string) => Promise<gitStatusResult | null>;
+/**
+ * Checks if the OS has git installed
+ */
+export type hasGit = () => Promise<boolean>;
+/**
+ * Checks if the given folder has git Initialized
+ */
+export type isGitInitialized = (directory: string) => Promise<boolean>;
+/**
+ * Initialize git into a given folder
+ */
+export type initializeGit = (directory: string) => Promise<boolean>;
 /**
  * Object that contains all the git helper functions
  */
@@ -392,14 +377,6 @@ export type gitApi = {
      * - Init git inot a folder
      */
     initializeGit: initializeGit;
-    /**
-     * - Listen to changes and run custom logic
-     */
-    onGitChange: onGitChange;
-    /**
-     * - Begins watching git repo, can be called multiple times, allows the callbacks registered to begin to run
-     */
-    watchGitRepo: watchGitRepo;
     /**
      * - Run git status in a folder and get the result
      */

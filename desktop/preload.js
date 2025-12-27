@@ -101,28 +101,10 @@ const shellApi = {
  * @type {import("./type").gitApi}
  */
 const gitApi = {
-  hasGit: (_event) => ipcRenderer.invoke("has:git"),
-  isGitInitialized: (_event, dir) => ipcRenderer.invoke("git:is:init", dir),
-  initializeGit: (_event, dir) => ipcRenderer.invoke("git:init", dir),
-
-  onGitChange: (callback) => {
-    /**
-     * Runs when ipc send is sent to `git:change`
-     * @param {import("electron").IpcRendererEvent} _event
-     * @param {import("./type").gitStatusResult} data
-     */
-    let listener = (_event, data) => {
-      callback(data);
-    };
-
-    ipcRenderer.on("git:change", listener);
-
-    return () => ipcRenderer.removeListener("git:change", listener);
-  },
-
-  watchGitRepo: (_event, dir) => ipcRenderer.invoke("git:watch", dir),
-
-  gitStatus: (_event, dir) => ipcRenderer.invoke("git:status", dir),
+  hasGit: () => ipcRenderer.invoke("has:git"),
+  isGitInitialized: (dir) => ipcRenderer.invoke("git:is:init", dir),
+  initializeGit: (dir) => ipcRenderer.invoke("git:init", dir),
+  gitStatus: (dir) => ipcRenderer.invoke("git:status", dir),
 };
 
 /** @type {import("./type").tsServer} */

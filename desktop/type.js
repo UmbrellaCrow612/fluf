@@ -272,7 +272,6 @@
 /**
  * Runs git status in the current project and returns the result
  * @callback gitStatus
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} directory - The folder to run `git status` in
  * @returns {Promise<gitStatusResult | null>} Result or null if it could not
  */
@@ -294,7 +293,7 @@
  * Initialize git into a given folder
  * @callback initializeGit
  * @param {string} directory - The folder to init git in
- * @returns {Promise<{success:boolean, error:string | null}>} Success or failure
+ * @returns {Promise<boolean>} Success or failure
  */
 
 /**
