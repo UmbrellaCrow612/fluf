@@ -208,7 +208,7 @@ const registerGitListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("git:watch", async (event, dir) => {
+  ipcMain.on("git:watch", async (event, dir) => {
     try {
       let p = path.normalize(path.resolve(dir));
 
@@ -238,7 +238,29 @@ const registerGitListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("git:status", async (event, dir) => {});
+  ipcMain.handle("git:status", async (event, dir) => {
+    try {
+      const stdout = await runGitCommand(
+        ["status"],
+        path.normalize(path.resolve(dir))
+      );
+
+      return parseGitStatus(stdout);
+    } catch (err) {
+      console.error("Error checking git status:", err);
+      return null;
+    }
+  });
+
+  ipcMain.on("git:unwatch", () => {
+    if (!abortController) {
+      logger.info("Repo not being watched for git ");
+      return;
+    }
+
+    abortController.abort();
+    abortController = null;
+  });
 };
 
 module.exports = {

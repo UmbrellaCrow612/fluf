@@ -270,28 +270,6 @@
  */
 
 /**
- * Callback to run when git changes
- * @callback onGitChangeCallback
- * @param {gitStatusResult} data - The new data from git
- * @returns {void}
- */
-
-/**
- * Listen to when git changes i.e files modified and run custom logic
- * @callback onGitChange
- * @param {onGitChangeCallback} callback - The callback to run
- * @returns {voidCallback} Unsub to changes
- */
-
-/**
- * Begins watching the git reppo if there is one, can be called multiple times safeley
- * @callback watchGitRepo
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
- * @param {string} directory - The directory that contaisn the git
- * @returns {Promise<boolean>} If it could or could not
- */
-
-/**
  * Runs git status in the current project and returns the result
  * @callback gitStatus
  * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
@@ -320,13 +298,18 @@
  */
 
 /**
+ * Stops watching git repo if being watched
+ * @callback stopWatchingGitRepo
+ * @returns {void} Nothing
+ */
+
+/**
  * Object that contains all the git helper functions
  * @typedef {Object} gitApi
  * @property {hasGit} hasGit - Checks if the OS has GIT
  * @property {isGitInitialized} isGitInitialized - Checks if a folder has git tracking
  * @property {initializeGit} initializeGit - Init git inot a folder
- * @property {onGitChange} onGitChange - Listen to changes and run custom logic
- * @property {watchGitRepo} watchGitRepo - Beings to watch the git repo
+ * @property {stopWatchingGitRepo} stopWatching 
  * @property {gitStatus} gitStatus - Run git status in a folder and get the result
  */
 
