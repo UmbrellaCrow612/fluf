@@ -121,7 +121,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.error = null;
     this.isLoading = true;
 
-    console.log("Render shell")
+    console.log('Render shell');
 
     this.cleanupTerminal();
 
@@ -174,7 +174,24 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     container.innerHTML = '';
 
-    this.terminal = new Terminal();
+    this.terminal = new Terminal({
+      theme: {
+        background: getComputedStyle(document.documentElement)
+          .getPropertyValue('--color-editor-background')
+          .trim(),
+        foreground: getComputedStyle(document.documentElement)
+          .getPropertyValue('--color-text-primary')
+          .trim(),
+        cursor: getComputedStyle(document.documentElement)
+          .getPropertyValue('--color-editor-cursor')
+          .trim(),
+      },
+      fontFamily: getComputedStyle(document.documentElement)
+        .getPropertyValue('--font-family-mono')
+        .trim(),
+      fontSize: 14, 
+    });
+
     this.fitAddon = new FitAddon();
     this.serializeAddon = new SerializeAddon();
 
