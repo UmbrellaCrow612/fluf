@@ -7,6 +7,7 @@ import {
   OnDestroy,
   OnInit,
   untracked,
+  AfterViewInit,
 } from '@angular/core';
 import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -21,28 +22,36 @@ import { SerializeAddon } from '@xterm/addon-serialize';
   templateUrl: './terminal-editor.component.html',
   styleUrl: './terminal-editor.component.css',
 })
-export class TerminalEditorComponent implements OnInit, OnDestroy {
+export class TerminalEditorComponent implements AfterViewInit, OnDestroy {
   private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly api = getElectronApi();
+  private viewInitialized = false;
 
   constructor() {
     effect(async () => {
       let isEditorResize = this.inMemoryAppContext.isEditorResize();
       if (isEditorResize && this.fitAddon && this.terminal) {
-        this.fitAddon.fit();
-
-        await this.api.shellApi.resize(
-          this.currentActiveShellId()!,
-          this.terminal.cols,
-          this.terminal.rows
-        );
+        // Use setTimeout to ensure this happens after current rendering cycle
+        setTimeout(() => {
+          if (this.fitAddon && this.terminal) {
+            this.fitAddon.fit();
+            this.api.shellApi.resize(
+              this.currentActiveShellId()!,
+              this.terminal.cols,
+              this.terminal.rows
+            );
+          }
+        }, 0);
       }
     });
 
     effect(async () => {
       this.inMemoryAppContext.currentActiveShellId();
 
-      await this.initShell();
+      if (this.viewInitialized) {
+        console.log('Ran here');
+        await this.initShell();
+      }
     });
   }
 
@@ -62,11 +71,15 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   changeunSub: voidCallback | null = null;
   exitUnSub: voidCallback | null = null;
 
-  async ngOnInit() {
-    await this.initShell();
+  ngAfterViewInit() {
+    this.viewInitialized = true;
+    setTimeout(() => {
+      this.initShell();
+    }, 0);
   }
 
   ngOnDestroy() {
+    this.viewInitialized = false;
     this.cleanupTerminal();
   }
 
@@ -125,27 +138,25 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.cleanupTerminal();
 
-    if (!this.currentActiveShellId()) {
+    const shellPid = this.currentActiveShellId();
+
+    if (!shellPid) {
       this.error = 'No active terminal selected.';
       this.isLoading = false;
       return;
     }
 
-    this.changeunSub = this.api.shellApi.onChange(
-      this.currentActiveShellId()!,
-      (chunk) => {
-        this.terminal?.write(chunk, () => {
-          this.saveTerminalBuffer();
-        });
-      }
-    );
+    this.changeunSub = this.api.shellApi.onChange(shellPid, (chunk) => {
+      this.terminal?.write(chunk, () => {
+        this.saveTerminalBuffer();
+      });
+    });
 
-    this.exitUnSub = this.api.shellApi.onExit(
-      this.currentActiveShellId()!,
-      () => {
+    this.exitUnSub = this.api.shellApi.onExit(shellPid, () => {
+      untracked(() => {
         let shells = this.inMemoryAppContext.shells() ?? [];
 
-        let filtered = shells.filter((x) => x !== this.currentActiveShellId());
+        let filtered = shells.filter((x) => x !== shellPid);
         this.inMemoryAppContext.shells.set(structuredClone(filtered));
 
         if (filtered.length > 0) {
@@ -154,12 +165,14 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
         } else {
           this.inMemoryAppContext.currentActiveShellId.set(null);
         }
-      }
-    );
+      });
+    });
 
     this.isLoading = false;
 
-    this.renderXterm();
+    setTimeout(() => {
+      this.renderXterm();
+    }, 0);
   }
 
   /**
@@ -169,6 +182,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     let container = document.getElementById('xterm_container');
     if (!container) {
       this.error = 'Could not find terminal container';
+      console.error('Terminal container not found');
       return;
     }
 
@@ -189,7 +203,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
       fontFamily: getComputedStyle(document.documentElement)
         .getPropertyValue('--font-family-mono')
         .trim(),
-      fontSize: 14, 
+      fontSize: 14,
     });
 
     this.fitAddon = new FitAddon();
@@ -200,21 +214,26 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.terminal.open(container);
 
-    this.fitAddon.fit();
+    // Use setTimeout to ensure terminal is fully mounted before fitting
+    setTimeout(() => {
+      if (!this.fitAddon || !this.terminal) return;
 
-    this.api.shellApi.resize(
-      this.currentActiveShellId()!,
-      this.terminal.cols,
-      this.terminal.rows
-    );
+      this.fitAddon.fit();
 
-    let storedBuffer = this.getStoredTerminalBuffer();
-    if (storedBuffer) {
-      this.terminal.clear();
-      this.terminal.write(storedBuffer);
-    }
+      this.api.shellApi.resize(
+        this.currentActiveShellId()!,
+        this.terminal.cols,
+        this.terminal.rows
+      );
 
-    this.terminal.focus();
+      let storedBuffer = this.getStoredTerminalBuffer();
+      if (storedBuffer) {
+        this.terminal.clear();
+        this.terminal.write(storedBuffer);
+      }
+
+      this.terminal.focus();
+    }, 0);
 
     this.dispose = this.terminal.onData((data) => {
       if (!this.currentActiveShellId()) return;
