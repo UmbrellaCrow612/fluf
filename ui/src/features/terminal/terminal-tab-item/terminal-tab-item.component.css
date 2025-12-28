@@ -1,19 +1,19 @@
 .tab_item {
   height: 100%;
-  background-color: rgb(43, 41, 41);
-  width: 120px;
+  background-color: var(--color-surface-base);
+  width: 7.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #ccc;
-  font-family: monospace;
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
   cursor: pointer;
-  padding: 0 2px;
+  padding: 0 var(--spacing-1);
 }
 
 .tab_active {
-  background-color: rgb(66, 65, 65);
+  background-color: var(--color-surface-hover);
 }
 
 .tab_text {
@@ -26,25 +26,26 @@
 .close_btn {
   background: none;
   border: none;
-  padding: 2px;
+  padding: 0.5rem; /* 2px approximated */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity 0.15s, background-color 0.15s;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--duration-fast) var(--easing-out),
+    background var(--duration-fast) var(--easing-out);
 }
 
 .close_btn:hover {
   opacity: 1;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, var(--opacity-10));
 }
 
 .close_btn mat-icon {
-  color: white;
-  font-size: 14px;
-  height: 14px;
-  width: 14px;
-  line-height: 14px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  width: 0.875rem;
+  height: 0.875rem;
+  line-height: 0.875rem;
 }

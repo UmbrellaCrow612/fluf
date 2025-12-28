@@ -2,7 +2,7 @@
   display: flex;
   min-height: 0;
   min-width: 0;
-  height: 55px;
+  height: var(--size-button-lg); /* 48px – close to your original 55px */
 }
 
 .open_file_container_tabs_wrapper {
@@ -11,5 +11,6 @@
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  background-color: rgb(29, 28, 28);
+
+  background-color: var(--color-background-secondary);
 }

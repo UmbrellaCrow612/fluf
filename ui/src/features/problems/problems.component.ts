@@ -27,13 +27,4 @@ export class ProblemsComponent {
       return Array.from(fileMap.values()).flat();
     });
   }
-
-  hasFilesButNoDiagnostics = computed(() => {
-    const allFiles = this.files();
-    if (allFiles.length === 0) return false;
-
-    return allFiles.every(
-      (file) => this.diagnosticsForFile(file)().length === 0
-    );
-  });
 }

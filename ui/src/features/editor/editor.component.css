@@ -51,6 +51,8 @@
   flex: 1;
   min-height: 0;
   min-width: 0;
+
+  background-color: var(--color-background-secondary);
 }
 
 .ng_container_wrapper {
