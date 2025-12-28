@@ -5,7 +5,6 @@ import {
   effect,
   inject,
   OnDestroy,
-  OnInit,
   untracked,
   AfterViewInit,
 } from '@angular/core';
