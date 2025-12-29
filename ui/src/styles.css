@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+
 *,
 *::before,
 *::after {
@@ -14,14 +15,12 @@ body {
 }
 body {
   margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
-
-/* ============================ GLOBAL CSS NAMES ====================================*/
-/* css class names impl that are generic and used app wide */
 
 .scroll_bar {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-primary) var(--color-background-secondary);
+  scrollbar-color: #555 #222;
 }
 
 .scroll_bar::-webkit-scrollbar {
@@ -30,16 +29,16 @@ body {
 }
 
 .scroll_bar::-webkit-scrollbar-track {
-  background: var(--color-background-secondary);
-  border-radius: var(--radius-sm);
+  background: #222;
+  border-radius: 3px;
 }
 
 .scroll_bar::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-primary);
-  border-radius: var(--radius-sm);
-  border: var(--border-width-1) solid var(--color-surface-base);
+  background-color: #555;
+  border-radius: 3px;
+  border: 1px solid #333;
 }
 
 .scroll_bar::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-brand-primary);
+  background-color: #777;
 }

@@ -12,8 +12,8 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  background-color: var(--color-editor-background);
-  padding: var(--spacing-5); 
+  background-color: black;
+  padding: 20px;
 }
 
 #xterm_container {
@@ -26,4 +26,27 @@
 #xterm_container :deep(.xterm) {
   height: 100%;
   width: 100%;
+}
+
+::ng-deep #xterm_container .xterm-viewport::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+::ng-deep #xterm_container .xterm-viewport::-webkit-scrollbar-track {
+  background: #2b2b2b !important;
+}
+
+::ng-deep #xterm_container .xterm-viewport::-webkit-scrollbar-thumb {
+  background: #888 !important;
+  border-radius: 5px !important;
+}
+
+::ng-deep #xterm_container .xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: #555 !important;
+}
+
+/* Firefox */
+::ng-deep #xterm_container .xterm-viewport {
+  scrollbar-width: thin !important;
+  scrollbar-color: #888 #2b2b2b !important;
 }

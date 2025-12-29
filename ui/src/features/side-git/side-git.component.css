@@ -9,13 +9,14 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--color-background-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-family-mono);
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-family: Consolas, monospace;
   overflow-y: auto;
-  padding: var(--spacing-3);
+  padding: 10px;
 }
 
+/* States */
 .loading,
 .error_state,
 .init_git {
@@ -25,52 +26,54 @@
   justify-content: center;
   text-align: center;
   flex: 1;
-  gap: var(--spacing-2);
+  gap: 8px;
 }
 
-.error_state p,
+.error_state p {
+  color: #f48771;
+}
+
 .error_text {
-  color: var(--color-state-error);
+  color: #f48771;
+  font-size: 0.9rem;
 }
 
-.error_text {
-  font-size: var(--font-size-sm);
-}
-
+/* Git view */
 .git-view {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
+  gap: 12px;
 }
 
 .git-header {
-  border-bottom: var(--border-width-1) solid var(--color-border-secondary);
-  padding-bottom: var(--spacing-2);
+  border-bottom: 1px solid #333;
+  padding-bottom: 6px;
 }
 
 .git-header h3 {
-  font-size: var(--font-size-lg);
-  color: var(--color-brand-accent);
+  font-size: 1.1rem;
+  color: #4fc1ff;
   margin: 0;
 }
 
 .branch-status {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  color: #888;
 }
 
+/* Sections */
 .git-section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
+  gap: 4px;
 }
 
 .git-section h4 {
-  font-size: var(--font-size-base);
-  color: var(--color-brand-secondary);
-  margin: var(--spacing-2) 0;
-  border-bottom: var(--border-width-1) solid var(--color-border-secondary);
-  padding-bottom: var(--spacing-1);
+  font-size: 0.95rem;
+  color: #c586c0;
+  margin: 6px 0;
+  border-bottom: 1px solid #333;
+  padding-bottom: 3px;
 }
 
 .git-section ul {
@@ -83,49 +86,46 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-1) var(--spacing-2);
-  border-radius: var(--radius-base);
-  transition: background-color var(--duration-fast) var(--easing-out);
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background-color 0.15s;
 }
 
 .git-section li:hover {
-  background-color: var(--color-surface-hover);
+  background-color: #2a2a2a;
 }
 
 .file {
-  color: var(--color-text-primary);
+  color: #dcdcdc;
   word-break: break-all;
 }
 
 .status {
-  font-size: var(--font-size-xs);
+  font-size: 0.8rem;
   text-transform: capitalize;
-  padding: var(--spacing-0) var(--spacing-2);
-  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  border-radius: 3px;
 }
 
+/* VS Code–like colors */
 .status.modified {
-  color: var(--color-state-warning);
+  color: #dcdcaa;
 }
-
 .status.staged {
-  color: var(--color-state-success);
+  color: #4ec9b0;
 }
-
 .status.untracked {
-  color: var(--color-state-info);
+  color: #9cdcfe;
 }
-
 .status.deleted {
-  color: var(--color-state-error);
+  color: #f48771;
 }
-
 .status.renamed {
-  color: var(--color-brand-secondary);
+  color: #c586c0;
 }
 
 .git-section.clean {
   text-align: center;
-  color: var(--color-state-success);
-  font-weight: var(--font-weight-medium);
+  color: #6a9955;
+  font-weight: 500;
 }

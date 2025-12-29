@@ -6,55 +6,53 @@
 
 .input {
   width: 100%;
-  padding: var(--spacing-2) var(--spacing-2);
-  font-size: var(--font-size-sm);
-  font-family: var(--font-family-mono);
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: Consolas, "Courier New", monospace;
 
-  color: var(--input-text);
-  background-color: var(--input-bg);
+  color: #cccccc;
+  background-color: #1e1e1e;
 
-  border: var(--border-width-1) solid var(--input-border);
-  border-radius: var(--radius-sm);
+  border: 1px solid #3c3c3c;
+  border-radius: 2px;
 
   outline: none;
   box-sizing: border-box;
-  transition: var(--transition-fast);
 }
 
 .input::placeholder {
-  color: var(--input-text-placeholder);
+  color: #7a7a7a;
 }
 
 .input:focus {
-  border-color: var(--input-border-focus);
-  box-shadow: var(--shadow-focus-primary);
+  border-color: #007acc; /* VS Code blue */
 }
 
 .results {
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-1);
+  padding: 4px;
 }
 
 .result-item {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
-  padding: var(--spacing-2);
-  border-radius: var(--radius-sm);
+  gap: 2px;
+
+  padding: 6px 8px;
+  border-radius: 3px;
   cursor: pointer;
 
-  font-family: var(--font-family-mono);
-  transition: var(--transition-fast);
+  font-family: Consolas, "Courier New", monospace;
 }
 
 .result-item:hover {
-  background-color: var(--color-surface-hover);
+  background-color: #2a2d2e;
 }
 
 .file-name {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
+  font-size: 13px;
+  color: #d4d4d4;
 
   white-space: nowrap;
   overflow: hidden;
@@ -62,8 +60,8 @@
 }
 
 .file-path {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  font-size: 11px;
+  color: #8c8c8c;
 
   white-space: nowrap;
   overflow: hidden;

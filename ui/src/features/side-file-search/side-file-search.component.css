@@ -1,207 +1,183 @@
 /* Keep existing styles - don't modify */
 :host {
   display: flex;
-  flex: 1;
   min-height: 0;
   min-width: 0;
-
-  background-color: var(--color-background-primary);
-  color: var(--nav-text);
+  flex: 1;
+  background-color: rgb(20, 20, 20);
 }
 
 .container {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
 .results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  color: white;
+
   display: flex;
   flex-direction: column;
-  flex: 1;
+  gap: 10px;
   min-height: 0;
   min-width: 0;
-
-  overflow-y: auto;
-  padding: var(--spacing-3);
-  gap: var(--spacing-3);
-
-  color: var(--color-text-primary);
 }
 
 .result-item {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
-
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-sm);
-
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 3px;
   cursor: pointer;
+  transition: background-color 0.15s ease;
   min-width: 0;
-
-  transition: background-color var(--duration-fast) var(--easing-out);
 }
 
 .result-item:hover {
-  background-color: var(--nav-item-hover);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .result-item:active {
-  background-color: var(--nav-item-active);
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .file-name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  font-family: var(--font-family-mono);
-
-  color: var(--color-text-primary);
-
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .file-path {
-  font-size: var(--font-size-xs);
-  font-family: var(--font-family-mono);
-
-  color: var(--color-text-secondary);
-
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .result-item:hover .file-path {
-  color: var(--color-text-primary);
+  color: rgba(255, 255, 255, 0.7);
 }
 
+
+/* VSCode style enhancements */
 .search_from {
   display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-wrap: wrap;
-  gap: var(--spacing-2);
-
-  padding: var(--spacing-3);
-  border-bottom: var(--border-width-1) solid var(--nav-border);
 }
 
 .search_from input[type="text"] {
   flex: 1;
   min-width: 150px;
-
-  padding: var(--spacing-2) var(--spacing-3);
-  font-size: var(--font-size-sm);
-
-  background-color: var(--input-bg);
-  color: var(--input-text);
-
-  border: var(--border-width-1) solid var(--input-border);
-  border-radius: var(--radius-sm);
-
-  transition: var(--transition-base);
+  padding: 6px 10px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
 }
 
 .search_from input[type="text"]:hover {
-  background-color: var(--input-bg-hover);
-  border-color: var(--input-border-hover);
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .search_from input[type="text"]:focus {
   outline: none;
-
-  background-color: var(--input-bg-focus);
-  border-color: var(--input-border-focus);
-  box-shadow: var(--shadow-focus-primary);
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(88, 166, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.3);
 }
 
 .search_from input[type="text"]::placeholder {
-  color: var(--input-text-placeholder);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .toggle-btn {
-  padding: var(--spacing-2) var(--spacing-4);
-  font-size: var(--font-size-sm);
-
-  background-color: var(--button-ghost-bg);
-  color: var(--button-ghost-text);
-
-  border: var(--border-width-1) solid var(--button-ghost-border);
-  border-radius: var(--radius-sm);
-
+  padding: 6px 14px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  border-radius: 3px;
   cursor: pointer;
+  transition: all 0.2s ease;
   white-space: nowrap;
-
-  transition: var(--transition-base);
 }
 
 .toggle-btn:hover {
-  background-color: var(--button-ghost-bg-hover);
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .toggle-btn:active {
-  background-color: var(--button-ghost-bg-active);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .options-header {
   display: flex;
-  padding: var(--spacing-2) var(--spacing-3);
-  border-bottom: var(--border-width-1) solid var(--nav-border);
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .clear-btn {
-  padding: var(--spacing-2) var(--spacing-4);
-  font-size: var(--font-size-sm);
-
-  background-color: var(--color-state-error-bg);
-  color: var(--color-state-error);
-
-  border: var(--border-width-1) solid var(--color-state-error);
-  border-radius: var(--radius-sm);
-
+  padding: 6px 14px;
+  background-color: rgba(255, 100, 100, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  color: rgba(255, 150, 150, 0.9);
+  font-size: 13px;
+  border-radius: 3px;
   cursor: pointer;
-  transition: var(--transition-base);
+  transition: all 0.2s ease;
 }
 
 .clear-btn:hover {
-  background-color: var(--color-state-error-hover);
+  background-color: rgba(255, 100, 100, 0.25);
+  border-color: rgba(255, 100, 100, 0.5);
 }
 
 .clear-btn:active {
-  background-color: var(--color-state-error);
+  background-color: rgba(255, 100, 100, 0.35);
 }
 
 .options {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
-
-  padding: var(--spacing-3);
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   max-height: 400px;
-
   overflow-y: auto;
-
-  font-size: var(--font-size-sm);
-  border-bottom: var(--border-width-1) solid var(--nav-border);
+  font-size: 13px;
 }
 
 .options label {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
-
-  color: var(--color-text-secondary);
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   user-select: none;
-
-  transition: color var(--duration-base) var(--easing-out);
+  transition: color 0.2s ease;
 }
 
 .options label:hover {
-  color: var(--color-text-primary);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .options input[type="checkbox"],
@@ -209,24 +185,20 @@
 .options input[type="number"],
 .options input[type="text"],
 .options select {
-  padding: var(--spacing-1) var(--spacing-2);
-  font-size: var(--font-size-sm);
-
-  background-color: var(--input-bg);
-  color: var(--input-text);
-
-  border: var(--border-width-1) solid var(--input-border);
-  border-radius: var(--radius-sm);
-
-  transition: var(--transition-base);
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
 }
 
 .options input[type="checkbox"] {
-  width: var(--size-icon-sm);
-  height: var(--size-icon-sm);
+  width: 16px;
+  height: 16px;
   cursor: pointer;
-
-  accent-color: var(--color-interactive-primary);
+  accent-color: #58a6ff;
 }
 
 .options input[type="date"],
@@ -237,30 +209,34 @@
   min-width: 100px;
 }
 
-.options input:hover,
+.options input[type="date"]:hover,
+.options input[type="number"]:hover,
+.options input[type="text"]:hover,
 .options select:hover {
-  background-color: var(--input-bg-hover);
-  border-color: var(--input-border-hover);
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-.options input:focus,
+.options input[type="date"]:focus,
+.options input[type="number"]:focus,
+.options input[type="text"]:focus,
 .options select:focus {
   outline: none;
-
-  background-color: var(--input-bg-focus);
-  border-color: var(--input-border-focus);
-  box-shadow: var(--shadow-focus-primary);
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(88, 166, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.3);
 }
 
 .options select option {
-  background-color: var(--color-background-secondary);
-  color: var(--color-text-primary);
+  background-color: rgb(30, 30, 30);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .options select {
   cursor: pointer;
 }
 
+/* Scrollbar styling for VSCode aesthetic */
 .options::-webkit-scrollbar,
 .results::-webkit-scrollbar {
   width: 12px;
@@ -273,13 +249,14 @@
 
 .options::-webkit-scrollbar-thumb,
 .results::-webkit-scrollbar-thumb {
-  background: var(--color-surface-hover);
-  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
 .options::-webkit-scrollbar-thumb:hover,
 .results::-webkit-scrollbar-thumb:hover {
-  background: var(--color-surface-active);
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: padding-box;
 }

@@ -28,8 +28,7 @@
             "styles": [
               "@angular/material/prebuilt-themes/cyan-orange.css",
               "@xterm/xterm/css/xterm.css",
-              "src/styles.css",
-              "src/design-system.css"
+              "src/styles.css"
             ],
             "scripts": ["@xterm/xterm/lib/xterm.js"]
           },
@@ -86,8 +85,7 @@
             "styles": [
               "@angular/material/prebuilt-themes/cyan-orange.css",
               "@xterm/xterm/css/xterm.css",
-              "src/styles.css",
-              "src/design-system.css"
+              "src/styles.css"
             ],
             "scripts": ["@xterm/xterm/lib/xterm.js"]
           }

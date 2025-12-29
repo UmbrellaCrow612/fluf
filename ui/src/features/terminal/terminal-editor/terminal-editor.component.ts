@@ -5,8 +5,8 @@ import {
   effect,
   inject,
   OnDestroy,
+  OnInit,
   untracked,
-  AfterViewInit,
 } from '@angular/core';
 import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -21,36 +21,28 @@ import { SerializeAddon } from '@xterm/addon-serialize';
   templateUrl: './terminal-editor.component.html',
   styleUrl: './terminal-editor.component.css',
 })
-export class TerminalEditorComponent implements AfterViewInit, OnDestroy {
+export class TerminalEditorComponent implements OnInit, OnDestroy {
   private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly api = getElectronApi();
-  private viewInitialized = false;
 
   constructor() {
     effect(async () => {
       let isEditorResize = this.inMemoryAppContext.isEditorResize();
       if (isEditorResize && this.fitAddon && this.terminal) {
-        // Use setTimeout to ensure this happens after current rendering cycle
-        setTimeout(() => {
-          if (this.fitAddon && this.terminal) {
-            this.fitAddon.fit();
-            this.api.shellApi.resize(
-              this.currentActiveShellId()!,
-              this.terminal.cols,
-              this.terminal.rows
-            );
-          }
-        }, 0);
+        this.fitAddon.fit();
+
+        await this.api.shellApi.resize(
+          this.currentActiveShellId()!,
+          this.terminal.cols,
+          this.terminal.rows
+        );
       }
     });
 
     effect(async () => {
       this.inMemoryAppContext.currentActiveShellId();
 
-      if (this.viewInitialized) {
-        console.log('Ran here');
-        await this.initShell();
-      }
+      await this.initShell();
     });
   }
 
@@ -70,15 +62,11 @@ export class TerminalEditorComponent implements AfterViewInit, OnDestroy {
   changeunSub: voidCallback | null = null;
   exitUnSub: voidCallback | null = null;
 
-  ngAfterViewInit() {
-    this.viewInitialized = true;
-    setTimeout(() => {
-      this.initShell();
-    }, 0);
+  async ngOnInit() {
+    await this.initShell();
   }
 
   ngOnDestroy() {
-    this.viewInitialized = false;
     this.cleanupTerminal();
   }
 
@@ -133,29 +121,31 @@ export class TerminalEditorComponent implements AfterViewInit, OnDestroy {
     this.error = null;
     this.isLoading = true;
 
-    console.log('Render shell');
+    console.log("Render shell")
 
     this.cleanupTerminal();
 
-    const shellPid = this.currentActiveShellId();
-
-    if (!shellPid) {
+    if (!this.currentActiveShellId()) {
       this.error = 'No active terminal selected.';
       this.isLoading = false;
       return;
     }
 
-    this.changeunSub = this.api.shellApi.onChange(shellPid, (chunk) => {
-      this.terminal?.write(chunk, () => {
-        this.saveTerminalBuffer();
-      });
-    });
+    this.changeunSub = this.api.shellApi.onChange(
+      this.currentActiveShellId()!,
+      (chunk) => {
+        this.terminal?.write(chunk, () => {
+          this.saveTerminalBuffer();
+        });
+      }
+    );
 
-    this.exitUnSub = this.api.shellApi.onExit(shellPid, () => {
-      untracked(() => {
+    this.exitUnSub = this.api.shellApi.onExit(
+      this.currentActiveShellId()!,
+      () => {
         let shells = this.inMemoryAppContext.shells() ?? [];
 
-        let filtered = shells.filter((x) => x !== shellPid);
+        let filtered = shells.filter((x) => x !== this.currentActiveShellId());
         this.inMemoryAppContext.shells.set(structuredClone(filtered));
 
         if (filtered.length > 0) {
@@ -164,14 +154,12 @@ export class TerminalEditorComponent implements AfterViewInit, OnDestroy {
         } else {
           this.inMemoryAppContext.currentActiveShellId.set(null);
         }
-      });
-    });
+      }
+    );
 
     this.isLoading = false;
 
-    setTimeout(() => {
-      this.renderXterm();
-    }, 0);
+    this.renderXterm();
   }
 
   /**
@@ -181,30 +169,12 @@ export class TerminalEditorComponent implements AfterViewInit, OnDestroy {
     let container = document.getElementById('xterm_container');
     if (!container) {
       this.error = 'Could not find terminal container';
-      console.error('Terminal container not found');
       return;
     }
 
     container.innerHTML = '';
 
-    this.terminal = new Terminal({
-      theme: {
-        background: getComputedStyle(document.documentElement)
-          .getPropertyValue('--color-editor-background')
-          .trim(),
-        foreground: getComputedStyle(document.documentElement)
-          .getPropertyValue('--color-text-primary')
-          .trim(),
-        cursor: getComputedStyle(document.documentElement)
-          .getPropertyValue('--color-editor-cursor')
-          .trim(),
-      },
-      fontFamily: getComputedStyle(document.documentElement)
-        .getPropertyValue('--font-family-mono')
-        .trim(),
-      fontSize: 14,
-    });
-
+    this.terminal = new Terminal();
     this.fitAddon = new FitAddon();
     this.serializeAddon = new SerializeAddon();
 
@@ -213,26 +183,21 @@ export class TerminalEditorComponent implements AfterViewInit, OnDestroy {
 
     this.terminal.open(container);
 
-    // Use setTimeout to ensure terminal is fully mounted before fitting
-    setTimeout(() => {
-      if (!this.fitAddon || !this.terminal) return;
+    this.fitAddon.fit();
 
-      this.fitAddon.fit();
+    this.api.shellApi.resize(
+      this.currentActiveShellId()!,
+      this.terminal.cols,
+      this.terminal.rows
+    );
 
-      this.api.shellApi.resize(
-        this.currentActiveShellId()!,
-        this.terminal.cols,
-        this.terminal.rows
-      );
+    let storedBuffer = this.getStoredTerminalBuffer();
+    if (storedBuffer) {
+      this.terminal.clear();
+      this.terminal.write(storedBuffer);
+    }
 
-      let storedBuffer = this.getStoredTerminalBuffer();
-      if (storedBuffer) {
-        this.terminal.clear();
-        this.terminal.write(storedBuffer);
-      }
-
-      this.terminal.focus();
-    }, 0);
+    this.terminal.focus();
 
     this.dispose = this.terminal.onData((data) => {
       if (!this.currentActiveShellId()) return;

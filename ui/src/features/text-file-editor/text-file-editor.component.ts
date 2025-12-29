@@ -165,64 +165,63 @@ export class TextFileEditorComponent implements OnInit {
   private theme = EditorView.theme(
     {
       '&': {
-        color: 'var(--color-text-primary)',
-        backgroundColor: 'var(--color-editor-background)',
+        color: '#e0e0e0',
+        backgroundColor: '#1a1c20',
         height: '100%',
         overflow: 'auto',
-        fontFamily: 'var(--font-family-mono)',
-        fontSize: 'var(--font-size-sm)',
+        fontFamily: '"Fira Code", Consolas, monospace',
+        fontSize: '14px',
       },
 
       /* Scroll area */
       '.cm-scroller': {
         overflow: 'auto',
         scrollbarWidth: 'thin',
-        scrollbarColor:
-          'var(--color-surface-hover) var(--color-editor-background)',
+        scrollbarColor: '#3f444a #1a1c20',
       },
       '.cm-scroller::-webkit-scrollbar': {
         width: '8px',
         height: '8px',
       },
       '.cm-scroller::-webkit-scrollbar-track': {
-        background: 'var(--color-editor-background)',
+        background: '#1a1c20',
       },
       '.cm-scroller::-webkit-scrollbar-thumb': {
-        backgroundColor: 'var(--color-surface-hover)',
-        borderRadius: 'var(--radius-base)',
+        backgroundColor: '#3f444a',
+        borderRadius: '4px',
       },
       '.cm-scroller::-webkit-scrollbar-thumb:hover': {
-        backgroundColor: 'var(--color-surface-active)',
+        backgroundColor: '#50555c',
       },
 
       /* Text + cursor */
       '.cm-content': {
-        caretColor: 'var(--color-editor-cursor)',
+        caretColor: '#80CBC4',
       },
       '&.cm-focused .cm-cursor': {
-        borderLeftColor: 'var(--color-editor-cursor)',
+        borderLeftColor: '#80CBC4',
       },
       '&.cm-focused .cm-selectionBackground, ::selection': {
-        backgroundColor: 'var(--color-editor-selection)',
+        backgroundColor: 'rgba(128, 203, 196, 0.25)',
       },
 
       /* Lines */
       '.cm-content, .cm-line': {
-        padding: '0 var(--spacing-2)',
+        padding: '0 8px',
       },
       '.cm-activeLine': {
-        backgroundColor: 'var(--color-editor-line-highlight)',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
       },
 
       /* Gutter */
       '.cm-gutters': {
-        backgroundColor: 'var(--color-editor-gutter)',
-        color: 'var(--color-text-tertiary)',
-        borderRight: `var(--border-width-1) solid var(--color-border-secondary)`,
+        backgroundColor: '#1a1c20',
+        color: '#59626e',
+        borderRight: '1px solid #2a2e35',
       },
       '.cm-activeLineGutter': {
-        backgroundColor: 'var(--color-editor-line-highlight)',
-        color: 'var(--color-text-secondary)',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        color: '#aab2bf',
       },
     },
     { dark: true }

@@ -1,5 +1,5 @@
 :host {
-  height: var(--size-button-base);
+  height: 40px;
   display: flex;
   min-height: 0;
   min-width: 0;
@@ -10,7 +10,7 @@
   min-height: 0;
   min-width: 0;
   display: flex;
-  background-color: var(--color-background-secondary);
+  background-color: rgb(34, 33, 33);
 }
 
 .scroll_container {
@@ -27,34 +27,33 @@
 .right {
   display: flex;
   align-items: center;
-  padding: 0 var(--spacing-1);
+  padding: 0 5px;
 }
 
 .add-btn {
-  width: var(--size-input-sm);
-  height: var(--size-input-sm);
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: var(--radius-base);
-  background-color: var(--color-surface-hover);
-  color: var(--color-text-primary);
+  border-radius: 4px;
+  background-color: #3a3a3a;
+  color: white;
   cursor: pointer;
-  transition: background var(--duration-fast) var(--easing-out),
-    transform var(--duration-fast) var(--easing-out);
+  transition: background-color 0.15s ease, transform 0.1s ease;
   padding: 0;
 }
 
 .add-btn mat-icon {
-  font-size: var(--font-size-sm);
-  width: 1rem;
-  height: 1rem;
-  line-height: 1rem;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
 }
 
 .add-btn:hover {
-  background-color: var(--color-surface-active);
+  background-color: #4a4a4a;
 }
 
 .add-btn:active {

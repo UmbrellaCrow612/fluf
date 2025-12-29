@@ -1,20 +1,20 @@
 .problem_item {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
-  border: var(--border-width-1) solid var(--color-border-secondary);
-  border-radius: var(--radius-base);
-  padding: var(--spacing-2);
-  background-color: var(--color-background-secondary);
-  color: var(--color-text-secondary);
-  font-family: var(--font-family-mono);
-  font-size: 0.8125rem;
+  gap: 5px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "Consolas", monospace;
+  font-size: 13px;
 }
 
 .problem_item_file {
-  font-weight: var(--font-weight-bold);
-  color: var(--color-syntax-class);
-  margin-bottom: var(--spacing-1);
+  font-weight: bold;
+  color: #9cdcfe;
+  margin-bottom: 5px;
   cursor: pointer;
 }
 
@@ -25,37 +25,39 @@
 .problem_item_child {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1.5, 6px);
-  padding: 0.25rem 0.375rem;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--duration-base) var(--easing-out);
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
 }
 
 .problem_item_child:hover {
   background-color: rgba(100, 100, 100, 0.1);
 }
 
+/* Line number styling */
 .problem_line_info {
-  color: var(--color-text-tertiary);
-  font-size: 0.6875rem;
-  min-width: 5rem;
+  color: #858585;
+  font-size: 11px;
+  min-width: 80px;
   flex-shrink: 0;
 }
 
+/* Text color for severity */
 .severity-hint {
-  color: var(--color-text-tertiary);
+  color: #a0a0a0;
 }
 
 .severity-info {
-  color: var(--color-syntax-class);
+  color: #3794ff;
 }
 
 .severity-warning {
-  color: var(--color-state-warning);
+  color: #ff8800;
 }
 
 .severity-error {
-  color: var(--color-state-error);
+  color: #f44747;
 }
 
 .problem_message {
@@ -64,6 +66,6 @@
 
 .problem_source {
   font-style: italic;
-  color: var(--color-text-secondary);
+  color: #888;
   flex-shrink: 0;
 }

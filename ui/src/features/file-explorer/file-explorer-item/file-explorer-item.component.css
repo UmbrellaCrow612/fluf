@@ -16,11 +16,11 @@
 
 .file_explorer_tree_item:hover {
   cursor: pointer;
-  background-color: var(--color-surface-hover);
+  background-color: rgb(46, 44, 44);
 }
 
 .focused {
-  background-color: var(--color-surface-active);
+  background-color: rgb(46, 44, 44);
 }
 
 .elipses {
@@ -49,16 +49,16 @@
   cursor: text;
   border-radius: 4px;
   gap: 3px;
-  background-color: var(--color-surface-base);
+  background-color: rgb(43, 41, 41);
 }
 
 .create_input {
   width: 100%;
   border: none;
   outline: none;
-  font-size: var(--font-size-sm);
+  font-size: 14px;
   background: transparent;
-  background-color: var(--color-surface-base);
+  background-color: rgb(71, 69, 69);
   padding: 3px;
-  color: var(--color-text-primary);
+  color: white;
 }

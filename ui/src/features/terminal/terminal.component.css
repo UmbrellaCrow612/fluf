@@ -15,10 +15,10 @@
 
 .empty {
   flex: 1;
-  background-color: var(--color-background-primary);
+  background-color: rgb(31, 30, 30);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: var(--color-text-primary);
+  color: white;
 }
