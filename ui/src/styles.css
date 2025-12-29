@@ -1,5 +1,65 @@
 /* You can add global styles to this file, and also import other style files */
 
+:root {
+  /* ============================================
+     BACKGROUND TOKENS
+     ============================================ */
+
+  /* Primary Backgrounds */
+  --bg-primary: #282a36; /* Main page background, default canvas */
+  --bg-secondary: #21222c; /* Cards, panels, alternate sections */
+  --bg-tertiary: #191a21; /* Nested elements, wells, input backgrounds */
+
+  /* Interactive States */
+  --bg-hover: #44475a; /* Hover state for clickable elements */
+  --bg-active: #6272a4; /* Active/pressed state for buttons, links */
+  --bg-selected: #bd93f9; /* Selected items in lists, active nav items */
+  --bg-focus: #6272a4; /* Focused input fields, keyboard navigation */
+
+  /* Specialty Backgrounds */
+  --bg-overlay: rgba(0, 0, 0, 0.7); /* Modal backdrops, dropdown shadows */
+  --bg-inverse: #f8f8f2; /* Dark sections on light theme, footer */
+  --bg-disabled: #44475a; /* Disabled buttons, inactive elements */
+
+  /* Semantic/Status Backgrounds */
+  --bg-success: #1e3a2e; /* Success messages, positive alerts */
+  --bg-warning: #3d3a1f; /* Warning banners, caution alerts */
+  --bg-error: #3d1f1f; /* Error messages, validation failures */
+  --bg-info: #1f2d3d; /* Info banners, tips, help text */
+
+  /* ============================================
+     TEXT TOKENS (paired with backgrounds)
+     ============================================ */
+
+  --text-primary: #f8f8f2; /* Main body text on light backgrounds */
+  --text-secondary: #bfbfbf; /* Subtle text, labels, captions */
+  --text-tertiary: #6272a4; /* Placeholder text, disabled text */
+  --text-inverse: #282a36; /* Text on dark/inverse backgrounds */
+
+  --text-success: #50fa7b; /* Text for success messages */
+  --text-warning: #f1fa8c; /* Text for warning messages */
+  --text-error: #ff5555; /* Text for error messages */
+  --text-info: #8be9fd; /* Text for info messages */
+
+  /* ============================================
+     BORDER TOKENS
+     ============================================ */
+
+  --border-default: #44475a; /* Default borders, dividers, card outlines */
+  --border-hover: #6272a4; /* Border on hover for inputs, buttons */
+  --border-focus: #bd93f9; /* Focus rings, active input borders */
+  --border-error: #ff5555; /* Error state borders on inputs */
+
+  /* ============================================
+     SURFACE ELEVATION SHADOWS
+     ============================================ */
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5); /* Subtle lift - cards, buttons */
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.6); /* Moderate lift - dropdowns, popovers */
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.7); /* Strong lift - modals, dialogs */
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.8); /* Maximum lift - overlays */
+}
+
 *,
 *::before,
 *::after {
@@ -20,7 +80,7 @@ body {
 
 .scroll_bar {
   scrollbar-width: thin;
-  scrollbar-color: #555 #222;
+  scrollbar-color: var(--bg-active) var(--bg-secondary);
 }
 
 .scroll_bar::-webkit-scrollbar {
@@ -29,16 +89,16 @@ body {
 }
 
 .scroll_bar::-webkit-scrollbar-track {
-  background: #222;
+  background: var(--bg-secondary);
   border-radius: 3px;
 }
 
 .scroll_bar::-webkit-scrollbar-thumb {
-  background-color: #555;
+  background-color: var(--bg-active);
   border-radius: 3px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-default);
 }
 
 .scroll_bar::-webkit-scrollbar-thumb:hover {
-  background-color: #777;
+  background-color: var(--bg-hover);
 }
