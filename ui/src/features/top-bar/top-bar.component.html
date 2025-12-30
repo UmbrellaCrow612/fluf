@@ -10,7 +10,7 @@
       >
         {{ item.label }}
       </button>
-      <mat-menu #menu="matMenu">
+      <mat-menu #menu="matMenu" class="fluf_menu">
         @for (child of item.children; track $index) {
         <button mat-menu-item (click)="child.onClick()">
           <span>{{ child.label }}</span>

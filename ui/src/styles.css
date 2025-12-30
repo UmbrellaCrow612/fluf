@@ -270,3 +270,81 @@ body {
   padding: 0.625rem;
   aspect-ratio: 1;
 }
+
+/* ============================================
+   FLUF MENU SYSTEM
+   Overrides mat menu styles 
+   ============================================ */
+
+.fluf_menu {
+  /* Menu Panel Background & Border */
+  --mat-menu-container-color: var(--bg-secondary);
+  --mat-menu-divider-color: var(--border-default);
+
+  /* Apply background to the panel */
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border-radius: 4px !important;
+}
+
+/* Menu Items */
+.fluf_menu .mat-mdc-menu-item {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Hover State */
+.fluf_menu .mat-mdc-menu-item:hover:not([disabled]) {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Active/Pressed State */
+.fluf_menu .mat-mdc-menu-item:active:not([disabled]) {
+  background-color: var(--bg-active) !important;
+}
+
+/* Focus State */
+.fluf_menu .mat-mdc-menu-item:focus:not([disabled]) {
+  background-color: var(--bg-focus) !important;
+  outline: 2px solid var(--border-focus) !important;
+  outline-offset: -2px !important;
+}
+
+/* Selected/Active Item */
+.fluf_menu .mat-mdc-menu-item.mat-mdc-menu-item-highlighted,
+.fluf_menu .mat-mdc-menu-item[aria-selected="true"] {
+  background-color: var(--bg-selected) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* Disabled State */
+.fluf_menu .mat-mdc-menu-item[disabled] {
+  color: var(--text-tertiary) !important;
+  background-color: var(--bg-disabled) !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Menu Item Text */
+.fluf_menu .mat-mdc-menu-item .mat-mdc-menu-item-text {
+  color: inherit !important;
+}
+
+/* Submenu Indicators */
+.fluf_menu .mat-mdc-menu-item .mat-icon {
+  color: var(--text-secondary) !important;
+}
+
+/* Divider */
+.fluf_menu .mat-divider {
+  border-top-color: var(--border-default) !important;
+  margin: 4px 0 !important;
+}
+
+/* Remove default ripple color and use custom */
+.fluf_menu .mat-mdc-menu-item .mat-ripple-element {
+  background-color: rgba(189, 147, 249, 0.2) !important;
+}
