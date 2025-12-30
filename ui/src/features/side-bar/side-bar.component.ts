@@ -5,6 +5,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ContextService } from '../app-context/app-context.service';
 import { sideBarActiveElement } from '../app-context/type';
 
+type sideBarElement = {
+  element: sideBarActiveElement;
+  tooltip: string;
+  icon: string;
+};
+
 @Component({
   selector: 'app-side-bar',
   imports: [MatButtonModule, MatIconModule, MatTooltipModule],
@@ -14,42 +20,52 @@ import { sideBarActiveElement } from '../app-context/type';
 export class SideBarComponent {
   private readonly _appCtx = inject(ContextService);
 
+  sideBarElements: sideBarElement[] = [
+    {
+      element: 'file-explorer',
+      tooltip: 'File explorer',
+      icon: 'file_copy',
+    },
+    {
+      element: 'search',
+      tooltip: 'Search',
+      icon: 'search',
+    },
+    {
+      element: 'search-folders',
+      tooltip: 'Search folders',
+      icon: 'tab_search',
+    },
+    {
+      element: 'search-files',
+      tooltip: 'Search files',
+      icon: 'find_in_page',
+    },
+    {
+      element: 'source-control',
+      tooltip: 'Source control',
+      icon: 'change_history',
+    },
+    {
+      element: 'run-and-debug',
+      tooltip: 'Run and debug',
+      icon: 'bug_report',
+    },
+    {
+      element: 'extensions',
+      tooltip: 'Extensions',
+      icon: 'extension',
+    },
+  ];
+
   /**
    * Keeps track of the current active side bar element
    */
   activeElement = computed(() => this._appCtx.sideBarActiveElement());
 
-  private toggleElement(element: sideBarActiveElement) {
+  toggleElement(element: sideBarActiveElement) {
     const newValue = this.activeElement() === element ? null : element;
 
-    this._appCtx.sideBarActiveElement.set(newValue)
-  }
-
-  toggleFileExplorer() {
-    this.toggleElement('file-explorer');
-  }
-
-  toggleSearch() {
-    this.toggleElement('search');
-  }
-
-  toggleSourceControl() {
-    this.toggleElement('source-control');
-  }
-
-  toggleRunAndDebug() {
-    this.toggleElement('run-and-debug');
-  }
-
-  toggleExtensions() {
-    this.toggleElement('extensions');
-  }
-
-  toggleSearchFolders() {
-    this.toggleElement('search-folders');
-  }
-
-  toggleSearchFiles() {
-    this.toggleElement('search-files');
+    this._appCtx.sideBarActiveElement.set(newValue);
   }
 }
