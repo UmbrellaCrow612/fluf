@@ -4,30 +4,6 @@
   flex: 1;
 }
 
-.input {
-  width: 100%;
-  padding: 6px 8px;
-  font-size: 13px;
-  font-family: Consolas, "Courier New", monospace;
-
-  color: #cccccc;
-  background-color: #1e1e1e;
-
-  border: 1px solid #3c3c3c;
-  border-radius: 2px;
-
-  outline: none;
-  box-sizing: border-box;
-}
-
-.input::placeholder {
-  color: #7a7a7a;
-}
-
-.input:focus {
-  border-color: #007acc; /* VS Code blue */
-}
-
 .results {
   display: flex;
   flex-direction: column;
@@ -47,12 +23,12 @@
 }
 
 .result-item:hover {
-  background-color: #2a2d2e;
+  background-color: var(--bg-hover);
 }
 
 .file-name {
   font-size: 13px;
-  color: #d4d4d4;
+  color: var(--text-primary);
 
   white-space: nowrap;
   overflow: hidden;
@@ -61,7 +37,7 @@
 
 .file-path {
   font-size: 11px;
-  color: #8c8c8c;
+  color: var(--text-secondary);
 
   white-space: nowrap;
   overflow: hidden;
