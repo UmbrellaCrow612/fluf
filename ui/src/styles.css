@@ -97,6 +97,31 @@
   --code-editor-font-family: "Fira Code", Consolas, monospace;
   --code-editor-font-size: 14px;
   --code-editor-line-height: 1.5;
+
+  /* ============================================
+     TERMINAL TOKENS (Dracula Theme)
+     ============================================ */
+  --xterm-background: #282a36;
+  --xterm-foreground: #f8f8f2;
+  --xterm-cursor: #f8f8f2;
+  --xterm-cursor-accent: #282a36;
+  --xterm-selection: #44475a;
+  --xterm-black: #21222c;
+  --xterm-red: #ff5555;
+  --xterm-green: #50fa7b;
+  --xterm-yellow: #f1fa8c;
+  --xterm-blue: #bd93f9;
+  --xterm-magenta: #ff79c6;
+  --xterm-cyan: #8be9fd;
+  --xterm-white: #f8f8f2;
+  --xterm-bright-black: #6272a4;
+  --xterm-bright-red: #ff6e6e;
+  --xterm-bright-green: #69ff94;
+  --xterm-bright-yellow: #ffffa5;
+  --xterm-bright-blue: #d6acff;
+  --xterm-bright-magenta: #ff92df;
+  --xterm-bright-cyan: #a4ffff;
+  --xterm-bright-white: #ffffff;
 }
 
 *,
