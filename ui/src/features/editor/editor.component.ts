@@ -207,13 +207,19 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   });
 
+  private getComputedCSSVar(varName: string): string {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(varName)
+      .trim();
+  }
+
   private resizer = new Resizer({
     direction: 'horizontal',
     minFlex: 0.2,
     handleStyles: {
       width: '6px',
-      background: 'linear-gradient(to bottom,rgb(19, 18, 18),rgb(20, 20, 20))',
-      boxShadow: 'inset 0 0 2px #000, 0 0 4px rgba(0,0,0,0.4)',
+      background: this.getComputedCSSVar('--bg-secondary'),
+      boxShadow: this.getComputedCSSVar('--shadow-md'),
     },
   });
 
@@ -222,8 +228,8 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     minFlex: 0.2,
     handleStyles: {
       height: '6px',
-      background: 'linear-gradient(to bottom,rgb(19, 18, 18),rgb(20, 20, 20))',
-      boxShadow: 'inset 0 0 2px #000, 0 0 4px rgba(0,0,0,0.4)',
+      background: this.getComputedCSSVar('--bg-secondary'),
+      boxShadow: this.getComputedCSSVar('--shadow-md'),
     },
   });
 
