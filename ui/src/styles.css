@@ -407,3 +407,68 @@ body {
 .fluf_menu .mat-mdc-menu-item .mat-ripple-element {
   background-color: rgba(189, 147, 249, 0.2) !important;
 }
+
+/* ============================================
+   FLUF INPUT
+   ============================================ */
+
+.fluf_input {
+  /* Layout & Sizing */
+  width: 100%;
+  padding: 0.75rem 1rem;
+
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+
+  /* Background & Borders */
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+
+  /* Effects */
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+/* Placeholder styling */
+.fluf_input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+/* Hover state */
+.fluf_input:hover {
+  border-color: var(--border-hover);
+  background-color: var(--bg-secondary);
+}
+
+/* Focus state */
+.fluf_input:focus {
+  border-color: var(--border-focus);
+  background-color: var(--bg-focus);
+  box-shadow: 0 0 0 3px rgba(189, 147, 249, 0.2);
+}
+
+/* Error state */
+.fluf_input.error,
+.fluf_input[aria-invalid="true"] {
+  border-color: var(--border-error);
+  background-color: var(--bg-error);
+}
+
+.fluf_input.error:focus,
+.fluf_input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(255, 85, 85, 0.2);
+}
+
+/* Disabled state */
+.fluf_input:disabled {
+  background-color: var(--bg-disabled);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}

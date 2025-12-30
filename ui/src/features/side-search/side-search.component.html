@@ -15,7 +15,7 @@
       <input
         type="text"
         placeholder="Search files"
-        class="input"
+        class="fluf_input"
         [formControl]="searchTermInputControl"
       />
     </form>
@@ -24,8 +24,8 @@
   <!---->
   @if (showExtraSearchOptions) {
   <div class="extra_search_options">
-    <input type="text" placeholder="Include *ts,src/*" class="input" [formControl]="includeTermInputControl"/>
-    <input type="text" placeholder="Exclude *ts,src/*" class="input" [formControl]="excludeTermInputControl"/>
+    <input type="text" placeholder="Include *ts,src/*" class="fluf_input" [formControl]="includeTermInputControl"/>
+    <input type="text" placeholder="Exclude *ts,src/*" class="fluf_input" [formControl]="excludeTermInputControl"/>
   </div>
   }
   <!---->
