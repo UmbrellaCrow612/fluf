@@ -60,38 +60,33 @@
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.8); /* Maximum lift - overlays */
 
   /* ============================================
-     CODE EDITOR TOKENS (Dracula Theme)
+     CODE EDITOR TOKENS
      ============================================ */
 
   /* Editor Backgrounds */
-  --code-editor-bg: #282a36; /* Main editor background - Dracula background */
+  --code-editor-bg: #282a36; /* Main editor background */
   --code-editor-gutter-bg: #282a36; /* Line number gutter background */
   --code-editor-active-line-bg: rgba(
     68,
     71,
     90,
     0.5
-  ); /* Active line highlight - Dracula current line */
-  --code-editor-selection-bg: rgba(
-    68,
-    71,
-    90,
-    0.99
-  ); /* Text selection - Dracula selection */
+  ); /* Active line highlight  */
+  --code-editor-selection-bg: rgba(68, 71, 90, 0.99); /* Text selection  */
 
   /* Editor Text & Cursor */
-  --code-editor-text: #f8f8f2; /* Default text color - Dracula foreground */
-  --code-editor-cursor: #f8f8f0; /* Cursor/caret color - Dracula foreground */
-  --code-editor-line-number: #6272a4; /* Inactive line numbers - Dracula comment */
-  --code-editor-line-number-active: #f8f8f2; /* Active line number - Dracula foreground */
+  --code-editor-text: #f8f8f2; /* Default text color */
+  --code-editor-cursor: #f8f8f0; /* Cursor/caret color */
+  --code-editor-line-number: #6272a4; /* Inactive line numbers */
+  --code-editor-line-number-active: #f8f8f2; /* Active line number */
 
   /* Editor Borders */
-  --code-editor-gutter-border: #44475a; /* Border between gutter and content - Dracula current line */
+  --code-editor-gutter-border: #44475a; /* Border between gutter and content */
 
   /* Editor Scrollbar */
-  --code-editor-scrollbar-track: #282a36; /* Scrollbar track background - Dracula background */
-  --code-editor-scrollbar-thumb: #44475a; /* Scrollbar thumb - Dracula current line */
-  --code-editor-scrollbar-thumb-hover: #6272a4; /* Scrollbar thumb on hover - Dracula comment */
+  --code-editor-scrollbar-track: #282a36; /* Scrollbar track background */
+  --code-editor-scrollbar-thumb: #44475a; /* Scrollbar thumb */
+  --code-editor-scrollbar-thumb-hover: #6272a4; /* Scrollbar thumb on hover */
 
   /* Editor Typography */
   --code-editor-font-family: "Fira Code", Consolas, monospace;
@@ -99,7 +94,7 @@
   --code-editor-line-height: 1.5;
 
   /* ============================================
-     TERMINAL TOKENS (Dracula Theme)
+     TERMINAL TOKENS 
      ============================================ */
   --xterm-background: #282a36;
   --xterm-foreground: #f8f8f2;
