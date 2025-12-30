@@ -1,7 +1,7 @@
 <div class="tab_item" [class.tab_active]="isActive()" (click)="shellClicked()">
   <span class="tab_text"> Terminal </span>
   <button
-    class="close_btn"
+    mat-icon-button
     matTooltip="Close terminal session"
     (click)="killShell($event)"
   >
