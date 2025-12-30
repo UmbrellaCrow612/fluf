@@ -1,67 +1,15 @@
 <div class="container">
   <div class="top">
+    @for (el of sideBarElements; track $index) {
     <button
       mat-icon-button
-      matTooltip="File explorer"
-      (click)="toggleFileExplorer()"
-      [class.active]="activeElement() == 'file-explorer'"
+      [matTooltip]="el.tooltip"
+      (click)="toggleElement(el.element)"
+      [class.active]="activeElement() == el.element"
     >
-      <mat-icon>file_copy</mat-icon>
+      <mat-icon>{{ el.icon }}</mat-icon>
     </button>
-
-    <button
-      mat-icon-button
-      matTooltip="Search"
-      [class.active]="activeElement() == 'search'"
-      (click)="toggleSearch()"
-    >
-      <mat-icon>search</mat-icon>
-    </button>
-
-    <button
-      mat-icon-button
-      matTooltip="Search folders"
-      [class.active]="activeElement() == 'search-folders'"
-      (click)="toggleSearchFolders()"
-    >
-      <mat-icon>tab_search</mat-icon>
-    </button>
-
-    <button
-      mat-icon-button
-      matTooltip="Search files"
-      [class.active]="activeElement() == 'search-files'"
-      (click)="toggleSearchFiles()"
-    >
-      <mat-icon>find_in_page</mat-icon>
-    </button>
-
-    <button
-      mat-icon-button
-      matTooltip="Source control"
-      [class.active]="activeElement() == 'source-control'"
-      (click)="toggleSourceControl()"
-    >
-      <mat-icon>change_history</mat-icon>
-    </button>
-
-    <button
-      mat-icon-button
-      matTooltip="Run and debug"
-      [class.active]="activeElement() == 'run-and-debug'"
-      (click)="toggleRunAndDebug()"
-    >
-      <mat-icon>bug_report</mat-icon>
-    </button>
-
-    <button
-      mat-icon-button
-      matTooltip="Extensions"
-      [class.active]="activeElement() == 'extensions'"
-      (click)="toggleExtensions()"
-    >
-      <mat-icon>extension</mat-icon>
-    </button>
+    }
   </div>
 
   <div class="bottom">

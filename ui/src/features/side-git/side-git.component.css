@@ -9,9 +9,9 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: #1e1e1e;
-  color: #d4d4d4;
-  font-family: Consolas, monospace;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--code-editor-font-family);
   overflow-y: auto;
   padding: 10px;
 }
@@ -30,11 +30,11 @@
 }
 
 .error_state p {
-  color: #f48771;
+  color: var(--text-error);
 }
 
 .error_text {
-  color: #f48771;
+  color: var(--text-error);
   font-size: 0.9rem;
 }
 
@@ -46,19 +46,19 @@
 }
 
 .git-header {
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-default);
   padding-bottom: 6px;
 }
 
 .git-header h3 {
   font-size: 1.1rem;
-  color: #4fc1ff;
+  color: var(--xterm-cyan);
   margin: 0;
 }
 
 .branch-status {
   font-size: 0.85rem;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 /* Sections */
@@ -70,9 +70,9 @@
 
 .git-section h4 {
   font-size: 0.95rem;
-  color: #c586c0;
+  color: var(--xterm-magenta);
   margin: 6px 0;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-default);
   padding-bottom: 3px;
 }
 
@@ -92,11 +92,11 @@
 }
 
 .git-section li:hover {
-  background-color: #2a2a2a;
+  background-color: var(--bg-hover);
 }
 
 .file {
-  color: #dcdcdc;
+  color: var(--text-primary);
   word-break: break-all;
 }
 
@@ -107,25 +107,25 @@
   border-radius: 3px;
 }
 
-/* VS Code–like colors */
+/* Git status colors using terminal tokens */
 .status.modified {
-  color: #dcdcaa;
+  color: var(--xterm-yellow);
 }
 .status.staged {
-  color: #4ec9b0;
+  color: var(--xterm-green);
 }
 .status.untracked {
-  color: #9cdcfe;
+  color: var(--xterm-cyan);
 }
 .status.deleted {
-  color: #f48771;
+  color: var(--xterm-red);
 }
 .status.renamed {
-  color: #c586c0;
+  color: var(--xterm-magenta);
 }
 
 .git-section.clean {
   text-align: center;
-  color: #6a9955;
+  color: var(--xterm-green);
   font-weight: 500;
 }

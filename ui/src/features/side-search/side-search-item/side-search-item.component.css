@@ -14,7 +14,7 @@
 }
 
 .side_search_item:hover {
-  background-color: rgba(90, 93, 94, 0.31);
+  background-color: var(--bg-hover);
 }
 
 .chevron-icon {
@@ -22,7 +22,7 @@
   width: 16px;
   height: 16px;
   font-size: 16px;
-  color: #cccccc;
+  color: var(--text-secondary);
 }
 
 .file-icon {
@@ -41,7 +41,7 @@
 }
 
 .file-name {
-  color: #cccccc;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -49,7 +49,7 @@
 }
 
 .directory-path {
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
@@ -59,7 +59,7 @@
 
 .match-count {
   flex-shrink: 0;
-  color: #888888;
+  color: var(--text-tertiary);
   font-size: 11px;
   margin-left: auto;
   padding-left: 8px;
@@ -68,28 +68,28 @@
 /* Lines container */
 .lines-container {
   padding-left: 28px;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--bg-tertiary);
 }
 
 .line-item {
   padding: 2px 8px;
   display: flex;
   cursor: pointer;
-  font-family: "Consolas", "Courier New", monospace;
-  font-size: 12px;
+  font-family: var(--code-editor-font-family);
+  font-size: var(--code-editor-font-size);
 }
 
 .line-item:hover {
-  background-color: rgba(90, 93, 94, 0.31);
+  background-color: var(--bg-hover);
 }
 
 .line-content {
-  color: #cccccc;
+  color: var(--text-secondary);
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .line-match {
-  background-color: grey;
+  background-color: var(--bg-active);
 }

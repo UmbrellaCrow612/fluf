@@ -16,11 +16,11 @@
 
 .file_explorer_tree_item:hover {
   cursor: pointer;
-  background-color: rgb(46, 44, 44);
+  background-color: var(--bg-hover);
 }
 
 .focused {
-  background-color: rgb(46, 44, 44);
+  background-color: var(--bg-focus);
 }
 
 .elipses {
@@ -49,7 +49,6 @@
   cursor: text;
   border-radius: 4px;
   gap: 3px;
-  background-color: rgb(43, 41, 41);
 }
 
 .create_input {
@@ -58,7 +57,8 @@
   outline: none;
   font-size: 14px;
   background: transparent;
-  background-color: rgb(71, 69, 69);
   padding: 3px;
-  color: white;
+
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
 }

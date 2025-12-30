@@ -121,7 +121,7 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.error = null;
     this.isLoading = true;
 
-    console.log("Render shell")
+    console.log('Render shell');
 
     this.cleanupTerminal();
 
@@ -162,6 +162,12 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.renderXterm();
   }
 
+  getCssVar = (varName: string): string => {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(varName)
+      .trim();
+  };
+
   /**
    * Call this when shell exists and is alive to render xterm
    */
@@ -174,7 +180,35 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     container.innerHTML = '';
 
-    this.terminal = new Terminal();
+    this.terminal = new Terminal({
+      theme: {
+        background: this.getCssVar('--xterm-background'),
+        foreground: this.getCssVar('--xterm-foreground'),
+        cursor: this.getCssVar('--xterm-cursor'),
+        cursorAccent: this.getCssVar('--xterm-cursor-accent'),
+        selectionBackground: this.getCssVar('--xterm-selection'),
+        black: this.getCssVar('--xterm-black'),
+        red: this.getCssVar('--xterm-red'),
+        green: this.getCssVar('--xterm-green'),
+        yellow: this.getCssVar('--xterm-yellow'),
+        blue: this.getCssVar('--xterm-blue'),
+        magenta: this.getCssVar('--xterm-magenta'),
+        cyan: this.getCssVar('--xterm-cyan'),
+        white: this.getCssVar('--xterm-white'),
+        brightBlack: this.getCssVar('--xterm-bright-black'),
+        brightRed: this.getCssVar('--xterm-bright-red'),
+        brightGreen: this.getCssVar('--xterm-bright-green'),
+        brightYellow: this.getCssVar('--xterm-bright-yellow'),
+        brightBlue: this.getCssVar('--xterm-bright-blue'),
+        brightMagenta: this.getCssVar('--xterm-bright-magenta'),
+        brightCyan: this.getCssVar('--xterm-bright-cyan'),
+        brightWhite: this.getCssVar('--xterm-bright-white'),
+      },
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      fontSize: 14,
+      cursorBlink: true,
+    });
+
     this.fitAddon = new FitAddon();
     this.serializeAddon = new SerializeAddon();
 

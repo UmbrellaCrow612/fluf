@@ -1,5 +1,124 @@
 /* You can add global styles to this file, and also import other style files */
 
+:root {
+  /* ============================================
+     BACKGROUND TOKENS
+     ============================================ */
+
+  /* Primary Backgrounds */
+  --bg-primary: #282a36; /* Main page background, default canvas */
+  --bg-secondary: #21222c; /* Cards, panels, alternate sections */
+  --bg-tertiary: #191a21; /* Nested elements, wells, input backgrounds */
+
+  /* Interactive States */
+  --bg-hover: #44475a; /* Hover state for clickable elements */
+  --bg-active: #6272a4; /* Active/pressed state for buttons, links */
+  --bg-selected: #bd93f9; /* Selected items in lists, active nav items */
+  --bg-focus: #6272a4; /* Focused input fields, keyboard navigation */
+
+  /* Specialty Backgrounds */
+  --bg-overlay: rgba(0, 0, 0, 0.7); /* Modal backdrops, dropdown shadows */
+  --bg-inverse: #f8f8f2; /* Dark sections on light theme, footer */
+  --bg-disabled: #44475a; /* Disabled buttons, inactive elements */
+
+  /* Semantic/Status Backgrounds */
+  --bg-success: #1e3a2e; /* Success messages, positive alerts */
+  --bg-warning: #3d3a1f; /* Warning banners, caution alerts */
+  --bg-error: #3d1f1f; /* Error messages, validation failures */
+  --bg-info: #1f2d3d; /* Info banners, tips, help text */
+
+  /* ============================================
+     TEXT TOKENS (paired with backgrounds)
+     ============================================ */
+
+  --text-primary: #f8f8f2; /* Main body text on light backgrounds */
+  --text-secondary: #bfbfbf; /* Subtle text, labels, captions */
+  --text-tertiary: #6272a4; /* Placeholder text, disabled text */
+  --text-inverse: #282a36; /* Text on dark/inverse backgrounds */
+
+  --text-success: #50fa7b; /* Text for success messages */
+  --text-warning: #f1fa8c; /* Text for warning messages */
+  --text-error: #ff5555; /* Text for error messages */
+  --text-info: #8be9fd; /* Text for info messages */
+
+  /* ============================================
+     BORDER TOKENS
+     ============================================ */
+
+  --border-default: #44475a; /* Default borders, dividers, card outlines */
+  --border-hover: #6272a4; /* Border on hover for inputs, buttons */
+  --border-focus: #bd93f9; /* Focus rings, active input borders */
+  --border-error: #ff5555; /* Error state borders on inputs */
+
+  /* ============================================
+     SURFACE ELEVATION SHADOWS
+     ============================================ */
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5); /* Subtle lift - cards, buttons */
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.6); /* Moderate lift - dropdowns, popovers */
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.7); /* Strong lift - modals, dialogs */
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.8); /* Maximum lift - overlays */
+
+  /* ============================================
+     CODE EDITOR TOKENS
+     ============================================ */
+
+  /* Editor Backgrounds */
+  --code-editor-bg: #282a36; /* Main editor background */
+  --code-editor-gutter-bg: #282a36; /* Line number gutter background */
+  --code-editor-active-line-bg: rgba(
+    68,
+    71,
+    90,
+    0.5
+  ); /* Active line highlight  */
+  --code-editor-selection-bg: rgba(68, 71, 90, 0.99); /* Text selection  */
+
+  /* Editor Text & Cursor */
+  --code-editor-text: #f8f8f2; /* Default text color */
+  --code-editor-cursor: #f8f8f0; /* Cursor/caret color */
+  --code-editor-line-number: #6272a4; /* Inactive line numbers */
+  --code-editor-line-number-active: #f8f8f2; /* Active line number */
+
+  /* Editor Borders */
+  --code-editor-gutter-border: #44475a; /* Border between gutter and content */
+
+  /* Editor Scrollbar */
+  --code-editor-scrollbar-track: #282a36; /* Scrollbar track background */
+  --code-editor-scrollbar-thumb: #44475a; /* Scrollbar thumb */
+  --code-editor-scrollbar-thumb-hover: #6272a4; /* Scrollbar thumb on hover */
+
+  /* Editor Typography */
+  --code-editor-font-family: "Fira Code", Consolas, monospace;
+  --code-editor-font-size: 14px;
+  --code-editor-line-height: 1.5;
+
+  /* ============================================
+     TERMINAL TOKENS 
+     ============================================ */
+  --xterm-background: #282a36;
+  --xterm-foreground: #f8f8f2;
+  --xterm-cursor: #f8f8f2;
+  --xterm-cursor-accent: #282a36;
+  --xterm-selection: #44475a;
+  --xterm-black: #21222c;
+  --xterm-red: #ff5555;
+  --xterm-green: #50fa7b;
+  --xterm-yellow: #f1fa8c;
+  --xterm-blue: #bd93f9;
+  --xterm-magenta: #ff79c6;
+  --xterm-cyan: #8be9fd;
+  --xterm-white: #f8f8f2;
+  --xterm-bright-black: #6272a4;
+  --xterm-bright-red: #ff6e6e;
+  --xterm-bright-green: #69ff94;
+  --xterm-bright-yellow: #ffffa5;
+  --xterm-bright-blue: #d6acff;
+  --xterm-bright-magenta: #ff92df;
+  --xterm-bright-cyan: #a4ffff;
+  --xterm-bright-white: #ffffff;
+}
+
 *,
 *::before,
 *::after {
@@ -12,7 +131,11 @@ html,
 body {
   width: 100%;
   height: 100%;
+
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
+
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -20,7 +143,7 @@ body {
 
 .scroll_bar {
   scrollbar-width: thin;
-  scrollbar-color: #555 #222;
+  scrollbar-color: var(--bg-active) var(--bg-secondary);
 }
 
 .scroll_bar::-webkit-scrollbar {
@@ -29,16 +152,323 @@ body {
 }
 
 .scroll_bar::-webkit-scrollbar-track {
-  background: #222;
+  background: var(--bg-secondary);
   border-radius: 3px;
 }
 
 .scroll_bar::-webkit-scrollbar-thumb {
-  background-color: #555;
+  background-color: var(--bg-active);
   border-radius: 3px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-default);
 }
 
 .scroll_bar::-webkit-scrollbar-thumb:hover {
-  background-color: #777;
+  background-color: var(--bg-hover);
+}
+
+/* ============================================
+   FLUF BUTTON SYSTEM
+   Reusable button classes using design tokens
+   ============================================ */
+
+/* Base Button */
+.fluf_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.fluf_btn:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.fluf_btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ============================================
+   PRIMARY VARIANTS
+   ============================================ */
+
+.fluf_btn_primary {
+  background-color: var(--bg-active);
+  color: var(--text-primary);
+  border-color: var(--bg-active);
+}
+
+.fluf_btn_primary:hover:not(:disabled) {
+  background-color: var(--bg-selected);
+  border-color: var(--bg-selected);
+}
+
+.fluf_btn_primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.fluf_btn_secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.fluf_btn_secondary:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+.fluf_btn_secondary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.fluf_btn_tertiary {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.fluf_btn_tertiary:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ============================================
+   SEMANTIC/STATUS HELPERS
+   ============================================ */
+
+.fluf_btn_success {
+  background-color: var(--bg-success);
+  color: var(--text-success);
+  border-color: var(--text-success);
+}
+
+.fluf_btn_success:hover:not(:disabled) {
+  background-color: var(--text-success);
+  color: var(--text-inverse);
+  border-color: var(--text-success);
+}
+
+.fluf_btn_warning {
+  background-color: var(--bg-warning);
+  color: var(--text-warning);
+  border-color: var(--text-warning);
+}
+
+.fluf_btn_warning:hover:not(:disabled) {
+  background-color: var(--text-warning);
+  color: var(--text-inverse);
+  border-color: var(--text-warning);
+}
+
+.fluf_btn_error {
+  background-color: var(--bg-error);
+  color: var(--text-error);
+  border-color: var(--text-error);
+}
+
+.fluf_btn_error:hover:not(:disabled) {
+  background-color: var(--text-error);
+  color: var(--text-inverse);
+  border-color: var(--text-error);
+}
+
+.fluf_btn_info {
+  background-color: var(--bg-info);
+  color: var(--text-info);
+  border-color: var(--text-info);
+}
+
+.fluf_btn_info:hover:not(:disabled) {
+  background-color: var(--text-info);
+  color: var(--text-inverse);
+  border-color: var(--text-info);
+}
+
+/* ============================================
+   SIZE MODIFIERS
+   ============================================ */
+
+.fluf_btn_sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.fluf_btn_lg {
+  padding: 0.875rem 1.75rem;
+  font-size: 1rem;
+}
+
+.fluf_btn_xl {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+/* ============================================
+   LAYOUT MODIFIERS
+   ============================================ */
+
+.fluf_btn_full {
+  width: 100%;
+}
+
+.fluf_btn_icon {
+  padding: 0.625rem;
+  aspect-ratio: 1;
+}
+
+/* ============================================
+   FLUF MENU SYSTEM
+   Overrides mat menu styles 
+   ============================================ */
+
+.fluf_menu {
+  /* Menu Panel Background & Border */
+  --mat-menu-container-color: var(--bg-secondary);
+  --mat-menu-divider-color: var(--border-default);
+
+  /* Apply background to the panel */
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border-radius: 4px !important;
+}
+
+/* Menu Items */
+.fluf_menu .mat-mdc-menu-item {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Hover State */
+.fluf_menu .mat-mdc-menu-item:hover:not([disabled]) {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Active/Pressed State */
+.fluf_menu .mat-mdc-menu-item:active:not([disabled]) {
+  background-color: var(--bg-active) !important;
+}
+
+/* Focus State */
+.fluf_menu .mat-mdc-menu-item:focus:not([disabled]) {
+  background-color: var(--bg-focus) !important;
+  outline: 2px solid var(--border-focus) !important;
+  outline-offset: -2px !important;
+}
+
+/* Selected/Active Item */
+.fluf_menu .mat-mdc-menu-item.mat-mdc-menu-item-highlighted,
+.fluf_menu .mat-mdc-menu-item[aria-selected="true"] {
+  background-color: var(--bg-selected) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* Disabled State */
+.fluf_menu .mat-mdc-menu-item[disabled] {
+  color: var(--text-tertiary) !important;
+  background-color: var(--bg-disabled) !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Menu Item Text */
+.fluf_menu .mat-mdc-menu-item .mat-mdc-menu-item-text {
+  color: inherit !important;
+}
+
+/* Submenu Indicators */
+.fluf_menu .mat-mdc-menu-item .mat-icon {
+  color: var(--text-secondary) !important;
+}
+
+/* Divider */
+.fluf_menu .mat-divider {
+  border-top-color: var(--border-default) !important;
+  margin: 4px 0 !important;
+}
+
+/* Remove default ripple color and use custom */
+.fluf_menu .mat-mdc-menu-item .mat-ripple-element {
+  background-color: rgba(189, 147, 249, 0.2) !important;
+}
+
+/* ============================================
+   FLUF INPUT
+   ============================================ */
+
+.fluf_input {
+  /* Layout & Sizing */
+  width: 100%;
+  padding: 0.75rem 1rem;
+
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+
+  /* Background & Borders */
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+
+  /* Effects */
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+/* Placeholder styling */
+.fluf_input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+/* Hover state */
+.fluf_input:hover {
+  border-color: var(--border-hover);
+  background-color: var(--bg-secondary);
+}
+
+/* Focus state */
+.fluf_input:focus {
+  border-color: var(--border-focus);
+  background-color: var(--bg-focus);
+  box-shadow: 0 0 0 3px rgba(189, 147, 249, 0.2);
+}
+
+/* Error state */
+.fluf_input.error,
+.fluf_input[aria-invalid="true"] {
+  border-color: var(--border-error);
+  background-color: var(--bg-error);
+}
+
+.fluf_input.error:focus,
+.fluf_input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(255, 85, 85, 0.2);
+}
+
+/* Disabled state */
+.fluf_input:disabled {
+  background-color: var(--bg-disabled);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.6;
 }

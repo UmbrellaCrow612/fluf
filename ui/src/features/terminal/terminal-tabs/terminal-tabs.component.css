@@ -1,5 +1,5 @@
 :host {
-  height: 40px;
+  height: 55px;
   display: flex;
   min-height: 0;
   min-width: 0;
@@ -10,7 +10,6 @@
   min-height: 0;
   min-width: 0;
   display: flex;
-  background-color: rgb(34, 33, 33);
 }
 
 .scroll_container {
@@ -28,34 +27,4 @@
   display: flex;
   align-items: center;
   padding: 0 5px;
-}
-
-.add-btn {
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 4px;
-  background-color: #3a3a3a;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-  padding: 0;
-}
-
-.add-btn mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  line-height: 16px;
-}
-
-.add-btn:hover {
-  background-color: #4a4a4a;
-}
-
-.add-btn:active {
-  transform: scale(0.9);
 }
