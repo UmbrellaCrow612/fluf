@@ -2,24 +2,24 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  border: 1px solid #333;
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   padding: 8px;
-  background-color: #1e1e1e;
-  color: #d4d4d4;
-  font-family: "Consolas", monospace;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-family: var(--code-editor-font-family);
   font-size: 13px;
 }
 
 .problem_item_file {
   font-weight: bold;
-  color: #9cdcfe;
+  color: var(--text-info);
   margin-bottom: 5px;
   cursor: pointer;
 }
 
 .problem_item_file:hover {
-  background-color: rgba(211, 211, 211, 0.247);
+  background-color: var(--bg-hover);
 }
 
 .problem_item_child {
@@ -32,12 +32,12 @@
 }
 
 .problem_item_child:hover {
-  background-color: rgba(100, 100, 100, 0.1);
+  background-color: var(--bg-hover);
 }
 
 /* Line number styling */
 .problem_line_info {
-  color: #858585;
+  color: var(--code-editor-line-number);
   font-size: 11px;
   min-width: 80px;
   flex-shrink: 0;
@@ -45,19 +45,19 @@
 
 /* Text color for severity */
 .severity-hint {
-  color: #a0a0a0;
+  color: var(--text-secondary);
 }
 
 .severity-info {
-  color: #3794ff;
+  color: var(--text-info);
 }
 
 .severity-warning {
-  color: #ff8800;
+  color: var(--text-warning);
 }
 
 .severity-error {
-  color: #f44747;
+  color: var(--text-error);
 }
 
 .problem_message {
@@ -66,6 +66,6 @@
 
 .problem_source {
   font-style: italic;
-  color: #888;
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
