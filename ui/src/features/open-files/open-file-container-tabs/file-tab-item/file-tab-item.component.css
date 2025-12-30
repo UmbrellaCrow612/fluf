@@ -8,14 +8,14 @@
   padding-left: 5px;
   padding-right: 5px;
 
-  background-color: var(--bg-primary);
-  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .active {
   border-top: 1px solid var(--border-focus);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
 }
 
 .ellipses {
