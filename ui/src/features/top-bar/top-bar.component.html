@@ -1,9 +1,13 @@
 <div class="parent">
-  <div class="flex">
+  <div class="logo_and_action_btns">
     <span> Fluffy </span>
-    <div>
+    <div class="logo_action_btns">
       @for (item of items; track $index) {
-      <button matButton [matMenuTriggerFor]="menu" [ariaLabel]="item.tooltip">
+      <button
+        class="fluf_btn fluf_btn_primary fluf_btn_sm"
+        [matMenuTriggerFor]="menu"
+        [ariaLabel]="item.tooltip"
+      >
         {{ item.label }}
       </button>
       <mat-menu #menu="matMenu">
