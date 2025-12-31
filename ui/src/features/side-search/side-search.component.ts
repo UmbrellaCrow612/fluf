@@ -66,12 +66,12 @@ export class SideSearchComponent {
     let exclude = this.excludeTermInputControl.value ?? undefined;
     let include = this.includeTermInputControl.value ?? undefined;
 
-    this.ripGrepResult = await this.api.ripGrep(undefined, {
+    this.ripGrepResult = await this.api.ripgrepApi.search({
       searchTerm: term,
       searchPath: this.searchDir()!,
       caseInsensitive: true,
       excludes: exclude,
       includes: include,
-    }); 
+    });
   }
 }

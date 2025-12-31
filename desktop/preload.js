@@ -1,6 +1,13 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").ripgrepApi}
+ */
+const ripgrepApi = {
+  search: (options) => ipcRenderer.invoke("ripgrep:search", options),
+};
+
+/**
  * @type {import("./type").chromeWindowApi}
  */
 const chromeWindowApi = {
@@ -134,19 +141,28 @@ const tsServer = {
 };
 
 /**
+ * @type {import("./type").fsearchApi}
+ */
+const fsearchApi = {
+  search: (options) => ipcRenderer.invoke("fsearch", options),
+};
+
+/**
+ * @type {import("./type").clipboardApi}
+ */
+const clipboardApi = {
+  writeImage: (fp) => ipcRenderer.invoke("clipboard:write:image", fp),
+};
+
+/**
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  ripGrep: (_event, options) => ipcRenderer.invoke("ripgrep:search", options),
-
-  fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
-
+  ripgrepApi,
+  fsearchApi,
   gitApi,
   tsServer,
-
-  writeImageToClipboard: (_event, fp) =>
-    ipcRenderer.invoke("clipboard:write:image", fp),
-
+  clipboardApi,
   shellApi,
   pathApi,
   fsApi,

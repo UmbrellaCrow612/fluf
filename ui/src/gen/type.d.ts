@@ -298,7 +298,16 @@ export type ripGrepResult = {
 /**
  * Search a directory's files recursivley for a given string content match
  */
-export type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
+export type ripgrepSearch = (options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
+/**
+ * Contains all api methods to use ripgrep
+ */
+export type ripgrepApi = {
+    /**
+     * - Search file content for a specific term
+     */
+    search: ripgrepSearch;
+};
 /**
  * Callback structure for callback
  */
@@ -487,11 +496,29 @@ export type fsearchOptions = {
 /**
  * Search for a given file or folder with options
  */
-export type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearchOptions) => Promise<fsearchResult[]>;
+export type fsearch = (options: fsearchOptions) => Promise<fsearchResult[]>;
+/**
+ * Contains all the fsearch methods
+ */
+export type fsearchApi = {
+    /**
+     * - Search for a file or folder
+     */
+    search: fsearch;
+};
 /**
  * Write a image to clipboard to be pasted elsewhere
  */
-export type writeImageToClipboard = (event?: Electron.IpcMainInvokeEvent | undefined, filePath: string) => Promise<boolean>;
+export type writeImageToClipboard = (filePath: string) => Promise<boolean>;
+/**
+ * Contains all clipboard related methods
+ */
+export type clipboardApi = {
+    /**
+     * - Writes a image path to the clipboard to be pasted in other places
+     */
+    writeImage: writeImageToClipboard;
+};
 /**
  * List of what the value of the event field can be
  */
@@ -805,21 +832,21 @@ export type shellApi = {
  */
 export type ElectronApi = {
     /**
-     * - Search a folder files for a specific search term and get a list of matching results
+     * - Contains all ripgrep related methods
      */
-    ripGrep: ripGrep;
+    ripgrepApi: ripgrepApi;
     /**
      * - Offers all the git func
      */
     gitApi: gitApi;
     /**
-     * - Search for files or folders really fast
+     * - Contains all fsearch api's
      */
-    fsearch: fsearch;
+    fsearchApi: fsearchApi;
     /**
-     * - Write a file path to the clipboard to be pasted into other applications
+     * - Contains all clipboard api
      */
-    writeImageToClipboard: writeImageToClipboard;
+    clipboardApi: clipboardApi;
     /**
      * - The ts / typescript language server
      */

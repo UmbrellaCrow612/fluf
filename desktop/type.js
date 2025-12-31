@@ -232,10 +232,15 @@
 
 /**
  * Search a directory's files recursivley for a given string content match
- * @callback ripGrep
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback ripgrepSearch
  * @param {ripgrepArgsOptions} options - Options to refine search results
  * @returns {Promise<ripGrepResult[]>}
+ */
+
+/**
+ * Contains all api methods to use ripgrep
+ * @typedef {Object} ripgrepApi
+ * @property {ripgrepSearch} search - Search file content for a specific term
  */
 
 /**
@@ -342,17 +347,27 @@
 /**
  * Search for a given file or folder with options
  * @callback fsearch
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {fsearchOptions} options Options to narrow search
  * @returns {Promise<fsearchResult[]>}
  */
 
 /**
+ * Contains all the fsearch methods
+ * @typedef {Object} fsearchApi
+ * @property {fsearch} search - Search for a file or folder
+ */
+
+/**
  * Write a image to clipboard to be pasted elsewhere
  * @callback writeImageToClipboard
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} filePath The path to the file to copy to the clipboard
  * @returns {Promise<boolean>} If it could or not copy it, if the file does not exist then false else true if it could
+ */
+
+/**
+ * Contains all clipboard related methods
+ * @typedef {Object} clipboardApi
+ * @property {writeImageToClipboard} writeImage - Writes a image path to the clipboard to be pasted in other places
  */
 
 /**
@@ -605,13 +620,13 @@
  *
  * @typedef {Object} ElectronApi
  *
- * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
+ * @property {ripgrepApi} ripgrepApi - Contains all ripgrep related methods
  *
  * @property {gitApi} gitApi - Offers all the git func
  *
- * @property {fsearch} fsearch - Search for files or folders really fast
+ * @property {fsearchApi} fsearchApi - Contains all fsearch api's
  *
- * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
+ * @property {clipboardApi} clipboardApi - Contains all clipboard api
  *
  * @property {tsServer} tsServer - The ts / typescript language server
  *

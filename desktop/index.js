@@ -1,7 +1,6 @@
 const { app, BrowserWindow, ipcMain, protocol } = require("electron");
 const { loadEnv } = require("./env");
 const path = require("path");
-const { ripGrepImpl } = require("./ripgrep");
 const { registerFsearchListeners } = require("./fsearch");
 const { registerGitListeners } = require("./git");
 const { registerClipboardListeners } = require("./clipboard");
@@ -17,6 +16,7 @@ const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
 const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
+const { registerRipgrepListeners } = require("./ripgrep");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -59,9 +59,8 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-  // move into ripgrep.js
-  ipcMain.handle("ripgrep:search", ripGrepImpl);
 
+  registerRipgrepListeners(ipcMain);
   registerGitListeners(ipcMain);
   registerFsearchListeners(ipcMain);
   registerClipboardListeners(ipcMain);
@@ -71,7 +70,7 @@ app.whenReady().then(() => {
   registerShellListeners(ipcMain, mainWindow);
   registerPathListeners(ipcMain);
   registerFsListeners(ipcMain, mainWindow);
-  registerWindowListener(ipcMain)
+  registerWindowListener(ipcMain);
 
   startLanguageServers();
 });

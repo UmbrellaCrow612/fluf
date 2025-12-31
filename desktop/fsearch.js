@@ -203,18 +203,23 @@ const searchWithFSearch = async (options) => {
   });
 };
 
-/** @type {import("./type").fsearch} */
-const fsearchImpl = async (_, options) => {
-  let newOptions = { ...defaultSearchOptions, ...options };
-  return await searchWithFSearch(newOptions);
-};
-
 /**
  * Register fsearch listeners
  * @param {import("electron").IpcMain} ipcMain
  */
 function registerFsearchListeners(ipcMain) {
-  ipcMain.handle("fsearch", fsearchImpl);
+  ipcMain.handle(
+    "fsearch",
+    /**
+     * @param {import("electron").IpcMainInvokeEvent} event
+     * @param {import("./type").fsearchOptions} options
+     * @returns {Promise<import("./type").fsearchResult[]>}
+     */
+    async (event, options) => {
+      let newOptions = { ...defaultSearchOptions, ...options };
+      return await searchWithFSearch(newOptions);
+    }
+  );
 }
 
 module.exports = { registerFsearchListeners };

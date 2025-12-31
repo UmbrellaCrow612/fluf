@@ -4,11 +4,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ContextService } from '../../../app-context/app-context.service';
-import { hasImageExtension } from '../../../img-editor/utils';
-import { hasDocumentExtension } from '../../../document-editor/utils';
 import { fileNode } from '../../../../gen/type';
 import { removeNodeIfExists } from '../../../file-explorer/fileNode';
 import { InMemoryContextService } from '../../../app-context/app-in-memory-context.service';
+import { OpenNodeInEditor } from '../../../file-explorer/helper';
 
 @Component({
   selector: 'app-file-tab-item',
@@ -42,21 +41,7 @@ export class FileTabItemComponent {
   });
 
   tabItemClicked() {
-    this.appContext.currentOpenFileInEditor.set(this.fileNode());
-
-    let isImg = hasImageExtension(this.fileNode().extension);
-    if (isImg) {
-      this.appContext.editorMainActiveElement.set('image-editor');
-      return;
-    }
-
-    let isDoc = hasDocumentExtension(this.fileNode().extension);
-    if (isDoc) {
-      this.appContext.editorMainActiveElement.set('document-editor');
-      return;
-    }
-
-    this.appContext.editorMainActiveElement.set('text-file-editor');
+    OpenNodeInEditor(this.fileNode(), this.appContext);
   }
 
   removeTabItem(event: MouseEvent) {
@@ -69,22 +54,10 @@ export class FileTabItemComponent {
     this.appContext.openFiles.set(structuredClone(files)); // dfo this becuase of js refrence bs
 
     if (currentActiveNode?.path === this.fileNode().path) {
+      // try to open next node
       if (files.length > 0) {
-        let isImg = hasImageExtension(files[0].extension);
-        if (isImg) {
-          this.appContext.editorMainActiveElement.set('image-editor');
-        }
-
-        let isDoc = hasDocumentExtension(files[0].extension);
-        if (isDoc) {
-          this.appContext.editorMainActiveElement.set('document-editor');
-        }
-
-        if (!isDoc && !isImg) {
-          this.appContext.editorMainActiveElement.set('text-file-editor');
-        }
-
-        this.appContext.currentOpenFileInEditor.set(files[0]);
+        let next = files[0];
+        OpenNodeInEditor(next, this.appContext);
       } else {
         this.appContext.currentOpenFileInEditor.set(null);
         this.appContext.editorMainActiveElement.set(null);

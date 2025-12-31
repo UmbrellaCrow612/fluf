@@ -63,7 +63,7 @@ export class SearchFileCommandComponent implements AfterViewInit {
 
       let term = this.input()?.nativeElement.value.trim() ?? '';
 
-      let res = await this.api.fsearch(undefined, {
+      let res = await this.api.fsearchApi.search({
         directory: dir,
         term: term,
         hidden: true,

@@ -2,7 +2,6 @@
  * Contains all rip grep related code
  */
 
-const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
 const { binmanResolve } = require("umbr-binman");
@@ -40,9 +39,9 @@ function parseRipgrepOutput(stdout, searchTerm) {
       const directoryName = parts.pop() || "";
       map.set(filePath, {
         filePath,
-        fileName,
         directoryName,
         lines: [],
+        fileName: fileName ?? "",
       });
     }
 
@@ -55,6 +54,7 @@ function parseRipgrepOutput(stdout, searchTerm) {
     const matchText = found[0];
     const after = content.slice(found.index + matchText.length);
 
+    // @ts-ignore
     map.get(filePath).lines.push({
       before,
       match: matchText,
@@ -179,11 +179,27 @@ async function searchWithRipGrep(options) {
   });
 }
 
-/** @type {import("./type").ripGrep} */
-const ripGrepImpl = async (_event = undefined, options) => {
-  return await searchWithRipGrep(options);
+/**
+ * Register ripgrep listeners
+ * @param {import("electron").IpcMain} ipcMain
+ */
+const registerRipgrepListeners = (ipcMain) => {
+  ipcMain.handle(
+    "ripgrep:search",
+    /**
+     * @param {import("electron").IpcMainInvokeEvent} event
+     * @param {import("./type").ripgrepArgsOptions} options
+     * @returns {Promise<import("./type").ripGrepResult[]>}
+     */
+    async (
+      event,
+      /** @type {import("./type").ripgrepArgsOptions}*/ options
+    ) => {
+      return await searchWithRipGrep(options);
+    }
+  );
 };
 
 module.exports = {
-  ripGrepImpl,
+  registerRipgrepListeners,
 };
