@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 
-import { form, Field, required, email } from '@angular/forms/signals';
+import { form, Field } from '@angular/forms/signals';
 import { SearchFileCommandComponent } from './search-file-command/search-file-command.component';
 import { NgComponentOutlet } from '@angular/common';
 import { SetThemeCommandComponent } from './set-theme-command/set-theme-command.component';
