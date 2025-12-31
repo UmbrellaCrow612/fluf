@@ -14,7 +14,9 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
 import { form, Field } from '@angular/forms/signals';
 import { SearchFileCommandComponent } from './search-file-command/search-file-command.component';
 import { NgComponentOutlet } from '@angular/common';
-import { SetThemeCommandComponent } from './set-theme-command/set-theme-command.component';
+import { ChangeThemeCommandComponent } from './theme/change-theme-command/change-theme-command.component';
+import { CreateThemeCommandComponent } from './theme/create-theme-command/create-theme-command.component';
+import { EditThemeCommandComponent } from './theme/edit-theme-command/edit-theme-command.component';
 
 /**
  * Represents a command that can be selected for auto complete
@@ -132,10 +134,22 @@ export class CommandPaletteComponent implements OnInit {
       component: SearchFileCommandComponent,
     },
     {
-      prefix: 'theme:set',
-      description: 'Set the editors theme',
-      label: 'Set theme',
-      component: SetThemeCommandComponent,
+      label: 'Change theme',
+      component: ChangeThemeCommandComponent,
+      description: 'Change your theme to another',
+      prefix: 'theme:change',
+    },
+    {
+      component: CreateThemeCommandComponent,
+      description: 'Create a custom theme for the editor',
+      label: 'Create theme',
+      prefix: 'theme:create',
+    },
+    {
+      component: EditThemeCommandComponent,
+      description: 'Edit a theme',
+      label: 'Edit theme',
+      prefix: 'theme:edit',
     },
   ];
 }
