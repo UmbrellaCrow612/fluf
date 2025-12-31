@@ -4,7 +4,7 @@
 const os = require("os");
 const fs = require("fs/promises");
 const { spawn } = require("@homebridge/node-pty-prebuilt-multiarch");
-const path = require("path")
+const path = require("path");
 
 /**
  * Contains a map of shell PID and then the proccess
@@ -78,6 +78,14 @@ const registerShellListeners = (ipcMain, win) => {
           pty.onExit((exit) => {
             if (windowRef) {
               windowRef.webContents.send("shell:exit", pty.pid, exit);
+
+              let shell = shells.get(pty.pid);
+
+              shellDisposes.get(pty.pid)?.forEach((x) => x.dispose());
+              shellDisposes.delete(pty.pid);
+
+              shell?.kill();
+              shells.delete(pty.pid);
             }
           })
         );
@@ -170,7 +178,7 @@ const cleanUpShells = () => {
   });
 
   a.forEach((x) => {
-    console.log("Killed shell " + x.pid)
+    console.log("Killed shell " + x.pid);
     x.kill();
   });
 };

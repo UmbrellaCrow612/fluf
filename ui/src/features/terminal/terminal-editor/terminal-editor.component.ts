@@ -21,7 +21,7 @@ import { SerializeAddon } from '@xterm/addon-serialize';
   templateUrl: './terminal-editor.component.html',
   styleUrl: './terminal-editor.component.css',
 })
-export class TerminalEditorComponent implements OnInit, OnDestroy {
+export class TerminalEditorComponent implements OnDestroy {
   private readonly inMemoryAppContext = inject(InMemoryContextService);
   private readonly api = getElectronApi();
 
@@ -40,12 +40,16 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     });
 
     effect(async () => {
-      this.inMemoryAppContext.currentActiveShellId();
+      let pid = this.inMemoryAppContext.currentActiveShellId();
 
-      await this.initShell();
+      if (pid !== this.previousPid) {
+        await this.initShell();
+        this.previousPid = pid;
+      }
     });
   }
 
+  private previousPid: number | null = null;
   private terminal: Terminal | null = null;
   private fitAddon: FitAddon | null = null;
   private serializeAddon: SerializeAddon | null = null;
@@ -61,10 +65,6 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
   changeunSub: voidCallback | null = null;
   exitUnSub: voidCallback | null = null;
-
-  async ngOnInit() {
-    await this.initShell();
-  }
 
   ngOnDestroy() {
     this.cleanupTerminal();
@@ -95,21 +95,29 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
   }
 
   private saveTerminalBuffer() {
-    let pid = this.currentActiveShellId();
-    if (!pid) return;
+    untracked(() => {
+      let pid = this.currentActiveShellId();
+      if (!pid) return;
 
-    let map = structuredClone(this.terminalBuffer());
+      let map = structuredClone(this.terminalBuffer());
 
-    map.set(pid, this.serializeAddon?.serialize() ?? '');
+      map.set(pid, this.serializeAddon?.serialize() ?? '');
 
-    this.inMemoryAppContext.terminalBuffers.set(map);
+      this.inMemoryAppContext.terminalBuffers.set(map);
+    });
   }
 
   private getStoredTerminalBuffer(): string {
-    let pid = this.currentActiveShellId();
-    if (!pid) return '';
+    let content = '';
 
-    let content = untracked(() => this.terminalBuffer().get(pid)) ?? '';
+    untracked(() => {
+      let pid = this.currentActiveShellId();
+      if (!pid) return '';
+
+      content = this.terminalBuffer().get(pid) ?? '';
+
+      return content;
+    });
 
     return content;
   }
@@ -125,24 +133,22 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
     this.cleanupTerminal();
 
-    if (!this.currentActiveShellId()) {
+    const pid = this.currentActiveShellId();
+
+    if (!pid) {
       this.error = 'No active terminal selected.';
       this.isLoading = false;
       return;
     }
 
-    this.changeunSub = this.api.shellApi.onChange(
-      this.currentActiveShellId()!,
-      (chunk) => {
-        this.terminal?.write(chunk, () => {
-          this.saveTerminalBuffer();
-        });
-      }
-    );
+    this.changeunSub = this.api.shellApi.onChange(pid, (chunk) => {
+      this.terminal?.write(chunk, () => {
+        this.saveTerminalBuffer();
+      });
+    });
 
-    this.exitUnSub = this.api.shellApi.onExit(
-      this.currentActiveShellId()!,
-      () => {
+    this.exitUnSub = this.api.shellApi.onExit(pid, () => {
+      untracked(() => {
         let shells = this.inMemoryAppContext.shells() ?? [];
 
         let filtered = shells.filter((x) => x !== this.currentActiveShellId());
@@ -154,12 +160,14 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
         } else {
           this.inMemoryAppContext.currentActiveShellId.set(null);
         }
-      }
-    );
+      });
+    });
 
     this.isLoading = false;
 
-    this.renderXterm();
+    setTimeout(() => {
+      this.renderXterm(pid);
+    }, 4);
   }
 
   getCssVar = (varName: string): string => {
@@ -170,8 +178,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
 
   /**
    * Call this when shell exists and is alive to render xterm
+   * @param pid The shell's PID to render
    */
-  private renderXterm() {
+  private renderXterm(pid: number) {
     let container = document.getElementById('xterm_container');
     if (!container) {
       this.error = 'Could not find terminal container';
@@ -216,14 +225,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.terminal.loadAddon(this.serializeAddon);
 
     this.terminal.open(container);
-
     this.fitAddon.fit();
 
-    this.api.shellApi.resize(
-      this.currentActiveShellId()!,
-      this.terminal.cols,
-      this.terminal.rows
-    );
+    this.api.shellApi.resize(pid, this.terminal.cols, this.terminal.rows);
 
     let storedBuffer = this.getStoredTerminalBuffer();
     if (storedBuffer) {
@@ -234,9 +238,9 @@ export class TerminalEditorComponent implements OnInit, OnDestroy {
     this.terminal.focus();
 
     this.dispose = this.terminal.onData((data) => {
-      if (!this.currentActiveShellId()) return;
+      if (!pid) return;
 
-      this.api.shellApi.write(this.currentActiveShellId()!, data);
+      this.api.shellApi.write(pid, data);
     });
   }
 }
