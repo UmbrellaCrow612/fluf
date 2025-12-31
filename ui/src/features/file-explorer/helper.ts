@@ -5,6 +5,8 @@
 import { fileNode } from '../../gen/type';
 import { getElectronApi } from '../../utils';
 import { ContextService } from '../app-context/app-context.service';
+import { hasDocumentExtension } from '../document-editor/utils';
+import { hasImageExtension } from '../img-editor/utils';
 import {
   addNodeIfNotExists,
   expandToNode,
@@ -68,7 +70,7 @@ export async function OpenFileOrFolderInExplorer(
 
     ctx.openFiles.set(structuredClone(openFiles));
     ctx.currentOpenFileInEditor.set(node);
-    ctx.editorMainActiveElement.set("text-file-editor")
+    ctx.editorMainActiveElement.set('text-file-editor');
   }
 }
 
@@ -171,4 +173,34 @@ async function getFirstFolderAfterBase(
   const result = await electronApi.pathApi.join(normalizedBase, firstFolder);
 
   return result;
+}
+
+/**
+ * Open a node in the editor - handles opening a code editor, img editor or other editors
+ * use it if you click a node in file explorer or file tab or other places
+ * @param fileNode The file node clicked
+ * @param ctx The app ctx
+ */
+export function OpenNodeInEditor(fileNode: fileNode, ctx: ContextService) {
+  ctx.currentOpenFileInEditor.set(fileNode);
+  ctx.fileExplorerActiveFileOrFolder.set(fileNode);
+
+  let openFiles = ctx.openFiles() ?? [];
+  addNodeIfNotExists(openFiles, fileNode);
+
+  ctx.openFiles.set(structuredClone(openFiles)); // for js ref change
+
+  let isImg = hasImageExtension(fileNode.extension);
+  if (isImg) {
+    ctx.editorMainActiveElement.set('image-editor');
+    return;
+  }
+
+  let isDoc = hasDocumentExtension(fileNode.extension);
+  if (isDoc) {
+    ctx.editorMainActiveElement.set('document-editor');
+    return;
+  }
+
+  ctx.editorMainActiveElement.set('text-file-editor');
 }

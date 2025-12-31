@@ -11,8 +11,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { ContextService } from '../../app-context/app-context.service';
 import { getElectronApi } from '../../../utils';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
-import { hasImageExtension } from '../../img-editor/utils';
-import { hasDocumentExtension } from '../../document-editor/utils';
 import { fileNode } from '../../../gen/type';
 import {
   addNodeIfNotExists,
@@ -21,6 +19,7 @@ import {
   pushNodesIntoChildrenByPath,
   removeCreateNodes,
 } from '../fileNode';
+import { OpenNodeInEditor } from '../helper';
 
 @Component({
   selector: 'app-file-explorer-item',
@@ -90,27 +89,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
     event.preventDefault();
 
     if (!this.fileNode().isDirectory) {
-      this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
-
-      let openFiles = this.appContext.openFiles() ?? [];
-      addNodeIfNotExists(openFiles, this.fileNode());
-
-      this.appContext.openFiles.set(structuredClone(openFiles)); // becuase of js refrence bs
-      this.appContext.currentOpenFileInEditor.set(this.fileNode());
-
-      let isImg = hasImageExtension(this.fileNode().extension);
-      if (isImg) {
-        this.appContext.editorMainActiveElement.set('image-editor');
-        return;
-      }
-
-      let isDoc = hasDocumentExtension(this.fileNode().extension);
-      if (isDoc) {
-        this.appContext.editorMainActiveElement.set('document-editor');
-        return;
-      }
-
-      this.appContext.editorMainActiveElement.set('text-file-editor');
+      OpenNodeInEditor(this.fileNode(), this.appContext);
       return;
     }
 
