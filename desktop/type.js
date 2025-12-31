@@ -360,9 +360,14 @@
 /**
  * Write a image to clipboard to be pasted elsewhere
  * @callback writeImageToClipboard
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {string} filePath The path to the file to copy to the clipboard
  * @returns {Promise<boolean>} If it could or not copy it, if the file does not exist then false else true if it could
+ */
+
+/**
+ * Contains all clipboard related methods
+ * @typedef {Object} clipboardApi
+ * @property {writeImageToClipboard} writeImage - Writes a image path to the clipboard to be pasted in other places
  */
 
 /**
@@ -621,7 +626,7 @@
  *
  * @property {fsearchApi} fsearchApi - Contains all fsearch api's
  *
- * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
+ * @property {clipboardApi} clipboardApi - Contains all clipboard api
  *
  * @property {tsServer} tsServer - The ts / typescript language server
  *

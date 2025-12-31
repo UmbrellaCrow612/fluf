@@ -39,7 +39,7 @@ export class ImageEditorContextMenuComponent implements OnInit {
       return;
     }
 
-    let suc = await this.api.writeImageToClipboard(undefined, this.data().path);
+    let suc = await this.api.clipboardApi.writeImage(this.data().path);
     if (!suc) {
       this.error = 'Failed to copy image';
     } else {

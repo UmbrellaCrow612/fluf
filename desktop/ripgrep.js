@@ -2,7 +2,6 @@
  * Contains all rip grep related code
  */
 
-const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
 const { binmanResolve } = require("umbr-binman");

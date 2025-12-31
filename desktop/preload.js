@@ -148,6 +148,13 @@ const fsearchApi = {
 };
 
 /**
+ * @type {import("./type").clipboardApi}
+ */
+const clipboardApi = {
+  writeImage: (fp) => ipcRenderer.invoke("clipboard:write:image", fp),
+};
+
+/**
  * @type {import("./type").ElectronApi}
  */
 const api = {
@@ -155,10 +162,7 @@ const api = {
   fsearchApi,
   gitApi,
   tsServer,
-
-  writeImageToClipboard: (_event, fp) =>
-    ipcRenderer.invoke("clipboard:write:image", fp),
-
+  clipboardApi,
   shellApi,
   pathApi,
   fsApi,
