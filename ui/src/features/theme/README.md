@@ -1,8 +1,6 @@
 # Theme Feature 
 
-Contains all services, component other stuff related to the theme related logic
-
-
+Contains all services, component other stuff related to the theme related logic and the feature
 
 # CSS vars to JS Object
 

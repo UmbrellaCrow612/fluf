@@ -14,28 +14,8 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
 import { form, Field } from '@angular/forms/signals';
 import { SearchFileCommandComponent } from './search-file-command/search-file-command.component';
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeThemeCommandComponent } from './theme/change-theme-command/change-theme-command.component';
-import { CreateThemeCommandComponent } from './theme/create-theme-command/create-theme-command.component';
-import { EditThemeCommandComponent } from './theme/edit-theme-command/edit-theme-command.component';
-
-/**
- * Represents a command that can be selected for auto complete
- */
-type Command = {
-  /** The name of the command */
-  label: string;
-
-  /** Information about what the cmd does */
-  description: string;
-
-  /** Whats needed to match int the search term for it to be shown */
-  prefix: string;
-
-  /**
-   * Computed signal to show the component to render for this cmd
-   */
-  component: Type<any>;
-};
+import { Command } from './type';
+import { themeCommands } from '../theme/commands/commands';
 
 /**
  * Component that will be used for multiple purpose's, such as quick file search and go to, open other parts of the editor and basically all other
@@ -133,23 +113,6 @@ export class CommandPaletteComponent implements OnInit {
       label: 'File search',
       component: SearchFileCommandComponent,
     },
-    {
-      label: 'Change theme',
-      component: ChangeThemeCommandComponent,
-      description: 'Change your theme to another',
-      prefix: 'theme:change',
-    },
-    {
-      component: CreateThemeCommandComponent,
-      description: 'Create a custom theme for the editor',
-      label: 'Create theme',
-      prefix: 'theme:create',
-    },
-    {
-      component: EditThemeCommandComponent,
-      description: 'Edit a theme',
-      label: 'Edit theme',
-      prefix: 'theme:edit',
-    },
+    ...themeCommands,
   ];
 }
