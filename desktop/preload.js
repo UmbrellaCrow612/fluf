@@ -141,12 +141,18 @@ const tsServer = {
 };
 
 /**
+ * @type {import("./type").fsearchApi}
+ */
+const fsearchApi = {
+  search: (options) => ipcRenderer.invoke("fsearch", options),
+};
+
+/**
  * @type {import("./type").ElectronApi}
  */
 const api = {
   ripgrepApi,
-  fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
-
+  fsearchApi,
   gitApi,
   tsServer,
 

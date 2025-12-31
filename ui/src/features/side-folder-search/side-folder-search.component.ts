@@ -20,8 +20,8 @@ import { fsearchOptions, fsearchResult } from '../../gen/type';
     ReactiveFormsModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckboxModule
-],
+    MatCheckboxModule,
+  ],
   templateUrl: './side-folder-search.component.html',
   styleUrl: './side-folder-search.component.css',
 })
@@ -65,7 +65,7 @@ export class SideFolderSearchComponent {
       return;
     }
 
-    this.results = await this.api.fsearch(undefined, {
+    this.results = await this.api.fsearchApi.search({
       ...this.fosOptions,
       term: this.searchInputControl.value!,
     });

@@ -347,9 +347,14 @@
 /**
  * Search for a given file or folder with options
  * @callback fsearch
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
  * @param {fsearchOptions} options Options to narrow search
  * @returns {Promise<fsearchResult[]>}
+ */
+
+/**
+ * Contains all the fsearch methods
+ * @typedef {Object} fsearchApi
+ * @property {fsearch} search - Search for a file or folder
  */
 
 /**
@@ -614,7 +619,7 @@
  *
  * @property {gitApi} gitApi - Offers all the git func
  *
- * @property {fsearch} fsearch - Search for files or folders really fast
+ * @property {fsearchApi} fsearchApi - Contains all fsearch api's
  *
  * @property {writeImageToClipboard} writeImageToClipboard - Write a file path to the clipboard to be pasted into other applications
  *

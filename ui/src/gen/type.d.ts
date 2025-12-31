@@ -496,7 +496,16 @@ export type fsearchOptions = {
 /**
  * Search for a given file or folder with options
  */
-export type fsearch = (event?: Electron.IpcMainInvokeEvent | undefined, options: fsearchOptions) => Promise<fsearchResult[]>;
+export type fsearch = (options: fsearchOptions) => Promise<fsearchResult[]>;
+/**
+ * Contains all the fsearch methods
+ */
+export type fsearchApi = {
+    /**
+     * - Search for a file or folder
+     */
+    search: fsearch;
+};
 /**
  * Write a image to clipboard to be pasted elsewhere
  */
@@ -822,9 +831,9 @@ export type ElectronApi = {
      */
     gitApi: gitApi;
     /**
-     * - Search for files or folders really fast
+     * - Contains all fsearch api's
      */
-    fsearch: fsearch;
+    fsearchApi: fsearchApi;
     /**
      * - Write a file path to the clipboard to be pasted into other applications
      */

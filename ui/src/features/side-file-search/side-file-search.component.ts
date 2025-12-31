@@ -112,7 +112,7 @@ export class SideFileSearchComponent {
     };
 
     try {
-      this.results = await this.api.fsearch(undefined, options);
+      this.results = await this.api.fsearchApi.search(options);
     } catch (err) {
       console.error('Search failed', err);
     } finally {
