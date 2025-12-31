@@ -14,6 +14,7 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
 import { form, Field, required, email } from '@angular/forms/signals';
 import { SearchFileCommandComponent } from './search-file-command/search-file-command.component';
 import { NgComponentOutlet } from '@angular/common';
+import { SetThemeCommandComponent } from './set-theme-command/set-theme-command.component';
 
 /**
  * Represents a command that can be selected for auto complete
@@ -129,6 +130,12 @@ export class CommandPaletteComponent implements OnInit {
       description: 'Search for a specific file',
       label: 'File search',
       component: SearchFileCommandComponent,
+    },
+    {
+      prefix: 'theme:set',
+      description: 'Set the editors theme',
+      label: 'Set theme',
+      component: SetThemeCommandComponent,
     },
   ];
 }
