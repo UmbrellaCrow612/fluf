@@ -36,9 +36,9 @@ export class InMemoryContextService {
     signal<InMemoryAppContext['isCreateFileOrFolderActive']>(null);
 
   /**
-   * Exposes signal isEditorResize
+   * Exposes signal editorResize
    */
-  readonly isEditorResize = signal<InMemoryAppContext['isEditorResize']>(null);
+  readonly editorResize = signal<InMemoryAppContext['editorResize']>(null);
 
   /**
    * Exposes shells signal

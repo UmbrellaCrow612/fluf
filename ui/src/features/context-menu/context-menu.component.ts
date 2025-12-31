@@ -64,7 +64,12 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
     this.positionDialog(dialog);
     dialog.showModal();
     dialog.addEventListener('click', this.handleClickOutside);
+    dialog.addEventListener('close', this.handleClose);
   }
+
+  private handleClose = () => {
+    this.inMemoryContextService.currentActiveContextMenu.set(null);
+  };
 
   private handleClickOutside = (event: MouseEvent) => {
     const dialog = this.dialogRef()!.nativeElement;

@@ -5,7 +5,6 @@ import {
   effect,
   inject,
   OnDestroy,
-  OnInit,
   untracked,
 } from '@angular/core';
 import { getElectronApi } from '../../../utils';
@@ -26,19 +25,6 @@ export class TerminalEditorComponent implements OnDestroy {
   private readonly api = getElectronApi();
 
   constructor() {
-    effect(async () => {
-      let isEditorResize = this.inMemoryAppContext.isEditorResize();
-      if (isEditorResize && this.fitAddon && this.terminal) {
-        this.fitAddon.fit();
-
-        await this.api.shellApi.resize(
-          this.currentActiveShellId()!,
-          this.terminal.cols,
-          this.terminal.rows
-        );
-      }
-    });
-
     effect(async () => {
       let pid = this.inMemoryAppContext.currentActiveShellId();
 

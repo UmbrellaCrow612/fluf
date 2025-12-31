@@ -4,21 +4,3 @@
   min-height: 0;
   min-width: 0;
 }
-
-.copy-btn {
-  display: block;
-  width: 100%;
-  padding: 6px 12px;
-  text-align: left;
-  background-color: #1e1e1e;
-  color: #cccccc;
-  border: none;
-  cursor: pointer;
-  font-family: "Segoe UI", sans-serif;
-  font-size: 13px;
-}
-
-.copy-btn:hover {
-  background-color: #094771;
-  color: #ffffff;
-}

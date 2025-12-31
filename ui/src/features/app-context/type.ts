@@ -116,9 +116,9 @@ export type InMemoryAppContext = {
   } | null;
 
   /**
-   * Use a sub to listen when this is fired off - used when file explorer is resized or open file bottom is resized
+   * When it's value changes it means the editor has been resized i.e when it increments it's value
    */
-  isEditorResize: boolean | null;
+  editorResize: boolean | null;
 
   /**
    * Indicates if a directory being watched should be refreshed - whenever the number changes i.e increments it means it should be re read
