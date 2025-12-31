@@ -33,7 +33,7 @@ export class DocumentEditorComponent {
     {
       component: PdfViewerComponent,
       condition: computed(() => {
-        return this.currentNode()?.extension === 'pdf';
+        return this.currentNode()?.extension === '.pdf';
       }),
     },
   ];
