@@ -1,7 +1,7 @@
 import { Command } from '../../command-palette/type';
-import { ChangeThemeCommandComponent } from '../../theme/commands/change-theme-command/change-theme-command.component';
-import { CreateThemeCommandComponent } from '../../theme/commands/create-theme-command/create-theme-command.component';
-import { EditThemeCommandComponent } from '../../theme/commands/edit-theme-command/edit-theme-command.component';
+import { ChangeThemeCommandComponent } from './change-theme-command/change-theme-command.component';
+import { CreateThemeCommandComponent } from './create-theme-command/create-theme-command.component';
+import { EditThemeCommandComponent } from './edit-theme-command/edit-theme-command.component';
 
 /**
  * Contains all the commands offered by the theme feature to be used in the command pallete
