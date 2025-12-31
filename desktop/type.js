@@ -232,10 +232,15 @@
 
 /**
  * Search a directory's files recursivley for a given string content match
- * @callback ripGrep
- * @param {import("electron").IpcMainInvokeEvent} [event=undefined] - The Electron IPC event (used in the main process; can be ignored in the renderer process).
+ * @callback ripgrepSearch
  * @param {ripgrepArgsOptions} options - Options to refine search results
  * @returns {Promise<ripGrepResult[]>}
+ */
+
+/**
+ * Contains all api methods to use ripgrep
+ * @typedef {Object} ripgrepApi
+ * @property {ripgrepSearch} search - Search file content for a specific term
  */
 
 /**
@@ -605,7 +610,7 @@
  *
  * @typedef {Object} ElectronApi
  *
- * @property {ripGrep} ripGrep - Search a folder files for a specific search term and get a list of matching results
+ * @property {ripgrepApi} ripgrepApi - Contains all ripgrep related methods
  *
  * @property {gitApi} gitApi - Offers all the git func
  *

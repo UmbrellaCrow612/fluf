@@ -1,6 +1,13 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").ripgrepApi}
+ */
+const ripgrepApi = {
+  search: (options) => ipcRenderer.invoke("ripgrep:search", options),
+};
+
+/**
  * @type {import("./type").chromeWindowApi}
  */
 const chromeWindowApi = {
@@ -137,8 +144,7 @@ const tsServer = {
  * @type {import("./type").ElectronApi}
  */
 const api = {
-  ripGrep: (_event, options) => ipcRenderer.invoke("ripgrep:search", options),
-
+  ripgrepApi,
   fsearch: (_event, options) => ipcRenderer.invoke("fsearch", options),
 
   gitApi,

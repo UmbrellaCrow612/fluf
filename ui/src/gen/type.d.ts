@@ -298,7 +298,16 @@ export type ripGrepResult = {
 /**
  * Search a directory's files recursivley for a given string content match
  */
-export type ripGrep = (event?: Electron.IpcMainInvokeEvent | undefined, options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
+export type ripgrepSearch = (options: ripgrepArgsOptions) => Promise<ripGrepResult[]>;
+/**
+ * Contains all api methods to use ripgrep
+ */
+export type ripgrepApi = {
+    /**
+     * - Search file content for a specific term
+     */
+    search: ripgrepSearch;
+};
 /**
  * Callback structure for callback
  */
@@ -805,9 +814,9 @@ export type shellApi = {
  */
 export type ElectronApi = {
     /**
-     * - Search a folder files for a specific search term and get a list of matching results
+     * - Contains all ripgrep related methods
      */
-    ripGrep: ripGrep;
+    ripgrepApi: ripgrepApi;
     /**
      * - Offers all the git func
      */
