@@ -42,6 +42,25 @@ const saveToImpl = async (_, content) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").fsStopWatching>}
+ */
+const unwatchImpl = (_, pp) => {
+  try {
+    let norm = path.normalize(path.resolve(pp));
+
+    let abort = watcherAbortsMap.get(norm);
+    if (!abort) {
+      logger.info("Path not being watched");
+      return;
+    }
+
+    abort.abort();
+  } catch (error) {
+    console.error("Failed to un watch directory " + JSON.stringify(error));
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -208,22 +227,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.on("fs:unwatch", (_, pp) => {
-    try {
-      let norm = path.normalize(path.resolve(pp));
-
-      let abort = watcherAbortsMap.get(norm);
-      if (!abort) {
-        logger.info("Path not being watched");
-        return;
-      }
-
-      abort.abort();
-    } catch (error) {
-      console.error("Failed to un watch directory " + JSON.stringify(error));
-    }
-  });
-
+  ipcMain.on("fs:unwatch", unwatchImpl);
   ipcMain.handle("file:save:to", saveToImpl);
 };
 

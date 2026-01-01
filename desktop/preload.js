@@ -92,10 +92,10 @@ const shellApi = {
 
   onExit: (pid, callback) => {
     /**
-     * @param {import("electron").IpcRendererEvent} event
+     * @param {import("electron").IpcRendererEvent} _
      * @param  {number} id
      */
-    let listener = (event, id) => {
+    let listener = (_, id) => {
       if (pid === id) callback();
     };
 

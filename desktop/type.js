@@ -18,6 +18,14 @@
  */
 
 /**
+ * Typed for IpcMainEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ * @callback IpcMainEventCallback
+ * @param {import("electron").IpcMainEvent} event
+ */
+
+/**
  * Contains all the fs api's using node fs and other file related utils
  * @typedef {Object} fsApi
  * @property {readFile} readFile - Calls fs read file
