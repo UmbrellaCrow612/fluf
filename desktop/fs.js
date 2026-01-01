@@ -22,7 +22,7 @@ const watcherAbortsMap = new Map();
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
  */
-const saveToImpl = async (event, content) => {
+const saveToImpl = async (_, content) => {
   try {
     if (!mainWindowRef) return false;
 
@@ -179,7 +179,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     });
   });
 
-  ipcMain.on("fs:watch", async (event, pp) => {
+  ipcMain.on("fs:watch", async (_, pp) => {
     try {
       let norm = path.normalize(path.resolve(pp));
 
@@ -208,7 +208,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.on("fs:unwatch", (event, pp) => {
+  ipcMain.on("fs:unwatch", (_, pp) => {
     try {
       let norm = path.normalize(path.resolve(pp));
 
