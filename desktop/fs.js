@@ -118,6 +118,45 @@ const createDirImpl = async (_, dirPath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").readDir>}
+ */
+const readDirImpl = async (_, dirPath) => {
+  try {
+    const p = path.normalize(path.resolve(dirPath));
+
+    await fs.access(p);
+
+    const res = await fs.readdir(p, {
+      encoding: "utf-8",
+      withFileTypes: true,
+    });
+
+    res.sort((a, b) => {
+      if (a.isDirectory() && !b.isDirectory()) return -1;
+      if (!a.isDirectory() && b.isDirectory()) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    /** @type {import("./type").fileNode[]} */
+    const filenodes = res.map((item) => ({
+      name: item.name,
+      path: path.resolve(p, item.name),
+      parentPath: p,
+      isDirectory: item.isDirectory(),
+      children: [],
+      expanded: false,
+      mode: "default",
+      extension: item.isDirectory() ? "" : path.extname(item.name),
+    }));
+
+    return filenodes;
+  } catch (error) {
+    logger.error("Failed to read directory", JSON.stringify(error));
+    return [];
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -200,42 +239,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("dir:read", async (_, dp) => {
-    try {
-      const p = path.normalize(path.resolve(dp));
-
-      await fs.access(p);
-
-      const res = await fs.readdir(p, {
-        encoding: "utf-8",
-        withFileTypes: true,
-      });
-
-      res.sort((a, b) => {
-        if (a.isDirectory() && !b.isDirectory()) return -1;
-        if (!a.isDirectory() && b.isDirectory()) return 1;
-        return a.name.localeCompare(b.name);
-      });
-
-      /** @type {import("./type").fileNode[]} */
-      const filenodes = res.map((item) => ({
-        name: item.name,
-        path: path.resolve(p, item.name),
-        parentPath: p,
-        isDirectory: item.isDirectory(),
-        children: [],
-        expanded: false,
-        mode: "default",
-        extension: item.isDirectory() ? "" : path.extname(item.name),
-      }));
-
-      return filenodes;
-    } catch (error) {
-      logger.error("Failed to read directory", JSON.stringify(error));
-      return [];
-    }
-  });
-
+  ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:create", createDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
   ipcMain.on("fs:watch", watchImpl);
