@@ -191,6 +191,24 @@ const existsImpl = async (_, fileOrFolderPath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createFile>}
+ */
+const createFileImpl = async (_, filePath) => {
+  try {
+    if (!filePath) return false;
+
+    let p = path.normalize(path.resolve(filePath));
+
+    await fs.writeFile(p, "", { encoding: "utf-8", flag: "wx" });
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to create file " + JSON.stringify(error));
+    return false;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -230,21 +248,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("file:create", async (_, fp) => {
-    try {
-      if (!fp) return false;
-
-      let p = path.normalize(path.resolve(fp));
-
-      await fs.writeFile(p, "", { encoding: "utf-8", flag: "wx" });
-
-      return true;
-    } catch (error) {
-      logger.error("Failed to create file " + JSON.stringify(error));
-      return false;
-    }
-  });
-
+  ipcMain.handle("file:create", createFileImpl);
   ipcMain.handle("fs:exists", existsImpl);
   ipcMain.handle("fs:remove", removeImpl);
   ipcMain.handle("dir:read", readDirImpl);
