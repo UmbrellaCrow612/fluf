@@ -21,7 +21,7 @@
 /**
  * Save a file's content using the explorer to a given location
  * @callback saveTo
- * @param {content} content - The content of the file
+ * @param {string} content - The content of the file
  * @returns {Promise<boolean>} If it could or could not
  */
 

@@ -51,7 +51,7 @@ export type fsApi = {
 /**
  * Save a file's content using the explorer to a given location
  */
-export type saveTo = (content: content) => Promise<boolean>;
+export type saveTo = (content: string) => Promise<boolean>;
 /**
  * Reads the contents of a file.
  */
