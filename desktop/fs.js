@@ -102,6 +102,22 @@ const selectFolderImpl = async (_) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createDirectory>}
+ */
+const createDirImpl = async (_, dirPath) => {
+  try {
+    let p = path.normalize(path.resolve(dirPath));
+
+    await fs.mkdir(p, { recursive: true });
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to create folder " + JSON.stringify(error));
+    return false;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -220,19 +236,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("dir:create", async (_, dp) => {
-    try {
-      let p = path.normalize(path.resolve(dp));
-
-      await fs.mkdir(p, { recursive: true });
-
-      return true;
-    } catch (error) {
-      logger.error("Failed to create folder " + JSON.stringify(error));
-      return false;
-    }
-  });
-
+  ipcMain.handle("dir:create", createDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
   ipcMain.on("fs:watch", watchImpl);
   ipcMain.on("fs:unwatch", unwatchImpl);
