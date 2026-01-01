@@ -184,7 +184,9 @@ const existsImpl = async (_, fileOrFolderPath) => {
     await fs.access(p);
 
     return true;
-  } catch (error) {
+  } catch (/** @type {any}*/ error) {
+    if (error?.code === "ENOENT") return false; // just didn't exit not true error
+
     logger.error("Failed to check if a file exists " + JSON.stringify(error));
     return false;
   }
