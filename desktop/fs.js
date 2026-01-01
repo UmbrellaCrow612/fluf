@@ -209,6 +209,26 @@ const createFileImpl = async (_, filePath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").writeToFile>}
+ */
+const writeToFileImpl = async (_, filePath, fileContent) => {
+  try {
+    if (!filePath || !fileContent) return false;
+
+    let p = path.normalize(path.resolve(filePath));
+
+    await fs.access(p);
+
+    await fs.writeFile(p, fileContent, { encoding: "utf-8" });
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to write to file " + JSON.stringify(error));
+    return false;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -231,23 +251,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("file:write", async (_, fp, content) => {
-    try {
-      if (!fp || !content) return false;
-
-      let p = path.normalize(path.resolve(fp));
-
-      await fs.access(p);
-
-      await fs.writeFile(p, content, { encoding: "utf-8" });
-
-      return true;
-    } catch (error) {
-      logger.error("Failed to write to file " + JSON.stringify(error));
-      return false;
-    }
-  });
-
+  ipcMain.handle("file:write", writeToFileImpl);
   ipcMain.handle("file:create", createFileImpl);
   ipcMain.handle("fs:exists", existsImpl);
   ipcMain.handle("fs:remove", removeImpl);
