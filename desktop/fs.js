@@ -157,6 +157,24 @@ const readDirImpl = async (_, dirPath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsRemove>}
+ */
+const removeImpl = async (_, fileOrFolderPath) => {
+  try {
+    let p = path.normalize(path.resolve(fileOrFolderPath));
+
+    await fs.access(p);
+
+    await fs.rm(p, { recursive: true });
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to remove path " + JSON.stringify(error));
+    return false;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -224,21 +242,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("fs:remove", async (_, fp) => {
-    try {
-      let p = path.normalize(path.resolve(fp));
-
-      await fs.access(p);
-
-      await fs.rm(p, { recursive: true });
-
-      return true;
-    } catch (error) {
-      logger.error("Failed to remove path " + JSON.stringify(error));
-      return false;
-    }
-  });
-
+  ipcMain.handle("fs:remove", removeImpl);
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:create", createDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
