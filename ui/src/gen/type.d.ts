@@ -10,6 +10,12 @@ export type CombinedCallback<T extends (...args: any[]) => any, U extends (...ar
  */
 export type IpcMainInvokeEventCallback = (event: import("electron").IpcMainInvokeEvent) => any;
 /**
+ * Typed for IpcMainEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ */
+export type IpcMainEventCallback = (event: import("electron").IpcMainEvent) => any;
+/**
  * Contains all the fs api's using node fs and other file related utils
  */
 export type fsApi = {
@@ -59,6 +65,10 @@ export type fsApi = {
      */
     saveTo: saveTo;
 };
+/**
+ * Listen to a given file path
+ */
+export type fsWatch = (fileOrFolderPath: string) => void;
 /**
  * Save a file's content using the explorer to a given location
  */
