@@ -61,6 +61,47 @@ const unwatchImpl = (_, pp) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").fsWatch>}
+ */
+const watchImpl = async (_, fileOrFolderPath) => {
+  try {
+    let norm = path.normalize(path.resolve(fileOrFolderPath));
+
+    if (watcherAbortsMap.has(norm)) {
+      logger.info("Path already being watched " + norm);
+      return;
+    }
+
+    const ac = new AbortController();
+    watcherAbortsMap.set(norm, ac);
+
+    let watcher = fs.watch(norm, {
+      signal: ac.signal,
+      recursive: true,
+      encoding: "utf-8",
+    });
+
+    for await (const event of watcher) {
+      if (mainWindowRef) {
+        mainWindowRef.webContents.send("fs:change", fileOrFolderPath, event);
+      }
+    }
+  } catch (/** @type {any}*/ error) {
+    if (error.name === "AbortError") return;
+    console.error("Failed to watch directory " + JSON.stringify(error));
+  }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFolder>}
+ */
+const selectFolderImpl = async (_) => {
+  return await dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -192,41 +233,8 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("dir:select", async () => {
-    return await dialog.showOpenDialog({
-      properties: ["openDirectory"],
-    });
-  });
-
-  ipcMain.on("fs:watch", async (_, pp) => {
-    try {
-      let norm = path.normalize(path.resolve(pp));
-
-      if (watcherAbortsMap.has(norm)) {
-        logger.info("Path already being watched " + norm);
-        return;
-      }
-
-      const ac = new AbortController();
-      watcherAbortsMap.set(norm, ac);
-
-      let watcher = fs.watch(norm, {
-        signal: ac.signal,
-        recursive: true,
-        encoding: "utf-8",
-      });
-
-      for await (const event of watcher) {
-        if (mainWindowRef) {
-          mainWindowRef.webContents.send("fs:change", pp, event);
-        }
-      }
-    } catch (/** @type {any}*/ error) {
-      if (error.name === "AbortError") return;
-      console.error("Failed to watch directory " + JSON.stringify(error));
-    }
-  });
-
+  ipcMain.handle("dir:select", selectFolderImpl);
+  ipcMain.on("fs:watch", watchImpl);
   ipcMain.on("fs:unwatch", unwatchImpl);
   ipcMain.handle("file:save:to", saveToImpl);
 };

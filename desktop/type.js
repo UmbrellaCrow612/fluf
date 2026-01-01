@@ -43,6 +43,13 @@
  */
 
 /**
+ * Listen to a given file path 
+ * @callback fsWatch
+ * @param {string} fileOrFolderPath - File or folder path to watch
+ * @returns {void}
+ */
+
+/**
  * Save a file's content using the explorer to a given location
  * @callback saveTo
  * @param {string} content - The content of the file
