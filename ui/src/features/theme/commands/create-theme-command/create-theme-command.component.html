@@ -1,1 +1,21 @@
-<p>create-theme-command works!</p>
+<div class="create_theme_header">
+  <h2 class="create_theme_title">Create a theme</h2>
+</div>
+
+<div class="create_theme_inputs">
+  @for (item of cssVars; track $index) {
+  <div class="create_theme_input_item">
+    <label [for]="'var-' + $index">{{ item.property }}</label>
+    <input
+      type="text"
+      [id]="'var-' + $index"
+      [(ngModel)]="item.value"
+      class="fluf_input"
+    />
+  </div>
+  }
+</div>
+
+<div class="create_theme_actions">
+  <button class="fluf_btn fluf_btn_primary fluf_btn_sm" (click)="saveTheme()">Save</button>
+</div>
