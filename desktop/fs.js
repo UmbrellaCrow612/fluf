@@ -175,6 +175,22 @@ const removeImpl = async (_, fileOrFolderPath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsExists>}
+ */
+const existsImpl = async (_, fileOrFolderPath) => {
+  try {
+    let p = path.normalize(path.resolve(fileOrFolderPath));
+
+    await fs.access(p);
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to check if a file exists " + JSON.stringify(error));
+    return false;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -229,19 +245,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle("fs:exists", async (_, fp) => {
-    try {
-      let p = path.normalize(path.resolve(fp));
-
-      await fs.access(p);
-
-      return true;
-    } catch (error) {
-      logger.error("Failed to check if a file exists " + JSON.stringify(error));
-      return false;
-    }
-  });
-
+  ipcMain.handle("fs:exists", existsImpl);
   ipcMain.handle("fs:remove", removeImpl);
   ipcMain.handle("dir:read", readDirImpl);
   ipcMain.handle("dir:create", createDirImpl);
