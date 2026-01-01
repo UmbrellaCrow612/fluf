@@ -53,6 +53,7 @@ const fsApi = {
   },
 
   stopWatching: (path) => ipcRenderer.send("fs:unwatch", path),
+  saveTo: (content) => ipcRenderer.invoke("file:save:to", content),
 };
 
 /**

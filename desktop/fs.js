@@ -201,6 +201,33 @@ const registerFsListeners = (ipcMain, mainWindow) => {
       console.error("Failed to un watch directory " + JSON.stringify(error));
     }
   });
+
+  ipcMain.handle(
+    "file:save:to",
+    /**
+     * @param {import("electron").IpcMainInvokeEvent} event
+     * @param {string} content Files content
+     * @returns {Promise<boolean>}
+     */
+    async (event, content) => {
+      try {
+        if (!mainWindowRef) return false;
+
+        let result = await dialog.showSaveDialog(mainWindowRef, {
+          filters: [{ extensions: ["js"], name: "js" }],
+        });
+        if (result.canceled || result.filePath.trim() == "") return false;
+
+        let fp = path.normalize(path.resolve(result.filePath));
+        await fs.writeFile(fp, content, { encoding: "utf-8" });
+
+        return true;
+      } catch (error) {
+        logger.error("Failed to save file " + JSON.stringify(error));
+        return false;
+      }
+    }
+  );
 };
 
 /**

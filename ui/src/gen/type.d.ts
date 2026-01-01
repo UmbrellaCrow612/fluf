@@ -43,7 +43,15 @@ export type fsApi = {
      * - Stops watching a given path
      */
     stopWatching: fsStopWatching;
+    /**
+     * - Save a files content to a given location
+     */
+    saveTo: saveTo;
 };
+/**
+ * Save a file's content using the explorer to a given location
+ */
+export type saveTo = (content: content) => Promise<boolean>;
 /**
  * Reads the contents of a file.
  */

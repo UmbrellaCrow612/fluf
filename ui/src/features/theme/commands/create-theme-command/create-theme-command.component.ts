@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { cssVariables } from '../../../../gen/cssVars';
 import { FormsModule } from '@angular/forms';
+import { getElectronApi } from '../../../../utils';
 
 @Component({
   selector: 'app-create-theme-command',
@@ -9,6 +10,8 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './create-theme-command.component.css',
 })
 export class CreateThemeCommandComponent {
+  private readonly api = getElectronApi();
+
   /**
    * Represents a given css variable property and it's value mapped from cssVariables
    */
@@ -21,7 +24,8 @@ export class CreateThemeCommandComponent {
     }));
   }
 
-  saveTheme() {
-    // call save to explorer api to promt user to name it and save it somehwre then we can load it later
+  async saveTheme() {
+    let res = await this.api.fsApi.saveTo('js file ');
+    console.log(res);
   }
 }

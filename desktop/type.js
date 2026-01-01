@@ -15,6 +15,14 @@
  * @property {onFsChange} onChange - Listen to a file or folder path change and run logic - will start watching the given path it'  not being watched then
  * register the callback to be run when it changes, also returns a unsub method, does NOT stop watching the path, but no longer run, the callback defined by removing it
  * @property {fsStopWatching} stopWatching - Stops watching a given path
+ * @property {saveTo} saveTo - Save a files content to a given location
+ */
+
+/**
+ * Save a file's content using the explorer to a given location
+ * @callback saveTo
+ * @param {content} content - The content of the file
+ * @returns {Promise<boolean>} If it could or could not
  */
 
 /**
