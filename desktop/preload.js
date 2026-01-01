@@ -53,7 +53,8 @@ const fsApi = {
   },
 
   stopWatching: (path) => ipcRenderer.send("fs:unwatch", path),
-  saveTo: (content) => ipcRenderer.invoke("file:save:to", content),
+  saveTo: (content, options) =>
+    ipcRenderer.invoke("file:save:to", content, options),
 };
 
 /**
@@ -77,11 +78,11 @@ const shellApi = {
   },
   onChange: (pid, callback) => {
     /**
-     * @param {import("electron").IpcRendererEvent} event
+     * @param {import("electron").IpcRendererEvent} _
      * @param  {number} id
      * @param {string} chunk
      */
-    let listener = (event, id, chunk) => {
+    let listener = (_, id, chunk) => {
       if (pid == id) callback(chunk);
     };
 

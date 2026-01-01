@@ -25,7 +25,9 @@ export class CreateThemeCommandComponent {
   }
 
   async saveTheme() {
-    let res = await this.api.fsApi.saveTo('js file ');
+    let res = await this.api.fsApi.saveTo(JSON.stringify(this.cssVars), {
+      filters: [{ extensions: ['json'], name: 'json' }],
+    });
     console.log(res);
   }
 }

@@ -43,7 +43,7 @@
  */
 
 /**
- * Listen to a given file path 
+ * Listen to a given file path
  * @callback fsWatch
  * @param {string} fileOrFolderPath - File or folder path to watch
  * @returns {void}
@@ -53,6 +53,7 @@
  * Save a file's content using the explorer to a given location
  * @callback saveTo
  * @param {string} content - The content of the file
+ * @param {import("electron").SaveDialogOptions} [options] - Used to change how a file can be saved
  * @returns {Promise<boolean>} If it could or could not
  */
 

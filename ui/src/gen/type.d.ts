@@ -72,7 +72,7 @@ export type fsWatch = (fileOrFolderPath: string) => void;
 /**
  * Save a file's content using the explorer to a given location
  */
-export type saveTo = (content: string) => Promise<boolean>;
+export type saveTo = (content: string, options?: Electron.SaveDialogOptions | undefined) => Promise<boolean>;
 /**
  * Reads the contents of a file.
  */

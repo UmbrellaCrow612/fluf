@@ -22,12 +22,12 @@ const watcherAbortsMap = new Map();
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
  */
-const saveToImpl = async (_, content) => {
+const saveToImpl = async (_, content, options) => {
   try {
     if (!mainWindowRef) return false;
 
     let result = await dialog.showSaveDialog(mainWindowRef, {
-      filters: [{ extensions: ["js"], name: "js" }],
+      ...options,
     });
     if (result.canceled || result.filePath.trim() == "") return false;
 
