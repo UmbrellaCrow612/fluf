@@ -1,4 +1,15 @@
 /**
+ * A generic type that merges the parameters of two callbacks
+ * and uses the return type of the second.
+ */
+export type CombinedCallback<T extends (...args: any[]) => any, U extends (...args: any[]) => any> = (...args: [...Parameters<T>, ...Parameters<U>]) => ReturnType<U>;
+/**
+ * Typed for IpcMainInvokeEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ */
+export type IpcMainInvokeEventCallback = (event: import("electron").IpcMainInvokeEvent) => any;
+/**
  * Contains all the fs api's using node fs and other file related utils
  */
 export type fsApi = {

@@ -2,6 +2,22 @@
 // type.d.ts file any changes made in type.js run npx tsc in desktop to update the UI side types they are purley generated and should only be edited via the ts cmd stated before
 
 /**
+ * A generic type that merges the parameters of two callbacks
+ * and uses the return type of the second.
+ * @template {(...args: any[]) => any} T - The first callback
+ * @template {(...args: any[]) => any} U - The second callback
+ * @typedef {(...args: [...Parameters<T>, ...Parameters<U>]) => ReturnType<U>} CombinedCallback
+ */
+
+/**
+ * Typed for IpcMainInvokeEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ * @callback IpcMainInvokeEventCallback
+ * @param {import("electron").IpcMainInvokeEvent} event
+ */
+
+/**
  * Contains all the fs api's using node fs and other file related utils
  * @typedef {Object} fsApi
  * @property {readFile} readFile - Calls fs read file

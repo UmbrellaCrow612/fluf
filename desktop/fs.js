@@ -20,6 +20,28 @@ let mainWindowRef = null;
 const watcherAbortsMap = new Map();
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
+ */
+const saveToImpl = async (event, content) => {
+  try {
+    if (!mainWindowRef) return false;
+
+    let result = await dialog.showSaveDialog(mainWindowRef, {
+      filters: [{ extensions: ["js"], name: "js" }],
+    });
+    if (result.canceled || result.filePath.trim() == "") return false;
+
+    let fp = path.normalize(path.resolve(result.filePath));
+    await fs.writeFile(fp, content, { encoding: "utf-8" });
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to save file " + JSON.stringify(error));
+    return false;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -202,32 +224,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
     }
   });
 
-  ipcMain.handle(
-    "file:save:to",
-    /**
-     * @param {import("electron").IpcMainInvokeEvent} event
-     * @param {string} content Files content
-     * @returns {Promise<boolean>}
-     */
-    async (event, content) => {
-      try {
-        if (!mainWindowRef) return false;
-
-        let result = await dialog.showSaveDialog(mainWindowRef, {
-          filters: [{ extensions: ["js"], name: "js" }],
-        });
-        if (result.canceled || result.filePath.trim() == "") return false;
-
-        let fp = path.normalize(path.resolve(result.filePath));
-        await fs.writeFile(fp, content, { encoding: "utf-8" });
-
-        return true;
-      } catch (error) {
-        logger.error("Failed to save file " + JSON.stringify(error));
-        return false;
-      }
-    }
-  );
+  ipcMain.handle("file:save:to", saveToImpl);
 };
 
 /**
