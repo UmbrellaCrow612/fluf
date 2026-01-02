@@ -28,6 +28,8 @@ A simple text editor written in electron and angular
 
 - View text files, images, and PDFs with syntax highlighting, code editing, and saving
 
+- Create custom themes and switch between them
+
 ---
 
 ## **Project Overview**

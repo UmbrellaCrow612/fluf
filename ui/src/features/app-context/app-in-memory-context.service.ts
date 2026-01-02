@@ -68,4 +68,10 @@ export class InMemoryContextService {
    */
   readonly showCommandPalette =
     signal<InMemoryAppContext['showCommandPalette']>(false);
+
+  /**
+   * Exposes the currentLspServer signal
+   */
+  readonly currentLanguageServer =
+    signal<InMemoryAppContext['currentLanguageServer']>(null);
 }

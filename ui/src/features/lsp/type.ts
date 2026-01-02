@@ -18,13 +18,16 @@ export type diagnosticType = tsServerOutputEvent | 'unkown';
 /**
  * Represents a file path as a key then a map of specific diagnostics as keys then all of them
  */
-export type fileDiagnosticMap = Map<string, Map<diagnosticType, FlufDiagnostic[]>>
+export type fileDiagnosticMap = Map<
+  string,
+  Map<diagnosticType, FlufDiagnostic[]>
+>;
 
 /**
  * Represents the standard a language service API has to impl be language agnostic and provide base methods needed to talk to any lang server this is the lsp protocol
  * under the hoodd it will routes said requests to the correct language server impl
  */
-export interface ILanguageService {
+export interface ILsp {
   /**
    * Open a file
    * @param filePath The files path
@@ -81,6 +84,14 @@ export interface ILanguageService {
    * @returns Nothing
    */
   Error: (filePath: string, langServer: LanguageServer) => void;
+
+  /**
+   * Close a file
+   * @param filePath The specific file to close
+   * @param langServer The language server to send it to
+   * @returns Nothing
+   */
+  Close: (filePath: string, langServer: LanguageServer) => void;
 }
 
 /**

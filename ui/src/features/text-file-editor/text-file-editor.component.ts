@@ -16,13 +16,13 @@ import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { fileDiagnosticMap, LanguageServer } from '../language/type';
-import { LanguageService } from '../language/language.service';
+import { fileDiagnosticMap, LanguageServer } from '../lsp/type';
 import { fileNode, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { LspService } from '../lsp/lsp.service';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -37,7 +37,7 @@ export class TextFileEditorComponent implements OnInit {
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(
     'code_mirror_container'
   );
-  private readonly languageService = inject(LanguageService);
+  private readonly lspService = inject(LspService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
 
   constructor() {
@@ -135,7 +135,7 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    this.serverUnSub = this.languageService.OnResponse(
+    this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
       (diagnosticMap, completions) => {
@@ -279,18 +279,21 @@ export class TextFileEditorComponent implements OnInit {
    * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    if (!this.openFileNode() || !this.languageServer) return;
-    update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
-      const request = this.changeToRequest(
-        update.startState.doc,
-        fromA,
-        toA,
-        inserted
-      );
+    if (!this.openFileNode()) return;
 
-      this.languageService.Edit(request, this.languageServer!);
-      this.diagnosticsEvent();
-    }, true);
+    if (this.languageServer) {
+      update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+        const request = this.changeToRequest(
+          update.startState.doc,
+          fromA,
+          toA,
+          inserted
+        );
+
+        this.lspService.Edit(request, this.languageServer!);
+        this.diagnosticsEvent();
+      }, true);
+    }
 
     if (update.docChanged) {
       this.stringContent = update.state.doc.toString();
@@ -311,7 +314,7 @@ export class TextFileEditorComponent implements OnInit {
     this.diagTimeout = setTimeout(() => {
       if (!this.openFileNode() || !this.languageServer) return;
 
-      this.languageService.Error(
+      this.lspService.Error(
         this.openFileNode()!.path,
         this.languageServer
       );
@@ -379,19 +382,20 @@ export class TextFileEditorComponent implements OnInit {
     this.languageServer = this.getLanguageServer(
       this.openFileNode()!.extension
     );
+    this.inMemoryContextService.currentLanguageServer.set(this.languageServer)
 
     this.appContext.fileExplorerActiveFileOrFolder.set(this.openFileNode());
     this.isLoading = false;
 
     if (this.languageServer) {
       // open file in lan server if it has one
-      this.languageService.Open(
+      this.lspService.Open(
         this.openFileNode()!.path,
         this.stringContent,
         this.languageServer
       );
 
-      this.languageService.Error(
+      this.lspService.Error(
         this.openFileNode()!.path,
         this.languageServer!
       );

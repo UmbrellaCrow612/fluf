@@ -5,6 +5,8 @@
 const fs = require("fs");
 const { spawn } = require("child_process");
 const { getTsServerPath } = require("./packing");
+const { logger } = require("./logger");
+const path = require("path");
 
 // Open typescript.d.ts and for each cmd look for it's request interface for it and then import that type for it's arguments for you to pass the
 // correct arguments for said cmd
@@ -105,7 +107,7 @@ function write(message) {
   try {
     childSpawnRef.stdin.write(JSON.stringify(message) + "\n"); // new line to make each message seperate
   } catch (error) {
-    console.log("Failed to write to tserver " + error);
+    logger.error("Failed to write to tserver " + JSON.stringify(error));
   }
 }
 
@@ -132,7 +134,7 @@ const parseStdout = () => {
       const header = stdoutBuffer.slice(0, headerEnd).toString();
       const match = header.match(/Content-Length:\s*(\d+)/i);
       if (!match) {
-        console.error("Invalid TS Server header:", header);
+        logger.error("Invalid TS Server header:", header);
         stdoutBuffer = stdoutBuffer.slice(headerEnd + 4);
         continue;
       }
@@ -152,11 +154,7 @@ const parseStdout = () => {
       const message = JSON.parse(jsonText);
       handleTsMessage(message);
     } catch (err) {
-      console.error(
-        "Failed to parse TS Server JSON:",
-        jsonText.toString(),
-        err
-      );
+      logger.error("Failed to parse TS Server JSON:", jsonText.toString(), err);
     }
   }
 };
@@ -172,7 +170,7 @@ const handleTsMessage = (message) => {
 const startTsServer = () => {
   const path = getTsServerPath();
   if (!fs.existsSync(path)) {
-    console.error("TS server not found at:", path);
+    logger.error("TS server not found at:", path);
     return;
   }
 
@@ -184,14 +182,14 @@ const startTsServer = () => {
   });
 
   childSpawnRef.stderr.on("data", (data) => {
-    console.error("TS Server stderr:", data.toString());
+    logger.error("TS Server stderr:", data.toString());
   });
 
   childSpawnRef.on("close", (code) => {
-    console.log("TS Server exited with code", code);
+    logger.info("TS Server exited with code", code);
   });
 
-  console.log("TS Server started at", path);
+  logger.info("TS Server started at", path);
 };
 
 /**
@@ -200,11 +198,71 @@ const startTsServer = () => {
 const stopTsServer = () => {
   if (childSpawnRef) {
     childSpawnRef.kill();
-    console.log("Killed TS server");
+    logger.info("Killed TS server");
     childSpawnRef = null;
   } else {
-    console.log("No TS server process to kill");
+    logger.info("No TS server process to kill");
   }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerOpenFile>}
+ */
+const openFileImpl = (_, filePath, content) => {
+  write(s.Open(path.normalize(path.resolve(filePath)), content));
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerEditFile>}
+ */
+const editFileImpl = (_, args) => {
+  /** @type {import("./type").tsServerWritableObject} */
+  let cObj = {
+    /** @type {import("typescript").server.protocol.ChangeRequestArgs} */
+    arguments: {
+      ...args,
+      file: path.normalize(path.resolve(args.file)),
+    },
+    command: commandTypes.Change,
+    seq: getNextSeq(),
+    type: "request",
+  };
+
+  write(cObj);
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerCloseFile>}
+ */
+const closeFileImpl = (_, filePath) => {
+  write(s.Close(path.normalize(path.resolve(filePath))));
+  write(s.Geterr())
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerCompletion>}
+ */
+const completionImpl = (_, args) => {
+  /** @type {import("./type").tsServerWritableObject}*/
+  let obj = {
+    seq: getNextSeq(),
+    type: "request",
+    command: commandTypes.CompletionInfo,
+    /** @type {import("typescript").server.protocol.CompletionsRequestArgs}*/ arguments:
+      {
+        ...args,
+        file: path.normalize(path.resolve(args.file)),
+      },
+  };
+
+  write(obj);
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerError>}
+ */
+const getErrorImpl = (_, filePath) => {
+  write(s.Geterr(path.normalize(path.resolve(filePath))));
 };
 
 /**
@@ -215,54 +273,11 @@ const stopTsServer = () => {
 const registerTsListeners = (ipcMain, win) => {
   mainWindowRef = win;
 
-  ipcMain.on("tsserver:file:open", (event, filePath, fileContent) => {
-    let oObj = s.Open(filePath, fileContent);
-
-    write(oObj);
-  });
-
-  ipcMain.on(
-    "tsserver:file:edit",
-    (
-      event,
-      /** @type {import("typescript").server.protocol.ChangeRequestArgs}*/ args
-    ) => {
-      /** @type {import("./type").tsServerWritableObject} */
-      let cObj = {
-        /** @type {import("typescript").server.protocol.ChangeRequestArgs} */
-        arguments: args,
-        command: commandTypes.Change,
-        seq: getNextSeq(),
-        type: "request",
-      };
-
-      write(cObj);
-    }
-  );
-
-  ipcMain.on("tsserver:file:close", (event, filePath) => {
-    let cObj = s.Close(filePath);
-
-    write(cObj);
-  });
-
-  ipcMain.on("tsserver:file:completion", (event, args) => {
-    /** @type {import("./type").tsServerWritableObject}*/
-    let obj = {
-      seq: getNextSeq(),
-      type: "request",
-      command: commandTypes.CompletionInfo,
-      /** @type {import("typescript").server.protocol.CompletionsRequestArgs}*/ arguments:
-        args,
-    };
-
-    write(obj);
-  });
-
-  ipcMain.on("tsserver:file:error", (event, filePath) => {
-    let eObj = s.Geterr(filePath);
-    write(eObj);
-  });
+  ipcMain.on("tsserver:file:open", openFileImpl);
+  ipcMain.on("tsserver:file:edit", editFileImpl);
+  ipcMain.on("tsserver:file:close", closeFileImpl);
+  ipcMain.on("tsserver:file:completion", completionImpl);
+  ipcMain.on("tsserver:file:error", getErrorImpl);
 };
 
 module.exports = { startTsServer, stopTsServer, registerTsListeners };

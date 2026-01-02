@@ -8,6 +8,9 @@ import { fileNode } from '../../../../gen/type';
 import { removeNodeIfExists } from '../../../file-explorer/fileNode';
 import { InMemoryContextService } from '../../../app-context/app-in-memory-context.service';
 import { OpenNodeInEditor } from '../../../file-explorer/helper';
+import { LspService } from '../../../lsp/lsp.service';
+import { getElectronApi } from '../../../../utils';
+import { canonicalPath } from '../../../path/utils';
 
 @Component({
   selector: 'app-file-tab-item',
@@ -18,6 +21,8 @@ import { OpenNodeInEditor } from '../../../file-explorer/helper';
 export class FileTabItemComponent {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly lspService = inject(LspService);
+  private readonly api = getElectronApi();
 
   fileNode = input.required<fileNode>();
 
@@ -46,6 +51,11 @@ export class FileTabItemComponent {
 
   removeTabItem(event: MouseEvent) {
     event.stopPropagation();
+
+    let langServer = this.inMemoryContextService.currentLanguageServer();
+    if (langServer) {
+      this.lspService.Close(this.fileNode().path, langServer);
+    }
 
     const currentActiveNode = this.appContext.currentOpenFileInEditor();
     const files = this.appContext.openFiles() ?? [];

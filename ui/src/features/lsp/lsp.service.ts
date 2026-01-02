@@ -2,7 +2,7 @@ import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
 import {
   LanguageServer,
-  ILanguageService,
+  ILsp,
   LanguageServiceCallback,
   diagnosticType,
   fileDiagnosticMap,
@@ -22,7 +22,7 @@ import { FlufDiagnostic } from '../diagnostic/type';
 @Injectable({
   providedIn: 'root',
 })
-export class LanguageService implements ILanguageService {
+export class LspService implements ILsp {
   private readonly api = getElectronApi();
   /**
    * Contains a map of a files path and it's specific diagnsitic type and all the diagnostics for it
@@ -126,6 +126,17 @@ export class LanguageService implements ILanguageService {
         this.api.tsServer.errors(filePath);
         break;
 
+      default:
+        break;
+    }
+  };
+
+  Close = (filePath: string, langServer: LanguageServer) => {
+    switch (langServer) {
+      case "js/ts":
+        this.api.tsServer.closeFile(filePath)
+        break;
+    
       default:
         break;
     }
