@@ -43,6 +43,7 @@ export class ContextService {
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
       openFiles: this.openFiles(),
       selectedDirectoryPath: this.selectedDirectoryPath(),
+      editorTheme: this.editorTheme()
     };
   }
 
@@ -129,4 +130,11 @@ export class ContextService {
   readonly editorMainActiveElement = signal<
     AppContext['editorMainActiveElement']
   >(this.restoreField('editorMainActiveElement', null));
+
+  /**
+   * Exposes editorTheme signal
+   */
+  readonly editorTheme = signal<AppContext['editorTheme']>(
+    this.restoreField('editorTheme', null)
+  );
 }

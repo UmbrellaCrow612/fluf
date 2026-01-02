@@ -2,6 +2,30 @@
 // type.d.ts file any changes made in type.js run npx tsc in desktop to update the UI side types they are purley generated and should only be edited via the ts cmd stated before
 
 /**
+ * A generic type that merges the parameters of two callbacks
+ * and uses the return type of the second.
+ * @template {(...args: any[]) => any} T - The first callback
+ * @template {(...args: any[]) => any} U - The second callback
+ * @typedef {(...args: [...Parameters<T>, ...Parameters<U>]) => ReturnType<U>} CombinedCallback
+ */
+
+/**
+ * Typed for IpcMainInvokeEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ * @callback IpcMainInvokeEventCallback
+ * @param {import("electron").IpcMainInvokeEvent} event
+ */
+
+/**
+ * Typed for IpcMainEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ * @callback IpcMainEventCallback
+ * @param {import("electron").IpcMainEvent} event
+ */
+
+/**
  * Contains all the fs api's using node fs and other file related utils
  * @typedef {Object} fsApi
  * @property {readFile} readFile - Calls fs read file
@@ -15,6 +39,29 @@
  * @property {onFsChange} onChange - Listen to a file or folder path change and run logic - will start watching the given path it'  not being watched then
  * register the callback to be run when it changes, also returns a unsub method, does NOT stop watching the path, but no longer run, the callback defined by removing it
  * @property {fsStopWatching} stopWatching - Stops watching a given path
+ * @property {saveTo} saveTo - Save a files content to a given location
+ * @property {selectFile} selectFile - Allow a user to select a file from the explorer
+ */
+
+/**
+ * Allow a user to select a file from explorer
+ * @callback selectFile
+ * @returns {Promise<import("electron").OpenDialogReturnValue | null>}
+ */
+
+/**
+ * Listen to a given file path
+ * @callback fsWatch
+ * @param {string} fileOrFolderPath - File or folder path to watch
+ * @returns {void}
+ */
+
+/**
+ * Save a file's content using the explorer to a given location
+ * @callback saveTo
+ * @param {string} content - The content of the file
+ * @param {import("electron").SaveDialogOptions} [options] - Used to change how a file can be saved
+ * @returns {Promise<boolean>} If it could or could not
  */
 
 /**

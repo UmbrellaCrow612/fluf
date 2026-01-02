@@ -1,4 +1,21 @@
 /**
+ * A generic type that merges the parameters of two callbacks
+ * and uses the return type of the second.
+ */
+export type CombinedCallback<T extends (...args: any[]) => any, U extends (...args: any[]) => any> = (...args: [...Parameters<T>, ...Parameters<U>]) => ReturnType<U>;
+/**
+ * Typed for IpcMainInvokeEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ */
+export type IpcMainInvokeEventCallback = (event: import("electron").IpcMainInvokeEvent) => any;
+/**
+ * Typed for IpcMainEvent listener
+ *
+ * i.e use when you writing a listener for a channel that uses a handle
+ */
+export type IpcMainEventCallback = (event: import("electron").IpcMainEvent) => any;
+/**
  * Contains all the fs api's using node fs and other file related utils
  */
 export type fsApi = {
@@ -43,7 +60,27 @@ export type fsApi = {
      * - Stops watching a given path
      */
     stopWatching: fsStopWatching;
+    /**
+     * - Save a files content to a given location
+     */
+    saveTo: saveTo;
+    /**
+     * - Allow a user to select a file from the explorer
+     */
+    selectFile: selectFile;
 };
+/**
+ * Allow a user to select a file from explorer
+ */
+export type selectFile = () => Promise<import("electron").OpenDialogReturnValue | null>;
+/**
+ * Listen to a given file path
+ */
+export type fsWatch = (fileOrFolderPath: string) => void;
+/**
+ * Save a file's content using the explorer to a given location
+ */
+export type saveTo = (content: string, options?: Electron.SaveDialogOptions | undefined) => Promise<boolean>;
 /**
  * Reads the contents of a file.
  */

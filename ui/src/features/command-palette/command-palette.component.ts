@@ -11,28 +11,10 @@ import {
 } from '@angular/core';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 
-import { form, Field, required, email } from '@angular/forms/signals';
-import { SearchFileCommandComponent } from './search-file-command/search-file-command.component';
+import { form, Field } from '@angular/forms/signals';
 import { NgComponentOutlet } from '@angular/common';
-
-/**
- * Represents a command that can be selected for auto complete
- */
-type Command = {
-  /** The name of the command */
-  label: string;
-
-  /** Information about what the cmd does */
-  description: string;
-
-  /** Whats needed to match int the search term for it to be shown */
-  prefix: string;
-
-  /**
-   * Computed signal to show the component to render for this cmd
-   */
-  component: Type<any>;
-};
+import { Command } from './type';
+import { CommandPaletteCommandList } from './commands';
 
 /**
  * Component that will be used for multiple purpose's, such as quick file search and go to, open other parts of the editor and basically all other
@@ -46,6 +28,9 @@ type Command = {
 })
 export class CommandPaletteComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
+
+  /** Local ref to  CommandPaletteCommandList*/
+  commandList = CommandPaletteCommandList;
 
   /** Model that is the shape of the form */
   searchCommandModal = signal({
@@ -119,16 +104,4 @@ export class CommandPaletteComponent implements OnInit {
   onInput() {
     this.showDropDown.set(true);
   }
-
-  /**
-   * List of all commands available
-   */
-  commandList: Command[] = [
-    {
-      prefix: 'file:search',
-      description: 'Search for a specific file',
-      label: 'File search',
-      component: SearchFileCommandComponent,
-    },
-  ];
 }
