@@ -64,7 +64,15 @@ export type fsApi = {
      * - Save a files content to a given location
      */
     saveTo: saveTo;
+    /**
+     * - Allow a user to select a file from the explorer
+     */
+    selectFile: selectFile;
 };
+/**
+ * Allow a user to select a file from explorer
+ */
+export type selectFile = () => Promise<import("electron").OpenDialogReturnValue | null>;
 /**
  * Listen to a given file path
  */

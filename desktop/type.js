@@ -40,6 +40,13 @@
  * register the callback to be run when it changes, also returns a unsub method, does NOT stop watching the path, but no longer run, the callback defined by removing it
  * @property {fsStopWatching} stopWatching - Stops watching a given path
  * @property {saveTo} saveTo - Save a files content to a given location
+ * @property {selectFile} selectFile - Allow a user to select a file from the explorer
+ */
+
+/**
+ * Allow a user to select a file from explorer
+ * @callback selectFile
+ * @returns {Promise<import("electron").OpenDialogReturnValue | null>}
  */
 
 /**

@@ -88,6 +88,11 @@ export type AppContext = {
    * Represents the main component to render in the middle of the text editor such as the file text editor or other components
    */
   editorMainActiveElement: editorMainActiveElement | null;
+
+  /**
+   * Represents the editor theme used to persist it between sessions it is a strinified version of a `cssVar[]` Object
+   */
+  editorTheme: string | null;
 };
 
 /**
@@ -158,5 +163,5 @@ export type InMemoryAppContext = {
   /**
    * Used to indicate if the command palette should be visible or not
    */
-  showCommandPalette: boolean
+  showCommandPalette: boolean;
 };

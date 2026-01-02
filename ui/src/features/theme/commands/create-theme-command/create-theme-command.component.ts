@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { cssVariables } from '../../../../gen/cssVars';
 import { FormsModule } from '@angular/forms';
 import { getElectronApi } from '../../../../utils';
+import { cssVar } from '../../type';
 
 @Component({
   selector: 'app-create-theme-command',
@@ -15,7 +16,7 @@ export class CreateThemeCommandComponent {
   /**
    * Represents a given css variable property and it's value mapped from cssVariables
    */
-  cssVars: { property: string; value: string }[] = [];
+  cssVars: cssVar[] = [];
 
   constructor() {
     this.cssVars = Object.entries(cssVariables).map(([property, value]) => ({
@@ -25,9 +26,8 @@ export class CreateThemeCommandComponent {
   }
 
   async saveTheme() {
-    let res = await this.api.fsApi.saveTo(JSON.stringify(this.cssVars), {
+    await this.api.fsApi.saveTo(JSON.stringify(this.cssVars), {
       filters: [{ extensions: ['json'], name: 'json' }],
     });
-    console.log(res);
   }
 }

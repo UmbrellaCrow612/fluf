@@ -34,6 +34,8 @@ import { TextFileEditorComponent } from '../text-file-editor/text-file-editor.co
 import { Renderable } from '../ngComponentOutlet/type';
 import { CommandPaletteComponent } from '../command-palette/command-palette.component';
 import { voidCallback } from '../../gen/type';
+import { ThemeService } from '../theme/theme.service';
+import { cssVar } from '../theme/type';
 type unSub = () => Promise<void>;
 
 @Component({
@@ -56,6 +58,7 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly keyService = inject(HotKeyService);
+  private readonly themeService = inject(ThemeService);
 
   constructor() {
     effect(async () => {
@@ -249,6 +252,18 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         }
       );
+    }
+
+    // set editor theme
+    try {
+      let theme = this.appContext.editorTheme();
+      if (theme) {
+        let object = JSON.parse(theme) as cssVar[];
+        this.themeService.set(object);
+        console.log('Set theme from saved state');
+      }
+    } catch (error) {
+      console.error('Failed to set editor theme' + error);
     }
 
     // subs

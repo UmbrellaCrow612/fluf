@@ -249,6 +249,22 @@ const readFileImpl = async (_, filePath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFile>}
+ */
+const selectFileImpl = async () => {
+  try {
+    if (!mainWindowRef) return null;
+
+    return await dialog.showOpenDialog(mainWindowRef, {
+      properties: ["openFile"],
+    });
+  } catch (error) {
+    logger.error("Failed to select file " + JSON.stringify(error));
+    return null;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -267,6 +283,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
   ipcMain.on("fs:watch", watchImpl);
   ipcMain.on("fs:unwatch", unwatchImpl);
   ipcMain.handle("file:save:to", saveToImpl);
+  ipcMain.handle("file:select", selectFileImpl);
 };
 
 /**
