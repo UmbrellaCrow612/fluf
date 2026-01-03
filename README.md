@@ -86,7 +86,8 @@ so if you want to build for a specific platform you need to run the above script
 Libarys that i wrote to use in flufy and are generic
 
 - `umbr-resizer-two` - Simple resize plain js libary
-- `fsearch` CLI tool to search for files or folders
-- `binman` CLI tool to install external binarys and NPM package `umbr-binman`
-- `umbr-dl` - Simple download npm package around a go binary for large files ro folders, used in build script to download large electron binarys
-- `umbr-zip` - Simple npm package wraps a go binary to zip and unzip folders really fast, for build script as electron binarys are big saves time
+- `fsearch` CLI tool to search for files or folders in go
+- `binman` CLI tool to install external binarys and NPM package `umbr-binman` in go
+- `umbr-dl` - Simple download npm package around a go binary
+- `umbr-zip` - Simple npm package wraps a go binary to zip and unzip folders really fast.
+- `umbr-key-master` Vanilla JS lib to listen to keyboard dom events combos and run logic with w3 spec
