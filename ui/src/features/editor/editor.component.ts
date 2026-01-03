@@ -266,25 +266,17 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       console.error('Failed to set editor theme' + error);
     }
 
-    // subs
-    this.keyService.autoSub(
-      {
-        callback: (ctx) => {
-          this.appContext.displayFileEditorBottom.set(!this.showBottom());
-        },
-        keys: ['Control', 'j'],
-      },
-      this.destroyRef
-    );
-    this.keyService.autoSub(
-      {
-        callback: () => {
-          this.inMemoryContextService.showCommandPalette.update((x) => !x);
-        },
-        keys: ['Control', 'p'],
-      },
-      this.destroyRef
-    );
+    this.destroyRef.onDestroy(() => {
+      this.keyService.master.dispose();
+    });
+
+    this.keyService.master.add(['Control', 'j'], () => {
+      this.appContext.displayFileEditorBottom.set(!this.showBottom());
+    });
+
+    this.keyService.master.add(['Control', 'p'], () => {
+      this.inMemoryContextService.showCommandPalette.update((x) => !x);
+    });
   }
 
   ngAfterViewInit(): void {

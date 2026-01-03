@@ -236,7 +236,6 @@ const editFileImpl = (_, args) => {
  */
 const closeFileImpl = (_, filePath) => {
   write(s.Close(path.normalize(path.resolve(filePath))));
-  write(s.Geterr())
 };
 
 /**
