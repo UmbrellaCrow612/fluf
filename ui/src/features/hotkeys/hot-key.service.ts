@@ -1,4 +1,4 @@
-import { inject, Injectable, DestroyRef } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
 import { KeyMaster, GetDataCallback } from 'umbr-key-master';
 
