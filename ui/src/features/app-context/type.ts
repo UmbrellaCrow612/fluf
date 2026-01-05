@@ -24,11 +24,13 @@ export type fileEditorBottomActiveElement = 'terminal' | 'problems';
  * - `text-file-editor` - Is shown for any plain text document such as code or any other
  * - `image-editor` - is shown for documents that are img formats
  * - `document-editor` - is shown when the file is a document type such as pdf etc which are supported by native browser to be shown
+ * - `markdown-editor` - Is shown when user opens the markdown previwer for a given file if it's a markdown file
  */
 export type editorMainActiveElement =
   | 'text-file-editor'
   | 'image-editor'
-  | 'document-editor';
+  | 'document-editor'
+  | 'markdown-editor';
 
 /**
  * Contains all the context menus that can be activated
@@ -37,7 +39,9 @@ export type contextMenuActiveElement =
   /** Displays when a right click is done in file explorer and on a specific file node*/
   | 'file-explorer-file-node-context-menu'
   /** Displays context menu for when the right click is fired off inside the img editor on a img tag*/
-  | 'image-editor-img-context-menu';
+  | 'image-editor-img-context-menu'
+  /** Displays contetx menu when text file editor is open and a user right clicks it  */
+  | 'text-file-editor-context-menu';
 
 /**
  * Represents application wide context that persists between sessions
@@ -96,11 +100,6 @@ export type AppContext = {
 };
 
 /**
- * All the types of shape data can be
- */
-export type CurrentActiveContextMenuData = fileNode | null | string;
-
-/**
  * Represents application context that stays in memeory until a refresh or app close
  */
 export type InMemoryAppContext = {
@@ -117,7 +116,7 @@ export type InMemoryAppContext = {
     pos: { mouseX: number; mouseY: number };
 
     /** Any data to be passed to it */
-    data: CurrentActiveContextMenuData | null;
+    data: any;
   } | null;
 
   /**

@@ -314,10 +314,7 @@ export class TextFileEditorComponent implements OnInit {
     this.diagTimeout = setTimeout(() => {
       if (!this.openFileNode() || !this.languageServer) return;
 
-      this.lspService.Error(
-        this.openFileNode()!.path,
-        this.languageServer
-      );
+      this.lspService.Error(this.openFileNode()!.path, this.languageServer);
     }, 200);
   }
 
@@ -382,7 +379,7 @@ export class TextFileEditorComponent implements OnInit {
     this.languageServer = this.getLanguageServer(
       this.openFileNode()!.extension
     );
-    this.inMemoryContextService.currentLanguageServer.set(this.languageServer)
+    this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
 
     this.appContext.fileExplorerActiveFileOrFolder.set(this.openFileNode());
     this.isLoading = false;
@@ -395,12 +392,22 @@ export class TextFileEditorComponent implements OnInit {
         this.languageServer
       );
 
-      this.lspService.Error(
-        this.openFileNode()!.path,
-        this.languageServer!
-      );
+      this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
     }
 
     this.renderCodeMirror();
+  }
+
+  onRightClick(event: MouseEvent) {
+    event.preventDefault();
+
+    this.inMemoryContextService.currentActiveContextMenu.set({
+      data: this.appContext.currentOpenFileInEditor(),
+      key: 'text-file-editor-context-menu',
+      pos: {
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+      },
+    });
   }
 }

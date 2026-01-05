@@ -1,0 +1,13 @@
+<div class="markdown_editor_container scroll_bar">
+  @if (loading()) {
+  <div>Loading</div>
+  }
+
+  <!---->
+  @if (error()) {
+  <div>Error {{ error() }}</div>
+  }
+
+  <!---->
+  <div #markdown_container class="markdown_content_container"></div>
+</div>

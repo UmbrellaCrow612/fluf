@@ -36,7 +36,7 @@ import { CommandPaletteComponent } from '../command-palette/command-palette.comp
 import { voidCallback } from '../../gen/type';
 import { ThemeService } from '../theme/theme.service';
 import { cssVar } from '../theme/type';
-type unSub = () => Promise<void>;
+import { MarkdownEditorComponent } from '../markdown/markdown-editor.component';
 
 @Component({
   selector: 'app-editor',
@@ -62,29 +62,24 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor() {
     effect(async () => {
-      if (
-        !this.isDirectoryBeingWatched &&
-        this.appContext.selectedDirectoryPath()
-      ) {
+      let dirPath = this.appContext.selectedDirectoryPath();
+
+      console.log('Directory path changed ' + dirPath);
+      if (dirPath) {
+        console.log('Directory being watched ' + dirPath);
         if (this.unSub) {
           this.unSub();
         }
-        this.isDirectoryBeingWatched = true;
-
-        this.unSub = this.api.fsApi.onChange(
-          this.appContext.selectedDirectoryPath()!,
-          (event) => {
-            if (event.eventType == 'change' || event.eventType == 'rename') {
-              this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
-              console.log('Dir changed');
-            }
+        this.unSub = this.api.fsApi.onChange(dirPath, (event) => {
+          if (event.eventType == 'change' || event.eventType == 'rename') {
+            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+            console.log('Directory changed ' + dirPath);
           }
-        );
+        });
       }
     });
   }
 
-  private isDirectoryBeingWatched = false;
   private unSub: voidCallback | null = null;
   private selectedDir = computed(() => this.appContext.selectedDirectoryPath());
   private mainEditorActiveElement = computed(() =>
@@ -201,6 +196,12 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
         () => this.mainEditorActiveElement() === 'document-editor'
       ),
     },
+    {
+      component: MarkdownEditorComponent,
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'markdown-editor'
+      ),
+    },
   ];
 
   mainCompToRender: Signal<Type<any>> = computed(() => {
@@ -239,21 +240,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   isLeftActive = computed(() => this.appContext.sideBarActiveElement() != null);
 
   async ngOnInit() {
-    // if dir selected watch it
-    if (this.selectedDir()) {
-      this.isDirectoryBeingWatched = true;
-
-      this.unSub = this.api.fsApi.onChange(
-        this.appContext.selectedDirectoryPath()!,
-        (event) => {
-          if (event.eventType == 'change' || event.eventType == 'rename') {
-            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
-            console.log('Dir changed');
-          }
-        }
-      );
-    }
-
     // set editor theme
     try {
       let theme = this.appContext.editorTheme();
@@ -266,16 +252,14 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       console.error('Failed to set editor theme' + error);
     }
 
-    this.destroyRef.onDestroy(() => {
-      this.keyService.master.dispose();
-    });
-
     this.keyService.master.add(['Control', 'j'], () => {
       this.appContext.displayFileEditorBottom.set(!this.showBottom());
+      console.log('Hot key control j ran');
     });
 
     this.keyService.master.add(['Control', 'p'], () => {
       this.inMemoryContextService.showCommandPalette.update((x) => !x);
+      console.log('Hot key control p ran');
     });
   }
 
