@@ -1,6 +1,22 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal } from '@angular/core';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
 import { fileNode } from '../../../gen/type';
+import { isMarkdownFile } from '../../markdown/helper';
+
+/**
+ * Local type for this component used to render the list of items in the context menu
+ */
+type item = {
+  /**
+   * The text to display
+   */
+  label: string;
+
+  /**
+   * Computed signal
+   */
+  condition: Signal<boolean>;
+};
 
 /**
  * Is rendered when the text file editor is open and a user requests a context menu within it via a right click
@@ -18,6 +34,21 @@ export class TextFileEditorContextMenuComponent implements OnInit {
   error: string | null = null;
   data: fileNode | null =
     this.inMemoryContextService.currentActiveContextMenu()?.data ?? null;
+
+  items: item[] = [
+    {
+      label: 'Open markdown preview',
+      condition: computed(() => {
+        let menu = this.inMemoryContextService.currentActiveContextMenu();
+        let node = menu?.data as fileNode;
+        if ('path' in node && isMarkdownFile(node.path)) {
+          return true;
+        }
+
+        return false;
+      }),
+    },
+  ];
 
   ngOnInit(): void {
     try {

@@ -10,4 +10,17 @@
 
 <!---->
 
-@if (!loading && !error) { items }
+@if (!loading && !error) {
+
+<!---->
+@for (item of items; track $index) {
+<!---->
+@if (item.condition()) {
+<button class="fluf_btn fluf_btn_primary fluf_btn_sm">{{ item.label }}</button>
+}
+
+<!---->
+}
+
+<!---->
+}
