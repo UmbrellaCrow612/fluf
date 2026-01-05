@@ -1,1 +1,13 @@
-<p>markdown-editor works!</p>
+<div class="markdown_editor_container scroll_bar">
+  @if (loading()) {
+  <div>Loading</div>
+  }
+
+  <!---->
+  @if (error()) {
+  <div>Error {{ error() }}</div>
+  }
+
+  <!---->
+  <div #markdown_container></div>
+</div>

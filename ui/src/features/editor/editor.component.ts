@@ -258,10 +258,12 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.keyService.master.add(['Control', 'j'], () => {
       this.appContext.displayFileEditorBottom.set(!this.showBottom());
+      console.log("Hot key control j ran")
     });
 
     this.keyService.master.add(['Control', 'p'], () => {
       this.inMemoryContextService.showCommandPalette.update((x) => !x);
+       console.log("Hot key control p ran")
     });
   }
 
