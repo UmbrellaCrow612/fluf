@@ -24,11 +24,13 @@ export type fileEditorBottomActiveElement = 'terminal' | 'problems';
  * - `text-file-editor` - Is shown for any plain text document such as code or any other
  * - `image-editor` - is shown for documents that are img formats
  * - `document-editor` - is shown when the file is a document type such as pdf etc which are supported by native browser to be shown
+ * - `markdown-preview` - Is shown when user opens the markdown previwer for a given file if it's a markdown file
  */
 export type editorMainActiveElement =
   | 'text-file-editor'
   | 'image-editor'
-  | 'document-editor';
+  | 'document-editor'
+  | 'markdown-preview';
 
 /**
  * Contains all the context menus that can be activated

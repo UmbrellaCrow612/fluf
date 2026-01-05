@@ -1,7 +1,8 @@
 import { Component, computed, inject, OnInit, Signal } from '@angular/core';
 import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
-import { fileNode } from '../../../gen/type';
+import { fileNode, voidCallback } from '../../../gen/type';
 import { isMarkdownFile } from '../../markdown/helper';
+import { ContextService } from '../../app-context/app-context.service';
 
 /**
  * Local type for this component used to render the list of items in the context menu
@@ -16,6 +17,11 @@ type item = {
    * Computed signal
    */
   condition: Signal<boolean>;
+
+  /**
+   * Logic to run on click
+   */
+  action: voidCallback;
 };
 
 /**
@@ -29,6 +35,7 @@ type item = {
 })
 export class TextFileEditorContextMenuComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly contextService = inject(ContextService)
 
   loading = false;
   error: string | null = null;
@@ -47,6 +54,9 @@ export class TextFileEditorContextMenuComponent implements OnInit {
 
         return false;
       }),
+      action: () => {
+        this.contextService.editorMainActiveElement.set("markdown-preview")
+      },
     },
   ];
 

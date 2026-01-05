@@ -1,6 +1,5 @@
-import { inject, Injectable } from '@angular/core';
-import { ContextService } from '../app-context/app-context.service';
-import { KeyMaster, GetDataCallback } from 'umbr-key-master';
+import { Injectable } from '@angular/core';
+import { KeyMaster } from 'umbr-key-master';
 
 /**
  * Wraps `umbr-key-master` to expose it as a singleten
@@ -9,13 +8,8 @@ import { KeyMaster, GetDataCallback } from 'umbr-key-master';
   providedIn: 'root',
 })
 export class HotKeyService {
-  private readonly appContext = inject(ContextService);
-  private getAppContext: GetDataCallback = () => {
-    return this.appContext.getSnapShot();
-  };
-
   /**
    * Exposes get master
    */
-  master = new KeyMaster(this.getAppContext);
+  master = new KeyMaster();
 }
