@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ContextService } from '../app-context/app-context.service';
-import { isMarkdownFile, markdownToHtml } from './helper';
+import { applyMarkdownClasses, isMarkdownFile, markdownToHtml } from './helper';
 import { getElectronApi } from '../../utils';
 
 /**
@@ -34,6 +34,7 @@ export class MarkdownEditorComponent implements OnInit {
   }
 
   async init() {
+    console.log('Markdown editor init');
     try {
       this.loading.set(true);
       this.error.set(null);
@@ -59,6 +60,7 @@ export class MarkdownEditorComponent implements OnInit {
       let markdownHtml = await markdownToHtml(fileContent);
 
       div.innerHTML = markdownHtml;
+      applyMarkdownClasses(div)
     } catch (error) {
       console.error('Failed to load markdown editor ', error);
     } finally {

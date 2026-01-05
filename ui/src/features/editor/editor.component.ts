@@ -252,18 +252,14 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       console.error('Failed to set editor theme' + error);
     }
 
-    this.destroyRef.onDestroy(() => {
-      this.keyService.master.dispose();
-    });
-
     this.keyService.master.add(['Control', 'j'], () => {
       this.appContext.displayFileEditorBottom.set(!this.showBottom());
-      console.log("Hot key control j ran")
+      console.log('Hot key control j ran');
     });
 
     this.keyService.master.add(['Control', 'p'], () => {
       this.inMemoryContextService.showCommandPalette.update((x) => !x);
-       console.log("Hot key control p ran")
+      console.log('Hot key control p ran');
     });
   }
 

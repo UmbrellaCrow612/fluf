@@ -472,3 +472,141 @@ body {
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+/* ============================================
+   MARKDOWN STYLES  
+   ============================================ */
+
+/* Markdown Typography Styling */
+.markdown_h1,
+.markdown_h2,
+.markdown_h3,
+.markdown_h4,
+.markdown_h5,
+.markdown_h6 {
+  color: var(--text-primary);
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.markdown_h1 {
+  font-size: 2em;
+  border-bottom: 1px solid var(--border-default);
+  padding-bottom: 8px;
+}
+
+.markdown_h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--border-default);
+  padding-bottom: 6px;
+}
+
+.markdown_h3 {
+  font-size: 1.25em;
+}
+
+.markdown_p {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.markdown_a {
+  color: var(--text-info);
+  text-decoration: none;
+}
+
+.markdown_a:hover {
+  text-decoration: underline;
+}
+
+.markdown_code {
+  background: var(--bg-tertiary);
+  color: var(--text-info);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--code-editor-font-family);
+  font-size: 0.9em;
+}
+
+.markdown_pre {
+  background: var(--code-editor-bg);
+  color: var(--code-editor-text);
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-default);
+}
+
+.markdown_pre .markdown_code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: var(--code-editor-font-size);
+  line-height: var(--code-editor-line-height);
+}
+
+.markdown_blockquote {
+  border-left: 4px solid var(--border-focus);
+  padding-left: 16px;
+  margin: 16px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.markdown_ul,
+.markdown_ol {
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.markdown_li {
+  margin-bottom: 8px;
+}
+
+.markdown_table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.markdown_th,
+.markdown_td {
+  border: 1px solid var(--border-default);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown_th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+}
+
+.markdown_tr:hover {
+  background: var(--bg-hover);
+}
+
+.markdown_hr {
+  border: none;
+  border-top: 1px solid var(--border-default);
+  margin: 24px 0;
+}
+
+.markdown_img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 16px 0;
+}
+
+.markdown_strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.markdown_em {
+  color: var(--text-secondary);
+  font-style: italic;
+}

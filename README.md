@@ -1,6 +1,7 @@
 # **Flufy**
 
 ![Flufy UI Preview](assets/demo.gif)
+![Flufy UI Markdown](assets/markdown_preview.gif)
 
 A simple text editor written in electron and angular
 
@@ -21,6 +22,8 @@ A simple text editor written in electron and angular
 - Create custom themes and switch between them
 
 - Hot key support
+
+- Markdown previews 
 
 ---
 
