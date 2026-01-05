@@ -1,6 +1,6 @@
 # **Flufy**
 
-![Flufy UI Preview](assets/latest-ui-img.png)
+![Flufy UI Preview](assets/demo.gif)
 
 A simple text editor written in electron and angular
 
@@ -8,23 +8,13 @@ A simple text editor written in electron and angular
 
 ## Features
 
-- File explorer
-
-- Create and delete files/folders
-
-- View files in editor
-
 - TypeScript server LSP support / UI errors
 
-- Search file contents with Ripgrep
-
-- Search specific folders with FSearch
-
-- Search for specific files with FSearch
+- Search file, folder contents with Ripgrep and fsearch
 
 - Basic Git view to show working tree information
 
-- Node PTY integrated terminals
+- Node PTY integrated terminals - full terminal features
 
 - View text files, images, and PDFs with syntax highlighting, code editing, and saving
 
