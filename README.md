@@ -20,6 +20,8 @@ A simple text editor written in electron and angular
 
 - Create custom themes and switch between them
 
+- Hot key support
+
 ---
 
 ## **Project Overview**
@@ -38,6 +40,8 @@ A simple text editor written in electron and angular
 ---
 
 ## **Building for Production**
+
+Under construction - after adding node pty and lsp support i need to fix it for new versions
 
 1. **Install script dependencies:**
 

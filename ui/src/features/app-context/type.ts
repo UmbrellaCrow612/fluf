@@ -37,7 +37,9 @@ export type contextMenuActiveElement =
   /** Displays when a right click is done in file explorer and on a specific file node*/
   | 'file-explorer-file-node-context-menu'
   /** Displays context menu for when the right click is fired off inside the img editor on a img tag*/
-  | 'image-editor-img-context-menu';
+  | 'image-editor-img-context-menu'
+  /** Displays contetx menu when text file editor is open and a user right clicks it  */
+  | 'text-file-editor-context-menu';
 
 /**
  * Represents application wide context that persists between sessions
@@ -96,11 +98,6 @@ export type AppContext = {
 };
 
 /**
- * All the types of shape data can be
- */
-export type CurrentActiveContextMenuData = fileNode | null | string;
-
-/**
  * Represents application context that stays in memeory until a refresh or app close
  */
 export type InMemoryAppContext = {
@@ -117,7 +114,7 @@ export type InMemoryAppContext = {
     pos: { mouseX: number; mouseY: number };
 
     /** Any data to be passed to it */
-    data: CurrentActiveContextMenuData | null;
+    data: any;
   } | null;
 
   /**

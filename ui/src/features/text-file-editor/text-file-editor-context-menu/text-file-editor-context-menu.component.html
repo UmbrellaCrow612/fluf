@@ -1,0 +1,13 @@
+@if (loading) {
+<div>Loading</div>
+}
+
+<!---->
+
+@if (!loading && error) {
+<div>Error : {{ error }}</div>
+}
+
+<!---->
+
+@if (!loading && !error) { items }

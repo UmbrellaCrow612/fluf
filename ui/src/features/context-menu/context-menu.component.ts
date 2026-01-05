@@ -4,16 +4,13 @@ import {
   computed,
   ElementRef,
   inject,
-  OnDestroy,
   OnInit,
   Type,
   viewChild,
 } from '@angular/core';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { NgComponentOutlet } from '@angular/common';
-import { FileExplorerFileNodeContextMenuComponent } from '../file-explorer/file-explorer-file-node-context-menu/file-explorer-file-node-context-menu.component';
-import { ImageEditorContextMenuComponent } from '../img-editor/image-editor-context-menu/image-editor-context-menu.component';
-import { Renderable } from '../ngComponentOutlet/type';
+import { contextMenuItems } from './items';
 
 @Component({
   selector: 'app-context-menu',
@@ -31,32 +28,18 @@ export class ContextMenuComponent implements OnInit, AfterViewInit {
     viewChild<ElementRef<HTMLDialogElement>>('contextDialog');
 
   /**
-   * List of all custom context menus to render in the dialog wrapper
-   */
-  elements: Renderable[] = [
-    {
-      component: FileExplorerFileNodeContextMenuComponent,
-      condition: computed(
-        () =>
-          this.inMemoryContextService.currentActiveContextMenu()?.key ==
-          'file-explorer-file-node-context-menu'
-      ),
-    },
-    {
-      component: ImageEditorContextMenuComponent,
-      condition: computed(
-        () =>
-          this.inMemoryContextService.currentActiveContextMenu()?.key ==
-          'image-editor-img-context-menu'
-      ),
-    },
-  ];
-
-  /**
    * Computed signal for the component to render
    */
   renderComponent = computed<Type<any> | null>(() => {
-    return this.elements.find((x) => x.condition())?.component ?? null;
+    let currentMenu = this.inMemoryContextService.currentActiveContextMenu();
+    if (!currentMenu) {
+      return null;
+    }
+
+    let found =
+      contextMenuItems.find((x) => x.key === currentMenu.key)?.component ??
+      null;
+    return found;
   });
 
   ngOnInit(): void {
