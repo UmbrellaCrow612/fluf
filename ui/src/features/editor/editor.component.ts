@@ -36,6 +36,7 @@ import { CommandPaletteComponent } from '../command-palette/command-palette.comp
 import { voidCallback } from '../../gen/type';
 import { ThemeService } from '../theme/theme.service';
 import { cssVar } from '../theme/type';
+import { MarkdownEditorComponent } from '../markdown/markdown-editor.component';
 
 @Component({
   selector: 'app-editor',
@@ -193,6 +194,12 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       component: DocumentEditorComponent,
       condition: computed(
         () => this.mainEditorActiveElement() === 'document-editor'
+      ),
+    },
+    {
+      component: MarkdownEditorComponent,
+      condition: computed(
+        () => this.mainEditorActiveElement() === 'markdown-editor'
       ),
     },
   ];

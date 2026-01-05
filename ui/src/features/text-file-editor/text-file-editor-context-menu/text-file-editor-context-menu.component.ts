@@ -55,7 +55,8 @@ export class TextFileEditorContextMenuComponent implements OnInit {
         return false;
       }),
       action: () => {
-        this.contextService.editorMainActiveElement.set("markdown-preview")
+        this.contextService.editorMainActiveElement.set("markdown-editor")
+        this.inMemoryContextService.currentActiveContextMenu.set(null)
       },
     },
   ];
