@@ -39,7 +39,7 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  flex: 1; /* Changed via resizer */
+  flex: 1; /* Changed via resizer but here as a fallback when it isnt active */
 
   display: flex;
   flex-direction: column;

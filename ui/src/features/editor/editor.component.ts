@@ -23,7 +23,7 @@ import { SelectDirectoryComponent } from '../file-explorer/select-directory/sele
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import Resizer from 'umbr-resizer-two';
+import { ResizerTwo } from 'umbr-resizer-two';
 import { HotKeyService } from '../hotkeys/hot-key.service';
 import { EditorHomePageComponent } from './editor-home-page/editor-home-page.component';
 import { OpenFileContainerTabsComponent } from '../open-files/open-file-container-tabs/open-file-container-tabs.component';
@@ -211,31 +211,8 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   });
 
-  private getComputedCSSVar(varName: string): string {
-    return getComputedStyle(document.documentElement)
-      .getPropertyValue(varName)
-      .trim();
-  }
-
-  private resizer = new Resizer({
-    direction: 'horizontal',
-    minFlex: 0.2,
-    handleStyles: {
-      width: '6px',
-      background: this.getComputedCSSVar('--bg-secondary'),
-      boxShadow: this.getComputedCSSVar('--shadow-md'),
-    },
-  });
-
-  private mainResizer = new Resizer({
-    direction: 'vertical',
-    minFlex: 0.2,
-    handleStyles: {
-      height: '6px',
-      background: this.getComputedCSSVar('--bg-secondary'),
-      boxShadow: this.getComputedCSSVar('--shadow-md'),
-    },
-  });
+  private resizer: ResizerTwo | null = null;
+  private mainResizer: ResizerTwo | null = null;
 
   isLeftActive = computed(() => this.appContext.sideBarActiveElement() != null);
 
@@ -264,12 +241,64 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.resizer.observe(
-      document.getElementById('editor_resize_container') as HTMLDivElement
-    );
-    this.mainResizer.observe(
-      document.getElementById('main_resize_container') as HTMLDivElement
-    );
+    // Load saved flex values from localStorage
+    const sideResizerKey = 'editor_side_resizer';
+    const mainResizerKey = 'editor_main_resizer';
+
+    let sideFlex = { firstChild: 1, secondChild: 1 };
+    let mainFlex = { firstChild: 1, secondChild: 1 };
+
+    try {
+      const savedSide = localStorage.getItem(sideResizerKey);
+      if (savedSide) sideFlex = JSON.parse(savedSide);
+
+      const savedMain = localStorage.getItem(mainResizerKey);
+      if (savedMain) mainFlex = JSON.parse(savedMain);
+    } catch (e) {
+      console.error('Failed to parse saved resizer values', e);
+    }
+
+    const sideContainer = document.getElementById('editor_resize_container');
+    if (sideContainer) {
+      this.resizer = new ResizerTwo({
+        container: sideContainer as HTMLDivElement,
+        direction: 'horizontal',
+        initalFlex: sideFlex,
+        minFlex: { firstChild: 0.4, secondChild: 0.4 },
+        handleStyles: {
+          width: '6px',
+          background: '--bg-primary',
+          boxShadow: '--shadow-md',
+          cursor: 'col-resize',
+        },
+      });
+
+      this.resizer.on(() => {
+        const values = this.resizer!.getFlexValues();
+        localStorage.setItem(sideResizerKey, JSON.stringify(values));
+      });
+    }
+
+    const mainContainer = document.getElementById('main_resize_container');
+    if (mainContainer) {
+      this.mainResizer = new ResizerTwo({
+        container: mainContainer as HTMLDivElement,
+        direction: 'vertical',
+        initalFlex: mainFlex,
+        minFlex: { firstChild: 0.4, secondChild: 0.4 },
+        handleStyles: {
+          height: '6px',
+          background: '--bg-primary',
+          boxShadow: '--shadow-md',
+          cursor: 'row-resize',
+        },
+      });
+
+      this.mainResizer.on(() => {
+        const values = this.mainResizer!.getFlexValues();
+        localStorage.setItem(mainResizerKey, JSON.stringify(values));
+      });
+    }
   }
 
   ngOnDestroy() {

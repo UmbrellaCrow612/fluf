@@ -82,7 +82,7 @@ so if you want to build for a specific platform you need to run the above script
 
 Libarys that i wrote to use in flufy and are generic
 
-- `umbr-resizer-two` - Simple resize plain js libary
+- `umbr-resizer-two` - Dynamic panel resizer plain js
 - `fsearch` CLI tool to search for files or folders in go
 - `binman` CLI tool to install external binarys and NPM package `umbr-binman` in go
 - `umbr-dl` - Simple download npm package around a go binary
