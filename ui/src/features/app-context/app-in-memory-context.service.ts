@@ -38,7 +38,7 @@ export class InMemoryContextService {
   /**
    * Exposes signal editorResize
    */
-  readonly editorResize = signal<InMemoryAppContext['editorResize']>(null);
+  readonly editorResize = signal<InMemoryAppContext['editorResize']>(0);
 
   /**
    * Exposes shells signal

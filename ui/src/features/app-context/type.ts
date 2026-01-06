@@ -122,7 +122,7 @@ export type InMemoryAppContext = {
   /**
    * When it's value changes it means the editor has been resized i.e when it increments it's value
    */
-  editorResize: boolean | null;
+  editorResize: number;
 
   /**
    * Indicates if a directory being watched should be refreshed - whenever the number changes i.e increments it means it should be re read

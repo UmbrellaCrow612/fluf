@@ -33,6 +33,14 @@ export class TerminalEditorComponent implements OnDestroy {
         this.previousPid = pid;
       }
     });
+
+    effect(() => {
+      let _ = this.inMemoryAppContext.editorResize();
+
+      if (this.terminal && this.fitAddon) {
+        this.fitAddon.fit();
+      }
+    });
   }
 
   private previousPid: number | null = null;

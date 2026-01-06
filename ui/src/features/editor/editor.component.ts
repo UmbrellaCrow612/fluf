@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Component,
   computed,
-  DestroyRef,
   effect,
   inject,
   OnDestroy,
@@ -55,7 +54,6 @@ import { MarkdownEditorComponent } from '../markdown/markdown-editor.component';
 export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly keyService = inject(HotKeyService);
   private readonly themeService = inject(ThemeService);
@@ -276,6 +274,8 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.resizer.on(() => {
         const values = this.resizer!.getFlexValues();
         localStorage.setItem(sideResizerKey, JSON.stringify(values));
+
+        this.inMemoryContextService.editorResize.update((x) => x + 1);
       });
     }
 
@@ -297,6 +297,8 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.mainResizer.on(() => {
         const values = this.mainResizer!.getFlexValues();
         localStorage.setItem(mainResizerKey, JSON.stringify(values));
+
+        this.inMemoryContextService.editorResize.update((x) => x + 1);
       });
     }
   }
