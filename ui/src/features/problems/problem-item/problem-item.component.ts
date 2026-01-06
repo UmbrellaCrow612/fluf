@@ -35,13 +35,15 @@ export class ProblemItemComponent {
    */
   getLineInfo(diagnostic: FlufDiagnostic): string {
     const start = `${diagnostic.startLine}:${diagnostic.startColumn}`;
-    
+
     // Only show end position if it's different from start
-    if (diagnostic.endLine !== diagnostic.startLine || 
-        diagnostic.endColumn !== diagnostic.startColumn) {
+    if (
+      diagnostic.endLine !== diagnostic.startLine ||
+      diagnostic.endColumn !== diagnostic.startColumn
+    ) {
       return `[${start} - ${diagnostic.endLine}:${diagnostic.endColumn}]`;
     }
-    
+
     return `[${start}]`;
   }
 }

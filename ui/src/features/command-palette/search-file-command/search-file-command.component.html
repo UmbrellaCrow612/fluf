@@ -10,27 +10,27 @@
 
 <div class="results">
   @if (isLoading()) {
-  <div class="state">Loading…</div>
+    <div class="state">Loading…</div>
   }
 
   <!---->
   @if (!isLoading() && error()) {
-  <div class="state error">Error {{ error() }}</div>
+    <div class="state error">Error {{ error() }}</div>
   }
 
   <!---->
-  @if (!isLoading() && !error()) { 
+  @if (!isLoading() && !error()) {
     <!---->
     @for (item of results(); track $index) {
-  <div class="result-item" (click)="selectFile(item)">
-    <div class="file-name" title="{{ item.name }}">
-      {{ item.name }}
-    </div>
-    <div class="file-path" title="{{ item.path }}">
-      {{ item.path }}
-    </div>
-  </div>
-  } 
-  <!---->
-}
+      <div class="result-item" (click)="selectFile(item)">
+        <div class="file-name" title="{{ item.name }}">
+          {{ item.name }}
+        </div>
+        <div class="file-path" title="{{ item.path }}">
+          {{ item.path }}
+        </div>
+      </div>
+    }
+    <!---->
+  }
 </div>

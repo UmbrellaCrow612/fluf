@@ -15,7 +15,7 @@ import { FlufDiagnostic } from '../diagnostic/type';
  */
 export function mapTypescriptDiagnosticToCodeMirrorDiagnostic(
   from: tsServerOutput,
-  state: EditorState
+  state: EditorState,
 ): FlufDiagnostic[] {
   const diagnostics: FlufDiagnostic[] = [];
 
@@ -35,7 +35,7 @@ export function mapTypescriptDiagnosticToCodeMirrorDiagnostic(
       startLine: d.start.line,
       startColumn: d.start.offset,
       endLine: d.end.line,
-      endColumn: d.end.offset
+      endColumn: d.end.offset,
     });
   }
 
@@ -49,7 +49,7 @@ export function mapTypescriptDiagnosticToCodeMirrorDiagnostic(
 function positionToOffset(
   state: EditorState,
   line: number,
-  col: number
+  col: number,
 ): number {
   try {
     const lineHandle = state.doc.line(line); // 1-based API
@@ -60,7 +60,7 @@ function positionToOffset(
 }
 
 function mapSeverity(
-  category: tsServerOutputBodyDiagnostic['category']
+  category: tsServerOutputBodyDiagnostic['category'],
 ): CodeMirrorSeverity {
   switch (category) {
     case 'error':
@@ -113,7 +113,7 @@ const tsKindToCmType: Record<string, string> = {
 };
 
 export function mapTsEntryToCompletion(
-  entry: tsServerOutputBodyCompletionEntry
+  entry: tsServerOutputBodyCompletionEntry,
 ): Completion {
   const label = entry.name ?? '';
 
@@ -127,7 +127,7 @@ export function mapTsEntryToCompletion(
 
     detail: entry.kind,
 
-    type: entry.kind ? tsKindToCmType[entry.kind] ?? 'text' : 'text',
+    type: entry.kind ? (tsKindToCmType[entry.kind] ?? 'text') : 'text',
 
     commitCharacters: entry.commitCharacters,
 
@@ -140,7 +140,7 @@ export function mapTsEntryToCompletion(
 }
 
 export function mapTsServerOutputToCompletions(
-  output: tsServerOutput
+  output: tsServerOutput,
 ): Completion[] {
   const entries = output.body?.entries;
   if (!entries || entries.length === 0) return [];

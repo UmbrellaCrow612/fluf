@@ -45,7 +45,7 @@ export const cssVariables = ${JSON.stringify(cssVars, null, 2)};
     await fs.writeFile(outputFilePath, jsContent, "utf-8");
 
     console.log(
-      `✓ Successfully extracted ${Object.keys(cssVars).length} CSS variables`
+      `✓ Successfully extracted ${Object.keys(cssVars).length} CSS variables`,
     );
     console.log(`✓ Output written to: ${outputFilePath}`);
   } catch (error) {

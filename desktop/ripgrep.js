@@ -193,10 +193,10 @@ const registerRipgrepListeners = (ipcMain) => {
      */
     async (
       event,
-      /** @type {import("./type").ripgrepArgsOptions}*/ options
+      /** @type {import("./type").ripgrepArgsOptions}*/ options,
     ) => {
       return await searchWithRipGrep(options);
-    }
+    },
   );
 };
 

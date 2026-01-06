@@ -1,6 +1,6 @@
 <dialog #cmdPaletteDialog>
   <div class="command-palette-container">
-    <form class="search-container" >
+    <form class="search-container">
       <input
         type="text"
         class="search-input"
@@ -12,26 +12,25 @@
       />
 
       @if (showDropDown()) {
-      <div class="dropdown scroll_bar">
-        @for (cmd of filteredCommandList(); track $index) {
-        <div
-          class="dropdown-item"
-          tabindex="0"
-          (click)="commandClicked(cmd)"
-          (keydown.enter)="commandClicked(cmd)"
-          (keydown.space)="commandClicked(cmd); $event.preventDefault()"
-        >
-          <div class="command-header">
-            <span class="command-prefix">{{ cmd.prefix }}</span>
-            <span class="command-label">{{ cmd.label }}</span>
-          </div>
-          <div class="command-description">{{ cmd.description }}</div>
+        <div class="dropdown scroll_bar">
+          @for (cmd of filteredCommandList(); track $index) {
+            <div
+              class="dropdown-item"
+              tabindex="0"
+              (click)="commandClicked(cmd)"
+              (keydown.enter)="commandClicked(cmd)"
+              (keydown.space)="commandClicked(cmd); $event.preventDefault()"
+            >
+              <div class="command-header">
+                <span class="command-prefix">{{ cmd.prefix }}</span>
+                <span class="command-label">{{ cmd.label }}</span>
+              </div>
+              <div class="command-description">{{ cmd.description }}</div>
+            </div>
+          } @empty {
+            <div class="no-results">No command found</div>
+          }
         </div>
-        } @empty {
-        <div class="no-results">No command found</div>
-        }
-      </div>
-
       }
     </form>
     <div class="results-container scroll_bar">

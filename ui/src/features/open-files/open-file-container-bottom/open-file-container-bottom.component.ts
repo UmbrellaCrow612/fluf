@@ -34,7 +34,7 @@ export class OpenFileContainerBottomComponent {
   ];
 
   renderCompo: Signal<Type<any> | null> = computed(
-    () => this.renderComponents.find((x) => x.condition())?.component ?? null
+    () => this.renderComponents.find((x) => x.condition())?.component ?? null,
   );
 
   btnsList: btn[] = [

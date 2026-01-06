@@ -1,4 +1,4 @@
-import { docExtensions } from "./types";
+import { docExtensions } from './types';
 
 /**
  * Checks if a string contains any supported document extension.

@@ -35,7 +35,7 @@ export class TextFileEditorComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(
-    'code_mirror_container'
+    'code_mirror_container',
   );
   private readonly lspService = inject(LspService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
@@ -156,7 +156,7 @@ export class TextFileEditorComponent implements OnInit {
         let all = this.getDiagnosticsForFile(diagnosticMap, normalizedPath);
 
         applyExternalDiagnostics(this.codeMirrorView!, all);
-      }
+      },
     );
 
     console.log('Language server started for ' + this.languageServer);
@@ -225,7 +225,7 @@ export class TextFileEditorComponent implements OnInit {
         color: 'var(--code-editor-line-number-active)',
       },
     },
-    { dark: true }
+    { dark: true },
   );
 
   private saveTimeout: any;
@@ -248,7 +248,7 @@ export class TextFileEditorComponent implements OnInit {
 
     await this.api.fsApi.write(
       this.openFileNode()!.path,
-      this.stringContent.replace(/\n/g, '\r\n')
+      this.stringContent.replace(/\n/g, '\r\n'),
     );
   }
 
@@ -258,7 +258,7 @@ export class TextFileEditorComponent implements OnInit {
     doc: Text,
     fromA: number,
     toA: number,
-    inserted: Text
+    inserted: Text,
   ): server.protocol.ChangeRequestArgs {
     const startLine = doc.lineAt(fromA);
     const endLine = doc.lineAt(toA);
@@ -287,7 +287,7 @@ export class TextFileEditorComponent implements OnInit {
           update.startState.doc,
           fromA,
           toA,
-          inserted
+          inserted,
         );
 
         this.lspService.Edit(request, this.languageServer!);
@@ -377,7 +377,7 @@ export class TextFileEditorComponent implements OnInit {
     ).replace(/\r\n/g, '\n');
 
     this.languageServer = this.getLanguageServer(
-      this.openFileNode()!.extension
+      this.openFileNode()!.extension,
     );
     this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
 
@@ -389,7 +389,7 @@ export class TextFileEditorComponent implements OnInit {
       this.lspService.Open(
         this.openFileNode()!.path,
         this.stringContent,
-        this.languageServer
+        this.languageServer,
       );
 
       this.lspService.Error(this.openFileNode()!.path, this.languageServer!);

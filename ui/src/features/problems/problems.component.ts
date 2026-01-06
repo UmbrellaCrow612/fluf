@@ -13,7 +13,7 @@ export class ProblemsComponent {
   private readonly inMemoryContextService = inject(InMemoryContextService);
 
   files = computed(() =>
-    Array.from(this.inMemoryContextService.problems().keys())
+    Array.from(this.inMemoryContextService.problems().keys()),
   );
 
   /**
@@ -33,7 +33,7 @@ export class ProblemsComponent {
     if (allFiles.length === 0) return false;
 
     return allFiles.every(
-      (file) => this.diagnosticsForFile(file)().length === 0
+      (file) => this.diagnosticsForFile(file)().length === 0,
     );
   });
 }

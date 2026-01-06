@@ -43,7 +43,7 @@ export class ContextService {
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
       openFiles: this.openFiles(),
       selectedDirectoryPath: this.selectedDirectoryPath(),
-      editorTheme: this.editorTheme()
+      editorTheme: this.editorTheme(),
     };
   }
 
@@ -55,7 +55,7 @@ export class ContextService {
    */
   private restoreField<K extends keyof AppContext>(
     key: K,
-    fallback: AppContext[K]
+    fallback: AppContext[K],
   ): AppContext[K] {
     try {
       const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -72,21 +72,21 @@ export class ContextService {
    * Exposes sideBarActiveElement signal
    */
   readonly sideBarActiveElement = signal<AppContext['sideBarActiveElement']>(
-    this.restoreField('sideBarActiveElement', null)
+    this.restoreField('sideBarActiveElement', null),
   );
 
   /**
    * Exposes directoryFileNodes signal
    */
   readonly directoryFileNodes = signal<AppContext['directoryFileNodes']>(
-    this.restoreField('directoryFileNodes', null)
+    this.restoreField('directoryFileNodes', null),
   );
 
   /**
    * Exposes selectedDirectoryPath signal
    */
   readonly selectedDirectoryPath = signal<AppContext['selectedDirectoryPath']>(
-    this.restoreField('selectedDirectoryPath', null)
+    this.restoreField('selectedDirectoryPath', null),
   );
 
   /**
@@ -100,7 +100,7 @@ export class ContextService {
    * Exposes openFiles signal
    */
   readonly openFiles = signal<AppContext['openFiles']>(
-    this.restoreField('openFiles', null)
+    this.restoreField('openFiles', null),
   );
 
   /**
@@ -135,6 +135,6 @@ export class ContextService {
    * Exposes editorTheme signal
    */
   readonly editorTheme = signal<AppContext['editorTheme']>(
-    this.restoreField('editorTheme', null)
+    this.restoreField('editorTheme', null),
   );
 }

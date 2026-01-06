@@ -51,7 +51,7 @@ export class SideGitComponent implements OnInit, OnDestroy {
     }
 
     this.isGitInit = await this.api.gitApi.isGitInitialized(
-      this.selectedDir()!
+      this.selectedDir()!,
     );
     if (!this.isGitInit) {
       this.isLoading = false;

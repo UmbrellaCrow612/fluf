@@ -23,17 +23,17 @@
 
   <!-- Children lines -->
   @if (showChildren) {
-  <div class="lines-container">
-    @for (line of result().lines; track $index) {
-    <div class="line-item">
-      <span class="line-content">
-        {{ line.linenumber }} {{ line.before }}
-        <span class="line-match">{{ line.match }}</span
-        >{{ line.after }}</span
-      >
-      <!---->
+    <div class="lines-container">
+      @for (line of result().lines; track $index) {
+        <div class="line-item">
+          <span class="line-content">
+            {{ line.linenumber }} {{ line.before }}
+            <span class="line-match">{{ line.match }}</span
+            >{{ line.after }}</span
+          >
+          <!---->
+        </div>
+      }
     </div>
-    }
-  </div>
   }
 </div>

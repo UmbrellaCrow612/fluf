@@ -1,67 +1,68 @@
 <!--Render normal file component-->
 
 @if (fileNode().mode == "default") {
-<div
-  class="file_explorer_tree_item"
-  [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
-  [class.focused]="isFocused()"
-  (click)="itemClicked($event)"
-  (contextmenu)="onRightClick($event)"
->
-  @if (fileNode().expanded && fileNode().isDirectory) {
-  <mat-icon>keyboard_arrow_down</mat-icon>
-  }
-  <!---->
-  @if (!fileNode().expanded && fileNode().isDirectory) {
-  <mat-icon>keyboard_arrow_right</mat-icon>
-  }
-  <!---->
+  <div
+    class="file_explorer_tree_item"
+    [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
+    [class.focused]="isFocused()"
+    (click)="itemClicked($event)"
+    (contextmenu)="onRightClick($event)"
+  >
+    @if (fileNode().expanded && fileNode().isDirectory) {
+      <mat-icon>keyboard_arrow_down</mat-icon>
+    }
+    <!---->
+    @if (!fileNode().expanded && fileNode().isDirectory) {
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    }
+    <!---->
 
-  @if (fileNode().isDirectory) {
-  <mat-icon>folder</mat-icon>
-  }
-  <!---->
-  @if (!fileNode().isDirectory) {
-  <mat-icon>description</mat-icon>
-  }
+    @if (fileNode().isDirectory) {
+      <mat-icon>folder</mat-icon>
+    }
+    <!---->
+    @if (!fileNode().isDirectory) {
+      <mat-icon>description</mat-icon>
+    }
 
-  <span class="elipses">
-    {{ fileNode().name }}
-  </span>
-</div>
+    <span class="elipses">
+      {{ fileNode().name }}
+    </span>
+  </div>
 }
 
 <!-- Render input to create file or folder -->
 @if (fileNode().mode == "createFile" || fileNode().mode == "createFolder") {
-<form
-  class="create_item"
-  [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
-  (submit)="createFileOrFolder($event)"
->
-  @if (fileNode().mode === "createFile") {
-  <mat-icon>note_add</mat-icon>
-  }
-  <!---->
-  @if (fileNode().mode === "createFolder") {
-  <mat-icon>folder_add</mat-icon>
-  }
-  <!---->
-  <input
-    class="create_input"
-    required
-    #create_input
-    (blur)="onCreateInputBlur()"
-    (input)="onInputChange($event)"
-  />
-</form>
+  <form
+    class="create_item"
+    [style.padding-left.px]="depth() === 0 ? 6 : depth() * 16"
+    (submit)="createFileOrFolder($event)"
+  >
+    @if (fileNode().mode === "createFile") {
+      <mat-icon>note_add</mat-icon>
+    }
+    <!---->
+    @if (fileNode().mode === "createFolder") {
+      <mat-icon>folder_add</mat-icon>
+    }
+    <!---->
+    <input
+      class="create_input"
+      required
+      #create_input
+      (blur)="onCreateInputBlur()"
+      (input)="onInputChange($event)"
+    />
+  </form>
 }
 
 <!--Render chilren when expanded and there are children-->
-@if (fileNode().children && fileNode().children.length > 0 &&
-fileNode().expanded) {
-<div class="child_wrapper">
-  @for (child of fileNode().children; track child.path) {
-  <app-file-explorer-item [fileNode]="child" [depth]="depth() + 1" />
-  }
-</div>
+@if (
+  fileNode().children && fileNode().children.length > 0 && fileNode().expanded
+) {
+  <div class="child_wrapper">
+    @for (child of fileNode().children; track child.path) {
+      <app-file-explorer-item [fileNode]="child" [depth]="depth() + 1" />
+    }
+  </div>
 }

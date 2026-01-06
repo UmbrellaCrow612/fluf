@@ -12,7 +12,7 @@ import { getElectronApi } from '../../../utils';
 export class FileExplorerFileNodeContextMenuComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly contextMenuFileNode = computed(
-    () => this.inMemoryContextService.currentActiveContextMenu()?.data
+    () => this.inMemoryContextService.currentActiveContextMenu()?.data,
   );
   private readonly api = getElectronApi();
 

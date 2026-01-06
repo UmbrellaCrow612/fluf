@@ -8,7 +8,7 @@ import { imageTypes } from './types';
 export function hasImageExtension(str: string): boolean {
   if (!str) return false;
 
-  return imageTypes.some(ext =>
-    str.toLowerCase().includes(`${ext.toLowerCase()}`)
+  return imageTypes.some((ext) =>
+    str.toLowerCase().includes(`${ext.toLowerCase()}`),
   );
 }

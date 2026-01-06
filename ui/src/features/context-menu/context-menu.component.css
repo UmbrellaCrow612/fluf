@@ -3,7 +3,9 @@
   border: 1px solid var(--border-default);
   background: var(--bg-secondary);
   border-radius: 6px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 
   width: 240px;
   position: fixed;

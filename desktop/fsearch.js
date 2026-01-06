@@ -181,7 +181,7 @@ const searchWithFSearch = async (options) => {
     child.stderr.on("data", (data) => (stderr += data.toString()));
 
     child.on("error", (err) =>
-      safeReject(new Error(`Failed to spawn fsearch: ${err.message}`))
+      safeReject(new Error(`Failed to spawn fsearch: ${err.message}`)),
     );
 
     child.on("close", (code) => {
@@ -195,8 +195,8 @@ const searchWithFSearch = async (options) => {
       } else {
         safeReject(
           new Error(
-            `fsearch exited with code ${code}: ${stderr || "No stderr"}`
-          )
+            `fsearch exited with code ${code}: ${stderr || "No stderr"}`,
+          ),
         );
       }
     });
@@ -218,7 +218,7 @@ function registerFsearchListeners(ipcMain) {
     async (event, options) => {
       let newOptions = { ...defaultSearchOptions, ...options };
       return await searchWithFSearch(newOptions);
-    }
+    },
   );
 }
 

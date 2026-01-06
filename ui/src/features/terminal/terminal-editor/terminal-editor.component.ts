@@ -50,7 +50,7 @@ export class TerminalEditorComponent implements OnDestroy {
   private dispose: IDisposable | null = null;
 
   currentActiveShellId = computed(() =>
-    this.inMemoryAppContext.currentActiveShellId()
+    this.inMemoryAppContext.currentActiveShellId(),
   );
   terminalBuffer = computed(() => this.inMemoryAppContext.terminalBuffers());
 

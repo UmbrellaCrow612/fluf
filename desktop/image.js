@@ -30,7 +30,7 @@ function registerImageProtocol(protocol) {
  */
 function registerImageListeners(ipcMain, protocol) {
   protocol.handle("image", async (request) => {
-   try {
+    try {
       let rawPath = request.url.replace("image://", "");
 
       if (process.platform === "win32" && /^[a-zA-Z]\//.test(rawPath)) {
@@ -41,7 +41,7 @@ function registerImageListeners(ipcMain, protocol) {
 
       const validExts = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"];
       const ext = path.extname(absolutePath).toLowerCase();
-      
+
       if (!validExts.includes(ext)) {
         return new Response("Invalid image format", { status: 400 });
       }
@@ -52,7 +52,7 @@ function registerImageListeners(ipcMain, protocol) {
         return new Response("File not found", { status: 404 });
       }
 
-      const fileBuffer = await fs.readFile(absolutePath); 
+      const fileBuffer = await fs.readFile(absolutePath);
       const mimeType = getMimeType(ext);
 
       return new Response(fileBuffer, {

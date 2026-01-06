@@ -51,16 +51,16 @@ export class FileExplorerComponent {
   });
 
   selectedDirectorPath = computed(() =>
-    this.appContext.selectedDirectoryPath()
+    this.appContext.selectedDirectoryPath(),
   );
   directoryFileNodes = computed(() => this.appContext.directoryFileNodes());
   isExplorerActive = computed(
     () =>
       this.appContext.fileExplorerActiveFileOrFolder()?.path ===
-      this.appContext.selectedDirectoryPath()
+      this.appContext.selectedDirectoryPath(),
   );
   disableCreateFileOrFolder = computed(() =>
-    this.inMemoryAppContext.isCreateFileOrFolderActive()
+    this.inMemoryAppContext.isCreateFileOrFolderActive(),
   );
 
   constructor() {
@@ -211,10 +211,10 @@ export class FileExplorerComponent {
 
   private async mergeNodes(
     currentNodes: fileNode[],
-    latestNodes: fileNode[]
+    latestNodes: fileNode[],
   ): Promise<fileNode[]> {
     const currentMap = new Map<string, fileNode>(
-      currentNodes.map((node) => [node.path, node])
+      currentNodes.map((node) => [node.path, node]),
     );
 
     const result: fileNode[] = [];

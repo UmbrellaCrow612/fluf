@@ -32,8 +32,8 @@ const parse = () => {
   if (!allowedPlatforms.includes(rawPlatform)) {
     logError(
       `Unknown platform "${rawPlatform}". Allowed values: ${allowedPlatforms.join(
-        ", "
-      )}`
+        ", ",
+      )}`,
     );
     process.exit(1);
   }

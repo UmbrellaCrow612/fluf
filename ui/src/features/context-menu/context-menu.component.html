@@ -1,7 +1,7 @@
 <dialog #contextDialog class="main_dialog">
   @if (renderComponent()) {
-  <ng-container *ngComponentOutlet="renderComponent()" />
+    <ng-container *ngComponentOutlet="renderComponent()" />
   } @else {
-  <div class="no-elements-message">No component condition met</div>
+    <div class="no-elements-message">No component condition met</div>
   }
 </dialog>

@@ -6,6 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './editor-home-page.component.html',
   styleUrl: './editor-home-page.component.css',
 })
-export class EditorHomePageComponent {
-
-}
+export class EditorHomePageComponent {}

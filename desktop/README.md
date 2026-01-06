@@ -33,13 +33,12 @@ run `npx tsc` to see for any errors and generating frontend ts types to use and 
 
 # Info
 
-
 Building:
 
-- build index.js and preload with esbuild    dist
+- build index.js and preload with esbuild dist
 - exclude electron, node pty ("@homebridge") from esbuild
-- copy over typescript source code 
+- copy over typescript source code
 - copy over node pty (@homebridge)
 - copy over .env and pack json into dist
 - pack the app into asar
-- download electron binarys into dist 
+- download electron binarys into dist

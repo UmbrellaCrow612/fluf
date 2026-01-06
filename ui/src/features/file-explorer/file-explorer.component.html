@@ -1,47 +1,47 @@
 <div class="file_explorer_container">
   @if (selectedDirectorPath() && directoryFileNodes()) {
-  <div class="file_explorer_top scroll_bar">
-    <span> File Explorer </span>
-    <div class="file_explorer_buttons">
-      <button
-        mat-icon-button
-        matTooltip="New File"
-        (click)="createFileOrFolder('createFile')"
-        [disabled]="disableCreateFileOrFolder()"
-      >
-        <mat-icon>note_add</mat-icon>
-      </button>
-      <button
-        mat-icon-button
-        matTooltip="New Folder"
-        (click)="createFileOrFolder('createFolder')"
-        [disabled]="disableCreateFileOrFolder()"
-      >
-        <mat-icon>create_new_folder</mat-icon>
-      </button>
-      <button mat-icon-button matTooltip="Refresh" (click)="refreshClicked()">
-        <mat-icon>refresh</mat-icon>
-      </button>
-      <button
-        mat-icon-button
-        matTooltip="Collapse folders"
-        (click)="collapseFolders()"
-      >
-        <mat-icon>unfold_less</mat-icon>
-      </button>
+    <div class="file_explorer_top scroll_bar">
+      <span> File Explorer </span>
+      <div class="file_explorer_buttons">
+        <button
+          mat-icon-button
+          matTooltip="New File"
+          (click)="createFileOrFolder('createFile')"
+          [disabled]="disableCreateFileOrFolder()"
+        >
+          <mat-icon>note_add</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          matTooltip="New Folder"
+          (click)="createFileOrFolder('createFolder')"
+          [disabled]="disableCreateFileOrFolder()"
+        >
+          <mat-icon>create_new_folder</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Refresh" (click)="refreshClicked()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          matTooltip="Collapse folders"
+          (click)="collapseFolders()"
+        >
+          <mat-icon>unfold_less</mat-icon>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!---->
-  <div
-    class="file_explorer_file_tree_container scroll_bar"
-    (click)="fileExplorerScrollContainerClicked($event)"
-    (dblclick)="fileExplorerScrollContainerDoubleClicked($event)"
-    [class.file_explorer_file_tree_active]="isExplorerActive()"
-  >
-    @for (file of directoryFileNodes(); track file.path) {
-    <app-file-explorer-item [fileNode]="file" [depth]="0" />
-    }
-  </div>
+    <!---->
+    <div
+      class="file_explorer_file_tree_container scroll_bar"
+      (click)="fileExplorerScrollContainerClicked($event)"
+      (dblclick)="fileExplorerScrollContainerDoubleClicked($event)"
+      [class.file_explorer_file_tree_active]="isExplorerActive()"
+    >
+      @for (file of directoryFileNodes(); track file.path) {
+        <app-file-explorer-item [fileNode]="file" [depth]="0" />
+      }
+    </div>
   }
 </div>

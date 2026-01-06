@@ -79,7 +79,7 @@ function parseGitStatus(stdout) {
       ["staged", "unstaged", "untracked", "ignored"].includes(section)
     ) {
       const match = trimmed.match(
-        /^(modified:|deleted:|new file:|renamed:|.+->.+)?\s*(.+)$/
+        /^(modified:|deleted:|new file:|renamed:|.+->.+)?\s*(.+)$/,
       );
       if (match) {
         let status = match[1] ? match[1].replace(":", "").trim() : null;
@@ -145,7 +145,7 @@ function runGitCommand(args, cwd, timeOut = 5000) {
 
       if (code !== 0) {
         return reject(
-          new Error(stderrData.trim() || `Git exited with code ${code}`)
+          new Error(stderrData.trim() || `Git exited with code ${code}`),
         );
       }
 
@@ -177,7 +177,7 @@ const registerGitListeners = (ipcMain) => {
       return true;
     } catch (error) {
       logger.error(
-        "Failed to init git repo " + p + " " + JSON.stringify(error)
+        "Failed to init git repo " + p + " " + JSON.stringify(error),
       );
       return false;
     }
@@ -198,7 +198,7 @@ const registerGitListeners = (ipcMain) => {
     try {
       const stdout = await runGitCommand(
         ["status"],
-        path.normalize(path.resolve(dir))
+        path.normalize(path.resolve(dir)),
       );
 
       return parseGitStatus(stdout);

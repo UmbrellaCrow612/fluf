@@ -1,16 +1,16 @@
 @if (isLoading) {
-<div>Loading</div>
+  <div>Loading</div>
 }
 
 <!---->
 @if (!isLoading && error) {
-<div>Error occured rendering image {{ error }}</div>
+  <div>Error occured rendering image {{ error }}</div>
 }
 
 <!---->
 
 @if (!isLoading && !error) {
-<div class="image-wrapper">
-  <img [src]="imgSrc" class="image"  (contextmenu)="onRightClick($event)" />
-</div>
+  <div class="image-wrapper">
+    <img [src]="imgSrc" class="image" (contextmenu)="onRightClick($event)" />
+  </div>
 }

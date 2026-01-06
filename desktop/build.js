@@ -43,12 +43,12 @@ const homebridgeSrc = path.join(
   __dirname,
   "node_modules",
   "@homebridge",
-  "node-pty-prebuilt-multiarch"
+  "node-pty-prebuilt-multiarch",
 );
 const homebridgeDes = path.join(
   distFolder,
   "@homebridge",
-  "node-pty-prebuilt-multiarch"
+  "node-pty-prebuilt-multiarch",
 );
 
 const entryPoints = {
@@ -111,7 +111,7 @@ async function main() {
   log.info("Copying over @homebridge/node-pty-prebuilt-multiarch i.e node pty");
   if (!fs.existsSync(homebridgeSrc)) {
     log.error(
-      " @homebridge/node-pty-prebuilt-multiarch library not found in node_modules!"
+      " @homebridge/node-pty-prebuilt-multiarch library not found in node_modules!",
     );
     process.exit(1);
   }

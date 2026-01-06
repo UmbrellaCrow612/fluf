@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 
-
 /**
- * Renders when not valid document compponent condition is met 
+ * Renders when not valid document compponent condition is met
  */
 @Component({
   selector: 'app-document-not-supported',
@@ -10,6 +9,4 @@ import { Component } from '@angular/core';
   templateUrl: './document-not-supported.component.html',
   styleUrl: './document-not-supported.component.css',
 })
-export class DocumentNotSupportedComponent {
-
-}
+export class DocumentNotSupportedComponent {}

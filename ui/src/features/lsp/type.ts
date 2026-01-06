@@ -38,7 +38,7 @@ export interface ILsp {
   Open: (
     filePath: string,
     fileContent: string,
-    langServer: LanguageServer
+    langServer: LanguageServer,
   ) => void;
 
   /**
@@ -49,7 +49,7 @@ export interface ILsp {
    */
   Edit: (
     args: server.protocol.ChangeRequestArgs,
-    langServer: LanguageServer
+    langServer: LanguageServer,
   ) => void;
 
   /**
@@ -62,7 +62,7 @@ export interface ILsp {
    */
   Completion: (
     args: server.protocol.CompletionsRequestArgs,
-    langServer: LanguageServer
+    langServer: LanguageServer,
   ) => void;
 
   /**
@@ -74,7 +74,7 @@ export interface ILsp {
   OnResponse: (
     langServer: LanguageServer,
     editorState: EditorState,
-    callback: LanguageServiceCallback
+    callback: LanguageServiceCallback,
   ) => voidCallback;
 
   /**
@@ -102,7 +102,7 @@ export interface ILsp {
  */
 export type LanguageServiceCallback = (
   fileAndDiagMap: fileDiagnosticMap,
-  completions: Completion[]
+  completions: Completion[],
 ) => void;
 
 /**

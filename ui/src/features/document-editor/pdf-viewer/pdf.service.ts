@@ -14,7 +14,7 @@ export class PdfService {
    * @param filePath The absoloute path to the file
    * @returns The full pdf:// URL string
    */
-  getLocalPdfUrl(filePath: string): string { 
-    return this.basePath + filePath
+  getLocalPdfUrl(filePath: string): string {
+    return this.basePath + filePath;
   }
 }

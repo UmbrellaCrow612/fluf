@@ -11,7 +11,7 @@ const { registerImageProtocol } = require("./image");
  */
 function registerProtocols() {
   registerPdfProtocol(protocol);
-  registerImageProtocol(protocol)
+  registerImageProtocol(protocol);
 }
 
 module.exports = { registerProtocols };

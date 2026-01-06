@@ -25,7 +25,7 @@ export class SearchFileCommandComponent implements AfterViewInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
 
   private readonly selectedDir = computed(() =>
-    this.contextService.selectedDirectoryPath()
+    this.contextService.selectedDirectoryPath(),
   );
 
   /** Ref to the search input */

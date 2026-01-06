@@ -6,6 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './edit-theme-command.component.html',
   styleUrl: './edit-theme-command.component.css',
 })
-export class EditThemeCommandComponent {
-
-}
+export class EditThemeCommandComponent {}

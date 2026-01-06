@@ -1,14 +1,14 @@
 <div class="container">
   <div class="top">
     @for (el of sideBarElements; track $index) {
-    <button
-      mat-icon-button
-      [matTooltip]="el.tooltip"
-      (click)="toggleElement(el.element)"
-      [class.active]="activeElement() == el.element"
-    >
-      <mat-icon>{{ el.icon }}</mat-icon>
-    </button>
+      <button
+        mat-icon-button
+        [matTooltip]="el.tooltip"
+        (click)="toggleElement(el.element)"
+        [class.active]="activeElement() == el.element"
+      >
+        <mat-icon>{{ el.icon }}</mat-icon>
+      </button>
     }
   </div>
 

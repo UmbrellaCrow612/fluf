@@ -43,7 +43,7 @@ const createWindow = () => {
   if (process.env.MODE === "dev") {
     // In dev we can just load the running app on the website port it is running on instead of loading it from file system works the same
     console.log(
-      "Running dev mode loading website from " + process.env.DEV_UI_PORT + "\n"
+      "Running dev mode loading website from " + process.env.DEV_UI_PORT + "\n",
     );
 
     let devUIPort = process.env.DEV_UI_PORT;

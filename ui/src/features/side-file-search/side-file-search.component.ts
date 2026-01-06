@@ -18,7 +18,7 @@ import { fsearchOptions, fsearchResult } from '../../gen/type';
 export class SideFileSearchComponent {
   private readonly appContext = inject(ContextService);
   private readonly selectedDir = computed(() =>
-    this.appContext.selectedDirectoryPath()
+    this.appContext.selectedDirectoryPath(),
   );
   private readonly api = getElectronApi();
 

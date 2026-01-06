@@ -35,7 +35,8 @@ export class FileTabItemComponent {
     const normalizedPath = this.fileNode().path.replace(/\\/g, '/');
 
     let diagnostics = Array.from(
-      this.inMemoryContextService.problems().get(normalizedPath)?.values() ?? []
+      this.inMemoryContextService.problems().get(normalizedPath)?.values() ??
+        [],
     ).flat();
 
     return diagnostics.length;

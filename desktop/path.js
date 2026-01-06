@@ -23,7 +23,7 @@ const registerPathListeners = (ipcMain) => {
     try {
       return path.relative(
         path.normalize(path.resolve(from)),
-        path.normalize(path.resolve(to))
+        path.normalize(path.resolve(to)),
       );
     } catch (error) {
       console.error("Failed to get relative path " + JSON.stringify(error));

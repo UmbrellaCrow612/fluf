@@ -3,20 +3,20 @@
     <span> Fluffy </span>
     <div class="logo_action_btns">
       @for (item of items; track $index) {
-      <button
-        class="fluf_btn fluf_btn_primary fluf_btn_sm"
-        [matMenuTriggerFor]="menu"
-        [ariaLabel]="item.tooltip"
-      >
-        {{ item.label }}
-      </button>
-      <mat-menu #menu="matMenu" class="fluf_menu">
-        @for (child of item.children; track $index) {
-        <button mat-menu-item (click)="child.onClick()">
-          <span>{{ child.label }}</span>
+        <button
+          class="fluf_btn fluf_btn_primary fluf_btn_sm"
+          [matMenuTriggerFor]="menu"
+          [ariaLabel]="item.tooltip"
+        >
+          {{ item.label }}
         </button>
-        }
-      </mat-menu>
+        <mat-menu #menu="matMenu" class="fluf_menu">
+          @for (child of item.children; track $index) {
+            <button mat-menu-item (click)="child.onClick()">
+              <span>{{ child.label }}</span>
+            </button>
+          }
+        </mat-menu>
       }
     </div>
   </div>
@@ -27,13 +27,13 @@
       <mat-icon>minimize</mat-icon>
     </button>
     @if (isMaximized) {
-    <button mat-icon-button matTooltip="Restore" (click)="restore()">
-      <mat-icon>filter_none</mat-icon>
-    </button>
+      <button mat-icon-button matTooltip="Restore" (click)="restore()">
+        <mat-icon>filter_none</mat-icon>
+      </button>
     } @else {
-    <button mat-icon-button matTooltip="Maximize" (click)="maximize()">
-      <mat-icon>crop_square</mat-icon>
-    </button>
+      <button mat-icon-button matTooltip="Maximize" (click)="maximize()">
+        <mat-icon>crop_square</mat-icon>
+      </button>
     }
     <button mat-icon-button matTooltip="Close" (click)="close()">
       <mat-icon>close</mat-icon>

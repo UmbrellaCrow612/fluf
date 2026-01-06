@@ -71,7 +71,7 @@ const registerShellListeners = (ipcMain, win) => {
             if (windowRef) {
               windowRef.webContents.send("shell:change", pty.pid, chunk);
             }
-          })
+          }),
         );
 
         disposes.push(
@@ -87,7 +87,7 @@ const registerShellListeners = (ipcMain, win) => {
               shell?.kill();
               shells.delete(pty.pid);
             }
-          })
+          }),
         );
 
         shellDisposes.set(pty.pid, disposes);
@@ -98,11 +98,11 @@ const registerShellListeners = (ipcMain, win) => {
           "Create shell failed " +
             JSON.stringify(error) +
             " Directory path " +
-            directory
+            directory,
         );
         return err;
       }
-    }
+    },
   );
 
   ipcMain.handle("shell:kill", (_, /** @type {number}*/ pid) => {
@@ -133,7 +133,7 @@ const registerShellListeners = (ipcMain, win) => {
       _,
       /** @type {number}*/ pid,
       /** @type {number}*/ col,
-      /** @type {number}*/ row
+      /** @type {number}*/ row,
     ) => {
       try {
         let shell = shells.get(pid);
@@ -146,7 +146,7 @@ const registerShellListeners = (ipcMain, win) => {
         console.error("Failed to resize shell " + JSON.stringify(error));
         return false;
       }
-    }
+    },
   );
 
   ipcMain.on(
@@ -156,7 +156,7 @@ const registerShellListeners = (ipcMain, win) => {
       if (!shell) return;
 
       shell.write(content);
-    }
+    },
   );
 };
 

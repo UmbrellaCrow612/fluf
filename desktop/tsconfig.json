@@ -9,12 +9,6 @@
     "noEmit": false,
     "module": "commonjs"
   },
-  "files": [
-    "type.js"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ]
+  "files": ["type.js"],
+  "exclude": ["node_modules", "dist", "build"]
 }

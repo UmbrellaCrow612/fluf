@@ -1,9 +1,14 @@
 @if (error) {
-<div>Error {{ error }}</div>
+  <div>Error {{ error }}</div>
 }
 
 <!---->
 
 @if (!error) {
-<button class="fluf_btn_primary fluf_btn_sm fluf_btn_full" (click)="copyImgToClipBoard()">Copy</button>
+  <button
+    class="fluf_btn_primary fluf_btn_sm fluf_btn_full"
+    (click)="copyImgToClipBoard()"
+  >
+    Copy
+  </button>
 }

@@ -22,7 +22,7 @@ export function collapseNodes(nodes: fileNode[]) {
  */
 export function collapseNodeByPath(
   nodes: fileNode[],
-  targetPath: string
+  targetPath: string,
 ): boolean {
   for (const node of nodes) {
     if (node.path === targetPath) {
@@ -47,7 +47,7 @@ export function collapseNodeByPath(
  */
 export function expandNodeByPath(
   nodes: fileNode[],
-  targetPath: string
+  targetPath: string,
 ): boolean {
   for (const node of nodes) {
     if (node.path === targetPath) {
@@ -73,7 +73,7 @@ export function expandNodeByPath(
 export function pushNodeIntoChildren(
   nodes: fileNode[],
   targetNode: fileNode,
-  newNode: fileNode
+  newNode: fileNode,
 ): boolean {
   for (const node of nodes) {
     if (node.path === targetNode.path) {
@@ -103,7 +103,7 @@ export function pushNodeIntoChildren(
 export function pushNodesIntoChildrenByPath(
   nodes: fileNode[],
   targetPath: string,
-  newNodes: fileNode[]
+  newNodes: fileNode[],
 ): boolean {
   for (const node of nodes) {
     if (node.path === targetPath) {
@@ -116,7 +116,7 @@ export function pushNodesIntoChildrenByPath(
       const inserted = pushNodesIntoChildrenByPath(
         node.children,
         targetPath,
-        newNodes
+        newNodes,
       );
       if (inserted) return true;
     }
@@ -133,7 +133,7 @@ export function pushNodesIntoChildrenByPath(
  */
 export function getNodeParent(
   nodes: fileNode[],
-  targetNode: fileNode
+  targetNode: fileNode,
 ): fileNode | null {
   for (const node of nodes) {
     if (node.children.some((child) => child.path === targetNode.path)) {
@@ -248,7 +248,7 @@ export function expandToNode(filePath: string, nodes: fileNode[]): boolean {
  */
 export function getNodeByPath(
   filePath: string,
-  nodes: fileNode[]
+  nodes: fileNode[],
 ): fileNode | null {
   for (const node of nodes) {
     // Check current node

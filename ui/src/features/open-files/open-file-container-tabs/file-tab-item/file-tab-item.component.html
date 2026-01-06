@@ -5,8 +5,8 @@
 >
   <span class="ellipses" [class.error]="hasErrors()">
     {{ fileNode().name }}
-    @if(hasErrors()){
-    <span class="error-count">({{ errorCount() }})</span>
+    @if (hasErrors()) {
+      <span class="error-count">({{ errorCount() }})</span>
     }
   </span>
   <button

@@ -24,7 +24,7 @@ export class TerminalTabItemComponent {
    * Indicates if the current terminal is the active one
    */
   isActive = computed(
-    () => this.inMemoryContextService.currentActiveShellId() === this.pid()
+    () => this.inMemoryContextService.currentActiveShellId() === this.pid(),
   );
 
   shellClicked() {

@@ -14,7 +14,8 @@ export class ImageEditorContextMenuComponent implements OnInit {
   private readonly api = getElectronApi();
 
   private data = computed(
-    () => this.inMemoryContextService.currentActiveContextMenu()?.data as fileNode
+    () =>
+      this.inMemoryContextService.currentActiveContextMenu()?.data as fileNode,
   );
 
   error: string | null = null;
@@ -43,7 +44,7 @@ export class ImageEditorContextMenuComponent implements OnInit {
     if (!suc) {
       this.error = 'Failed to copy image';
     } else {
-      this.inMemoryContextService.currentActiveContextMenu.set(null)
+      this.inMemoryContextService.currentActiveContextMenu.set(null);
     }
   }
 }

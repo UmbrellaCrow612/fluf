@@ -35,7 +35,7 @@ type item = {
 })
 export class TextFileEditorContextMenuComponent implements OnInit {
   private readonly inMemoryContextService = inject(InMemoryContextService);
-  private readonly contextService = inject(ContextService)
+  private readonly contextService = inject(ContextService);
 
   loading = false;
   error: string | null = null;
@@ -55,8 +55,8 @@ export class TextFileEditorContextMenuComponent implements OnInit {
         return false;
       }),
       action: () => {
-        this.contextService.editorMainActiveElement.set("markdown-editor")
-        this.inMemoryContextService.currentActiveContextMenu.set(null)
+        this.contextService.editorMainActiveElement.set('markdown-editor');
+        this.inMemoryContextService.currentActiveContextMenu.set(null);
       },
     },
   ];

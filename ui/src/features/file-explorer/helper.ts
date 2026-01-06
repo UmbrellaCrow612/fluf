@@ -27,7 +27,7 @@ const electronApi = getElectronApi();
  */
 export async function OpenFileOrFolderInExplorer(
   filePath: string,
-  ctx: ContextService
+  ctx: ContextService,
 ) {
   let nodes = ctx.directoryFileNodes() ?? [];
   let selectedDir = ctx.selectedDirectoryPath();
@@ -83,7 +83,7 @@ export async function OpenFileOrFolderInExplorer(
 async function recursiveFetchUntilFound(
   node: fileNode,
   targetFilePath: string,
-  rootNodes: fileNode[]
+  rootNodes: fileNode[],
 ): Promise<boolean> {
   // If this node's path matches the target, we're done
   if (node.path === targetFilePath) {
@@ -92,9 +92,8 @@ async function recursiveFetchUntilFound(
 
   // If the target path doesn't start with this node's path, it's not in this subtree
   const normalizedNodePath = await electronApi.pathApi.normalize(node.path);
-  const normalizedTargetPath = await electronApi.pathApi.normalize(
-    targetFilePath
-  );
+  const normalizedTargetPath =
+    await electronApi.pathApi.normalize(targetFilePath);
 
   if (!normalizedTargetPath.startsWith(normalizedNodePath)) {
     return false;
@@ -122,7 +121,7 @@ async function recursiveFetchUntilFound(
           const found = await recursiveFetchUntilFound(
             child,
             targetFilePath,
-            rootNodes
+            rootNodes,
           );
           if (found) {
             return true;
@@ -146,16 +145,15 @@ async function recursiveFetchUntilFound(
  */
 async function getFirstFolderAfterBase(
   basePath: string,
-  descendantPath: string
+  descendantPath: string,
 ): Promise<string> {
   const normalizedBase = await electronApi.pathApi.normalize(basePath);
-  const normalizedDescendant = await electronApi.pathApi.normalize(
-    descendantPath
-  );
+  const normalizedDescendant =
+    await electronApi.pathApi.normalize(descendantPath);
 
   const relativePath = await electronApi.pathApi.relative(
     normalizedBase,
-    normalizedDescendant
+    normalizedDescendant,
   );
 
   if (

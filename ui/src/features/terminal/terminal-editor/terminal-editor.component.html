@@ -1,11 +1,11 @@
 <div class="container">
   @if (error) {
-  <div>Error {{ error }}</div>
+    <div>Error {{ error }}</div>
   }
 
   <!---->
   @if (!error && isLoading) {
-  <div>Loading</div>
+    <div>Loading</div>
   }
 
   <div id="xterm_container" class="scroll_bar"></div>

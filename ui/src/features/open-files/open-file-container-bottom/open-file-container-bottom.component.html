@@ -1,13 +1,13 @@
 <div class="container">
   <div class="left scroll_bar">
     @for (btn of btnsList; track $index) {
-    <button
-      class="fluf_btn fluf_btn_primary fluf_btn_sm"
-      [class.fluf_btn_info]="activeEl() === btn.element"
-      (click)="buttonClicked(btn)"
-    >
-      {{ btn.label }}
-    </button>
+      <button
+        class="fluf_btn fluf_btn_primary fluf_btn_sm"
+        [class.fluf_btn_info]="activeEl() === btn.element"
+        (click)="buttonClicked(btn)"
+      >
+        {{ btn.label }}
+      </button>
     }
   </div>
 

@@ -1,20 +1,19 @@
 <div class="container scroll_bar">
   @for (file of files(); track file) {
+    <!---->
+    @if (diagnosticsForFile(file)().length > 0) {
+      <app-problem-item
+        [filePath]="file"
+        [diagnostics]="diagnosticsForFile(file)()"
+      />
+    }
 
-  <!---->
-  @if (diagnosticsForFile(file)().length > 0) {
-  <app-problem-item
-    [filePath]="file"
-    [diagnostics]="diagnosticsForFile(file)()"
-  />
-  }
-
-  <!---->
+    <!---->
   }
 
   <!---->
 
   @if (hasFilesButNoDiagnostics()) {
-  <div>No problems</div>
+    <div>No problems</div>
   }
 </div>

@@ -23,7 +23,7 @@ A simple text editor written in electron and angular
 
 - Hot key support
 
-- Markdown previews 
+- Markdown previews
 
 ---
 
@@ -54,7 +54,6 @@ Under construction - after adding node pty and lsp support i need to fix it for 
    ```
 
 2. **Set the build mode to production:**
-
    - Open `desktop/.env`
    - Change the value of `mode` to `prod`
 
@@ -65,7 +64,6 @@ Under construction - after adding node pty and lsp support i need to fix it for 
    ```
 
 4. **Verify the build:**
-
    - Navigate to the `dist` folder
    - Run:
 
@@ -75,8 +73,8 @@ Under construction - after adding node pty and lsp support i need to fix it for 
 
    - The app should open successfully.
 
-For now you can only build for x64 and the current OS your on as `homebridge node pty` downloads specific binarys based on machine and can't be configured 
-so if you want to build for a specific platform you need to run the above script on said machine - for now github actions do that so in future after build publish the artifact for distribution 
+For now you can only build for x64 and the current OS your on as `homebridge node pty` downloads specific binarys based on machine and can't be configured
+so if you want to build for a specific platform you need to run the above script on said machine - for now github actions do that so in future after build publish the artifact for distribution
 
 # External libs maintained by me
 
@@ -88,3 +86,12 @@ Libarys that i wrote to use in flufy and are generic
 - `umbr-dl` - Simple download npm package around a go binary
 - `umbr-zip` - Simple npm package wraps a go binary to zip and unzip folders really fast.
 - `umbr-key-master` Vanilla JS lib to listen to keyboard dom events combos and run logic with w3 spec
+
+
+# Formating 
+
+Format your code with
+
+```bash
+npx prettier . --write
+```

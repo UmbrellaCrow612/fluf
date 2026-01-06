@@ -37,7 +37,7 @@ export class LspService implements ILsp {
   Open = (
     filePath: string,
     fileContent: string,
-    langServer: LanguageServer
+    langServer: LanguageServer,
   ) => {
     switch (langServer) {
       case 'js/ts':
@@ -51,7 +51,7 @@ export class LspService implements ILsp {
 
   Completion = (
     args: server.protocol.CompletionsRequestArgs,
-    langServer: LanguageServer
+    langServer: LanguageServer,
   ) => {
     switch (langServer) {
       case 'js/ts':
@@ -65,7 +65,7 @@ export class LspService implements ILsp {
 
   Edit = (
     args: server.protocol.ChangeRequestArgs,
-    langServer: LanguageServer
+    langServer: LanguageServer,
   ) => {
     switch (langServer) {
       case 'js/ts':
@@ -80,7 +80,7 @@ export class LspService implements ILsp {
   OnResponse = (
     langServer: LanguageServer,
     editorState: EditorState,
-    callback: LanguageServiceCallback
+    callback: LanguageServiceCallback,
   ) => {
     switch (langServer) {
       case 'js/ts':
@@ -89,7 +89,7 @@ export class LspService implements ILsp {
 
           let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
             data,
-            editorState
+            editorState,
           );
 
           let m = this.fileAndDiagMap.get(filePath);
@@ -107,7 +107,7 @@ export class LspService implements ILsp {
           // we use structutred clone to give a map of a diffrent refrence becuase ctx setting new map keeps same ref we pass from here  so it dosent trigger computed fields
           callback(
             structuredClone(this.fileAndDiagMap),
-            structuredClone(this.completions)
+            structuredClone(this.completions),
           );
         });
 
@@ -133,10 +133,10 @@ export class LspService implements ILsp {
 
   Close = (filePath: string, langServer: LanguageServer) => {
     switch (langServer) {
-      case "js/ts":
-        this.api.tsServer.closeFile(filePath)
+      case 'js/ts':
+        this.api.tsServer.closeFile(filePath);
         break;
-    
+
       default:
         break;
     }

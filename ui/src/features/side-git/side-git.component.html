@@ -1,103 +1,103 @@
 <div class="container">
   @if (isLoading) {
-  <div class="loading">Loading</div>
+    <div class="loading">Loading</div>
   }
 
   <!---->
   @if (errorMessage && !isLoading) {
-  <div class="error_state">
-    <p>
-      {{ errorMessage }}
-    </p>
-  </div>
+    <div class="error_state">
+      <p>
+        {{ errorMessage }}
+      </p>
+    </div>
   }
 
   <!---->
 
   @if (!isLoading && !errorMessage && !isGitInit) {
-  <div class="init_git">
-    <p>Initialize git</p>
-    @if (creatingGitError) {
-    <p>
-      {{ creatingGitError }}
-    </p>
-    }
-    <button
-      mat-raised-button
-      (click)="createGitRepo()"
-      [disabled]="isCreatingGitRepo"
-    >
-      @if (isCreatingGitRepo) {
-      <span>Creating...</span>
-      } @else {
-      <span>Create git repo</span>
+    <div class="init_git">
+      <p>Initialize git</p>
+      @if (creatingGitError) {
+        <p>
+          {{ creatingGitError }}
+        </p>
       }
-    </button>
-  </div>
+      <button
+        mat-raised-button
+        (click)="createGitRepo()"
+        [disabled]="isCreatingGitRepo"
+      >
+        @if (isCreatingGitRepo) {
+          <span>Creating...</span>
+        } @else {
+          <span>Create git repo</span>
+        }
+      </button>
+    </div>
   }
 
   <!---->
-  @if( !isLoading && !errorMessage && isGitInit){
-  <div class="git-view">
-    <div class="git-header">
-      <h3>{{ gitStatusResult?.branch || "No Branch" }}</h3>
-      <p class="branch-status">
-        {{ gitStatusResult?.branchStatus || "Clean working directory" }}
-      </p>
-    </div>
+  @if (!isLoading && !errorMessage && isGitInit) {
+    <div class="git-view">
+      <div class="git-header">
+        <h3>{{ gitStatusResult?.branch || "No Branch" }}</h3>
+        <p class="branch-status">
+          {{ gitStatusResult?.branchStatus || "Clean working directory" }}
+        </p>
+      </div>
 
-    <!---->
-    @if (gitStatusResult?.staged?.length) {
-    <div class="git-section">
-      <h4>Staged Changes</h4>
-      <ul>
-        @for (file of gitStatusResult!.staged; track file.file) {
-        <li>
-          <span class="file">{{ file.file }}</span>
-          <span class="status staged">{{ file.status }}</span>
-        </li>
-        }
-      </ul>
-    </div>
-    }
+      <!---->
+      @if (gitStatusResult?.staged?.length) {
+        <div class="git-section">
+          <h4>Staged Changes</h4>
+          <ul>
+            @for (file of gitStatusResult!.staged; track file.file) {
+              <li>
+                <span class="file">{{ file.file }}</span>
+                <span class="status staged">{{ file.status }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
 
-    <!---->
+      <!---->
 
-    @if (gitStatusResult?.unstaged?.length) {
-    <div class="git-section">
-      <h4>Changes</h4>
-      <ul>
-        @for (file of gitStatusResult!.unstaged; track file.file) {
-        <li>
-          <span class="file">{{ file.file }}</span>
-          <span class="status modified">{{ file.status }}</span>
-        </li>
-        }
-      </ul>
-    </div>
-    }
+      @if (gitStatusResult?.unstaged?.length) {
+        <div class="git-section">
+          <h4>Changes</h4>
+          <ul>
+            @for (file of gitStatusResult!.unstaged; track file.file) {
+              <li>
+                <span class="file">{{ file.file }}</span>
+                <span class="status modified">{{ file.status }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
 
-    <!---->
-    @if (gitStatusResult?.untracked?.length) {
-    <div class="git-section">
-      <h4>Untracked Files</h4>
-      <ul>
-        @for (file of gitStatusResult!.untracked; track file.file) {
-        <li>
-          <span class="file">{{ file.file }}</span>
-          <span class="status untracked">{{ file.status }}</span>
-        </li>
-        }
-      </ul>
-    </div>
-    }
+      <!---->
+      @if (gitStatusResult?.untracked?.length) {
+        <div class="git-section">
+          <h4>Untracked Files</h4>
+          <ul>
+            @for (file of gitStatusResult!.untracked; track file.file) {
+              <li>
+                <span class="file">{{ file.file }}</span>
+                <span class="status untracked">{{ file.status }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
 
-    <!---->
-    @if (gitStatusResult?.clean) {
-    <div class="git-section clean">
-      <p>✔ Working tree clean</p>
+      <!---->
+      @if (gitStatusResult?.clean) {
+        <div class="git-section clean">
+          <p>✔ Working tree clean</p>
+        </div>
+      }
     </div>
-    }
-  </div>
   }
 </div>

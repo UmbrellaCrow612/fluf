@@ -16,7 +16,7 @@ export class TerminalComponent {
     let shells = this.inMemoryContextService.shells();
     return (
       shells?.find(
-        (x) => x === this.inMemoryContextService.currentActiveShellId()
+        (x) => x === this.inMemoryContextService.currentActiveShellId(),
       ) != null
     );
   });

@@ -28,8 +28,7 @@ jobs:
       # Step 4: Install dependencies for Desktop
       - name: Install Desktop dependencies
         working-directory: ./desktop
-        run:
-          npm ci
+        run: npm ci
 
       # Step 5: Setup Desktop .env (cross-platform)
       - name: Setup Desktop .env

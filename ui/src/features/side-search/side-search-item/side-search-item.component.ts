@@ -6,15 +6,15 @@ import { ripGrepResult } from '../../../gen/type';
 
 @Component({
   selector: 'app-side-search-item',
-  imports: [MatIconModule , MatButtonModule, MatTooltipModule],
+  imports: [MatIconModule, MatButtonModule, MatTooltipModule],
   templateUrl: './side-search-item.component.html',
-  styleUrl: './side-search-item.component.css'
+  styleUrl: './side-search-item.component.css',
 })
 export class SideSearchItemComponent {
   result = input.required<ripGrepResult>();
 
   showChildren = true;
-  toggleChildren(){
-    this.showChildren = !this.showChildren
+  toggleChildren() {
+    this.showChildren = !this.showChildren;
   }
 }

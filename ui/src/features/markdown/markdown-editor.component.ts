@@ -59,7 +59,7 @@ export class MarkdownEditorComponent implements OnInit {
       let markdownHtml = await markdownToHtml(fileContent);
 
       div.innerHTML = markdownHtml;
-      applyMarkdownClasses(div)
+      applyMarkdownClasses(div);
     } catch (error) {
       console.error('Failed to load markdown editor ', error);
     } finally {

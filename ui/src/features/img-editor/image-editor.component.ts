@@ -24,7 +24,7 @@ export class ImageEditorComponent implements OnInit {
   private readonly imageService = inject(ImageService);
 
   currentActiveFileNode = computed(() =>
-    this.appContext.currentOpenFileInEditor()
+    this.appContext.currentOpenFileInEditor(),
   );
   imgSrc: string | null = null;
   isLoading = false;

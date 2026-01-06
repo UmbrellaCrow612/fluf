@@ -29,7 +29,7 @@ export class SideFolderSearchComponent {
   private readonly api = getElectronApi();
   private readonly contextService = inject(ContextService);
   private readonly selectedDir = computed(() =>
-    this.contextService.selectedDirectoryPath()
+    this.contextService.selectedDirectoryPath(),
   );
 
   searchInputControl = new FormControl('', {

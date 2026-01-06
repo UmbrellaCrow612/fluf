@@ -26,7 +26,7 @@ export class DocumentEditorComponent {
   private readonly appContext = inject(ContextService);
 
   private currentNode = computed(() =>
-    this.appContext.currentOpenFileInEditor()
+    this.appContext.currentOpenFileInEditor(),
   );
 
   documentComponents: Renderable[] = [

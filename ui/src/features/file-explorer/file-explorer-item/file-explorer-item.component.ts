@@ -49,7 +49,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
   isFocused = computed(
     () =>
       this.appContext.fileExplorerActiveFileOrFolder()?.path ===
-      this.fileNode().path
+      this.fileNode().path,
   );
 
   /**
@@ -118,7 +118,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
     pushNodesIntoChildrenByPath(
       previousNodes,
       this.fileNode().path,
-      newChildrenNodes
+      newChildrenNodes,
     );
 
     this.appContext.fileExplorerActiveFileOrFolder.set(this.fileNode());
@@ -156,7 +156,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
 
         if (exists) {
           inputEl?.setCustomValidity(
-            'A folder  or file with this name already exists'
+            'A folder  or file with this name already exists',
           );
           inputEl?.reportValidity();
           return;
@@ -177,7 +177,7 @@ export class FileExplorerItemComponent implements AfterViewInit {
 
         if (exists) {
           inputEl?.setCustomValidity(
-            'A folder or file with this name already exists'
+            'A folder or file with this name already exists',
           );
           inputEl?.reportValidity();
           return;

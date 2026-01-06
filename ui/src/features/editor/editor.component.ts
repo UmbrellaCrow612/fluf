@@ -81,26 +81,26 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private unSub: voidCallback | null = null;
   private selectedDir = computed(() => this.appContext.selectedDirectoryPath());
   private mainEditorActiveElement = computed(() =>
-    this.appContext.editorMainActiveElement()
+    this.appContext.editorMainActiveElement(),
   );
 
   /**
    * Indicates if the cmd palette should be rendered or not
    */
   isCommandPaletteActive = computed(() =>
-    this.inMemoryContextService.showCommandPalette()
+    this.inMemoryContextService.showCommandPalette(),
   );
 
   /** Checks if it should show ctx */
   isContextMenuActive = computed(
-    () => this.inMemoryContextService.currentActiveContextMenu() != null
+    () => this.inMemoryContextService.currentActiveContextMenu() != null,
   );
 
   /**
    * Used to indicate if it should show bottom which contains terminal etc
    */
   showBottom = computed(() =>
-    this.appContext.displayFileEditorBottom() ? true : false
+    this.appContext.displayFileEditorBottom() ? true : false,
   );
 
   /**
@@ -178,26 +178,26 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   mainComponents: Renderable[] = [
     {
       condition: computed(
-        () => this.mainEditorActiveElement() === 'text-file-editor'
+        () => this.mainEditorActiveElement() === 'text-file-editor',
       ),
       component: TextFileEditorComponent,
     },
     {
       component: ImageEditorComponent,
       condition: computed(
-        () => this.mainEditorActiveElement() === 'image-editor'
+        () => this.mainEditorActiveElement() === 'image-editor',
       ),
     },
     {
       component: DocumentEditorComponent,
       condition: computed(
-        () => this.mainEditorActiveElement() === 'document-editor'
+        () => this.mainEditorActiveElement() === 'document-editor',
       ),
     },
     {
       component: MarkdownEditorComponent,
       condition: computed(
-        () => this.mainEditorActiveElement() === 'markdown-editor'
+        () => this.mainEditorActiveElement() === 'markdown-editor',
       ),
     },
   ];

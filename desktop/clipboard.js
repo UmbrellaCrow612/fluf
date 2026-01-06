@@ -20,13 +20,13 @@ const registerClipboardListeners = (ipcMain) => {
      */
     async (event, fp) => {
       try {
-        const resolvedPath = path.normalize(path.resolve(fp))
+        const resolvedPath = path.normalize(path.resolve(fp));
 
         await fs.access(resolvedPath);
 
         clipboard.writeImage(
           nativeImage.createFromPath(resolvedPath),
-          "clipboard"
+          "clipboard",
         );
 
         return true;
@@ -34,7 +34,7 @@ const registerClipboardListeners = (ipcMain) => {
         console.error("Failed to copy file to clipboard:", err);
         return false;
       }
-    }
+    },
   );
 };
 

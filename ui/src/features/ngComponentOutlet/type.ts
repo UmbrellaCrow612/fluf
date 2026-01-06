@@ -12,5 +12,5 @@ export type Renderable = {
   /**
    * Computed signal condition needed to be true for it to be rendered int the UI
    */
-  condition: Signal<boolean>
+  condition: Signal<boolean>;
 };
