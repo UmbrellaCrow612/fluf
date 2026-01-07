@@ -707,6 +707,19 @@
  * @typedef {Object} LanguageServerProtocolParams
  */
 
+
+/**
+ * Contains all the code to interact with python language server
+ * @typedef {Object} pythonServer
+ * @property {pythonServerOpen} open - Open a file request
+ */
+
+/**
+ * Opens file
+ * @callback pythonServerOpen
+ * @returns {void} 
+ */
+
 /**
  * APIs exposed to the renderer process for using Electron functions.
  *
@@ -729,6 +742,8 @@
  * @property {fsApi} fsApi - Contains all file fs utils
  *
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
+ * 
+ * @property {pythonServer} pythonServer - Contains all the api's for the python language server
  *
  */
 

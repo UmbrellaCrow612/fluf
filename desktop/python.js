@@ -10,11 +10,20 @@ const { logger } = require("./logger");
 const { getPythonServerPath } = require("./packing");
 const fs = require("fs");
 
+let seq = 0;
+const getSeq = () => seq++;
+
 /**
  * Refrence to the spawned lsp
  * @type {import("child_process").ChildProcessWithoutNullStreams | null}
  */
 let spawnRef = null;
+
+/**
+ * Refrence to the main window
+ * @type {import("electron").BrowserWindow | null}
+ */
+let mainWindowRef = null;
 
 /**
  * Being the python language server
@@ -65,18 +74,36 @@ function stopPythonLanguageServer() {
   }
 }
 
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").pythonServerOpen>}
+ */
+const openImpl = (_) => {
+  try {
+  
+  } catch (error) {
+    logger.error(
+      "Failed to open file in python language server " + JSON.stringify(error),
+    );
+  }
+};
+
 // for testing locally in node without running all of it editor
 // `node .\python.js`
-startPythonLanguageServer();
-setTimeout(() => {
-  stopPythonLanguageServer();
-}, 2000);
+// startPythonLanguageServer();
+// setTimeout(() => {
+//   stopPythonLanguageServer();
+// }, 2000);
 
 /**
  * Register all python lsp related listeners
  * @param {import("electron").IpcMain} ipcMain
+ * @param {import("electron").BrowserWindow} mainWindow
  */
-const reigsterPythonLanguageServerListeners = (ipcMain) => {};
+const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
+  mainWindowRef = mainWindow;
+
+  ipcMain.on("python:open", openImpl);
+};
 
 module.exports = {
   startPythonLanguageServer,
