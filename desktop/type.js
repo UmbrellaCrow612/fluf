@@ -663,33 +663,6 @@
  */
 
 /**
- * Represents the shape of object sent to the Language Server Protocol
- *
- * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#requestMessage
- *
- * @typedef {Object} LanguageServerProtocolRequestMessage
- *
- * @property {string} jsonrpc - Version
- * @property {string | number} id - The request id
- * @property {LanguageServerProtocolMethod} method - The method to invoke
- * @property {LanguageServerProtocolParams} params - The method's params
- */
-
-/**
- * Represents a Response Message sent as a result of a request from the language server
- *
- * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage
- *
- * @typedef {Object} LanguageServerProtocolResponseMessage
- * @property {string} jsonrpc - Version
- * @property {string | number} [id] - The request id it is for
- * @property {LanguageServerProtocolMethod} [method] - The request method it is for
- * @property {LanguageServerProtocolParams} [params] -  The method's params.
- * @property {Object} [result] - The result of a request.
- * @property {Object} [error] - The error object in case a request fails.
- */
-
-/**
  * List of all methods that can be in the method of a request or message
  * based on the action you want to perform read the link below and send that method
  *
@@ -703,10 +676,14 @@
  */
 
 /**
- * Possible shape the request params can be sent
- * @typedef {Object} LanguageServerProtocolParams
+ * Version of jsonrpc's
+ * @typedef {"2.0"} LanguageServerjsonrpc
  */
 
+/**
+ * List of the valid language id's you can pass
+ * @typedef {"python"} LanguageServerLanguageId
+ */
 
 /**
  * Contains all the code to interact with python language server
@@ -717,6 +694,8 @@
 /**
  * Opens file
  * @callback pythonServerOpen
+ * @param {string} filePath - The files path
+ * @param {string} fileContent - The files content
  * @returns {void} 
  */
 
