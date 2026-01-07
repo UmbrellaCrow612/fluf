@@ -33,6 +33,47 @@ let spawnRef = null;
 let mainWindowRef = null;
 
 /**
+ * Buffer that holds the stdout of the lsp output
+ */
+let buffer = "";
+
+/**
+ * Send the parsed response from the stdout to the UI
+ * @param {import("vscode-languageserver-protocol").ResponseMessage} message The parsed response message
+ */
+function notifyUI(message) {
+  if (mainWindowRef) {
+    mainWindowRef.webContents.send("python:message", message);
+  }
+}
+
+/**
+ * Parses the output from stdout, notifies UI, and moves the buffer along
+ */
+function parseStdout() {
+  while (true) {
+    // Find the first newline to check if we have a complete message
+    const newlineIndex = buffer.indexOf("\n");
+    if (newlineIndex === -1) break; // No complete line yet
+
+    // Extract one line (message)
+    const line = buffer.slice(0, newlineIndex).trim();
+    buffer = buffer.slice(newlineIndex + 1); // Move buffer forward
+
+    if (!line) continue; // skip empty lines
+
+    try {
+      const message = JSON.parse(line);
+      notifyUI(message);
+    } catch (err) {
+      // If parsing fails, it might be a partial message; prepend it back to buffer
+      buffer = line + "\n" + buffer;
+      break; // Wait for more data
+    }
+  }
+}
+
+/**
  * Being the python language server
  * @returns {void} Nothing
  */
@@ -47,7 +88,8 @@ function startPythonLanguageServer() {
     spawnRef = spawn("node", [path, "--stdio"]);
 
     spawnRef.stdout.on("data", (chunk) => {
-      logger.info(chunk.toString());
+      buffer += chunk.toString();
+      parseStdout();
     });
 
     spawnRef.stderr.on("data", (chunk) => {
@@ -158,13 +200,6 @@ const openImpl = (_, filePath, fileContent) => {
     );
   }
 };
-
-// for testing locally in node without running all of it editor
-// `node .\python.js`
-startPythonLanguageServer();
-setTimeout(() => {
-  stopPythonLanguageServer();
-}, 2000);
 
 /**
  * Register all python lsp related listeners
