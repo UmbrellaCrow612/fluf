@@ -37,8 +37,19 @@ function getTsServerPath() {
     : path.join(__dirname, "node_modules", "typescript", "lib", "tsserver.js");
 }
 
+/**
+ * Get the path to the python lsp
+ * @returns {string} The path to the language server
+ */
+function getPythonServerPath() {
+  return isPackaged()
+    ? path.join(__dirname, "pyright", "langserver.index.js")
+    : path.join(__dirname, "node_modules", "pyright", "langserver.index.js");
+}
+
 module.exports = {
   isPackaged,
   binPath,
   getTsServerPath,
+  getPythonServerPath
 };

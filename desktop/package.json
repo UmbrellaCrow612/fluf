@@ -20,6 +20,7 @@
     "electron": "^39.2.0",
     "esbuild": "^0.25.10",
     "globals": "^16.4.0",
+    "pyright": "^1.1.407",
     "typescript": "^5.9.3",
     "umbr-binman": "^1.0.15"
   },
