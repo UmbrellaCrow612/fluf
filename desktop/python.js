@@ -48,10 +48,6 @@ function startPythonLanguageServer() {
       logger.error(chunk.toString());
     });
 
-    spawnRef.on("close", () => {
-      logger.info("");
-    });
-
     logger.info("Started python language server at " + path);
   } catch (error) {
     logger.error("Failed to start python server " + JSON.stringify(error));
@@ -79,7 +75,6 @@ function stopPythonLanguageServer() {
  */
 const openImpl = (_) => {
   try {
-  
   } catch (error) {
     logger.error(
       "Failed to open file in python language server " + JSON.stringify(error),
@@ -89,10 +84,10 @@ const openImpl = (_) => {
 
 // for testing locally in node without running all of it editor
 // `node .\python.js`
-// startPythonLanguageServer();
-// setTimeout(() => {
-//   stopPythonLanguageServer();
-// }, 2000);
+startPythonLanguageServer();
+setTimeout(() => {
+  stopPythonLanguageServer();
+}, 2000);
 
 /**
  * Register all python lsp related listeners
