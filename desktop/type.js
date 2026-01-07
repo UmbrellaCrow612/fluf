@@ -691,7 +691,15 @@
 
 /**
  * List of all methods that can be in the method of a request or message
- * @typedef {""} LanguageServerProtocolMethod
+ * based on the action you want to perform read the link below and send that method
+ *
+ * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
+ *
+ * @typedef {"initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability"
+ *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
+ *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
+ *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
+ * } LanguageServerProtocolMethod
  */
 
 /**
