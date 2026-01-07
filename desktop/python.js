@@ -2,6 +2,7 @@
  * Contains the code for python lsp
  *
  * DOCS: https://microsoft.github.io/pyright/#/
+ * LSP DOCS: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
  */
 
 const { spawn } = require("child_process");
@@ -34,12 +35,15 @@ function startPythonLanguageServer() {
     });
 
     spawnRef.stderr.on("data", (chunk) => {
-      logger.error("PythonLanguage server stderr:", chunk.toString());
+      logger.error("Python Language server error:");
+      logger.error(chunk.toString());
     });
 
     spawnRef.on("close", () => {
-      logger.info("Closed");
+      logger.info("");
     });
+
+    logger.info("Started python language server at " + path);
   } catch (error) {
     logger.error("Failed to start python server " + JSON.stringify(error));
   }
@@ -60,6 +64,13 @@ function stopPythonLanguageServer() {
     );
   }
 }
+
+// for testing locally in node without running all of it editor
+// `node .\python.js`
+startPythonLanguageServer();
+setTimeout(() => {
+  stopPythonLanguageServer();
+}, 2000);
 
 /**
  * Register all python lsp related listeners

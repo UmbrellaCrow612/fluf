@@ -663,6 +663,43 @@
  */
 
 /**
+ * Represents the shape of object sent to the Language Server Protocol
+ *
+ * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#requestMessage
+ *
+ * @typedef {Object} LanguageServerProtocolRequestMessage
+ *
+ * @property {string} jsonrpc - Version
+ * @property {string | number} id - The request id
+ * @property {LanguageServerProtocolMethod} method - The method to invoke
+ * @property {LanguageServerProtocolParams} params - The method's params
+ */
+
+/**
+ * Represents a Response Message sent as a result of a request from the language server
+ *
+ * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage
+ *
+ * @typedef {Object} LanguageServerProtocolResponseMessage
+ * @property {string} jsonrpc - Version
+ * @property {string | number} [id] - The request id it is for
+ * @property {LanguageServerProtocolMethod} [method] - The request method it is for
+ * @property {LanguageServerProtocolParams} [params] -  The method's params.
+ * @property {Object} [result] - The result of a request.
+ * @property {Object} [error] - The error object in case a request fails.
+ */
+
+/**
+ * List of all methods that can be in the method of a request or message
+ * @typedef {""} LanguageServerProtocolMethod
+ */
+
+/**
+ * Possible shape the request params can be sent
+ * @typedef {Object} LanguageServerProtocolParams
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
