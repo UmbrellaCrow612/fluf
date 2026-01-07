@@ -9,6 +9,7 @@ const fs = require("fs");
  * Checks if the app is packaged
  */
 const isPackaged = () => {
+  if (!process.resourcesPath) return false; // Node.js fallback
   const asarPath = path.join(process.resourcesPath, "app.asar");
   return fs.existsSync(asarPath);
 };
@@ -51,5 +52,5 @@ module.exports = {
   isPackaged,
   binPath,
   getTsServerPath,
-  getPythonServerPath
+  getPythonServerPath,
 };
