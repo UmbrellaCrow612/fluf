@@ -124,9 +124,13 @@ function stopPythonLanguageServer() {
  * @param {import("vscode-languageserver-protocol").RequestMessage} request
  */
 function write(request) {
-  if (spawnRef) {
-    spawnRef.stdin.write(JSON.stringify(request) + "\n");
-  }
+  if (!spawnRef) return;
+
+  const json = JSON.stringify(request);
+  const contentLength = Buffer.byteLength(json, "utf8");
+
+  const message = `Content-Length: ${contentLength}\r\n\r\n${json}`;
+  spawnRef.stdin.write(message);
 }
 
 /**
