@@ -17,12 +17,22 @@ const { registerPathListeners } = require("./path");
 const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
 const { registerRipgrepListeners } = require("./ripgrep");
+const {
+  reigsterPythonLanguageServerListeners,
+  stopPythonLanguageServer,
+} = require("./python");
+const { logger } = require("./logger");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
  * @type {import("electron").BrowserWindow | null}
  */
 let mainWindow = null;
+
+/**
+ * Holds state of quiting the app
+ */
+let isQuitting = false;
 
 loadEnv();
 registerProtocols();
@@ -71,12 +81,22 @@ app.whenReady().then(() => {
   registerPathListeners(ipcMain);
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
+  reigsterPythonLanguageServerListeners(ipcMain, mainWindow);
 
   startLanguageServers();
 });
 
-app.on("before-quit", () => {
-  cleanUpWatchers();
-  stopLanguageServers();
-  cleanUpShells();
+app.on("before-quit", async (event) => {
+  if (!isQuitting) {
+    event.preventDefault();
+    let pythonLsp = await stopPythonLanguageServer();
+    logger.info("Python language server " + pythonLsp ? "Stopped" : "Failed");
+
+    cleanUpWatchers();
+    stopLanguageServers();
+    cleanUpShells();
+
+    isQuitting = true;
+    app.quit();
+  }
 });

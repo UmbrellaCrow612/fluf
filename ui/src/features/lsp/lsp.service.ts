@@ -1,7 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
 import {
-  LanguageServer,
   ILsp,
   LanguageServiceCallback,
   diagnosticType,
@@ -15,6 +14,7 @@ import {
 import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 import { FlufDiagnostic } from '../diagnostic/type';
+import { languageServer, voidCallback } from '../../gen/type';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -37,11 +37,15 @@ export class LspService implements ILsp {
   Open = (
     filePath: string,
     fileContent: string,
-    langServer: LanguageServer,
+    langServer: languageServer,
   ) => {
     switch (langServer) {
       case 'js/ts':
         this.api.tsServer.openFile(filePath, fileContent);
+        break;
+
+      case 'python':
+        this.api.pythonServer.open(filePath, fileContent);
         break;
 
       default:
@@ -51,7 +55,7 @@ export class LspService implements ILsp {
 
   Completion = (
     args: server.protocol.CompletionsRequestArgs,
-    langServer: LanguageServer,
+    langServer: languageServer,
   ) => {
     switch (langServer) {
       case 'js/ts':
@@ -65,7 +69,7 @@ export class LspService implements ILsp {
 
   Edit = (
     args: server.protocol.ChangeRequestArgs,
-    langServer: LanguageServer,
+    langServer: languageServer,
   ) => {
     switch (langServer) {
       case 'js/ts':
@@ -78,13 +82,13 @@ export class LspService implements ILsp {
   };
 
   OnResponse = (
-    langServer: LanguageServer,
+    langServer: languageServer,
     editorState: EditorState,
     callback: LanguageServiceCallback,
   ) => {
     switch (langServer) {
       case 'js/ts':
-        let unsub = this.api.tsServer.onResponse((data) => {
+        let tsserverUnSub = this.api.tsServer.onResponse((data) => {
           let filePath = data?.body?.file ?? 'unkown';
 
           let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
@@ -111,19 +115,27 @@ export class LspService implements ILsp {
           );
         });
 
-        return () => {
-          unsub();
-        };
+        return tsserverUnSub;
 
+      case 'python':
+        let pythonServerUnSub = this.api.pythonServer.onResponse((message) => {
+          console.log(message);
+        });
+        return pythonServerUnSub;
+        break;
       default:
         return () => {};
     }
   };
 
-  Error = (filePath: string, langServer: LanguageServer) => {
+  Error = (filePath: string, langServer: languageServer) => {
     switch (langServer) {
       case 'js/ts':
         this.api.tsServer.errors(filePath);
+        break;
+
+      case 'python':
+        // TODO  add
         break;
 
       default:
@@ -131,7 +143,7 @@ export class LspService implements ILsp {
     }
   };
 
-  Close = (filePath: string, langServer: LanguageServer) => {
+  Close = (filePath: string, langServer: languageServer) => {
     switch (langServer) {
       case 'js/ts':
         this.api.tsServer.closeFile(filePath);
@@ -139,6 +151,38 @@ export class LspService implements ILsp {
 
       default:
         break;
+    }
+  };
+
+  Start = (workSpaceFolder: string, langServer: languageServer) => {
+    switch (langServer) {
+      case 'python':
+        this.api.pythonServer.start(workSpaceFolder);
+        break;
+      default:
+        break;
+    }
+  };
+
+  Stop = (langServer: languageServer) => {
+    switch (langServer) {
+      case 'python':
+        this.api.pythonServer.stop();
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  onReady = (callback: voidCallback, langServer: languageServer) => {
+    switch (langServer) {
+      case 'python':
+        let unsub = this.api.pythonServer.onReady(callback);
+        return unsub;
+
+      default:
+        return () => {};
     }
   };
 }

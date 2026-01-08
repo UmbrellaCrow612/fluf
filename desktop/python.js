@@ -109,6 +109,9 @@ function notifyUI(message) {
     });
 
     logger.info("Python language server initialized");
+    if (mainWindowRef) {
+      mainWindowRef.webContents.send("python:ready");
+    }
   }
 
   if (!initialized && message.id !== undefined) {
@@ -168,7 +171,7 @@ function parseStdout() {
 async function startPythonLanguageServer(workSpaceFolder) {
   try {
     if (isServerStarted) {
-      logger.warn(
+      logger.info(
         "Python language server already started in a given workspacen folder " +
           selectedWorkSpaceFolder,
       );
@@ -257,7 +260,7 @@ async function stopPythonLanguageServer() {
     if (!spawnRef) return false;
 
     if (initialized) {
-      logger.info("Sending shutdown request...");
+      logger.info("Sending shutdown request for python language server");
       try {
         await sendRequest("shutdown", null);
       } catch (e) {
@@ -288,7 +291,9 @@ async function stopPythonLanguageServer() {
       });
     });
   } catch (error) {
-    logger.error("Failed to stop python language server: " + JSON.stringify(error));
+    logger.error(
+      "Failed to stop python language server: " + JSON.stringify(error),
+    );
     spawnRef?.kill();
     cleanupState();
     return false;
@@ -400,7 +405,7 @@ const stopImpl = async () => {
 /**
  * Register all python lsp related listeners
  * @param {import("electron").IpcMain} ipcMain
- * @param {import("electron").BrowserWindow} mainWindow
+ * @param {import("electron").BrowserWindow | null} mainWindow
  */
 const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
   mainWindowRef = mainWindow;
@@ -410,46 +415,6 @@ const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
 
   ipcMain.on("python:open", openImpl);
 };
-
-/**
- * Used to test the lsp via the cli use `node .\python.js`
- *
- * Uncomment the test local
- */
-function testLocal() {
-  startPythonLanguageServer("C:\\dev\\fluf\\desktop");
-
-  setTimeout(() => {
-    /**
-     * @type {Partial<import("vscode-languageserver-protocol").RequestMessage>}
-     */
-    const object = {
-      /** @type {import("./type").LanguageServerProtocolMethod} */
-      method: "textDocument/didOpen",
-      /** @type {import("./type").LanguageServerjsonrpc} */
-      jsonrpc: "2.0",
-      /** @type {import("vscode-languageserver-protocol").DidOpenTextDocumentParams } */
-      params: {
-        textDocument: {
-          /** @type {import("./type").LanguageServerLanguageId} */
-          languageId: "python",
-          text: `def foo():
-print("hello")`,
-          version: 0,
-          uri: createUri("C:\\dev\\fluf\\desktop\\example.py"),
-        },
-      },
-    };
-
-    write(object);
-  }, 1500);
-
-  setTimeout(() => {
-    stopPythonLanguageServer();
-  }, 15000);
-}
-
-// testLocal();
 
 module.exports = {
   startPythonLanguageServer,

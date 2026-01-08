@@ -16,8 +16,8 @@ import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { fileDiagnosticMap, LanguageServer } from '../lsp/type';
-import { fileNode, voidCallback } from '../../gen/type';
+import { fileDiagnosticMap } from '../lsp/type';
+import { fileNode, languageServer, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
@@ -39,6 +39,9 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly lspService = inject(LspService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly workSpaceFolder = computed(() =>
+    this.appContext.selectedDirectoryPath(),
+  );
 
   constructor() {
     effect(async () => {
@@ -48,9 +51,6 @@ export class TextFileEditorComponent implements OnInit {
       this.initLangServer(node);
     });
   }
-
-  /** Local copy of completions from the server */
-  private completions: Completion[] = [];
 
   /**
    * Getv the syntax highlting extension for a given file extension
@@ -75,13 +75,15 @@ export class TextFileEditorComponent implements OnInit {
 
   /** Callback to unsub reacting to language server changes */
   private serverUnSub: voidCallback | null = null;
+  /** Unsub method to no longer run logic defined in the on ready method  */
+  private onReadyUnsub: voidCallback | null = null;
 
   /**
    * Get the specific ;language server needed for the file based on it's extension
    * @param extension The file extension
    * @returns Lang server or null
    */
-  private getLanguageServer(extension: string): LanguageServer | null {
+  private getLanguageServer(extension: string): languageServer | null {
     switch (extension) {
       case '.js':
       case '.mjs':
@@ -89,13 +91,16 @@ export class TextFileEditorComponent implements OnInit {
       case '.ts':
         return 'js/ts';
 
+      case '.py':
+        return 'python';
+
       default:
         console.log('Unsuported language server for file');
         return null;
     }
   }
 
-  private languageServer: LanguageServer | null = null;
+  private languageServer: languageServer | null = null;
 
   getDiagnosticsForFile(diagnosticMap: fileDiagnosticMap, filePath: string) {
     const fileDiagnostics = diagnosticMap.get(filePath);
@@ -126,7 +131,11 @@ export class TextFileEditorComponent implements OnInit {
     }
 
     if (this.serverUnSub) {
-      this.serverUnSub(); // unsub from previous lang server
+      this.serverUnSub();
+    }
+
+    if (this.onReadyUnsub) {
+      this.onReadyUnsub();
     }
 
     this.languageServer = this.getLanguageServer(fileNode.extension);
@@ -135,6 +144,18 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
+    this.lspService.Start(this.workSpaceFolder()!, this.languageServer);
+  
+    this.onReadyUnsub = this.lspService.onReady(() => {
+      this.lspService.Open(
+        this.openFileNode()!.path,
+        this.stringContent,
+        this.languageServer!,
+      );
+
+      this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
+    }, this.languageServer);
+
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
@@ -142,7 +163,6 @@ export class TextFileEditorComponent implements OnInit {
         this.inMemoryContextService.problems.set(diagnosticMap);
 
         if (!this.openFileNode()) return;
-        this.completions = completions;
 
         const originalPath = this.openFileNode()!.path;
         const normalizedPath = originalPath.replace(/\\/g, '/');
@@ -376,24 +396,10 @@ export class TextFileEditorComponent implements OnInit {
       await this.api.fsApi.readFile(this.openFileNode()!.path)
     ).replace(/\r\n/g, '\n');
 
-    this.languageServer = this.getLanguageServer(
-      this.openFileNode()!.extension,
-    );
     this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
 
     this.appContext.fileExplorerActiveFileOrFolder.set(this.openFileNode());
     this.isLoading = false;
-
-    if (this.languageServer) {
-      // open file in lan server if it has one
-      this.lspService.Open(
-        this.openFileNode()!.path,
-        this.stringContent,
-        this.languageServer,
-      );
-
-      this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
-    }
 
     this.renderCodeMirror();
   }

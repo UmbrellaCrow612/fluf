@@ -26,6 +26,14 @@
  */
 
 /**
+ * Typed for IpcRendererEvent listener
+ * 
+ * i.e used when making a listener that runs in preload.js
+ * @callback IpcRendererEventCallback
+ * @param {import("electron").IpcRendererEvent} event
+ */
+
+/**
  * Contains all the fs api's using node fs and other file related utils
  * @typedef {Object} fsApi
  * @property {readFile} readFile - Calls fs read file
@@ -691,6 +699,8 @@
  * @property {pythonServerOpen} open - Open a file request
  * @property {pythonStart} start - Start the language server
  * @property {pythonStop} stop - Stop the language server
+ * @property {pythonServerOnReady} onReady - Call some logic when the server becomes avaiable and is set up
+ * @property {pythonServerOnResponse} onResponse - Run logic when the server responds 
  */
 
 /**
@@ -712,6 +722,32 @@
  * @param {string} filePath - The files path
  * @param {string} fileContent - The files content
  * @returns {void}
+ */
+
+/**
+ * Call some logic when the python language server is ready
+ * @callback pythonServerOnReady
+ * @param {voidCallback} callback
+ * @returns {voidCallback} UnSub method
+ */
+
+/**
+ * The shape of the callback that is called when a message is recieved from the python server
+ * @callback pythonServerOnResponseCallback
+ * @param {Partial<import("vscode-languageserver-protocol").ResponseMessage>} message - Any message
+ * @returns {void} Nothing
+ */
+
+/**
+ * Listen to when the server responds and run logic
+ * @callback pythonServerOnResponse
+ * @param {pythonServerOnResponseCallback} callback - The logic to run
+ * @returns {voidCallback} unsub method
+ */
+
+/**
+ * Holds all the specific language servers the backend supports
+ * @typedef {"js/ts" | "python"} languageServer
  */
 
 /**

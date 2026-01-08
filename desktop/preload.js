@@ -1,6 +1,42 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").pythonServer}
+ */
+const pythonServer = {
+  start: (wsf) => ipcRenderer.invoke("python:start", wsf),
+  stop: () => ipcRenderer.invoke("python:stop"),
+  open: (fp, fc) => ipcRenderer.send("python:open", fp, fc),
+
+  onReady: (callback) => {
+    /** Runs when event is fired */
+    let listener = () => {
+      callback();
+    };
+    ipcRenderer.on("python:ready", listener);
+
+    return () => {
+      ipcRenderer.removeListener("python:ready", listener);
+    };
+  },
+
+  onResponse: (callback) => {
+    /**
+     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").pythonServerOnResponseCallback>}
+     */
+    let listener = (_, message) => {
+      callback(message)
+    };
+
+    ipcRenderer.on("python:message", listener);
+
+    return () => {
+      ipcRenderer.removeListener("python:message", listener);
+    };
+  },
+};
+
+/**
  * @type {import("./type").ripgrepApi}
  */
 const ripgrepApi = {
@@ -170,6 +206,7 @@ const api = {
   pathApi,
   fsApi,
   chromeWindowApi,
+  pythonServer,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
