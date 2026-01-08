@@ -55,10 +55,50 @@ let isServerStarted = false;
 let selectedWorkSpaceFolder = null;
 
 /**
+ * Holds promises for requests we made and are awaiting a response
+ *
+ * Number is the request ID and it's value is the promise for it
+ * @type {Map<number, {resolve: (value: any) => void, reject: (reason?: any) => void}>}
+ */
+const pendingRequests = new Map();
+
+/**
+ * Helper to send a request and return a promise
+ * @param {import("./type").LanguageServerProtocolMethod} method
+ * @param {any} params
+ */
+async function sendRequest(method, params) {
+  const id = getSeq();
+  return new Promise((resolve, reject) => {
+    pendingRequests.set(id, { resolve, reject });
+    write({
+      jsonrpc: "2.0",
+      id,
+      method,
+      params,
+    });
+
+    // Safety timeout: don't wait forever if the server hangs
+    setTimeout(() => {
+      if (pendingRequests.has(id)) {
+        pendingRequests.delete(id);
+        reject(new Error(`Request ${method} timed out`));
+      }
+    }, 5000);
+  });
+}
+
+/**
  * Send the parsed response from the stdout to the UI
  * @param {import("vscode-languageserver-protocol").ResponseMessage} message The parsed response message
  */
 function notifyUI(message) {
+  if (message.id !== undefined && pendingRequests.has(Number(message.id))) {
+    const object = pendingRequests.get(Number(message.id));
+    pendingRequests.delete(Number(message.id));
+    object?.resolve(message);
+  }
+
   if (message.id === initializeRequestId && message.result && !initialized) {
     initialized = true;
 
@@ -198,77 +238,78 @@ async function startPythonLanguageServer(workSpaceFolder) {
 }
 
 /**
+ * Used when you want to reset state
+ */
+function cleanupState() {
+  isServerStarted = false;
+  selectedWorkSpaceFolder = null;
+  spawnRef = null;
+  initialized = false;
+  initializeRequestId = null;
+}
+
+/**
  * Stops the python LSP gracefully by sending a shutdown request first
  * @returns {Promise<boolean>} If it could or could not stop it
  */
 async function stopPythonLanguageServer() {
   try {
-    if (!spawnRef) {
-      logger.warn("No python language server has been spawned");
-      return false;
-    }
-    if (!selectedWorkSpaceFolder) {
-      logger.warn("No workspace folder selected for python language server");
-      return false;
+    if (!spawnRef) return false;
+
+    if (initialized) {
+      logger.info("Sending shutdown request...");
+      try {
+        await sendRequest("shutdown", null);
+      } catch (e) {
+        logger.warn("Shutdown request timed out, forcing exit.");
+      }
+
+      write({
+        jsonrpc: "2.0",
+        method: "exit",
+      });
     }
 
-    if (!initialized) {
-      logger.warn(
-        "Python language server is not initialized, killing directly",
-      );
-      spawnRef.kill();
-      isServerStarted = false;
-      selectedWorkSpaceFolder = null;
-      spawnRef = null;
-      return true;
-    }
+    return new Promise((resolve) => {
+      const forceKillTimeout = setTimeout(() => {
+        if (spawnRef) {
+          logger.warn("Server didn't exit, killing process.");
+          spawnRef.kill("SIGKILL");
+        }
+        cleanupState();
+        resolve(true);
+      }, 2000);
 
-    write({
-      jsonrpc: "2.0",
-      id: getSeq(),
-      /** @type {import("./type").LanguageServerProtocolMethod} */
-      method: "shutdown",
+      spawnRef?.on("exit", () => {
+        clearTimeout(forceKillTimeout);
+        cleanupState();
+        logger.info("Stopped python language server gracefully");
+        resolve(true);
+      });
     });
-
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
-    write({
-      jsonrpc: "2.0",
-      /** @type {import("./type").LanguageServerProtocolMethod} */
-      method: "exit",
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    spawnRef.kill();
-
-    isServerStarted = false;
-    selectedWorkSpaceFolder = null;
-    spawnRef = null;
-    initialized = false;
-    initializeRequestId = null;
-
-    logger.info("Stopped python language server gracefully");
-    return true;
   } catch (error) {
-    logger.error(
-      "Failed to stop python language server " + JSON.stringify(error),
-    );
+    logger.error("Failed to stop python language server: " + JSON.stringify(error));
+    spawnRef?.kill();
+    cleanupState();
     return false;
   }
 }
 
 /**
- * Write a request to the stdin
+ * Safe write with error handling
  * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} request
  */
 function write(request) {
-  if (!spawnRef) return;
+  if (!spawnRef || !spawnRef.stdin.writable) return;
 
-  const json = JSON.stringify(request);
-  const contentLength = Buffer.byteLength(json, "utf8");
-
-  const message = `Content-Length: ${contentLength}\r\n\r\n${json}`;
-  spawnRef.stdin.write(message);
+  try {
+    const json = JSON.stringify(request);
+    const contentLength = Buffer.byteLength(json, "utf8");
+    const message = `Content-Length: ${contentLength}\r\n\r\n${json}`;
+    spawnRef.stdin.write(message);
+  } catch (err) {
+    logger.error("Failed to write to stdin: " + JSON.stringify(err));
+  }
 }
 
 /**
@@ -328,7 +369,7 @@ const openImpl = (_, filePath, fileContent) => {
           /** @type {import("./type").LanguageServerLanguageId} */
           languageId: "python",
           text: fileContent,
-          version: 0,
+          version: 1,
           uri: createUri(filePath),
         },
       },
