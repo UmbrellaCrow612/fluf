@@ -8,7 +8,7 @@
 const { spawn } = require("child_process");
 const { logger } = require("./logger");
 const { getPythonServerPath } = require("./packing");
-const fs = require("fs");
+const fs = require("fs/promises");
 const nodePath = require("path");
 
 // Find the method you need to send from the LSP docs
@@ -48,22 +48,29 @@ let mainWindowRef = null;
 let buffer = "";
 
 /**
+ * If the server has been started for a given workspace folder
+ */
+let isServerStarted = false;
+
+/**
+ * Holds a refrence to the workspace selected
+ * @type {string | null}
+ */
+let selectedWorkSpaceFolder = null;
+
+/**
  * Send the parsed response from the stdout to the UI
  * @param {import("vscode-languageserver-protocol").ResponseMessage} message The parsed response message
  */
 function notifyUI(message) {
-  if (
-    message.id === initializeRequestId &&
-    message.result &&
-    !initialized
-  ) {
+  if (message.id === initializeRequestId && message.result && !initialized) {
     initialized = true;
 
     write({
       jsonrpc: "2.0",
       method: "initialized",
       id: getSeq(),
-      params: {}
+      params: {},
     });
 
     logger.info("Python language server initialized");
@@ -102,23 +109,35 @@ function parseStdout() {
 }
 
 /**
- * Being the python language server
- * @returns {void} Nothing
+ * Being the python language server, if it's already running it will ignore it whenever the workspace folder changes stop server then
+ * restart them with the new workspace folder
+ * @param {string} workSpaceFolder - The root folder selected
+ * @returns {Promise<boolean>} If it could or could not start the lang server
  */
-function startPythonLanguageServer() {
-  const path = getPythonServerPath();
-  if (!fs.existsSync(path)) {
-    logger.error("Python language server not found " + path);
-    return;
-  }
-
+async function startPythonLanguageServer(workSpaceFolder) {
   try {
-    spawnRef = spawn("node", [path, "--stdio"]);
+    if (isServerStarted) {
+      logger.warn(
+        "Python language server already started in a given workspacen folder " +
+          selectedWorkSpaceFolder,
+      );
+      return false;
+    }
+
+    const _workSpaceFolder = nodePath.normalize(
+      nodePath.resolve(workSpaceFolder),
+    );
+    logger.info("Workspace folder provided " + _workSpaceFolder);
+
+    await fs.access(_workSpaceFolder);
+
+    const langServerPath = getPythonServerPath();
+    await fs.access(langServerPath);
+
+    spawnRef = spawn("node", [langServerPath, "--stdio"]);
 
     spawnRef.stdout.on("data", (chunk) => {
-      buffer += chunk.toString();
       console.log(chunk.toString());
-      parseStdout();
     });
 
     spawnRef.stderr.on("data", (chunk) => {
@@ -126,7 +145,7 @@ function startPythonLanguageServer() {
       logger.error(chunk.toString());
     });
 
-    logger.info("Started python language server at " + path);
+    logger.info("Started python language server at " + langServerPath);
 
     // We need to initlize it
     initializeRequestId = getSeq();
@@ -137,7 +156,13 @@ function startPythonLanguageServer() {
       method: "initialize",
       params: {
         processId: process.pid,
-        rootUri: null,
+        rootUri: createUri(workSpaceFolder),
+        workspaceFolders: [
+          {
+            uri: createUri(workSpaceFolder),
+            name: "desktop",
+          },
+        ],
         capabilities: {
           textDocument: {
             synchronization: {
@@ -149,30 +174,51 @@ function startPythonLanguageServer() {
         },
       },
     });
+
+    isServerStarted = true;
+    selectedWorkSpaceFolder = _workSpaceFolder;
+    return true;
   } catch (error) {
-    logger.error("Failed to start python server " + JSON.stringify(error));
+    logger.error(
+      "Failed to start python language server " + JSON.stringify(error),
+    );
+    return false;
   }
 }
 
 /**
  * Stops the python LSP
+ * @returns {Promise<boolean>} If it could or could not stop it
  */
-function stopPythonLanguageServer() {
+async function stopPythonLanguageServer() {
   try {
-    if (spawnRef) {
-      spawnRef.kill();
-      logger.info("Stopped python language server");
+    if (!spawnRef) {
+      logger.warn("No python language server has been spawned");
+      return false;
     }
+    if (!selectedWorkSpaceFolder) {
+      logger.warn("No workspace folder selected for python language server");
+      return false;
+    }
+
+    spawnRef.kill(); // tood write shutdown wait for it to emit 
+    isServerStarted = false;
+    selectedWorkSpaceFolder = null;
+
+
+    logger.info("Stopped python language server");
+    return true;
   } catch (error) {
     logger.error(
       "Failed to stop python language server " + JSON.stringify(error),
     );
+    return false;
   }
 }
 
 /**
  * Write a request to the stdin
- * @param {import("vscode-languageserver-protocol").RequestMessage} request
+ * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} request
  */
 function write(request) {
   if (!spawnRef) return;
@@ -266,36 +312,6 @@ const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
 
   ipcMain.on("python:open", openImpl);
 };
-
-// test
-
-/**
- * @type {import("vscode-languageserver-protocol").RequestMessage}
- */
-const object = {
-  id: getSeq(),
-  /** @type {import("./type").LanguageServerProtocolMethod} */
-  method: "textDocument/didOpen",
-  /** @type {import("./type").LanguageServerjsonrpc} */
-  jsonrpc: "2.0",
-  /** @type {import("vscode-languageserver-protocol").DidOpenTextDocumentParams } */
-  params: {
-    textDocument: {
-      /** @type {import("./type").LanguageServerLanguageId} */
-      languageId: "python",
-      text: "",
-      version: 0,
-      uri: createUri(`C:\\dev\\fluf\\desktop\\example.py`),
-    },
-  },
-};
-
-startPythonLanguageServer();
-write(object);
-
-setTimeout(() => {
-  stopPythonLanguageServer();
-}, 5000);
 
 module.exports = {
   startPythonLanguageServer,
