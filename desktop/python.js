@@ -149,25 +149,26 @@ async function startPythonLanguageServer(workSpaceFolder) {
     write({
       jsonrpc: "2.0",
       id: initializeRequestId,
+      /** @type {import("./type").LanguageServerProtocolMethod}*/
       method: "initialize",
+
+      /** @type {import("vscode-languageserver-protocol").InitializeParams} */
       params: {
-        processId: process.pid,
-        rootUri: createUri(workSpaceFolder),
+        processId: spawnRef.pid ?? null,
+        capabilities: {
+          experimental: false,
+        },
         workspaceFolders: [
           {
-            uri: createUri(workSpaceFolder),
-            name: "desktop",
+            uri: createUri(_workSpaceFolder),
+            name: nodePath.basename(_workSpaceFolder) ?? "root",
           },
         ],
-        capabilities: {
-          textDocument: {
-            synchronization: {
-              didOpen: true,
-              didChange: true,
-              didClose: true,
-            },
-          },
+        clientInfo: {
+          name: "Fluf",
+          version: "1.0.0",
         },
+        rootUri: createUri(_workSpaceFolder),
       },
     });
 

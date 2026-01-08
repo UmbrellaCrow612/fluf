@@ -2,7 +2,6 @@
     Contains all the code to register language servers into the app
 */
 
-const { startPythonLanguageServer, stopPythonLanguageServer } = require("./python");
 const { startTsServer, stopTsServer } = require("./typescript");
 
 /**
@@ -10,7 +9,6 @@ const { startTsServer, stopTsServer } = require("./typescript");
  */
 const startLanguageServers = () => {
   startTsServer();
-  startPythonLanguageServer()
 };
 
 /**
@@ -18,7 +16,6 @@ const startLanguageServers = () => {
  */
 const stopLanguageServers = () => {
   stopTsServer();
-  stopPythonLanguageServer()
 };
 
 module.exports = { startLanguageServers, stopLanguageServers };
