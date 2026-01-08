@@ -315,10 +315,9 @@ function createUri(filePath) {
 const openImpl = (_, filePath, fileContent) => {
   try {
     /**
-     * @type {import("vscode-languageserver-protocol").RequestMessage}
+     * @type {Partial<import("vscode-languageserver-protocol").RequestMessage>}
      */
     const object = {
-      id: getSeq(),
       /** @type {import("./type").LanguageServerProtocolMethod} */
       method: "textDocument/didOpen",
       /** @type {import("./type").LanguageServerjsonrpc} */
