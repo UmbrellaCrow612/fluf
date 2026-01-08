@@ -16,6 +16,16 @@ const nodePath = require("path");
 // Then for method use the typed methods from your type.js file
 // Then find correct param type to send from LSP docs and also vscode protocol type
 
+/**
+ * Indicates if the LSP has been started
+ */
+let initialized = false;
+/**
+ * If od the request for init
+ * @type {number | null}
+ */
+let initializeRequestId = null;
+
 let seq = 0;
 /** Get the next number */
 const getSeq = () => seq++;
@@ -42,6 +52,24 @@ let buffer = "";
  * @param {import("vscode-languageserver-protocol").ResponseMessage} message The parsed response message
  */
 function notifyUI(message) {
+  if (
+    message.id === initializeRequestId &&
+    message.result &&
+    !initialized
+  ) {
+    initialized = true;
+
+    write({
+      jsonrpc: "2.0",
+      method: "initialized",
+      id: getSeq(),
+      params: {}
+    });
+
+    logger.info("Python language server initialized");
+    return;
+  }
+
   if (mainWindowRef) {
     mainWindowRef.webContents.send("python:message", message);
   }
@@ -89,6 +117,7 @@ function startPythonLanguageServer() {
 
     spawnRef.stdout.on("data", (chunk) => {
       buffer += chunk.toString();
+      console.log(chunk.toString());
       parseStdout();
     });
 
@@ -98,6 +127,28 @@ function startPythonLanguageServer() {
     });
 
     logger.info("Started python language server at " + path);
+
+    // We need to initlize it
+    initializeRequestId = getSeq();
+
+    write({
+      jsonrpc: "2.0",
+      id: initializeRequestId,
+      method: "initialize",
+      params: {
+        processId: process.pid,
+        rootUri: null,
+        capabilities: {
+          textDocument: {
+            synchronization: {
+              didOpen: true,
+              didChange: true,
+              didClose: true,
+            },
+          },
+        },
+      },
+    });
   } catch (error) {
     logger.error("Failed to start python server " + JSON.stringify(error));
   }
@@ -215,6 +266,36 @@ const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
 
   ipcMain.on("python:open", openImpl);
 };
+
+// test
+
+/**
+ * @type {import("vscode-languageserver-protocol").RequestMessage}
+ */
+const object = {
+  id: getSeq(),
+  /** @type {import("./type").LanguageServerProtocolMethod} */
+  method: "textDocument/didOpen",
+  /** @type {import("./type").LanguageServerjsonrpc} */
+  jsonrpc: "2.0",
+  /** @type {import("vscode-languageserver-protocol").DidOpenTextDocumentParams } */
+  params: {
+    textDocument: {
+      /** @type {import("./type").LanguageServerLanguageId} */
+      languageId: "python",
+      text: "",
+      version: 0,
+      uri: createUri(`C:\\dev\\fluf\\desktop\\example.py`),
+    },
+  },
+};
+
+startPythonLanguageServer();
+write(object);
+
+setTimeout(() => {
+  stopPythonLanguageServer();
+}, 5000);
 
 module.exports = {
   startPythonLanguageServer,
