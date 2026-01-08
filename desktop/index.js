@@ -89,8 +89,7 @@ app.whenReady().then(() => {
 app.on("before-quit", async (event) => {
   if (!isQuitting) {
     event.preventDefault();
-    let pythonLsp = await stopPythonLanguageServer();
-    logger.info("Python language server " + pythonLsp ? "Stopped" : "Failed");
+    await stopPythonLanguageServer();
 
     cleanUpWatchers();
     stopLanguageServers();
