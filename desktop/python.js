@@ -3,6 +3,7 @@
  *
  * DOCS: https://microsoft.github.io/pyright/#/
  * LSP DOCS: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
+ * Types: vscode-languageserver-protocol
  */
 
 const { spawn } = require("child_process");
@@ -11,17 +12,12 @@ const { getPythonServerPath } = require("./packing");
 const fs = require("fs/promises");
 const nodePath = require("path");
 
-// Find the method you need to send from the LSP docs
-// Then use the base type from vscode-languageserver-protocol
-// Then for method use the typed methods from your type.js file
-// Then find correct param type to send from LSP docs and also vscode protocol type
-
 /**
  * Indicates if the LSP has been started
  */
 let initialized = false;
 /**
- * If od the request for init
+ * If id the request for init
  * @type {number | null}
  */
 let initializeRequestId = null;
@@ -201,10 +197,9 @@ async function stopPythonLanguageServer() {
       return false;
     }
 
-    spawnRef.kill(); // tood write shutdown wait for it to emit 
+    spawnRef.kill(); // tood write shutdown wait for it to emit
     isServerStarted = false;
     selectedWorkSpaceFolder = null;
-
 
     logger.info("Stopped python language server");
     return true;
@@ -303,12 +298,29 @@ const openImpl = (_, filePath, fileContent) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonStart>}
+ */
+const startImpl = async (_, fp) => {
+  return await startPythonLanguageServer(fp);
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonStop>}
+ */
+const stopImpl = async () => {
+  return await stopPythonLanguageServer();
+};
+
+/**
  * Register all python lsp related listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow} mainWindow
  */
 const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
   mainWindowRef = mainWindow;
+
+  ipcMain.handle("python:start", startImpl);
+  ipcMain.handle("python:stop", stopImpl);
 
   ipcMain.on("python:open", openImpl);
 };

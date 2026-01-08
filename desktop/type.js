@@ -689,6 +689,21 @@
  * Contains all the code to interact with python language server
  * @typedef {Object} pythonServer
  * @property {pythonServerOpen} open - Open a file request
+ * @property {pythonStart} start - Start the language server
+ * @property {pythonStop} stop - Stop the language server
+ */
+
+/**
+ * Being the python language server
+ * @callback pythonStart
+ * @param {string} workSpaceFolder - The path of the selcted root folder opened
+ * @returns {Promise<boolean>} Nothing
+ */
+
+/**
+ * Stops the python langaueg server
+ * @callback pythonStop
+ * @returns {Promise<boolean>} If it could or could not
  */
 
 /**
@@ -696,7 +711,7 @@
  * @callback pythonServerOpen
  * @param {string} filePath - The files path
  * @param {string} fileContent - The files content
- * @returns {void} 
+ * @returns {void}
  */
 
 /**
@@ -721,7 +736,7 @@
  * @property {fsApi} fsApi - Contains all file fs utils
  *
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
- * 
+ *
  * @property {pythonServer} pythonServer - Contains all the api's for the python language server
  *
  */
