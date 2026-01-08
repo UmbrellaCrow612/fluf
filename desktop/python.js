@@ -41,7 +41,7 @@ let mainWindowRef = null;
 /**
  * Buffer that holds the stdout of the lsp output
  */
-let buffer = "";
+let stdoutBuffer = Buffer.alloc(0);
 
 /**
  * If the server has been started for a given workspace folder
@@ -73,34 +73,45 @@ function notifyUI(message) {
     return;
   }
 
+  if (!initialized) {
+    logger.warn("Python language server not yet init ignorning message");
+    return;
+  }
+
   if (mainWindowRef) {
     mainWindowRef.webContents.send("python:message", message);
   }
 }
 
 /**
- * Parses the output from stdout, notifies UI, and moves the buffer along
+ * Parses the buffer and sends it to UI
  */
-function parseStdout() {
+export function parseStdout() {
   while (true) {
-    // Find the first newline to check if we have a complete message
-    const newlineIndex = buffer.indexOf("\n");
-    if (newlineIndex === -1) break; // No complete line yet
+    const sepIndex = stdoutBuffer.indexOf("\r\n\r\n");
+    if (sepIndex === -1) break;
 
-    // Extract one line (message)
-    const line = buffer.slice(0, newlineIndex).trim();
-    buffer = buffer.slice(newlineIndex + 1); // Move buffer forward
-
-    if (!line) continue; // skip empty lines
-
-    try {
-      const message = JSON.parse(line);
-      notifyUI(message);
-    } catch (err) {
-      // If parsing fails, it might be a partial message; prepend it back to buffer
-      buffer = line + "\n" + buffer;
-      break; // Wait for more data
+    const header = stdoutBuffer.subarray(0, sepIndex).toString("ascii");
+    const match = header.match(/Content-Length: (\d+)/i);
+    if (!match) {
+      logger.error("No Content-Length found:", header);
+      stdoutBuffer = stdoutBuffer.subarray(sepIndex + 4);
+      continue;
     }
+
+    const contentLength = parseInt(match[1], 10);
+    const totalLength = sepIndex + 4 + contentLength;
+    if (stdoutBuffer.length < totalLength) break;
+
+    const contentBuffer = stdoutBuffer.subarray(sepIndex + 4, totalLength);
+    try {
+      const json = JSON.parse(contentBuffer.toString("utf-8"));
+      notifyUI(json);
+    } catch (err) {
+      logger.error("Failed to parse JSON:", contentBuffer.toString("utf-8"));
+    }
+
+    stdoutBuffer = stdoutBuffer.subarray(totalLength);
   }
 }
 
@@ -133,7 +144,9 @@ async function startPythonLanguageServer(workSpaceFolder) {
     spawnRef = spawn("node", [langServerPath, "--stdio"]);
 
     spawnRef.stdout.on("data", (chunk) => {
-      console.log(chunk.toString());
+      stdoutBuffer = Buffer.concat([stdoutBuffer, chunk]);
+
+      parseStdout();
     });
 
     spawnRef.stderr.on("data", (chunk) => {
@@ -184,7 +197,7 @@ async function startPythonLanguageServer(workSpaceFolder) {
 }
 
 /**
- * Stops the python LSP
+ * Stops the python LSP gracefully by sending a shutdown request first
  * @returns {Promise<boolean>} If it could or could not stop it
  */
 async function stopPythonLanguageServer() {
@@ -198,11 +211,42 @@ async function stopPythonLanguageServer() {
       return false;
     }
 
-    spawnRef.kill(); // tood write shutdown wait for it to emit
+    if (!initialized) {
+      logger.warn(
+        "Python language server is not initialized, killing directly",
+      );
+      spawnRef.kill();
+      isServerStarted = false;
+      selectedWorkSpaceFolder = null;
+      spawnRef = null;
+      return true;
+    }
+
+    write({
+      jsonrpc: "2.0",
+      id: getSeq(),
+      /** @type {import("./type").LanguageServerProtocolMethod} */
+      method: "shutdown",
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    write({
+      jsonrpc: "2.0",
+      /** @type {import("./type").LanguageServerProtocolMethod} */
+      method: "exit",
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    spawnRef.kill();
+
     isServerStarted = false;
     selectedWorkSpaceFolder = null;
+    spawnRef = null;
+    initialized = false;
+    initializeRequestId = null;
 
-    logger.info("Stopped python language server");
+    logger.info("Stopped python language server gracefully");
     return true;
   } catch (error) {
     logger.error(
