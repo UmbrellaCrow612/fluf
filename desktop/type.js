@@ -27,7 +27,7 @@
 
 /**
  * Typed for IpcRendererEvent listener
- * 
+ *
  * i.e used when making a listener that runs in preload.js
  * @callback IpcRendererEventCallback
  * @param {import("electron").IpcRendererEvent} event
@@ -700,7 +700,7 @@
  * @property {pythonStart} start - Start the language server
  * @property {pythonStop} stop - Stop the language server
  * @property {pythonServerOnReady} onReady - Call some logic when the server becomes avaiable and is set up
- * @property {pythonServerOnResponse} onResponse - Run logic when the server responds 
+ * @property {pythonServerOnResponse} onResponse - Run logic when the server responds
  */
 
 /**
@@ -732,9 +732,34 @@
  */
 
 /**
+ * Represents the shape the notification response object can be listing fields it can possibley have
+ * @typedef {Object} JSONRpcNotification
+ * @property {string} jsonrpc - Version
+ * @property {LanguageServerProtocolMethod} method - Method
+ * @property {JSONRpcNotificationParams} [params] - Addtional info
+ */
+
+/**
+ * Represents the shape the notification params can have
+ * @typedef {Object} JSONRpcNotificationParams
+ * @property {string} [uri] - The files URI in the shape of for example `file:\\pie.js` encoded
+ * @property {number} [version] - Version
+ * @property {JSONRpcNotificationParamsDiagnostic[]} diagnostics - List of diagnostics
+ */
+
+/**
+ * Represents how a diagnostic could look like inside a notification param
+ * @typedef {Object} JSONRpcNotificationParamsDiagnostic
+ * @property {{start: {line:number,character: number}, end: {line:number, character:number}}} range - Where the thing is located
+ * @property {string} message - Infomation
+ * @property {number} severity - Severity
+ * @property {string} source - Which LSP it is from
+ */
+
+/**
  * The shape of the callback that is called when a message is recieved from the python server
  * @callback pythonServerOnResponseCallback
- * @param {Partial<import("vscode-languageserver-protocol").ResponseMessage>} message - Any message
+ * @param {JSONRpcNotification} message - Any message
  * @returns {void} Nothing
  */
 

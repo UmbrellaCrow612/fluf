@@ -159,7 +159,7 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
-      (diagnosticMap, completions) => {
+      (diagnosticMap) => {
         this.inMemoryContextService.problems.set(diagnosticMap);
 
         if (!this.openFileNode()) return;

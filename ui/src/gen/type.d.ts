@@ -925,9 +925,73 @@ export type pythonServerOpen = (filePath: string, fileContent: string) => void;
  */
 export type pythonServerOnReady = (callback: voidCallback) => voidCallback;
 /**
+ * Represents the shape the notification response object can be listing fields it can possibley have
+ */
+export type JSONRpcNotification = {
+    /**
+     * - Version
+     */
+    jsonrpc: string;
+    /**
+     * - Method
+     */
+    method: LanguageServerProtocolMethod;
+    /**
+     * - Addtional info
+     */
+    params?: JSONRpcNotificationParams | undefined;
+};
+/**
+ * Represents the shape the notification params can have
+ */
+export type JSONRpcNotificationParams = {
+    /**
+     * - The files URI in the shape of for example `file:\\pie.js` encoded
+     */
+    uri?: string | undefined;
+    /**
+     * - Version
+     */
+    version?: number | undefined;
+    /**
+     * - List of diagnostics
+     */
+    diagnostics: JSONRpcNotificationParamsDiagnostic[];
+};
+/**
+ * Represents how a diagnostic could look like inside a notification param
+ */
+export type JSONRpcNotificationParamsDiagnostic = {
+    /**
+     * - Where the thing is located
+     */
+    range: {
+        start: {
+            line: number;
+            character: number;
+        };
+        end: {
+            line: number;
+            character: number;
+        };
+    };
+    /**
+     * - Infomation
+     */
+    message: string;
+    /**
+     * - Severity
+     */
+    severity: number;
+    /**
+     * - Which LSP it is from
+     */
+    source: string;
+};
+/**
  * The shape of the callback that is called when a message is recieved from the python server
  */
-export type pythonServerOnResponseCallback = (message: Partial<import("vscode-languageserver-protocol").ResponseMessage>) => void;
+export type pythonServerOnResponseCallback = (message: JSONRpcNotification) => void;
 /**
  * Listen to when the server responds and run logic
  */

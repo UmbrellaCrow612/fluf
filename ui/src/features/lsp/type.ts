@@ -1,6 +1,7 @@
 import { EditorState } from '@codemirror/state';
 import {
   languageServer,
+  LanguageServerProtocolMethod,
   tsServerOutputEvent,
   voidCallback,
 } from '../../gen/type';
@@ -11,7 +12,7 @@ import { FlufDiagnostic } from '../diagnostic/type';
 /**
  * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
  */
-export type diagnosticType = tsServerOutputEvent | 'unkown';
+export type diagnosticType = tsServerOutputEvent | 'unkown' | LanguageServerProtocolMethod;
 
 /**
  * Represents a file path as a key then a map of specific diagnostics as keys then all of them
