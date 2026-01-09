@@ -126,7 +126,7 @@ function notifyUI(message) {
     mainWindowRef.webContents.send("python:message", message);
   } else {
     logger.error(
-      "Python language LSP Message received, but mainWindowRef is null (Normal for CLI tests)",
+      "Python language LSP Message received, but mainWindowRef is null",
     );
   }
 }

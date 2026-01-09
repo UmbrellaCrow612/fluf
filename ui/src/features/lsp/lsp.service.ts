@@ -1,6 +1,7 @@
 import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
 import {
+  CodeMirrorSeverity,
   ILsp,
   LanguageServiceCallback,
   diagnosticType,
@@ -119,10 +120,8 @@ export class LspService implements ILsp {
 
       case 'python':
         let pythonServerUnSub = this.api.pythonServer.onResponse((message) => {
-          console.log(message);
         });
         return pythonServerUnSub;
-        break;
       default:
         return () => {};
     }
