@@ -249,7 +249,7 @@ const startTypeScriptLanguageServer = async (_, workspacefolder) => {
       return true;
     }
 
-    let exePath = await getTypescriptServerPath();
+    let exePath = getTypescriptServerPath();
 
     await fs.access(exePath);
 

@@ -190,6 +190,10 @@ export class LspService implements ILsp {
       case 'python':
         this.api.pythonServer.start(workSpaceFolder);
         break;
+
+      case 'js/ts':
+        this.api.tsServer.start(workSpaceFolder);
+        break;
       default:
         break;
     }
@@ -201,6 +205,10 @@ export class LspService implements ILsp {
         this.api.pythonServer.stop();
         break;
 
+      case 'js/ts':
+        this.api.tsServer.stop();
+        break;
+
       default:
         break;
     }
@@ -209,8 +217,10 @@ export class LspService implements ILsp {
   onReady = (callback: voidCallback, langServer: languageServer) => {
     switch (langServer) {
       case 'python':
-        let unsub = this.api.pythonServer.onReady(callback);
-        return unsub;
+        return this.api.pythonServer.onReady(callback);
+
+      case 'js/ts':
+        return this.api.tsServer.onReady(callback);
 
       default:
         return () => {};

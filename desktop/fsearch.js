@@ -141,7 +141,7 @@ const buildArgs = (options) => {
  * @returns {Promise<import("./type").fsearchResult[]>}
  */
 const searchWithFSearch = async (options) => {
-  let bpath = await binPath()
+  let bpath = binPath()
   const exePath = await binmanResolve("fsearch", ["fsearch"], bpath);
 
   if (!exePath) throw new Error("fsearch executable not found");

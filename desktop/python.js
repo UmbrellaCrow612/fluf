@@ -185,7 +185,7 @@ async function startPythonLanguageServer(workSpaceFolder) {
 
     await fs.access(_workSpaceFolder);
 
-    const langServerPath = await getPythonServerPath();
+    const langServerPath = getPythonServerPath();
     await fs.access(langServerPath);
 
     spawnRef = spawn("node", [langServerPath, "--stdio"]);
