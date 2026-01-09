@@ -179,7 +179,13 @@ function write(message) {
  * @type {(message: import("./type").tsServerOutput) => void}
  */
 let notifyUI = (message) => {
-  // TODO resolve for seq resolve seq
+  if (message.seq && pendingRequests.has(message.seq)) {
+    let pend = pendingRequests.get(message.seq);
+    pend?.resolve(message);
+    pendingRequests.delete(message.seq);
+    logger.info("Request fulifled " + message.seq);
+  }
+
   if (mainWindowRef && !mainWindowRef.isDestroyed()) {
     mainWindowRef.webContents.send("tsserver:message", message);
   }
@@ -264,12 +270,13 @@ const startTypeScriptLanguageServer = async (_, workspacefolder) => {
     });
 
     childSpawnRef.on("close", (code) => {
-      logger.info("TS Server exited with code", code);
+      logger.info("Typescript language server exited with code", code);
     });
 
     isServerStarted = true;
     selectedWorkSpaceFolder = _workSpaceFolder;
 
+    logger.info("Typescript language server started from " + exePath)
     return true;
   } catch (error) {
     logger.error(
@@ -284,39 +291,31 @@ const startTypeScriptLanguageServer = async (_, workspacefolder) => {
  * @type {import("./type").tsServerStop}
  */
 const stopTypescriptLanguageServer = async () => {
-  try {
-    if (!isServerStarted) return false;
-    if (!childSpawnRef) return false;
+  if (!isServerStarted || !childSpawnRef) return false;
 
-    try {
-      await sendRequest(commandTypes.Exit, {});
-    } catch (error) {
-      logger.error("Typescript language server exit request timed out");
-    }
+  write({
+    seq: getNextSeq(),
+    type: "request",
+    command: commandTypes.Exit,
+    arguments: {},
+  });
 
-    return new Promise((resolve) => {
-      let forcedTimeoutId = setTimeout(() => {
-        if (childSpawnRef) {
-          childSpawnRef.kill("SIGKILL");
-        }
-        cleanState();
-        resolve(true);
-      }, 3000);
+  return new Promise((resolve) => {
+    const killTimer = setTimeout(() => {
+      if (childSpawnRef) {
+        logger.warn("Forcing tsserver shutdown");
+        childSpawnRef.kill("SIGKILL");
+      }
+      cleanState();
+      resolve(true);
+    }, 3000);
 
-      childSpawnRef?.on("exit", () => {
-        clearTimeout(forcedTimeoutId);
-        cleanState();
-        resolve(true);
-      });
+    childSpawnRef?.once("exit", () => {
+      clearTimeout(killTimer);
+      cleanState();
+      resolve(true);
     });
-  } catch (error) {
-    logger.error(
-      "Failed to stop Typescript language server " + JSON.stringify(error),
-    );
-    childSpawnRef?.kill();
-    cleanState();
-    return false;
-  }
+  });
 };
 
 /**
