@@ -413,7 +413,7 @@ const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
   ipcMain.handle("python:start", startImpl);
   ipcMain.handle("python:stop", stopImpl);
 
-  ipcMain.on("python:open", openImpl);
+  ipcMain.on("python:file:open", openImpl);
 };
 
 module.exports = {

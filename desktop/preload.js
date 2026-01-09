@@ -6,7 +6,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 const pythonServer = {
   start: (wsf) => ipcRenderer.invoke("python:start", wsf),
   stop: () => ipcRenderer.invoke("python:stop"),
-  open: (fp, fc) => ipcRenderer.send("python:open", fp, fc),
+  open: (fp, fc) => ipcRenderer.send("python:file:open", fp, fc),
 
   onReady: (callback) => {
     /** Runs when event is fired */

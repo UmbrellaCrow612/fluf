@@ -7,10 +7,6 @@ const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
-const {
-  startLanguageServers,
-  stopLanguageServers,
-} = require("./language-server");
 const { registerTsListeners } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
@@ -82,8 +78,6 @@ app.whenReady().then(() => {
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
   reigsterPythonLanguageServerListeners(ipcMain, mainWindow);
-
-  startLanguageServers();
 });
 
 app.on("before-quit", async (event) => {
@@ -92,7 +86,6 @@ app.on("before-quit", async (event) => {
     await stopPythonLanguageServer();
 
     cleanUpWatchers();
-    stopLanguageServers();
     cleanUpShells();
 
     isQuitting = true;
