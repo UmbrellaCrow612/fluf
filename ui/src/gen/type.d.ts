@@ -785,25 +785,49 @@ export type tsServerWritableObject = {
  */
 export type tsServerError = (filePath: string) => void;
 /**
- * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
+ * Start the Typescript / Javascript language server
+ */
+export type tsServerStart = (workSpaceFolder: string) => Promise<boolean>;
+/**
+ * Stop the typescript server
+ */
+export type tsServerStop = () => Promise<boolean>;
+/**
+ * Register to run some logic when the Typescript language server is ready
+ */
+export type tsServerOnReady = (callback: voidCallback) => voidCallback;
+/**
+ * The Typescript / Javascript language server
  */
 export type tsServer = {
     /**
-     * - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
+     * - Register callback when ts server emits a event message.
      */
     onResponse: onTsServerResponse;
     /**
-     * - Write file to open state within the ts server
+     * - Start the Typescript server
      */
-    openFile: tsServerOpenFile;
+    start: tsServerStart;
+    /**
+     * - Stops the Typescript server
+     */
+    stop: tsServerStop;
+    /**
+     * - Run logic when the typescript server is ready
+     */
+    onReady: tsServerOnReady;
+    /**
+     * - Opens a file
+     */
+    open: tsServerOpenFile;
     /**
      * - Edit the file in the stream
      */
-    editFile: tsServerEditFile;
+    edit: tsServerEditFile;
     /**
      * - Close file into the stream
      */
-    closeFile: tsServerCloseFile;
+    close: tsServerCloseFile;
     /**
      * - Get completion data of the current file and offest into the stream
      */

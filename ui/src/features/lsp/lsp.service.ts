@@ -46,7 +46,7 @@ export class LspService implements ILsp {
   ) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.openFile(filePath, fileContent);
+        this.api.tsServer.open(filePath, fileContent);
         break;
 
       case 'python':
@@ -78,7 +78,7 @@ export class LspService implements ILsp {
   ) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.editFile(args);
+        this.api.tsServer.edit(args);
         break;
 
       default:
@@ -177,7 +177,7 @@ export class LspService implements ILsp {
   Close = (filePath: string, langServer: languageServer) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.closeFile(filePath);
+        this.api.tsServer.close(filePath);
         break;
 
       default:

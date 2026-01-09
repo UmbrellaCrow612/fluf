@@ -276,6 +276,10 @@ const startTypeScriptLanguageServer = async (_, workspacefolder) => {
     isServerStarted = true;
     selectedWorkSpaceFolder = _workSpaceFolder;
 
+    if(mainWindowRef){
+      mainWindowRef.webContents.send("tsserver:ready")
+    }
+
     logger.info("Typescript language server started from " + exePath)
     return true;
   } catch (error) {

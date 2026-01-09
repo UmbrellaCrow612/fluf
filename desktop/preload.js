@@ -25,7 +25,7 @@ const pythonServer = {
      * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").pythonServerOnResponseCallback>}
      */
     let listener = (_, message) => {
-      callback(message)
+      callback(message);
     };
 
     ipcRenderer.on("python:message", listener);
@@ -170,13 +170,26 @@ const tsServer = {
     return () => ipcRenderer.removeListener("tsserver:message", listener);
   },
 
-  closeFile: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
-  editFile: (args) => ipcRenderer.send("tsserver:file:edit", args),
-  openFile: (filePath, content) =>
+  close: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
+  edit: (args) => ipcRenderer.send("tsserver:file:edit", args),
+  open: (filePath, content) =>
     ipcRenderer.send("tsserver:file:open", filePath, content),
   completion: (args) => ipcRenderer.send("tsserver:file:completion", args),
-
   errors: (filePath) => ipcRenderer.send("tsserver:file:error", filePath),
+  onReady: (callback) => {
+    let listener = () => {
+      callback();
+    };
+
+    ipcRenderer.on("tsserver:ready", listener);
+
+    return () => {
+      ipcRenderer.removeListener("tsserver:ready", listener);
+    };
+  },
+  start: (workSpaceFolder) =>
+    ipcRenderer.invoke("tsserver:start", workSpaceFolder),
+  stop: () => ipcRenderer.invoke("tsserver:stop"),
 };
 
 /**
