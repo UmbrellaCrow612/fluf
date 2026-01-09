@@ -152,16 +152,25 @@ function sendRequest(cmd, args) {
 }
 
 /**
- * Helper to write a mesage to the typescript stdin procsess
- * @param {import("./type").tsServerWritableObject} message The message to write to stdin stream of typescript processes
+ * Helper to write a message to the typescript stdin process.
+ * @param {import("./type").tsServerWritableObject} message - What you wan to write to it
  */
 function write(message) {
-  if (!childSpawnRef) return; // TODO fix for safety
+  if (!childSpawnRef || !childSpawnRef.stdin || !childSpawnRef.stdin.writable) {
+    logger.error("tsserver stdin is not available or writable.");
+    return;
+  }
 
   try {
-    childSpawnRef.stdin.write(JSON.stringify(message) + "\n"); // new line to make each message seperate
+    const jsonBody = JSON.stringify(message);
+    const byteLength = Buffer.byteLength(jsonBody, "utf8");
+    const messageString = `Content-Length: ${byteLength}\r\n\r\n${jsonBody}\r\n`;
+
+    childSpawnRef.stdin.write(messageString, "utf8");
   } catch (error) {
-    logger.error("Failed to write to tserver " + JSON.stringify(error));
+    logger.error(
+      "Failed to stringify or write to tsserver " + JSON.stringify(error),
+    );
   }
 }
 
