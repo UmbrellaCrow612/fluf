@@ -185,43 +185,50 @@ let notifyUI = (message) => {
   }
 };
 
-/** @type {number | null} */
-let pendingContentLength = null;
-
-const parseStdout = () => {
+/**
+ * Parses the stdout and notifys UI
+ */
+function parseStdout() {
   while (true) {
-    // Step 1: Parse header if we don't know body length yet
-    if (pendingContentLength === null) {
-      const headerEnd = stdoutBuffer.indexOf("\r\n\r\n");
-      if (headerEnd === -1) return; // Wait for full header
+    const str = stdoutBuffer.toString("utf8");
 
-      const header = stdoutBuffer.slice(0, headerEnd).toString();
-      const match = header.match(/Content-Length:\s*(\d+)/i);
-      if (!match) {
-        logger.error("Invalid TS Server header:", header);
-        stdoutBuffer = stdoutBuffer.slice(headerEnd + 4);
-        continue;
-      }
-
-      pendingContentLength = parseInt(match[1], 10);
-      stdoutBuffer = stdoutBuffer.slice(headerEnd + 4);
+    // 1. Find the Content-Length header
+    const headerMatch = str.match(/Content-Length: (\d+)\r\n\r\n/);
+    if (!headerMatch) {
+      break; // Haven't received a full header yet
     }
 
-    // Step 2: Check if we have full body
-    if (stdoutBuffer.length < pendingContentLength) return;
+    const headerString = headerMatch[0];
+    const contentLength = parseInt(headerMatch[1], 10);
 
-    const jsonText = stdoutBuffer.slice(0, pendingContentLength);
-    stdoutBuffer = stdoutBuffer.slice(pendingContentLength);
-    pendingContentLength = null;
+    // 2. Calculate indices
+    const headerStart = stdoutBuffer.indexOf(headerString);
+    const bodyStart = headerStart + Buffer.byteLength(headerString, "utf8");
+    const bodyEnd = bodyStart + contentLength;
+
+    // 3. Check if the full body has arrived
+    if (stdoutBuffer.length < bodyEnd) {
+      break; // Wait for more data
+    }
+
+    // 4. Extract the JSON body
+    const bodyBuffer = stdoutBuffer.slice(bodyStart, bodyEnd);
+    const bodyStr = bodyBuffer.toString("utf8");
 
     try {
-      const message = JSON.parse(jsonText);
+      const message = JSON.parse(bodyStr);
       notifyUI(message);
-    } catch (err) {
-      logger.error("Failed to parse TS Server JSON:", jsonText.toString(), err);
+    } catch (e) {
+      logger.error(
+        "Failed to parse tsserver message body " + JSON.stringify(e),
+      );
     }
+
+    stdoutBuffer = stdoutBuffer.subarray(bodyEnd);
+
+    if (stdoutBuffer.length === 0) break;
   }
-};
+}
 
 /**
  * Starts the typescript language server
