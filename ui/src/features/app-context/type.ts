@@ -1,5 +1,5 @@
-import { fileNode } from '../../gen/type';
-import { fileDiagnosticMap, LanguageServer } from '../lsp/type';
+import { fileNode, languageServer } from '../../gen/type';
+import { fileDiagnosticMap } from '../lsp/type';
 /**
  * Represents what elements from the side bar can be in a active state i.e the elements that can be clicked to show said render component off
  */
@@ -167,5 +167,5 @@ export type InMemoryAppContext = {
   /**
    * Holds the current language server needed for the given open file thats open i.e the one the code editor is sending the requests to for the given open file being edited via the lsp
    */
-  currentLanguageServer: LanguageServer | null;
+  currentLanguageServer: languageServer | null;
 };

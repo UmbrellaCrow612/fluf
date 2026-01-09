@@ -1,15 +1,15 @@
-/*
-    Contains all the code to allow ts typescript language support for the UI editor
-*/
+/**
+ * Contains all the code for Typescript Language server support
+ *
+ * DOCS: https://github.com/microsoft/TypeScript/wiki/Standalone-Server-(tsserver)
+ * Types: require("typescript").server.protocol
+ */
 
-const fs = require("fs");
+const fs = require("fs/promises");
 const { spawn } = require("child_process");
-const { getTsServerPath } = require("./packing");
 const { logger } = require("./logger");
-const path = require("path");
-
-// Open typescript.d.ts and for each cmd look for it's request interface for it and then import that type for it's arguments for you to pass the
-// correct arguments for said cmd
+const nodePath = require("path");
+const { getTypescriptServerPath } = require("./packing");
 
 /**
  * All the commands that ts server accepts through the std in stream for a request object
@@ -31,14 +31,32 @@ let childSpawnRef = null;
 
 /**
  * This buffer will accumulate raw data from tsserver's stdout.
+ * @type {Buffer}
  */
-let stdoutBuffer = "";
+let stdoutBuffer = Buffer.alloc(0);
+
+/**
+ * Indicates if the Typescript Language server has been started
+ */
+let isServerStarted = false;
+
+/**
+ * Holds a the current selected workspace folder that the lang server was started in
+ * @type {string | null}
+ */
+let selectedWorkSpaceFolder = null;
 
 /** Request sequencse number  */
 let seq = 0;
 
 /** Get the next seq  */
 const getNextSeq = () => seq++;
+
+/**
+ * Contains a list of pedning request that require a response
+ * @type {Map<number, {resolve: (value: any) => void, reject: (reason?: any) => void}>}
+ */
+const pendingRequests = new Map();
 
 /** Used as a helper to make really simple objects that are used in multiple places but do not change - The name is `s` for simple  */
 const s = {
@@ -98,16 +116,61 @@ const s = {
 };
 
 /**
- * Helper to write a mesage to the typescript stdin procsess
- * @param {import("./type").tsServerWritableObject} message The message to write to stdin stream of typescript processes
+ * Resetss state
+ */
+function cleanState() {
+  selectedWorkSpaceFolder = null;
+  isServerStarted = false;
+  childSpawnRef = null;
+}
+
+/**
+ * Used to send a request and wait for a response or reject it
+ * @param {import("typescript").server.protocol.CommandTypes} cmd
+ * @param {any} args
+ * @returns {Promise<any>}
+ */
+function sendRequest(cmd, args) {
+  let id = getNextSeq();
+  return new Promise((resolve, reject) => {
+    pendingRequests.set(id, { resolve, reject });
+    write({
+      arguments: args,
+      command: cmd,
+      seq: id,
+      type: "request",
+    });
+
+    // fallback for hanging
+    setTimeout(() => {
+      if (pendingRequests.has(id)) {
+        pendingRequests.delete(id);
+        reject(new Error(`Request ${cmd} timed out`));
+      }
+    }, 5000);
+  });
+}
+
+/**
+ * Helper to write a message to the typescript stdin process.
+ * @param {import("./type").tsServerWritableObject} message - What you wan to write to it
  */
 function write(message) {
-  if (!childSpawnRef) return;
+  if (!childSpawnRef || !childSpawnRef.stdin || !childSpawnRef.stdin.writable) {
+    logger.error("tsserver stdin is not available or writable.");
+    return;
+  }
 
   try {
-    childSpawnRef.stdin.write(JSON.stringify(message) + "\n"); // new line to make each message seperate
+    const jsonBody = JSON.stringify(message);
+    const byteLength = Buffer.byteLength(jsonBody, "utf8");
+    const messageString = `Content-Length: ${byteLength}\r\n\r\n${jsonBody}\r\n`;
+
+    childSpawnRef.stdin.write(messageString, "utf8");
   } catch (error) {
-    logger.error("Failed to write to tserver " + JSON.stringify(error));
+    logger.error(
+      "Failed to stringify or write to tsserver " + JSON.stringify(error),
+    );
   }
 }
 
@@ -116,100 +179,154 @@ function write(message) {
  * @type {(message: import("./type").tsServerOutput) => void}
  */
 let notifyUI = (message) => {
+  if (message.seq && pendingRequests.has(message.seq)) {
+    let pend = pendingRequests.get(message.seq);
+    pend?.resolve(message);
+    pendingRequests.delete(message.seq);
+    logger.info("Request fulifled " + message.seq);
+  }
+
   if (mainWindowRef && !mainWindowRef.isDestroyed()) {
     mainWindowRef.webContents.send("tsserver:message", message);
   }
 };
 
-/** @type {number | null} */
-let pendingContentLength = null;
-
-const parseStdout = () => {
+/**
+ * Parses the stdout and notifys UI
+ */
+function parseStdout() {
   while (true) {
-    // Step 1: Parse header if we don't know body length yet
-    if (pendingContentLength === null) {
-      const headerEnd = stdoutBuffer.indexOf("\r\n\r\n");
-      if (headerEnd === -1) return; // Wait for full header
+    const str = stdoutBuffer.toString("utf8");
 
-      const header = stdoutBuffer.slice(0, headerEnd).toString();
-      const match = header.match(/Content-Length:\s*(\d+)/i);
-      if (!match) {
-        logger.error("Invalid TS Server header:", header);
-        stdoutBuffer = stdoutBuffer.slice(headerEnd + 4);
-        continue;
-      }
-
-      pendingContentLength = parseInt(match[1], 10);
-      stdoutBuffer = stdoutBuffer.slice(headerEnd + 4);
+    // 1. Find the Content-Length header
+    const headerMatch = str.match(/Content-Length: (\d+)\r\n\r\n/);
+    if (!headerMatch) {
+      break; // Haven't received a full header yet
     }
 
-    // Step 2: Check if we have full body
-    if (stdoutBuffer.length < pendingContentLength) return;
+    const headerString = headerMatch[0];
+    const contentLength = parseInt(headerMatch[1], 10);
 
-    const jsonText = stdoutBuffer.slice(0, pendingContentLength);
-    stdoutBuffer = stdoutBuffer.slice(pendingContentLength);
-    pendingContentLength = null;
+    // 2. Calculate indices
+    const headerStart = stdoutBuffer.indexOf(headerString);
+    const bodyStart = headerStart + Buffer.byteLength(headerString, "utf8");
+    const bodyEnd = bodyStart + contentLength;
+
+    // 3. Check if the full body has arrived
+    if (stdoutBuffer.length < bodyEnd) {
+      break; // Wait for more data
+    }
+
+    // 4. Extract the JSON body
+    const bodyBuffer = stdoutBuffer.slice(bodyStart, bodyEnd);
+    const bodyStr = bodyBuffer.toString("utf8");
 
     try {
-      const message = JSON.parse(jsonText);
-      handleTsMessage(message);
-    } catch (err) {
-      logger.error("Failed to parse TS Server JSON:", jsonText.toString(), err);
+      const message = JSON.parse(bodyStr);
+      notifyUI(message);
+    } catch (e) {
+      logger.error(
+        "Failed to parse tsserver message body " + JSON.stringify(e),
+      );
     }
+
+    stdoutBuffer = stdoutBuffer.subarray(bodyEnd);
+
+    if (stdoutBuffer.length === 0) break;
+  }
+}
+
+/**
+ * Starts the typescript language server
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").tsServerStart>}
+ */
+const startTypeScriptLanguageServer = async (_, workspacefolder) => {
+  try {
+    if (isServerStarted) {
+      logger.info(
+        "Typescript language server already started at " + workspacefolder,
+      );
+      return true;
+    }
+
+    let exePath = getTypescriptServerPath();
+
+    await fs.access(exePath);
+
+    const _workSpaceFolder = nodePath.normalize(
+      nodePath.resolve(workspacefolder),
+    );
+    await fs.access(_workSpaceFolder);
+
+    childSpawnRef = spawn("node", [exePath]);
+
+    childSpawnRef.stdout.on("data", (data) => {
+      stdoutBuffer = Buffer.concat([stdoutBuffer, data]);
+      parseStdout();
+    });
+
+    childSpawnRef.stderr.on("data", (data) => {
+      logger.error("TS Server stderr:", data.toString());
+    });
+
+    childSpawnRef.on("close", (code) => {
+      logger.info("Typescript language server exited with code", code);
+    });
+
+    isServerStarted = true;
+    selectedWorkSpaceFolder = _workSpaceFolder;
+
+    if(mainWindowRef){
+      mainWindowRef.webContents.send("tsserver:ready")
+    }
+
+    logger.info("Typescript language server started from " + exePath)
+    return true;
+  } catch (error) {
+    logger.error(
+      "Failed to start Typescript language server " + JSON.stringify(error),
+    );
+    return false;
   }
 };
 
 /**
- * Handle TS server messages
- * @param {import("./type").tsServerOutput} message
+ * Stops the typescript language server
+ * @type {import("./type").tsServerStop}
  */
-const handleTsMessage = (message) => {
-  notifyUI(message);
-};
+const stopTypescriptLanguageServer = async () => {
+  if (!isServerStarted || !childSpawnRef) return false;
 
-const startTsServer = () => {
-  const path = getTsServerPath();
-  if (!fs.existsSync(path)) {
-    logger.error("TS server not found at:", path);
-    return;
-  }
-
-  childSpawnRef = spawn("node", [path]);
-
-  childSpawnRef.stdout.on("data", (data) => {
-    stdoutBuffer += data.toString();
-    parseStdout();
+  write({
+    seq: getNextSeq(),
+    type: "request",
+    command: commandTypes.Exit,
+    arguments: {},
   });
 
-  childSpawnRef.stderr.on("data", (data) => {
-    logger.error("TS Server stderr:", data.toString());
+  return new Promise((resolve) => {
+    const killTimer = setTimeout(() => {
+      if (childSpawnRef) {
+        logger.warn("Forcing tsserver shutdown");
+        childSpawnRef.kill("SIGKILL");
+      }
+      cleanState();
+      resolve(true);
+    }, 3000);
+
+    childSpawnRef?.once("exit", () => {
+      clearTimeout(killTimer);
+      cleanState();
+      resolve(true);
+    });
   });
-
-  childSpawnRef.on("close", (code) => {
-    logger.info("TS Server exited with code", code);
-  });
-
-  logger.info("TS Server started at", path);
-};
-
-/**
- * Trys to kill TS child processes that was spawned
- */
-const stopTsServer = () => {
-  if (childSpawnRef) {
-    childSpawnRef.kill();
-    logger.info("Killed TS server");
-    childSpawnRef = null;
-  } else {
-    logger.info("No TS server process to kill");
-  }
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerOpenFile>}
  */
 const openFileImpl = (_, filePath, content) => {
-  write(s.Open(path.normalize(path.resolve(filePath)), content));
+  write(s.Open(nodePath.normalize(nodePath.resolve(filePath)), content));
 };
 
 /**
@@ -221,7 +338,7 @@ const editFileImpl = (_, args) => {
     /** @type {import("typescript").server.protocol.ChangeRequestArgs} */
     arguments: {
       ...args,
-      file: path.normalize(path.resolve(args.file)),
+      file: nodePath.normalize(nodePath.resolve(args.file)),
     },
     command: commandTypes.Change,
     seq: getNextSeq(),
@@ -235,7 +352,7 @@ const editFileImpl = (_, args) => {
  * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerCloseFile>}
  */
 const closeFileImpl = (_, filePath) => {
-  write(s.Close(path.normalize(path.resolve(filePath))));
+  write(s.Close(nodePath.normalize(nodePath.resolve(filePath))));
 };
 
 /**
@@ -250,7 +367,7 @@ const completionImpl = (_, args) => {
     /** @type {import("typescript").server.protocol.CompletionsRequestArgs}*/ arguments:
       {
         ...args,
-        file: path.normalize(path.resolve(args.file)),
+        file: nodePath.normalize(nodePath.resolve(args.file)),
       },
   };
 
@@ -261,7 +378,7 @@ const completionImpl = (_, args) => {
  * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").tsServerError>}
  */
 const getErrorImpl = (_, filePath) => {
-  write(s.Geterr(path.normalize(path.resolve(filePath))));
+  write(s.Geterr(nodePath.normalize(nodePath.resolve(filePath))));
 };
 
 /**
@@ -272,6 +389,9 @@ const getErrorImpl = (_, filePath) => {
 const registerTsListeners = (ipcMain, win) => {
   mainWindowRef = win;
 
+  ipcMain.handle("tsserver:start", startTypeScriptLanguageServer);
+  ipcMain.handle("tsserver:stop", stopTypescriptLanguageServer);
+
   ipcMain.on("tsserver:file:open", openFileImpl);
   ipcMain.on("tsserver:file:edit", editFileImpl);
   ipcMain.on("tsserver:file:close", closeFileImpl);
@@ -279,4 +399,8 @@ const registerTsListeners = (ipcMain, win) => {
   ipcMain.on("tsserver:file:error", getErrorImpl);
 };
 
-module.exports = { startTsServer, stopTsServer, registerTsListeners };
+module.exports = {
+  startTypeScriptLanguageServer,
+  stopTypescriptLanguageServer,
+  registerTsListeners,
+};

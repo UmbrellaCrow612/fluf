@@ -1,44 +1,63 @@
 /*
- * Contains all code and helppers todo with app packing state or packing in general
+ * Contains all code and helpers related to app packing state
  */
 
 const path = require("path");
-const fs = require("fs");
+const { logger } = require("./logger");
+
+let electronApp;
+try {
+  ({ app: electronApp } = require("electron"));
+} catch {
+  electronApp = null; // Running outside Electron (e.g. tests, scripts)
+}
 
 /**
- * Checks if the app is packaged
+ * Checks if the application is packaged
+ * @returns {boolean}
  */
 const isPackaged = () => {
-  const asarPath = path.join(process.resourcesPath, "app.asar");
-  return fs.existsSync(asarPath);
+  return electronApp ? electronApp.isPackaged : false;
 };
 
 /**
- * Get the path of the bin folder packaged form or dev
+ * Get the path of the bin folder (dev or packaged)
  * @returns {string}
  */
 const binPath = () => {
-  let p = "";
-  if (isPackaged()) {
-    p = path.join(process.resourcesPath, "bin");
-  } else {
-    p = path.join(__dirname, "bin");
+  try {
+    return isPackaged()
+      ? path.join(process.resourcesPath, "bin")
+      : path.join(__dirname, "bin");
+  } catch (error) {
+    logger.error("Failed to get bin path", error);
+    return "";
   }
-  return p;
 };
 
 /**
- * Get the path to the ts server in both dev and prod
+ * Get the path to the TypeScript language server
  * @returns {string}
  */
-function getTsServerPath() {
+const getTypescriptServerPath = () => {
   return isPackaged()
-    ? path.join(__dirname, "typescript", "tsserver.js")
+    ? path.join(process.resourcesPath, "typescript", "tsserver.js")
     : path.join(__dirname, "node_modules", "typescript", "lib", "tsserver.js");
-}
+};
+
+/**
+ * Get the path to the Python language server
+ * @returns {string}
+ */
+const getPythonServerPath = () => {
+  return isPackaged()
+    ? path.join(process.resourcesPath, "pyright", "langserver.index.js")
+    : path.join(__dirname, "node_modules", "pyright", "langserver.index.js");
+};
 
 module.exports = {
   isPackaged,
   binPath,
-  getTsServerPath,
+  getTypescriptServerPath,
+  getPythonServerPath,
 };

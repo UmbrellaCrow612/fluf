@@ -26,6 +26,14 @@
  */
 
 /**
+ * Typed for IpcRendererEvent listener
+ *
+ * i.e used when making a listener that runs in preload.js
+ * @callback IpcRendererEventCallback
+ * @param {import("electron").IpcRendererEvent} event
+ */
+
+/**
  * Contains all the fs api's using node fs and other file related utils
  * @typedef {Object} fsApi
  * @property {readFile} readFile - Calls fs read file
@@ -587,12 +595,36 @@
  */
 
 /**
- * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
+ * Start the Typescript / Javascript language server
+ * @callback tsServerStart
+ * @param {string} workSpaceFolder - The selected directory
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Stop the typescript server
+ * @callback tsServerStop
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Register to run some logic when the Typescript language server is ready
+ * @callback tsServerOnReady
+ * @param {voidCallback} callback - The logic you want to run
+ * @returns {voidCallback} Unsub method
+ */
+
+/**
+ * The Typescript / Javascript language server
  * @typedef {Object} tsServer
- * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
- * @property {tsServerOpenFile} openFile - Write file to open state within the ts server
- * @property {tsServerEditFile} editFile - Edit the file in the stream
- * @property {tsServerCloseFile} closeFile - Close file into the stream
+ * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message.
+ * @property {tsServerStart} start - Start the Typescript server
+ * @property {tsServerStop} stop - Stops the Typescript server
+ * @property {tsServerOnReady} onReady - Run logic when the typescript server is ready
+ * 
+ * @property {tsServerOpenFile} open - Opens a file
+ * @property {tsServerEditFile} edit - Edit the file in the stream
+ * @property {tsServerCloseFile} close - Close file into the stream
  * @property {tsServerCompletion} completion - Get completion data of the current file and offest into the stream
  * @property {tsServerError} errors - Trigger get error's / checking for a file
  */
@@ -663,6 +695,111 @@
  */
 
 /**
+ * List of all methods that can be in the method of a request or message
+ * based on the action you want to perform read the link below and send that method
+ *
+ * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
+ *
+ * @typedef {"initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability"
+ *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
+ *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
+ *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
+ * } LanguageServerProtocolMethod
+ */
+
+/**
+ * Version of jsonrpc's
+ * @typedef {"2.0"} LanguageServerjsonrpc
+ */
+
+/**
+ * List of the valid language id's you can pass
+ * @typedef {"python"} LanguageServerLanguageId
+ */
+
+/**
+ * Contains all the code to interact with python language server
+ * @typedef {Object} pythonServer
+ * @property {pythonServerOpen} open - Open a file request
+ * @property {pythonStart} start - Start the language server
+ * @property {pythonStop} stop - Stop the language server
+ * @property {pythonServerOnReady} onReady - Call some logic when the server becomes avaiable and is set up
+ * @property {pythonServerOnResponse} onResponse - Run logic when the server responds
+ */
+
+/**
+ * Being the python language server
+ * @callback pythonStart
+ * @param {string} workSpaceFolder - The path of the selcted root folder opened
+ * @returns {Promise<boolean>} Nothing
+ */
+
+/**
+ * Stops the python langaueg server
+ * @callback pythonStop
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Opens file
+ * @callback pythonServerOpen
+ * @param {string} filePath - The files path
+ * @param {string} fileContent - The files content
+ * @returns {void}
+ */
+
+/**
+ * Call some logic when the python language server is ready
+ * @callback pythonServerOnReady
+ * @param {voidCallback} callback
+ * @returns {voidCallback} UnSub method
+ */
+
+/**
+ * Represents the shape the notification response object can be listing fields it can possibley have
+ * @typedef {Object} JSONRpcNotification
+ * @property {string} jsonrpc - Version
+ * @property {LanguageServerProtocolMethod} method - Method
+ * @property {JSONRpcNotificationParams} [params] - Addtional info
+ */
+
+/**
+ * Represents the shape the notification params can have
+ * @typedef {Object} JSONRpcNotificationParams
+ * @property {string} [uri] - The files URI in the shape of for example `file:\\pie.js` encoded
+ * @property {number} [version] - Version
+ * @property {JSONRpcNotificationParamsDiagnostic[]} diagnostics - List of diagnostics
+ */
+
+/**
+ * Represents how a diagnostic could look like inside a notification param
+ * @typedef {Object} JSONRpcNotificationParamsDiagnostic
+ * @property {{start: {line:number,character: number}, end: {line:number, character:number}}} range - Where the thing is located
+ * @property {string} message - Infomation
+ * @property {number} severity - Severity
+ * @property {string} source - Which LSP it is from
+ */
+
+/**
+ * The shape of the callback that is called when a message is recieved from the python server
+ * @callback pythonServerOnResponseCallback
+ * @param {JSONRpcNotification} message - Any message
+ * @returns {void} Nothing
+ */
+
+/**
+ * Listen to when the server responds and run logic
+ * @callback pythonServerOnResponse
+ * @param {pythonServerOnResponseCallback} callback - The logic to run
+ * @returns {voidCallback} unsub method
+ */
+
+/**
+ * Holds all the specific language servers the backend supports
+ * @typedef {"js/ts" | "python"} languageServer
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -684,6 +821,8 @@
  * @property {fsApi} fsApi - Contains all file fs utils
  *
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
+ *
+ * @property {pythonServer} pythonServer - Contains all the api's for the python language server
  *
  */
 

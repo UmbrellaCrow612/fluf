@@ -1,6 +1,42 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").pythonServer}
+ */
+const pythonServer = {
+  start: (wsf) => ipcRenderer.invoke("python:start", wsf),
+  stop: () => ipcRenderer.invoke("python:stop"),
+  open: (fp, fc) => ipcRenderer.send("python:file:open", fp, fc),
+
+  onReady: (callback) => {
+    /** Runs when event is fired */
+    let listener = () => {
+      callback();
+    };
+    ipcRenderer.on("python:ready", listener);
+
+    return () => {
+      ipcRenderer.removeListener("python:ready", listener);
+    };
+  },
+
+  onResponse: (callback) => {
+    /**
+     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").pythonServerOnResponseCallback>}
+     */
+    let listener = (_, message) => {
+      callback(message);
+    };
+
+    ipcRenderer.on("python:message", listener);
+
+    return () => {
+      ipcRenderer.removeListener("python:message", listener);
+    };
+  },
+};
+
+/**
  * @type {import("./type").ripgrepApi}
  */
 const ripgrepApi = {
@@ -134,13 +170,26 @@ const tsServer = {
     return () => ipcRenderer.removeListener("tsserver:message", listener);
   },
 
-  closeFile: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
-  editFile: (args) => ipcRenderer.send("tsserver:file:edit", args),
-  openFile: (filePath, content) =>
+  close: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
+  edit: (args) => ipcRenderer.send("tsserver:file:edit", args),
+  open: (filePath, content) =>
     ipcRenderer.send("tsserver:file:open", filePath, content),
   completion: (args) => ipcRenderer.send("tsserver:file:completion", args),
-
   errors: (filePath) => ipcRenderer.send("tsserver:file:error", filePath),
+  onReady: (callback) => {
+    let listener = () => {
+      callback();
+    };
+
+    ipcRenderer.on("tsserver:ready", listener);
+
+    return () => {
+      ipcRenderer.removeListener("tsserver:ready", listener);
+    };
+  },
+  start: (workSpaceFolder) =>
+    ipcRenderer.invoke("tsserver:start", workSpaceFolder),
+  stop: () => ipcRenderer.invoke("tsserver:stop"),
 };
 
 /**
@@ -170,6 +219,7 @@ const api = {
   pathApi,
   fsApi,
   chromeWindowApi,
+  pythonServer,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

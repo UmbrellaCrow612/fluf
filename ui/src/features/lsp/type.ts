@@ -1,19 +1,18 @@
 import { EditorState } from '@codemirror/state';
-import { tsServerOutputEvent, voidCallback } from '../../gen/type';
+import {
+  languageServer,
+  LanguageServerProtocolMethod,
+  tsServerOutputEvent,
+  voidCallback,
+} from '../../gen/type';
 import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 import { FlufDiagnostic } from '../diagnostic/type';
 
 /**
- * Contains all the language server keys i.e list of server names that can be used or are currently impl to be used for intellisense in the editor
- */
-export type LanguageServer =
-  /** Used for both TS typescript and JS javascript*/ 'js/ts';
-
-/**
  * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
  */
-export type diagnosticType = tsServerOutputEvent | 'unkown';
+export type diagnosticType = tsServerOutputEvent | 'unkown' | LanguageServerProtocolMethod;
 
 /**
  * Represents a file path as a key then a map of specific diagnostics as keys then all of them
@@ -38,7 +37,7 @@ export interface ILsp {
   Open: (
     filePath: string,
     fileContent: string,
-    langServer: LanguageServer,
+    langServer: languageServer,
   ) => void;
 
   /**
@@ -49,7 +48,7 @@ export interface ILsp {
    */
   Edit: (
     args: server.protocol.ChangeRequestArgs,
-    langServer: LanguageServer,
+    langServer: languageServer,
   ) => void;
 
   /**
@@ -62,7 +61,7 @@ export interface ILsp {
    */
   Completion: (
     args: server.protocol.CompletionsRequestArgs,
-    langServer: LanguageServer,
+    langServer: languageServer,
   ) => void;
 
   /**
@@ -72,7 +71,7 @@ export interface ILsp {
    * @returns Unsub callback to stop
    */
   OnResponse: (
-    langServer: LanguageServer,
+    langServer: languageServer,
     editorState: EditorState,
     callback: LanguageServiceCallback,
   ) => voidCallback;
@@ -83,7 +82,7 @@ export interface ILsp {
    * @param langServer The specific lang server to send it to
    * @returns Nothing
    */
-  Error: (filePath: string, langServer: LanguageServer) => void;
+  Error: (filePath: string, langServer: languageServer) => void;
 
   /**
    * Close a file
@@ -91,7 +90,30 @@ export interface ILsp {
    * @param langServer The language server to send it to
    * @returns Nothing
    */
-  Close: (filePath: string, langServer: LanguageServer) => void;
+  Close: (filePath: string, langServer: languageServer) => void;
+
+  /**
+   * Start a Language server
+   * @param langServer The language server to start
+   * @param workSpaceFolder - The selected directory workspace folder
+   * @returns Nothing
+   */
+  Start: (workSpaceFolder: string, langServer: languageServer) => void;
+
+  /**
+   * Stop a language server
+   * @param langServer The language server to stop
+   * @returns Nothing
+   */
+  Stop: (langServer: languageServer) => void;
+
+  /**
+   * Run some logic when a language server in ready
+   * @param callback The logic to run
+   * @param langServer The specific lang server to listen to
+   * @returns Unsub method to remove the callback
+   */
+  onReady: (callback: voidCallback, langServer: languageServer) => voidCallback;
 }
 
 /**

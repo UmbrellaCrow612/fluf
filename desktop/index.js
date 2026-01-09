@@ -7,22 +7,28 @@ const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
-const {
-  startLanguageServers,
-  stopLanguageServers,
-} = require("./language-server");
-const { registerTsListeners } = require("./typescript");
+const { registerTsListeners, stopTypescriptLanguageServer } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
 const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
 const { registerRipgrepListeners } = require("./ripgrep");
+const {
+  reigsterPythonLanguageServerListeners,
+  stopPythonLanguageServer,
+} = require("./python");
+const { logger } = require("./logger");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
  * @type {import("electron").BrowserWindow | null}
  */
 let mainWindow = null;
+
+/**
+ * Holds state of quiting the app
+ */
+let isQuitting = false;
 
 loadEnv();
 registerProtocols();
@@ -71,12 +77,19 @@ app.whenReady().then(() => {
   registerPathListeners(ipcMain);
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
-
-  startLanguageServers();
+  reigsterPythonLanguageServerListeners(ipcMain, mainWindow);
 });
 
-app.on("before-quit", () => {
-  cleanUpWatchers();
-  stopLanguageServers();
-  cleanUpShells();
+app.on("before-quit", async (event) => {
+  if (!isQuitting) {
+    event.preventDefault();
+    await stopPythonLanguageServer();
+    await stopTypescriptLanguageServer()
+
+    cleanUpWatchers();
+    cleanUpShells();
+
+    isQuitting = true;
+    app.quit();
+  }
 });
