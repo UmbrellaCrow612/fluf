@@ -7,7 +7,7 @@ const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
-const { registerTsListeners } = require("./typescript");
+const { registerTsListeners, stopTypescriptLanguageServer } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
 const { registerFsListeners, cleanUpWatchers } = require("./fs");
@@ -84,6 +84,7 @@ app.on("before-quit", async (event) => {
   if (!isQuitting) {
     event.preventDefault();
     await stopPythonLanguageServer();
+    await stopTypescriptLanguageServer()
 
     cleanUpWatchers();
     cleanUpShells();

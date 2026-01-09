@@ -595,12 +595,36 @@
  */
 
 /**
- * The Typescript server, commands written to it using the methods write to the stream of the child processes and then emit said events when they are ready and parsed
+ * Start the Typescript / Javascript language server
+ * @callback tsServerStart
+ * @param {string} workSpaceFolder - The selected directory
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Stop the typescript server
+ * @callback tsServerStop
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Register to run some logic when the Typescript language server is ready
+ * @callback tsServerOnReady
+ * @param {voidCallback} callback - The logic you want to run
+ * @returns {voidCallback} Unsub method
+ */
+
+/**
+ * The Typescript / Javascript language server
  * @typedef {Object} tsServer
- * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message such as writing diagnostics or other stuff.
- * @property {tsServerOpenFile} openFile - Write file to open state within the ts server
- * @property {tsServerEditFile} editFile - Edit the file in the stream
- * @property {tsServerCloseFile} closeFile - Close file into the stream
+ * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message.
+ * @property {tsServerStart} start - Start the Typescript server
+ * @property {tsServerStop} stop - Stops the Typescript server
+ * @property {tsServerOnReady} onReady - Run logic when the typescript server is ready
+ * 
+ * @property {tsServerOpenFile} open - Opens a file
+ * @property {tsServerEditFile} edit - Edit the file in the stream
+ * @property {tsServerCloseFile} close - Close file into the stream
  * @property {tsServerCompletion} completion - Get completion data of the current file and offest into the stream
  * @property {tsServerError} errors - Trigger get error's / checking for a file
  */
