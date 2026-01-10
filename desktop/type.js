@@ -729,9 +729,16 @@
  */
 
 /**
+ * Represents the shape of the object sent to a JSON rpc language server indicating the document has changed
+ * @typedef {Object} JSONRpcEdit
+ * @property {string} filePath - The files path abs
+ * @property {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - The text documents changes
+ */
+
+/**
  * Edit a file
  * @callback pythonServerEdit
- * @param {import("vscode-languageserver-protocol").DidChangeTextDocumentParams} params - Params
+ * @param {JSONRpcEdit} edit - Edit content shape
  * @returns {void} Nothing
  */
 

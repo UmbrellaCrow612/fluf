@@ -916,13 +916,17 @@ export type pythonServer = {
      */
     open: pythonServerOpen;
     /**
+     * - Edit a file request
+     */
+    edit: pythonServerEdit;
+    /**
      * - Start the language server
      */
-    start: pythonStart;
+    start: pythonServerStart;
     /**
      * - Stop the language server
      */
-    stop: pythonStop;
+    stop: pythonServerStop;
     /**
      * - Call some logic when the server becomes avaiable and is set up
      */
@@ -933,13 +937,30 @@ export type pythonServer = {
     onResponse: pythonServerOnResponse;
 };
 /**
+ * Represents the shape of the object sent to a JSON rpc language server indicating the document has changed
+ */
+export type JSONRpcEdit = {
+    /**
+     * - The files path abs
+     */
+    filePath: string;
+    /**
+     * - The text documents changes
+     */
+    changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[];
+};
+/**
+ * Edit a file
+ */
+export type pythonServerEdit = (edit: JSONRpcEdit) => void;
+/**
  * Being the python language server
  */
-export type pythonStart = (workSpaceFolder: string) => Promise<boolean>;
+export type pythonServerStart = (workSpaceFolder: string) => Promise<boolean>;
 /**
  * Stops the python langaueg server
  */
-export type pythonStop = () => Promise<boolean>;
+export type pythonServerStop = () => Promise<boolean>;
 /**
  * Opens file
  */

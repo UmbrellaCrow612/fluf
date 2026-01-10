@@ -7,6 +7,7 @@ const pythonServer = {
   start: (wsf) => ipcRenderer.invoke("python:start", wsf),
   stop: () => ipcRenderer.invoke("python:stop"),
   open: (fp, fc) => ipcRenderer.send("python:file:open", fp, fc),
+  edit: (payload) => ipcRenderer.send("python:file:edit", payload),
 
   onReady: (callback) => {
     /** Runs when event is fired */
