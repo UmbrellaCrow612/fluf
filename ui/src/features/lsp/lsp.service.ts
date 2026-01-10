@@ -1,5 +1,7 @@
+import { fileNode } from './../../gen/type.d';
 import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
+import { ViewUpdate } from '@codemirror/view';
 import {
   ILsp,
   LanguageServiceCallback,
@@ -7,6 +9,7 @@ import {
   fileDiagnosticMap,
 } from './type';
 import { getElectronApi } from '../../utils';
+import type { Text } from '@codemirror/state';
 import {
   mapTsServerOutputToCompletions,
   mapTypescriptDiagnosticToCodeMirrorDiagnostic,
@@ -15,10 +18,16 @@ import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 import { FlufDiagnostic } from '../diagnostic/type';
 import {
+  JSONRpcEdit,
   JSONRpcNotification,
   languageServer,
   voidCallback,
 } from '../../gen/type';
+import {
+  TextDocumentContentChangeEvent,
+  Range,
+  Position,
+} from 'vscode-languageserver-protocol';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -71,13 +80,19 @@ export class LspService implements ILsp {
     }
   };
 
-  Edit = (
-    args: server.protocol.ChangeRequestArgs,
-    langServer: languageServer,
-  ) => {
+  Edit = (view: ViewUpdate, fileNode: fileNode, langServer: languageServer) => {
     switch (langServer) {
       case 'js/ts':
-        this.api.tsServer.edit(args);
+        let changeRequest = codeMirrorViewUpdateToChangeRequest(view, fileNode);
+        changeRequest.forEach((x) => {
+          this.api.tsServer.edit(x);
+        });
+        break;
+
+      case 'python':
+        this.api.pythonServer.edit(
+          codeMirrorViewUpdateToJSONRpcEdit(view, fileNode),
+        );
         break;
 
       default:
@@ -94,6 +109,7 @@ export class LspService implements ILsp {
       case 'js/ts':
         let tsserverUnSub = this.api.tsServer.onResponse((data) => {
           let filePath = data?.body?.file ?? 'unkown';
+          console.log(data);
 
           let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
             data,
@@ -123,34 +139,7 @@ export class LspService implements ILsp {
 
       case 'python':
         let pythonServerUnSub = this.api.pythonServer.onResponse((message) => {
-          let convertred = convertNotificationToFlufDiagnostics(
-            message,
-            editorState,
-          );
-          if (
-            convertred.length == 0 ||
-            !message.params ||
-            !message.params.uri ||
-            !message.params.diagnostics
-          ) {
-            return;
-          }
-
-          let filePath = uriToFilePath(message.params?.uri) as string;
-
-          let currentMap = this.fileAndDiagMap.get(filePath);
-          if (!currentMap) {
-            let map = new Map<diagnosticType, FlufDiagnostic[]>();
-            map.set(message.method, convertred);
-            this.fileAndDiagMap.set(filePath, map);
-          } else {
-            this.fileAndDiagMap.get(filePath)?.set(message.method, convertred);
-          }
-
-          callback(
-            structuredClone(this.fileAndDiagMap),
-            structuredClone(this.completions),
-          );
+          console.log(message);
         });
         return pythonServerUnSub;
       default:
@@ -165,7 +154,7 @@ export class LspService implements ILsp {
         break;
 
       case 'python':
-        // TODO  add
+        // It's automatic for proper LSP's
         break;
 
       default:
@@ -228,75 +217,76 @@ export class LspService implements ILsp {
 }
 
 /**
- * Converts a JSON-RPC diagnostic notification into CodeMirror FlufDiagnostics
- * @param notification - The JSON-RPC notification object
- * @param state - The CodeMirror editor state
+ * Make a Typescript change request using the editor view
+ * @param update The view update from code mirror
+ * @param fileNode The file in the editor
+ * @returns List of change requests
  */
-export function convertNotificationToFlufDiagnostics(
-  notification: JSONRpcNotification,
-  state: EditorState,
-): FlufDiagnostic[] {
-  if (!notification.params?.diagnostics) return [];
+function codeMirrorViewUpdateToChangeRequest(
+  update: ViewUpdate,
+  fileNode: fileNode,
+) {
+  let changes: server.protocol.ChangeRequestArgs[] = [];
 
-  const doc = state.doc;
+  update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+    const doc = update.startState.doc;
+    const startLine = doc.lineAt(fromA);
+    const endLine = doc.lineAt(toA);
 
-  // Helper: Convert line/column to document offset
-  const getOffset = (line: number, column: number) => {
-    const lineHandle = doc.line(line + 1); // CodeMirror lines are 1-indexed
-    return Math.min(lineHandle.from + column, lineHandle.to);
-  };
-
-  // Map LSP severity to CodeMirror severity
-  const severityMap: Record<number, FlufDiagnostic['severity']> = {
-    1: 'error',
-    2: 'warning',
-    3: 'info',
-    4: 'hint',
-  };
-
-  return notification.params.diagnostics.map((diag) => {
-    const startLine = diag.range.start.line;
-    const startColumn = diag.range.start.character;
-    const endLine = diag.range.end.line;
-    const endColumn = diag.range.end.character;
-
-    return {
-      from: getOffset(startLine, startColumn),
-      to: getOffset(endLine, endColumn),
-      severity: severityMap[diag.severity] || 'error',
-      message: diag.message,
-      source: diag.source,
-      startLine,
-      startColumn,
-      endLine,
-      endColumn,
+    const changeRequest: server.protocol.ChangeRequestArgs = {
+      file: fileNode.path,
+      line: startLine.number, // Already 1-based in CodeMirror
+      offset: fromA - startLine.from + 1, // Convert to 1-based offset
+      endLine: endLine.number,
+      endOffset: toA - endLine.from + 1,
+      insertString: inserted.toString() || undefined,
     };
-  });
+
+    changes.push(changeRequest);
+  }, true);
+
+  return changes;
 }
 
 /**
- * Converts a file URI from a JSON-RPC notification to a normal file path
- * @param uri - The file URI, e.g., 'file:///C:/path/to/file.js'
- * @returns The normalized file path, e.g., 'C:/path/to/file.js'
+ * Converts a CodeMirror offset to LSP Position (line and character)
  */
-export function uriToFilePath(uri?: string): string | undefined {
-  if (!uri) return undefined;
+function offsetToPosition(doc: Text, offset: number): Position {
+  const line = doc.lineAt(offset);
+  return {
+    line: line.number - 1, // LSP uses 0-based line numbers
+    character: offset - line.from,
+  };
+}
 
-  try {
-    // Remove 'file://' prefix
-    let path = uri.replace(/^file:\/\//, '');
+/**
+ * Converts CodeMirror ViewUpdate to JSONRpcEdit object
+ * @param update The view update from CodeMirror
+ * @param fileNode The file in the editor
+ * @returns JSONRpcEdit object with LSP-compliant changes
+ */
+function codeMirrorViewUpdateToJSONRpcEdit(
+  update: ViewUpdate,
+  fileNode: fileNode,
+): JSONRpcEdit {
+  const changes: TextDocumentContentChangeEvent[] = [];
 
-    // On Windows, remove leading slash if present (e.g., /C:/path → C:/path)
-    if (/^\/[a-zA-Z]:/.test(path)) {
-      path = path.substring(1);
-    }
+  update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+    const doc = update.startState.doc;
 
-    // Decode URL-encoded characters (%20 → space)
-    path = decodeURIComponent(path);
+    const start = offsetToPosition(doc, fromA);
+    const end = offsetToPosition(doc, toA);
+    const text = inserted.toString();
 
-    return path;
-  } catch (err) {
-    console.error('Failed to convert URI to file path:', err);
-    return undefined;
-  }
+    changes.push({
+      range: { start, end },
+      rangeLength: toA - fromA,
+      text,
+    });
+  });
+
+  return {
+    filePath: fileNode.path,
+    changes,
+  };
 }

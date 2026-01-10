@@ -11,18 +11,27 @@ import {
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
-import { EditorState, Text } from '@codemirror/state';
+import { ChangeSet, EditorState, Text } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { fileDiagnosticMap } from '../lsp/type';
-import { fileNode, languageServer, voidCallback } from '../../gen/type';
+import {
+  fileNode,
+  JSONRpcEdit,
+  languageServer,
+  voidCallback,
+} from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
 import { server } from 'typescript';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { LspService } from '../lsp/lsp.service';
+import {
+  Position,
+  TextDocumentContentChangeEvent,
+} from 'vscode-languageserver-protocol';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -299,27 +308,6 @@ export class TextFileEditorComponent implements OnInit {
 
   codeMirrorView: EditorView | null = null;
 
-  changeToRequest(
-    doc: Text,
-    fromA: number,
-    toA: number,
-    inserted: Text,
-  ): server.protocol.ChangeRequestArgs {
-    const startLine = doc.lineAt(fromA);
-    const endLine = doc.lineAt(toA);
-
-    return {
-      line: startLine.number,
-      offset: fromA - startLine.from + 1,
-
-      endLine: endLine.number,
-      endOffset: toA - endLine.from + 1,
-
-      insertString: inserted.length ? inserted.toString() : undefined,
-      file: this.openFileNode()?.path!,
-    };
-  }
-
   /**
    * Keeps state updated whenever doc changes and run custom logic when it changes
    */
@@ -327,17 +315,11 @@ export class TextFileEditorComponent implements OnInit {
     if (!this.openFileNode()) return;
 
     if (this.languageServer) {
-      update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
-        const request = this.changeToRequest(
-          update.startState.doc,
-          fromA,
-          toA,
-          inserted,
-        );
+      this.lspService.Edit(update, this.openFileNode()!, this.languageServer);
 
-        this.lspService.Edit(request, this.languageServer!);
+      if (update.docChanged) {
         this.diagnosticsEvent();
-      }, true);
+      }
     }
 
     if (update.docChanged) {

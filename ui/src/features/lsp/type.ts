@@ -1,5 +1,8 @@
 import { EditorState } from '@codemirror/state';
+import { ViewUpdate } from '@codemirror/view';
 import {
+  fileNode,
+  JSONRpcEdit,
   languageServer,
   LanguageServerProtocolMethod,
   tsServerOutputEvent,
@@ -12,7 +15,10 @@ import { FlufDiagnostic } from '../diagnostic/type';
 /**
  * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
  */
-export type diagnosticType = tsServerOutputEvent | 'unkown' | LanguageServerProtocolMethod;
+export type diagnosticType =
+  | tsServerOutputEvent
+  | 'unkown'
+  | LanguageServerProtocolMethod;
 
 /**
  * Represents a file path as a key then a map of specific diagnostics as keys then all of them
@@ -42,14 +48,12 @@ export interface ILsp {
 
   /**
    * Edit a file
-   * @param {server.protocol.ChangeRequestArgs} args List of options needed to update the backend view
+   * @param view - The code mirror view update
+   * @param fileNode - The file in the editor
    * @param langServer The specific language server to send it to
    * @returns Nothing
    */
-  Edit: (
-    args: server.protocol.ChangeRequestArgs,
-    langServer: languageServer,
-  ) => void;
+  Edit: (view: ViewUpdate, fileNode: fileNode, langServer: languageServer) => void;
 
   /**
    * Get completion information
