@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   OnInit,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
@@ -116,10 +117,24 @@ export class TextFileEditorComponent implements OnInit {
   }
 
   /**
+   * Sends the file and a get error to the server for the given file node
+   */
+  private openFileInLanguageServer() {
+    this.lspService.Open(
+      this.openFileNode()!.path,
+      this.stringContent,
+      this.languageServer!,
+    );
+
+    this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
+  }
+
+  /**
    * Launch the language server - AFTER - rendering the UI for the given node in the UI
    * @param fileNode The current open file node in the editor view
    */
   private initLangServer(fileNode: fileNode | null) {
+    console.log('Language server being started');
     if (!fileNode) {
       console.warn('No file selected cannot start language server');
       return;
@@ -145,15 +160,26 @@ export class TextFileEditorComponent implements OnInit {
     }
 
     this.lspService.Start(this.workSpaceFolder()!, this.languageServer);
-  
-    this.onReadyUnsub = this.lspService.onReady(() => {
-      this.lspService.Open(
-        this.openFileNode()!.path,
-        this.stringContent,
-        this.languageServer!,
-      );
+    let isServerActive = untracked(
+      () =>
+        this.inMemoryContextService.activeLanguageServers()[
+          this.languageServer!
+        ],
+    );
+    if (isServerActive) {
+      console.log('Sent open file request from restored state');
+      this.openFileInLanguageServer();
+    }
 
-      this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
+    this.onReadyUnsub = this.lspService.onReady(() => {
+      const langKey = String(this.languageServer);
+      this.inMemoryContextService.activeLanguageServers.update((servers) => ({
+        ...servers,
+        [langKey]: true,
+      }));
+
+      this.openFileInLanguageServer();
+      console.log('Sent open file request from on ready');
     }, this.languageServer);
 
     this.serverUnSub = this.lspService.OnResponse(
@@ -382,6 +408,8 @@ export class TextFileEditorComponent implements OnInit {
   }
 
   private async displayFile() {
+    console.log('File being rendered');
+
     this.error = null;
     this.isLoading = true;
     this.disposeCodeMirror();

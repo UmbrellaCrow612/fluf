@@ -100,6 +100,13 @@ export type AppContext = {
 };
 
 /**
+ * Represents a map of specific language server and if it is active
+ */
+export type ActiveLanguageServer = {
+  [K in languageServer]: boolean;
+};
+
+/**
  * Represents application context that stays in memeory until a refresh or app close
  */
 export type InMemoryAppContext = {
@@ -168,4 +175,9 @@ export type InMemoryAppContext = {
    * Holds the current language server needed for the given open file thats open i.e the one the code editor is sending the requests to for the given open file being edited via the lsp
    */
   currentLanguageServer: languageServer | null;
+
+  /**
+   * Represents language servers and if they are active i.e sent a start request and it was ready
+   */
+  activeLanguageServers: ActiveLanguageServer;
 };
