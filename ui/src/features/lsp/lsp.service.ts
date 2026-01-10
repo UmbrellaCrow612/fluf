@@ -1,7 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
 import {
-  CodeMirrorSeverity,
   ILsp,
   LanguageServiceCallback,
   diagnosticType,

@@ -55,6 +55,12 @@ let isServerStarted = false;
 let selectedWorkSpaceFolder = null;
 
 /**
+ * Contains a documents file path then it's version number
+ * @type {Map<string, number>}
+ */
+const documentVersions = new Map()
+
+/**
  * Holds promises for requests we made and are awaiting a response
  *
  * Number is the request ID and it's value is the promise for it
@@ -389,18 +395,25 @@ const openImpl = (_, filePath, fileContent) => {
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonStart>}
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonServerStart>}
  */
 const startImpl = async (_, fp) => {
   return await startPythonLanguageServer(fp);
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonStop>}
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonServerStop>}
  */
 const stopImpl = async () => {
   return await stopPythonLanguageServer();
 };
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonServerEdit>}
+ */
+const editImpl = async (_) => {
+  // DidChangeTextDocumentParams 
+}
 
 /**
  * Register all python lsp related listeners

@@ -20,7 +20,6 @@ import { getElectronApi } from '../../utils';
 import { fileDiagnosticMap } from '../lsp/type';
 import { fileNode, languageServer, voidCallback } from '../../gen/type';
 import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
-import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { LspService } from '../lsp/lsp.service';

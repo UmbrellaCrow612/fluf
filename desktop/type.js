@@ -721,22 +721,30 @@
  * Contains all the code to interact with python language server
  * @typedef {Object} pythonServer
  * @property {pythonServerOpen} open - Open a file request
- * @property {pythonStart} start - Start the language server
- * @property {pythonStop} stop - Stop the language server
+ * @property {pythonServerEdit} edit - Edit a file request
+ * @property {pythonServerStart} start - Start the language server
+ * @property {pythonServerStop} stop - Stop the language server
  * @property {pythonServerOnReady} onReady - Call some logic when the server becomes avaiable and is set up
  * @property {pythonServerOnResponse} onResponse - Run logic when the server responds
  */
 
 /**
+ * Edit a file
+ * @callback pythonServerEdit
+ * @param {import("vscode-languageserver-protocol").DidChangeTextDocumentParams} params - Params
+ * @returns {void} Nothing
+ */
+
+/**
  * Being the python language server
- * @callback pythonStart
+ * @callback pythonServerStart
  * @param {string} workSpaceFolder - The path of the selcted root folder opened
  * @returns {Promise<boolean>} Nothing
  */
 
 /**
  * Stops the python langaueg server
- * @callback pythonStop
+ * @callback pythonServerStop
  * @returns {Promise<boolean>} If it could or could not
  */
 
