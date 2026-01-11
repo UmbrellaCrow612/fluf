@@ -6,7 +6,7 @@ export interface NormalizePathOptions {
   forwardSlashes?: boolean;
   /** Remove trailing slash from path (default: true) */
   removeTrailingSlash?: boolean;
-  /** Convert path to lowercase (default: false) */
+  /** Convert path to lowercase (default: true) */
   toLowerCase?: boolean;
 }
 
@@ -25,6 +25,7 @@ export function normalizeElectronPath(
   options: NormalizePathOptions = {
     toLowerCase: true,
     removeTrailingSlash: true,
+    forwardSlashes: true,
   },
 ): string {
   if (!path || typeof path !== 'string') {
