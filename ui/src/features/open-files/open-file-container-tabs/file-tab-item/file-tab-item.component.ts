@@ -10,7 +10,6 @@ import { InMemoryContextService } from '../../../app-context/app-in-memory-conte
 import { OpenNodeInEditor } from '../../../file-explorer/helper';
 import { LspService } from '../../../lsp/lsp.service';
 import { getElectronApi } from '../../../../utils';
-import { canonicalPath } from '../../../path/utils';
 
 @Component({
   selector: 'app-file-tab-item',

@@ -1,8 +1,12 @@
+import { getElectronApi } from '../../utils';
+
+let api = getElectronApi();
+
 /**
- * Converts forward slash to back slash
- * @param p The file path
- * @returns Fixed string
+ * Normlize a path in UI side use whenver you need to normalize a path to be consistent throughout UI usage
+ * @param path The file path
+ * @returns Path
  */
-export function canonicalPath(p: string): string {
-  return p.replace(/\\/g, '/');
+export async function flufNormalize(path: string) {
+  return (await api.pathApi.normalize(path)).toLowerCase();
 }
