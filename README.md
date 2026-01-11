@@ -2,6 +2,7 @@
 
 ![Flufy UI Preview](assets/demo.gif)
 ![Flufy UI Markdown](assets/markdown_preview.gif)
+![Flufy python](assets/python_lsp.gif)
 
 A simple text editor written in electron and angular
 
@@ -24,6 +25,8 @@ A simple text editor written in electron and angular
 - Hot key support
 
 - Markdown previews
+
+- JSON RPC LSP support for now python pyright support
 
 ---
 
