@@ -1,5 +1,4 @@
-import { EditorState } from '@codemirror/state';
-import { ViewUpdate } from '@codemirror/view';
+import { EditorView, ViewUpdate } from '@codemirror/view';
 import {
   fileNode,
   languageServer,
@@ -78,7 +77,7 @@ export interface ILsp {
    */
   OnResponse: (
     langServer: languageServer,
-    editorState: EditorState,
+    editorState: EditorView,
     callback: LanguageServiceCallback,
   ) => voidCallback;
 

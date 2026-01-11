@@ -1,3 +1,4 @@
+import { linter, lintGutter } from '@codemirror/lint';
 import {
   Component,
   computed,
@@ -10,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
-import { EditorView } from '@codemirror/view';
+import { EditorView, gutter } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
@@ -23,6 +24,8 @@ import { LspService } from '../lsp/lsp.service';
 import { getLanguageServer } from '../lsp/utils';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
+import { applyExternalDiagnostics } from './lint';
+import { FlufDiagnostic } from '../diagnostic/type';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -58,6 +61,9 @@ export class TextFileEditorComponent implements OnInit {
   private onReadyUnsub: voidCallback | null = null;
 
   private languageServer: languageServer | null = null;
+
+  /** Holds the current diagnostics for the file */
+  private currentDiagnostics: FlufDiagnostic[] = [];
 
   /**
    * Sends the file and a get error to the server for the given file node
@@ -128,10 +134,20 @@ export class TextFileEditorComponent implements OnInit {
 
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
-      this.codeMirrorView.state,
+      this.codeMirrorView,
       async (fileDiagMap) => {
         console.log('UI should render diagnostics ');
         console.log(fileDiagMap);
+
+        let normFilePath = await this.api.pathApi.normalize(
+          this.openFileNode()?.path!,
+        );
+        let map = fileDiagMap.get(normFilePath);
+        let values = Array.from(map?.values() ?? []).flat();
+
+        this.currentDiagnostics = values;
+
+        applyExternalDiagnostics(this.codeMirrorView!, values);
       },
     );
 
@@ -221,7 +237,14 @@ export class TextFileEditorComponent implements OnInit {
 
     const startState = EditorState.create({
       doc: this.stringContent,
-      extensions: [basicSetup, codeEditorTheme, language, this.updateListener],
+      extensions: [
+        basicSetup,
+        codeEditorTheme,
+        language,
+        this.updateListener,
+        linter(() => this.currentDiagnostics),
+        lintGutter()
+      ],
     });
 
     this.codeMirrorView = new EditorView({

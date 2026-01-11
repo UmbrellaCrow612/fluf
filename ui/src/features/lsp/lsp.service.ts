@@ -1,7 +1,7 @@
 import { fileNode } from './../../gen/type.d';
 import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
-import { ViewUpdate } from '@codemirror/view';
+import { EditorView, ViewUpdate } from '@codemirror/view';
 import {
   ILsp,
   LanguageServiceCallback,
@@ -22,6 +22,7 @@ import {
   Position,
 } from 'vscode-languageserver-protocol';
 import { FlufDiagnostic } from '../diagnostic/type';
+import { convertTsToFlufDiagnostics } from './typescript';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -105,7 +106,7 @@ export class LspService implements ILsp {
 
   OnResponse = (
     langServer: languageServer,
-    editorState: EditorState,
+    view: EditorView,
     callback: LanguageServiceCallback,
   ) => {
     switch (langServer) {
@@ -127,8 +128,9 @@ export class LspService implements ILsp {
             this.fileAndDiagMap.get(filePath) ??
             new Map<diagnosticType, FlufDiagnostic[]>();
 
-          currentMap.set(diagKey, []); // do conversion
-          this.fileAndDiagMap.set(filePath, currentMap)
+          let diagnostics = convertTsToFlufDiagnostics(view, data.body);
+          currentMap.set(diagKey, diagnostics); // do conversion
+          this.fileAndDiagMap.set(filePath, currentMap);
 
           await callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
         });
@@ -154,7 +156,7 @@ export class LspService implements ILsp {
             new Map<diagnosticType, FlufDiagnostic[]>();
 
           currentMap.set(diagKey, []); // do conversion
-          this.fileAndDiagMap.set(normFilePath, currentMap)
+          this.fileAndDiagMap.set(normFilePath, currentMap);
 
           await callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
         });
