@@ -210,6 +210,19 @@
  */
 
 /**
+ * Exposes node url utils
+ * @typedef {Object} urlApi
+ * @property {fileUriToAbsolutePath} fileUriToAbsolutePath - Convert a file uri to a file path abs
+ */
+
+/**
+ * Converts a `file:///c:/dev` to a abs path like `c:\dev\some`
+ * @callback fileUriToAbsolutePath
+ * @param {string} fileUri
+ * @returns {Promise<string>} The resolved abs path
+ */
+
+/**
  * Contains all helpers todo with path
  * @typedef {Object} pathApi
  * @property {normalizePath} normalize - Calls path normalize
@@ -539,7 +552,7 @@
 /**
  * @callback tsServerResponseCallback
  * @param {tsServerOutput} message - The message sent
- * @returns {void} Nothing
+ * @returns {void | Promise<void>} A promise or nothing
  */
 
 /**
@@ -695,15 +708,17 @@
  */
 
 /**
- * List of all methods that can be in the method of a request or message
+ * List of all methods that can be in the method of a request / message / Notification
  * based on the action you want to perform read the link below and send that method
  *
  * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
+ * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics
  *
  * @typedef {"initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability"
  *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
  *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
  *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
+ *          | "textDocument/publishDiagnostics" 
  * } LanguageServerProtocolMethod
  */
 
@@ -721,22 +736,37 @@
  * Contains all the code to interact with python language server
  * @typedef {Object} pythonServer
  * @property {pythonServerOpen} open - Open a file request
- * @property {pythonStart} start - Start the language server
- * @property {pythonStop} stop - Stop the language server
+ * @property {pythonServerEdit} edit - Edit a file request
+ * @property {pythonServerStart} start - Start the language server
+ * @property {pythonServerStop} stop - Stop the language server
  * @property {pythonServerOnReady} onReady - Call some logic when the server becomes avaiable and is set up
  * @property {pythonServerOnResponse} onResponse - Run logic when the server responds
  */
 
 /**
+ * Represents the shape of the object sent to a JSON rpc language server indicating the document has changed
+ * @typedef {Object} JSONRpcEdit
+ * @property {string} filePath - The files path abs
+ * @property {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - The text documents changes
+ */
+
+/**
+ * Edit a file
+ * @callback pythonServerEdit
+ * @param {JSONRpcEdit} edit - Edit content shape
+ * @returns {void} Nothing
+ */
+
+/**
  * Being the python language server
- * @callback pythonStart
+ * @callback pythonServerStart
  * @param {string} workSpaceFolder - The path of the selcted root folder opened
  * @returns {Promise<boolean>} Nothing
  */
 
 /**
  * Stops the python langaueg server
- * @callback pythonStop
+ * @callback pythonServerStop
  * @returns {Promise<boolean>} If it could or could not
  */
 
@@ -784,7 +814,7 @@
  * The shape of the callback that is called when a message is recieved from the python server
  * @callback pythonServerOnResponseCallback
  * @param {JSONRpcNotification} message - Any message
- * @returns {void} Nothing
+ * @returns {void | Promise<void>} Nothing or a promise
  */
 
 /**
@@ -823,6 +853,8 @@
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  * @property {pythonServer} pythonServer - Contains all the api's for the python language server
+ * 
+ * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
  *
  */
 

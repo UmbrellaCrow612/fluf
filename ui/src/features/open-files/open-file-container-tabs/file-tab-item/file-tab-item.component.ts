@@ -10,7 +10,7 @@ import { InMemoryContextService } from '../../../app-context/app-in-memory-conte
 import { OpenNodeInEditor } from '../../../file-explorer/helper';
 import { LspService } from '../../../lsp/lsp.service';
 import { getElectronApi } from '../../../../utils';
-import { canonicalPath } from '../../../path/utils';
+import { normalizeElectronPath } from '../../../path/utils';
 
 @Component({
   selector: 'app-file-tab-item',
@@ -32,7 +32,7 @@ export class FileTabItemComponent {
   });
 
   errorCount = computed(() => {
-    const normalizedPath = this.fileNode().path.replace(/\\/g, '/');
+    const normalizedPath = normalizeElectronPath(this.fileNode().path);
 
     let diagnostics = Array.from(
       this.inMemoryContextService.problems().get(normalizedPath)?.values() ??

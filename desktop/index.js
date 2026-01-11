@@ -18,6 +18,7 @@ const {
   stopPythonLanguageServer,
 } = require("./python");
 const { logger } = require("./logger");
+const { registerUrlListeners } = require("./url");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -78,6 +79,7 @@ app.whenReady().then(() => {
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
   reigsterPythonLanguageServerListeners(ipcMain, mainWindow);
+  registerUrlListeners(ipcMain)
 });
 
 app.on("before-quit", async (event) => {

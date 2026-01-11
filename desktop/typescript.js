@@ -163,8 +163,7 @@ function write(message) {
 
   try {
     const jsonBody = JSON.stringify(message);
-    const byteLength = Buffer.byteLength(jsonBody, "utf8");
-    const messageString = `Content-Length: ${byteLength}\r\n\r\n${jsonBody}\r\n`;
+    const messageString = `${jsonBody}\n`;
 
     childSpawnRef.stdin.write(messageString, "utf8");
   } catch (error) {

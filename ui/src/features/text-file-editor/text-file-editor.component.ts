@@ -1,3 +1,4 @@
+import { linter, lintGutter } from '@codemirror/lint';
 import {
   Component,
   computed,
@@ -10,20 +11,22 @@ import {
   viewChild,
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
-import { EditorView } from '@codemirror/view';
-import { EditorState, Text } from '@codemirror/state';
+import { EditorView, gutter } from '@codemirror/view';
+import { EditorState } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { fileDiagnosticMap } from '../lsp/type';
 import { fileNode, languageServer, voidCallback } from '../../gen/type';
-import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
-import { Completion } from '@codemirror/autocomplete';
-import { server } from 'typescript';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { LspService } from '../lsp/lsp.service';
+import { getLanguageServer } from '../lsp/utils';
+import { codeEditorTheme } from './theme';
+import { getLanguageExtension } from './language';
+import { applyExternalDiagnostics } from './lint';
+import { FlufDiagnostic } from '../diagnostic/type';
+import { normalizeElectronPath } from '../path/utils';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -53,68 +56,15 @@ export class TextFileEditorComponent implements OnInit {
     });
   }
 
-  /**
-   * Getv the syntax highlting extension for a given file extension
-   * @param ext The files extension
-   * @returns Code mirror lang extension for syntax highlting
-   */
-  private getLanguageExtension(ext: string) {
-    switch (ext.toLowerCase()) {
-      case '.html':
-        return html();
-      case '.css':
-        return css();
-      case '.js':
-      case '.mjs':
-      case '.cjs':
-      case '.ts':
-        return javascript();
-      default:
-        return []; // No highlighting fallback
-    }
-  }
-
   /** Callback to unsub reacting to language server changes */
   private serverUnSub: voidCallback | null = null;
   /** Unsub method to no longer run logic defined in the on ready method  */
   private onReadyUnsub: voidCallback | null = null;
 
-  /**
-   * Get the specific ;language server needed for the file based on it's extension
-   * @param extension The file extension
-   * @returns Lang server or null
-   */
-  private getLanguageServer(extension: string): languageServer | null {
-    switch (extension) {
-      case '.js':
-      case '.mjs':
-      case '.cjs':
-      case '.ts':
-        return 'js/ts';
-
-      case '.py':
-        return 'python';
-
-      default:
-        console.log('Unsuported language server for file');
-        return null;
-    }
-  }
-
   private languageServer: languageServer | null = null;
 
-  getDiagnosticsForFile(diagnosticMap: fileDiagnosticMap, filePath: string) {
-    const fileDiagnostics = diagnosticMap.get(filePath);
-    if (!fileDiagnostics) return [];
-
-    const allDiagnostics = [];
-
-    for (const diagnosticsArray of fileDiagnostics.values()) {
-      allDiagnostics.push(...diagnosticsArray);
-    }
-
-    return allDiagnostics;
-  }
+  /** Holds the current diagnostics for the file */
+  private currentDiagnostics: FlufDiagnostic[] = [];
 
   /**
    * Sends the file and a get error to the server for the given file node
@@ -153,7 +103,8 @@ export class TextFileEditorComponent implements OnInit {
       this.onReadyUnsub();
     }
 
-    this.languageServer = this.getLanguageServer(fileNode.extension);
+    this.languageServer = getLanguageServer(fileNode.extension);
+    this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
     if (!this.languageServer) {
       console.warn('No language server found for ' + fileNode.extension);
       return;
@@ -184,95 +135,24 @@ export class TextFileEditorComponent implements OnInit {
 
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
-      this.codeMirrorView.state,
-      (diagnosticMap) => {
-        this.inMemoryContextService.problems.set(diagnosticMap);
+      this.codeMirrorView,
+      async (fileDiagMap) => {
+        console.log('UI should render diagnostics');
+        console.log(fileDiagMap);
 
-        if (!this.openFileNode()) return;
+        let normFilePath = normalizeElectronPath(this.openFileNode()?.path!)
+        let map = fileDiagMap.get(normFilePath);
+        let values = Array.from(map?.values() ?? []).flat();
 
-        const originalPath = this.openFileNode()!.path;
-        const normalizedPath = originalPath.replace(/\\/g, '/');
+        this.currentDiagnostics = values;
+        this.inMemoryContextService.problems.set(fileDiagMap)
 
-        let m = diagnosticMap.get(normalizedPath);
-
-        if (!m) {
-          return;
-        }
-
-        let all = this.getDiagnosticsForFile(diagnosticMap, normalizedPath);
-
-        applyExternalDiagnostics(this.codeMirrorView!, all);
+        applyExternalDiagnostics(this.codeMirrorView!, values);
       },
     );
 
     console.log('Language server started for ' + this.languageServer);
   }
-
-  private theme = EditorView.theme(
-    {
-      '&': {
-        color: 'var(--code-editor-text)',
-        backgroundColor: 'var(--code-editor-bg)',
-        height: '100%',
-        overflow: 'auto',
-        fontFamily: 'var(--code-editor-font-family)',
-        fontSize: 'var(--code-editor-font-size)',
-      },
-
-      /* Scroll area */
-      '.cm-scroller': {
-        overflow: 'auto',
-        scrollbarWidth: 'thin',
-        scrollbarColor:
-          'var(--code-editor-scrollbar-thumb) var(--code-editor-scrollbar-track)',
-      },
-      '.cm-scroller::-webkit-scrollbar': {
-        width: '8px',
-        height: '8px',
-      },
-      '.cm-scroller::-webkit-scrollbar-track': {
-        background: 'var(--code-editor-scrollbar-track)',
-      },
-      '.cm-scroller::-webkit-scrollbar-thumb': {
-        backgroundColor: 'var(--code-editor-scrollbar-thumb)',
-        borderRadius: '4px',
-      },
-      '.cm-scroller::-webkit-scrollbar-thumb:hover': {
-        backgroundColor: 'var(--code-editor-scrollbar-thumb-hover)',
-      },
-
-      /* Text + cursor */
-      '.cm-content': {
-        caretColor: 'var(--code-editor-cursor)',
-      },
-      '&.cm-focused .cm-cursor': {
-        borderLeftColor: 'var(--code-editor-cursor)',
-      },
-      '&.cm-focused .cm-selectionBackground, ::selection': {
-        backgroundColor: 'var(--code-editor-selection-bg)',
-      },
-
-      /* Lines */
-      '.cm-content, .cm-line': {
-        padding: '0 8px',
-      },
-      '.cm-activeLine': {
-        backgroundColor: 'var(--code-editor-active-line-bg)',
-      },
-
-      /* Gutter */
-      '.cm-gutters': {
-        backgroundColor: 'var(--code-editor-gutter-bg)',
-        color: 'var(--code-editor-line-number)',
-        borderRight: '1px solid var(--code-editor-gutter-border)',
-      },
-      '.cm-activeLineGutter': {
-        backgroundColor: 'var(--code-editor-active-line-bg)',
-        color: 'var(--code-editor-line-number-active)',
-      },
-    },
-    { dark: true },
-  );
 
   private saveTimeout: any;
   onSaveEvent() {
@@ -300,45 +180,15 @@ export class TextFileEditorComponent implements OnInit {
 
   codeMirrorView: EditorView | null = null;
 
-  changeToRequest(
-    doc: Text,
-    fromA: number,
-    toA: number,
-    inserted: Text,
-  ): server.protocol.ChangeRequestArgs {
-    const startLine = doc.lineAt(fromA);
-    const endLine = doc.lineAt(toA);
-
-    return {
-      line: startLine.number,
-      offset: fromA - startLine.from + 1,
-
-      endLine: endLine.number,
-      endOffset: toA - endLine.from + 1,
-
-      insertString: inserted.length ? inserted.toString() : undefined,
-      file: this.openFileNode()?.path!,
-    };
-  }
-
   /**
    * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
     if (!this.openFileNode()) return;
 
-    if (this.languageServer) {
-      update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
-        const request = this.changeToRequest(
-          update.startState.doc,
-          fromA,
-          toA,
-          inserted,
-        );
-
-        this.lspService.Edit(request, this.languageServer!);
-        this.diagnosticsEvent();
-      }, true);
+    if (this.languageServer && update.docChanged) {
+      this.lspService.Edit(update, this.openFileNode()!, this.languageServer);
+      this.diagnosticsEvent();
     }
 
     if (update.docChanged) {
@@ -383,16 +233,17 @@ export class TextFileEditorComponent implements OnInit {
 
     const fileExtension = this.openFileNode()?.extension ?? '';
 
-    const language = this.getLanguageExtension(fileExtension);
+    const language = getLanguageExtension(fileExtension);
 
     const startState = EditorState.create({
       doc: this.stringContent,
       extensions: [
         basicSetup,
-        this.theme,
+        codeEditorTheme,
         language,
         this.updateListener,
-        externalDiagnosticsExtension(),
+        linter(() => this.currentDiagnostics),
+        lintGutter(),
       ],
     });
 
@@ -423,8 +274,6 @@ export class TextFileEditorComponent implements OnInit {
     this.stringContent = (
       await this.api.fsApi.readFile(this.openFileNode()!.path)
     ).replace(/\r\n/g, '\n');
-
-    this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
 
     this.appContext.fileExplorerActiveFileOrFolder.set(this.openFileNode());
     this.isLoading = false;

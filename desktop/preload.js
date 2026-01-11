@@ -1,12 +1,20 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").urlApi}
+ */
+const urlApi = {
+  fileUriToAbsolutePath: (furl) => ipcRenderer.invoke("uri:to:path", furl),
+};
+
+/**
  * @type {import("./type").pythonServer}
  */
 const pythonServer = {
   start: (wsf) => ipcRenderer.invoke("python:start", wsf),
   stop: () => ipcRenderer.invoke("python:stop"),
   open: (fp, fc) => ipcRenderer.send("python:file:open", fp, fc),
+  edit: (payload) => ipcRenderer.send("python:file:edit", payload),
 
   onReady: (callback) => {
     /** Runs when event is fired */
@@ -24,8 +32,8 @@ const pythonServer = {
     /**
      * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").pythonServerOnResponseCallback>}
      */
-    let listener = (_, message) => {
-      callback(message);
+    let listener = async (_, message) => {
+      await callback(message);
     };
 
     ipcRenderer.on("python:message", listener);
@@ -157,12 +165,10 @@ const gitApi = {
 const tsServer = {
   onResponse: (callback) => {
     /**
-     * Custom listner to register and unsub
-     * @param {import("electron").IpcRendererEvent} _event
-     * @param {import("./type").tsServerOutput} message
+     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").tsServerResponseCallback>}
      */
-    let listener = (_event, message) => {
-      callback(message);
+    let listener = async (_event, message) => {
+      await callback(message);
     };
 
     ipcRenderer.on("tsserver:message", listener);
@@ -220,6 +226,7 @@ const api = {
   fsApi,
   chromeWindowApi,
   pythonServer,
+  urlApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

@@ -219,6 +219,19 @@ export type chromeWindowClose = () => void;
  */
 export type chromeWindowRestore = () => void;
 /**
+ * Exposes node url utils
+ */
+export type urlApi = {
+    /**
+     * - Convert a file uri to a file path abs
+     */
+    fileUriToAbsolutePath: fileUriToAbsolutePath;
+};
+/**
+ * Converts a `file:///c:/dev` to a abs path like `c:\dev\some`
+ */
+export type fileUriToAbsolutePath = (fileUri: string) => Promise<string>;
+/**
  * Contains all helpers todo with path
  */
 export type pathApi = {
@@ -738,7 +751,7 @@ export type tsServerOutput = {
      */
     message?: string | undefined;
 };
-export type tsServerResponseCallback = (message: tsServerOutput) => void;
+export type tsServerResponseCallback = (message: tsServerOutput) => void | Promise<void>;
 /**
  * Register a callback to run when ts server emits a message
  */
@@ -895,10 +908,10 @@ export type shellApi = {
     onExit: onShellExit;
 };
 /**
- * List of all methods that can be in the method of a request or message
+ * List of all methods that can be in the method of a request / message / Notification
  * based on the action you want to perform read the link below and send that method
  */
-export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration";
+export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics";
 /**
  * Version of jsonrpc's
  */
@@ -916,13 +929,17 @@ export type pythonServer = {
      */
     open: pythonServerOpen;
     /**
+     * - Edit a file request
+     */
+    edit: pythonServerEdit;
+    /**
      * - Start the language server
      */
-    start: pythonStart;
+    start: pythonServerStart;
     /**
      * - Stop the language server
      */
-    stop: pythonStop;
+    stop: pythonServerStop;
     /**
      * - Call some logic when the server becomes avaiable and is set up
      */
@@ -933,13 +950,30 @@ export type pythonServer = {
     onResponse: pythonServerOnResponse;
 };
 /**
+ * Represents the shape of the object sent to a JSON rpc language server indicating the document has changed
+ */
+export type JSONRpcEdit = {
+    /**
+     * - The files path abs
+     */
+    filePath: string;
+    /**
+     * - The text documents changes
+     */
+    changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[];
+};
+/**
+ * Edit a file
+ */
+export type pythonServerEdit = (edit: JSONRpcEdit) => void;
+/**
  * Being the python language server
  */
-export type pythonStart = (workSpaceFolder: string) => Promise<boolean>;
+export type pythonServerStart = (workSpaceFolder: string) => Promise<boolean>;
 /**
  * Stops the python langaueg server
  */
-export type pythonStop = () => Promise<boolean>;
+export type pythonServerStop = () => Promise<boolean>;
 /**
  * Opens file
  */
@@ -1015,7 +1049,7 @@ export type JSONRpcNotificationParamsDiagnostic = {
 /**
  * The shape of the callback that is called when a message is recieved from the python server
  */
-export type pythonServerOnResponseCallback = (message: JSONRpcNotification) => void;
+export type pythonServerOnResponseCallback = (message: JSONRpcNotification) => void | Promise<void>;
 /**
  * Listen to when the server responds and run logic
  */
@@ -1068,6 +1102,10 @@ export type ElectronApi = {
      * - Contains all the api's for the python language server
      */
     pythonServer: pythonServer;
+    /**
+     * - Contains helpers todo with URL / URI's
+     */
+    urlApi: urlApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

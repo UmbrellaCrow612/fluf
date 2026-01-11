@@ -63,6 +63,12 @@ let selectedWorkSpaceFolder = null;
 const pendingRequests = new Map();
 
 /**
+ * Contains a map of abs file paths and there version
+ * @type {Map<string,number>}
+ */
+const documentVersions = new Map();
+
+/**
  * Helper to send a request and return a promise
  * @param {import("./type").LanguageServerProtocolMethod} method
  * @param {any} params
@@ -302,7 +308,7 @@ async function stopPythonLanguageServer() {
 
 /**
  * Safe write with error handling
- * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} request
+ * @param {Partial<import("vscode-languageserver-protocol").RequestMessage> | Partial<import("vscode-languageserver-protocol").NotificationMessage>} request
  */
 function write(request) {
   if (!spawnRef || !spawnRef.stdin.writable) return;
@@ -337,7 +343,7 @@ function createUri(filePath) {
   }
 
   // Resolve relative paths to absolute
-  let absolutePath = nodePath.resolve(filePath);
+  let absolutePath = nodePath.normalize(nodePath.resolve(filePath));
 
   // On Windows, replace backslashes with forward slashes
   absolutePath = absolutePath.replace(/\\/g, "/");
@@ -360,6 +366,8 @@ function createUri(filePath) {
  */
 const openImpl = (_, filePath, fileContent) => {
   try {
+    documentVersions.set(nodePath.normalize(filePath), 1);
+
     /**
      * @type {Partial<import("vscode-languageserver-protocol").RequestMessage>}
      */
@@ -389,17 +397,41 @@ const openImpl = (_, filePath, fileContent) => {
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonStart>}
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonServerStart>}
  */
 const startImpl = async (_, fp) => {
   return await startPythonLanguageServer(fp);
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonStop>}
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonServerStop>}
  */
 const stopImpl = async () => {
   return await stopPythonLanguageServer();
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pythonServerEdit>}
+ */
+const editImpl = (_, payload) => {
+  let normPath = nodePath.normalize(payload.filePath);
+  let previousVersion = documentVersions.get(normPath) ?? 1;
+  let newVersion = previousVersion + 1;
+  documentVersions.set(normPath, newVersion);
+
+  write({
+    jsonrpc: "2.0",
+    /** @type {import("./type").LanguageServerProtocolMethod} */
+    method: "textDocument/didChange",
+    /** @type {import("vscode-languageserver-protocol").DidChangeTextDocumentParams} */
+    params: {
+      textDocument: {
+        version: newVersion,
+        uri: createUri(normPath),
+      },
+      contentChanges: payload.changes,
+    },
+  });
 };
 
 /**
@@ -414,6 +446,7 @@ const reigsterPythonLanguageServerListeners = (ipcMain, mainWindow) => {
   ipcMain.handle("python:stop", stopImpl);
 
   ipcMain.on("python:file:open", openImpl);
+  ipcMain.on("python:file:edit", editImpl);
 };
 
 module.exports = {
