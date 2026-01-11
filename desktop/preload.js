@@ -1,6 +1,13 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").urlApi}
+ */
+const urlApi = {
+  fileUriToAbsolutePath: (furl) => ipcRenderer.invoke("uri:to:path", furl),
+};
+
+/**
  * @type {import("./type").pythonServer}
  */
 const pythonServer = {
@@ -25,8 +32,8 @@ const pythonServer = {
     /**
      * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").pythonServerOnResponseCallback>}
      */
-    let listener = (_, message) => {
-      callback(message);
+    let listener = async (_, message) => {
+      await callback(message);
     };
 
     ipcRenderer.on("python:message", listener);
@@ -219,6 +226,7 @@ const api = {
   fsApi,
   chromeWindowApi,
   pythonServer,
+  urlApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

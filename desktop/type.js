@@ -210,6 +210,19 @@
  */
 
 /**
+ * Exposes node url utils
+ * @typedef {Object} urlApi
+ * @property {fileUriToAbsolutePath} fileUriToAbsolutePath - Convert a file uri to a file path abs
+ */
+
+/**
+ * Converts a `file:///c:/dev` to a abs path like `c:\dev\some`
+ * @callback fileUriToAbsolutePath
+ * @param {string} fileUri
+ * @returns {Promise<string>} The resolved abs path
+ */
+
+/**
  * Contains all helpers todo with path
  * @typedef {Object} pathApi
  * @property {normalizePath} normalize - Calls path normalize
@@ -801,7 +814,7 @@
  * The shape of the callback that is called when a message is recieved from the python server
  * @callback pythonServerOnResponseCallback
  * @param {JSONRpcNotification} message - Any message
- * @returns {void} Nothing
+ * @returns {void | Promise<void>} Nothing or a promise
  */
 
 /**
@@ -840,6 +853,8 @@
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  * @property {pythonServer} pythonServer - Contains all the api's for the python language server
+ * 
+ * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
  *
  */
 

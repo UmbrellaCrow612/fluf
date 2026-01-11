@@ -219,6 +219,19 @@ export type chromeWindowClose = () => void;
  */
 export type chromeWindowRestore = () => void;
 /**
+ * Exposes node url utils
+ */
+export type urlApi = {
+    /**
+     * - Convert a file uri to a file path abs
+     */
+    fileUriToAbsolutePath: fileUriToAbsolutePath;
+};
+/**
+ * Converts a `file:///c:/dev` to a abs path like `c:\dev\some`
+ */
+export type fileUriToAbsolutePath = (fileUri: string) => Promise<string>;
+/**
  * Contains all helpers todo with path
  */
 export type pathApi = {
@@ -1036,7 +1049,7 @@ export type JSONRpcNotificationParamsDiagnostic = {
 /**
  * The shape of the callback that is called when a message is recieved from the python server
  */
-export type pythonServerOnResponseCallback = (message: JSONRpcNotification) => void;
+export type pythonServerOnResponseCallback = (message: JSONRpcNotification) => void | Promise<void>;
 /**
  * Listen to when the server responds and run logic
  */
@@ -1089,6 +1102,10 @@ export type ElectronApi = {
      * - Contains all the api's for the python language server
      */
     pythonServer: pythonServer;
+    /**
+     * - Contains helpers todo with URL / URI's
+     */
+    urlApi: urlApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

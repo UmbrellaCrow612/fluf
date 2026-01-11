@@ -21,6 +21,7 @@ import {
   TextDocumentContentChangeEvent,
   Position,
 } from 'vscode-languageserver-protocol';
+import { FlufDiagnostic } from '../diagnostic/type';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -39,7 +40,7 @@ export class LspService implements ILsp {
    * List of specific diagnostics keys we listen to that contain error / suggestion information without putting every key in the file diag map
    * these are keys from typescript and other proper LSP responses
    */
-  private diagnosticKeys: diagnosticType[] = [
+  private diagnosticKeys: Set<diagnosticType> = new Set([
     /** TS specific these contain all UI errors we should care about collecting for now */
     'syntaxDiag',
     'semanticDiag',
@@ -47,7 +48,7 @@ export class LspService implements ILsp {
 
     /** JSON RPC  LSP's*/
     'textDocument/publishDiagnostics',
-  ];
+  ]);
 
   Open = (
     filePath: string,
@@ -109,13 +110,53 @@ export class LspService implements ILsp {
   ) => {
     switch (langServer) {
       case 'js/ts':
-        return this.api.tsServer.onResponse((data) => {
+        return this.api.tsServer.onResponse(async (data) => {
           console.log(data);
+
+          if (!data.event) return;
+          if (!this.diagnosticKeys.has(data.event)) {
+            return; // we only processes events we care about
+          }
+          if (!data.body || !data.body?.file) return; // we need file
+
+          let diagKey = data.event;
+
+          let filePath = await this.api.pathApi.normalize(data.body.file);
+
+          let currentMap =
+            this.fileAndDiagMap.get(filePath) ??
+            new Map<diagnosticType, FlufDiagnostic[]>();
+
+          currentMap.set(diagKey, []); // do conversion
+          this.fileAndDiagMap.set(filePath, currentMap)
+
+          callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
         });
 
       case 'python':
-        return this.api.pythonServer.onResponse((message) => {
+        return this.api.pythonServer.onResponse(async (message) => {
           console.log(message);
+
+          if (!message.params) return;
+          if (!message.params.uri) return;
+          if (!message.params?.diagnostics) return;
+          if (!this.diagnosticKeys.has(message.method)) return;
+
+          let diagKey = message.method;
+
+          let filePath = await this.api.urlApi.fileUriToAbsolutePath(
+            message.params.uri,
+          );
+          let normFilePath = await this.api.pathApi.normalize(filePath);
+
+          let currentMap =
+            this.fileAndDiagMap.get(normFilePath) ??
+            new Map<diagnosticType, FlufDiagnostic[]>();
+
+          currentMap.set(diagKey, []); // do conversion
+          this.fileAndDiagMap.set(normFilePath, currentMap)
+
+          callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
         });
       default:
         return () => {};
