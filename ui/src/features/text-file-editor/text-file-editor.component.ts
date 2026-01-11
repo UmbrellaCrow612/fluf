@@ -17,7 +17,6 @@ import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { fileDiagnosticMap } from '../lsp/type';
 import { fileNode, languageServer, voidCallback } from '../../gen/type';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { LspService } from '../lsp/lsp.service';
@@ -117,6 +116,7 @@ export class TextFileEditorComponent implements OnInit {
     }
 
     this.languageServer = getLanguageServer(fileNode.extension);
+    this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
     if (!this.languageServer) {
       console.warn('No language server found for ' + fileNode.extension);
       return;
@@ -148,9 +148,9 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
-      (fileDiagMap) => {
+      async (fileDiagMap) => {
         console.log('UI should render diagnostics ');
-        console.log(fileDiagMap)
+        console.log(fileDiagMap);
       },
     );
 
@@ -336,8 +336,6 @@ export class TextFileEditorComponent implements OnInit {
     this.stringContent = (
       await this.api.fsApi.readFile(this.openFileNode()!.path)
     ).replace(/\r\n/g, '\n');
-
-    this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
 
     this.appContext.fileExplorerActiveFileOrFolder.set(this.openFileNode());
     this.isLoading = false;

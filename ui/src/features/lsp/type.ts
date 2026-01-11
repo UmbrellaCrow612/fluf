@@ -130,7 +130,7 @@ export interface ILsp {
  */
 export type LanguageServiceCallback = (
   fileAndDiagMap: fileDiagnosticMap,
-) => void;
+) => void | Promise<void>;
 
 /**
  * Since code mirror dose not export this we just copy it from index.d.ts of it this is for Serverity type within it

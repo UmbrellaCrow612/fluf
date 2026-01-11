@@ -130,7 +130,7 @@ export class LspService implements ILsp {
           currentMap.set(diagKey, []); // do conversion
           this.fileAndDiagMap.set(filePath, currentMap)
 
-          callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
+          await callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
         });
 
       case 'python':
@@ -156,7 +156,7 @@ export class LspService implements ILsp {
           currentMap.set(diagKey, []); // do conversion
           this.fileAndDiagMap.set(normFilePath, currentMap)
 
-          callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
+          await callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
         });
       default:
         return () => {};
