@@ -11,27 +11,17 @@ import {
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
 import { EditorView } from '@codemirror/view';
-import { ChangeSet, EditorState, Text } from '@codemirror/state';
+import { EditorState } from '@codemirror/state';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { fileDiagnosticMap } from '../lsp/type';
-import {
-  fileNode,
-  JSONRpcEdit,
-  languageServer,
-  voidCallback,
-} from '../../gen/type';
-import { applyExternalDiagnostics, externalDiagnosticsExtension } from './lint';
-import { server } from 'typescript';
+import { fileNode, languageServer, voidCallback } from '../../gen/type';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { LspService } from '../lsp/lsp.service';
-import {
-  Position,
-  TextDocumentContentChangeEvent,
-} from 'vscode-languageserver-protocol';
+import { getLanguageServer } from '../lsp/utils';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -87,42 +77,7 @@ export class TextFileEditorComponent implements OnInit {
   /** Unsub method to no longer run logic defined in the on ready method  */
   private onReadyUnsub: voidCallback | null = null;
 
-  /**
-   * Get the specific ;language server needed for the file based on it's extension
-   * @param extension The file extension
-   * @returns Lang server or null
-   */
-  private getLanguageServer(extension: string): languageServer | null {
-    switch (extension) {
-      case '.js':
-      case '.mjs':
-      case '.cjs':
-      case '.ts':
-        return 'js/ts';
-
-      case '.py':
-        return 'python';
-
-      default:
-        console.log('Unsuported language server for file');
-        return null;
-    }
-  }
-
   private languageServer: languageServer | null = null;
-
-  getDiagnosticsForFile(diagnosticMap: fileDiagnosticMap, filePath: string) {
-    const fileDiagnostics = diagnosticMap.get(filePath);
-    if (!fileDiagnostics) return [];
-
-    const allDiagnostics = [];
-
-    for (const diagnosticsArray of fileDiagnostics.values()) {
-      allDiagnostics.push(...diagnosticsArray);
-    }
-
-    return allDiagnostics;
-  }
 
   /**
    * Sends the file and a get error to the server for the given file node
@@ -161,7 +116,7 @@ export class TextFileEditorComponent implements OnInit {
       this.onReadyUnsub();
     }
 
-    this.languageServer = this.getLanguageServer(fileNode.extension);
+    this.languageServer = getLanguageServer(fileNode.extension);
     if (!this.languageServer) {
       console.warn('No language server found for ' + fileNode.extension);
       return;
@@ -193,23 +148,9 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView.state,
-      (diagnosticMap) => {
-        this.inMemoryContextService.problems.set(diagnosticMap);
-
-        if (!this.openFileNode()) return;
-
-        const originalPath = this.openFileNode()!.path;
-        const normalizedPath = originalPath.replace(/\\/g, '/');
-
-        let m = diagnosticMap.get(normalizedPath);
-
-        if (!m) {
-          return;
-        }
-
-        let all = this.getDiagnosticsForFile(diagnosticMap, normalizedPath);
-
-        applyExternalDiagnostics(this.codeMirrorView!, all);
+      (fileDiagMap) => {
+        console.log('UI should render diagnostics ');
+        console.log(fileDiagMap)
       },
     );
 
@@ -314,12 +255,9 @@ export class TextFileEditorComponent implements OnInit {
   updateListener = EditorView.updateListener.of((update) => {
     if (!this.openFileNode()) return;
 
-    if (this.languageServer) {
+    if (this.languageServer && update.docChanged) {
       this.lspService.Edit(update, this.openFileNode()!, this.languageServer);
-
-      if (update.docChanged) {
-        this.diagnosticsEvent();
-      }
+      this.diagnosticsEvent();
     }
 
     if (update.docChanged) {
@@ -368,13 +306,7 @@ export class TextFileEditorComponent implements OnInit {
 
     const startState = EditorState.create({
       doc: this.stringContent,
-      extensions: [
-        basicSetup,
-        this.theme,
-        language,
-        this.updateListener,
-        externalDiagnosticsExtension(),
-      ],
+      extensions: [basicSetup, this.theme, language, this.updateListener],
     });
 
     this.codeMirrorView = new EditorView({

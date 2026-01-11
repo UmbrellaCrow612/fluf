@@ -2,22 +2,20 @@ import { EditorState } from '@codemirror/state';
 import { ViewUpdate } from '@codemirror/view';
 import {
   fileNode,
-  JSONRpcEdit,
   languageServer,
   LanguageServerProtocolMethod,
   tsServerOutputEvent,
   voidCallback,
 } from '../../gen/type';
-import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
 import { FlufDiagnostic } from '../diagnostic/type';
 
 /**
- * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key
+ * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key these are produced from the backend either by a LSP or another 
+ * code checker as a form of indeitifying specific event / messages and there content
  */
 export type diagnosticType =
   | tsServerOutputEvent
-  | 'unkown'
   | LanguageServerProtocolMethod;
 
 /**
@@ -53,7 +51,11 @@ export interface ILsp {
    * @param langServer The specific language server to send it to
    * @returns Nothing
    */
-  Edit: (view: ViewUpdate, fileNode: fileNode, langServer: languageServer) => void;
+  Edit: (
+    view: ViewUpdate,
+    fileNode: fileNode,
+    langServer: languageServer,
+  ) => void;
 
   /**
    * Get completion information
@@ -128,7 +130,6 @@ export interface ILsp {
  */
 export type LanguageServiceCallback = (
   fileAndDiagMap: fileDiagnosticMap,
-  completions: Completion[],
 ) => void;
 
 /**

@@ -539,7 +539,7 @@
 /**
  * @callback tsServerResponseCallback
  * @param {tsServerOutput} message - The message sent
- * @returns {void} Nothing
+ * @returns {void | Promise<void>} A promise or nothing
  */
 
 /**
@@ -695,15 +695,17 @@
  */
 
 /**
- * List of all methods that can be in the method of a request or message
+ * List of all methods that can be in the method of a request / message / Notification
  * based on the action you want to perform read the link below and send that method
  *
  * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
+ * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics
  *
  * @typedef {"initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability"
  *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
  *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
  *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
+ *          | "textDocument/publishDiagnostics" 
  * } LanguageServerProtocolMethod
  */
 

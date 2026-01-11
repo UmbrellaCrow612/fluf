@@ -158,12 +158,10 @@ const gitApi = {
 const tsServer = {
   onResponse: (callback) => {
     /**
-     * Custom listner to register and unsub
-     * @param {import("electron").IpcRendererEvent} _event
-     * @param {import("./type").tsServerOutput} message
+     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").tsServerResponseCallback>}
      */
-    let listener = (_event, message) => {
-      callback(message);
+    let listener = async (_event, message) => {
+      await callback(message);
     };
 
     ipcRenderer.on("tsserver:message", listener);

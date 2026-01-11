@@ -10,13 +10,7 @@ import {
 } from './type';
 import { getElectronApi } from '../../utils';
 import type { Text } from '@codemirror/state';
-import {
-  mapTsServerOutputToCompletions,
-  mapTypescriptDiagnosticToCodeMirrorDiagnostic,
-} from './typescript';
-import { Completion } from '@codemirror/autocomplete';
 import { server } from 'typescript';
-import { FlufDiagnostic } from '../diagnostic/type';
 import {
   JSONRpcEdit,
   JSONRpcNotification,
@@ -25,7 +19,6 @@ import {
 } from '../../gen/type';
 import {
   TextDocumentContentChangeEvent,
-  Range,
   Position,
 } from 'vscode-languageserver-protocol';
 
@@ -43,9 +36,18 @@ export class LspService implements ILsp {
   private fileAndDiagMap: fileDiagnosticMap = new Map();
 
   /**
-   * List of current completions sent from tsserver
+   * List of specific diagnostics keys we listen to that contain error / suggestion information without putting every key in the file diag map
+   * these are keys from typescript and other proper LSP responses
    */
-  private completions: Completion[] = [];
+  private diagnosticKeys: diagnosticType[] = [
+    /** TS specific these contain all UI errors we should care about collecting for now */
+    'syntaxDiag',
+    'semanticDiag',
+    'suggestionDiag',
+
+    /** JSON RPC  LSP's*/
+    'textDocument/publishDiagnostics',
+  ];
 
   Open = (
     filePath: string,
@@ -107,41 +109,14 @@ export class LspService implements ILsp {
   ) => {
     switch (langServer) {
       case 'js/ts':
-        let tsserverUnSub = this.api.tsServer.onResponse((data) => {
-          let filePath = data?.body?.file ?? 'unkown';
+        return this.api.tsServer.onResponse((data) => {
           console.log(data);
-
-          let d = mapTypescriptDiagnosticToCodeMirrorDiagnostic(
-            data,
-            editorState,
-          );
-
-          let m = this.fileAndDiagMap.get(filePath);
-          if (!m) {
-            let dm = new Map<diagnosticType, FlufDiagnostic[]>();
-            dm.set(data?.event ?? 'unkown', d);
-            this.fileAndDiagMap.set(filePath, dm);
-          } else {
-            let dm = this.fileAndDiagMap.get(filePath);
-            dm?.set(data?.event ?? 'unkown', d);
-          }
-
-          this.completions = mapTsServerOutputToCompletions(data);
-
-          // we use structutred clone to give a map of a diffrent refrence becuase ctx setting new map keeps same ref we pass from here  so it dosent trigger computed fields
-          callback(
-            structuredClone(this.fileAndDiagMap),
-            structuredClone(this.completions),
-          );
         });
-
-        return tsserverUnSub;
 
       case 'python':
-        let pythonServerUnSub = this.api.pythonServer.onResponse((message) => {
+        return this.api.pythonServer.onResponse((message) => {
           console.log(message);
         });
-        return pythonServerUnSub;
       default:
         return () => {};
     }

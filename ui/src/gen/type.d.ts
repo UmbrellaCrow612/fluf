@@ -738,7 +738,7 @@ export type tsServerOutput = {
      */
     message?: string | undefined;
 };
-export type tsServerResponseCallback = (message: tsServerOutput) => void;
+export type tsServerResponseCallback = (message: tsServerOutput) => void | Promise<void>;
 /**
  * Register a callback to run when ts server emits a message
  */
@@ -895,10 +895,10 @@ export type shellApi = {
     onExit: onShellExit;
 };
 /**
- * List of all methods that can be in the method of a request or message
+ * List of all methods that can be in the method of a request / message / Notification
  * based on the action you want to perform read the link below and send that method
  */
-export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration";
+export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics";
 /**
  * Version of jsonrpc's
  */
