@@ -25,7 +25,7 @@ import {
 import { FlufDiagnostic } from '../diagnostic/type';
 import { convertTsToFlufDiagnostics } from './typescript';
 import { convertRpcToFlufDiagnostics } from './jsonrpc';
-import { flufNormalize } from '../path/utils';
+import { normalizeElectronPath } from '../path/utils';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -125,7 +125,7 @@ export class LspService implements ILsp {
 
           let diagKey = data.event;
 
-          let filePath = await flufNormalize(data.body.file);
+          let filePath = normalizeElectronPath(data.body.file);
 
           let currentMap =
             this.fileAndDiagMap.get(filePath) ??
@@ -142,29 +142,25 @@ export class LspService implements ILsp {
         return this.api.pythonServer.onResponse(async (message) => {
           console.log(message);
 
-          if (!message.params) return;
-          if (!message.params.uri) return;
-          if (!message.params?.diagnostics) return;
+          if (!message.params?.uri || !message.params?.diagnostics) return;
           if (!this.diagnosticKeys.has(message.method)) return;
 
-          let diagKey = message.method;
-
-          let filePath = await this.api.urlApi.fileUriToAbsolutePath(
+          const filePath = await this.api.urlApi.fileUriToAbsolutePath(
             message.params.uri,
           );
-          let normFilePath = await flufNormalize(filePath);
+          const normFilePath = normalizeElectronPath(filePath);
+          const diagnostics = convertRpcToFlufDiagnostics(view, message);
+          const diagKey = message.method;
 
           let currentMap =
             this.fileAndDiagMap.get(normFilePath) ??
             new Map<diagnosticType, FlufDiagnostic[]>();
 
-          let diagnostics = convertRpcToFlufDiagnostics(view, message);
-          console.log("Python")
-          console.log(diagnostics)
           currentMap.set(diagKey, diagnostics);
+
           this.fileAndDiagMap.set(normFilePath, currentMap);
 
-          await callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
+          await callback(structuredClone(this.fileAndDiagMap));
         });
       default:
         return () => {};

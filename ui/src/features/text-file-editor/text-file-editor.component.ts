@@ -26,7 +26,7 @@ import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { applyExternalDiagnostics } from './lint';
 import { FlufDiagnostic } from '../diagnostic/type';
-import { flufNormalize } from '../path/utils';
+import { normalizeElectronPath } from '../path/utils';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -137,14 +137,15 @@ export class TextFileEditorComponent implements OnInit {
       this.languageServer,
       this.codeMirrorView,
       async (fileDiagMap) => {
-        console.log('UI should render diagnostics ');
+        console.log('UI should render diagnostics');
         console.log(fileDiagMap);
 
-        let normFilePath = await flufNormalize(this.openFileNode()?.path!);
+        let normFilePath = normalizeElectronPath(this.openFileNode()?.path!)
         let map = fileDiagMap.get(normFilePath);
         let values = Array.from(map?.values() ?? []).flat();
 
         this.currentDiagnostics = values;
+        this.inMemoryContextService.problems.set(fileDiagMap)
 
         applyExternalDiagnostics(this.codeMirrorView!, values);
       },
