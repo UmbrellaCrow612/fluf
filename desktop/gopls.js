@@ -250,6 +250,10 @@ const startGoPlsImpl = async (_, workSpaceFolder) => {
       params: {},
     });
 
+    if (mainWindowRef) {
+      mainWindowRef.webContents.send("go:ready");
+    }
+
     logger.info("Started go language server from " + exePath);
 
     selectedWorkSpaceFolder = _workSpaceFolder;
@@ -317,5 +321,14 @@ const registerGoPlsListeners = (ipcMain, mainWindow) => {
   ipcMain.handle("go:stop", stopGoPlsImpl);
 };
 
+// async function test() {
+//   await startGoPlsImpl(undefined, "C:\\dev\\fluf\\desktop");
+
+//   setTimeout(async () => {
+//     await stopGoPlsImpl(undefined);
+//   });
+// }
+
+// test();
 
 module.exports = { registerGoPlsListeners };
