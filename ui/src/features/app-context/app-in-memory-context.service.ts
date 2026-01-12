@@ -83,5 +83,6 @@ export class InMemoryContextService {
   >({
     'js/ts': false,
     python: false,
+    go: false
   });
 }

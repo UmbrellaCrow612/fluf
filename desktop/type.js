@@ -634,7 +634,7 @@
  * @property {tsServerStart} start - Start the Typescript server
  * @property {tsServerStop} stop - Stops the Typescript server
  * @property {tsServerOnReady} onReady - Run logic when the typescript server is ready
- * 
+ *
  * @property {tsServerOpenFile} open - Opens a file
  * @property {tsServerEditFile} edit - Edit the file in the stream
  * @property {tsServerCloseFile} close - Close file into the stream
@@ -718,7 +718,7 @@
  *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
  *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
  *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
- *          | "textDocument/publishDiagnostics" 
+ *          | "textDocument/publishDiagnostics"
  * } LanguageServerProtocolMethod
  */
 
@@ -825,8 +825,75 @@
  */
 
 /**
+ * Represents the go language server
+ * @typedef {Object} goServer
+ * @property {goServerStart} start - Start the lsp
+ * @property {goServerStop} stop - Stop the lsp
+ * @property {goServerisReady} isReady - Check if the server is readfy or not
+ * @property {goServerOnReady} onReady - Run logic when the server becomes ready
+ * @property {goServerOnResponse} onResponse - Run logic when the go lsp produces a response
+ * 
+ * @property {goServerOpen} open - Open a file
+ * @property {goServerEdit} edit - Edit a file
+ */
+
+/**
+ * Start the go language server
+ * @callback goServerStart
+ * @param {string} workSpaceFolder - The folder to open the lsp in
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Stop the go lsp
+ * @callback goServerStop
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Indicates if the go lsp server is ready for messages
+ * @callback goServerisReady
+ * @returns {Promise<boolean>} If the server is ready or not for messages
+ */
+
+/**
+ * Runs callback when the go server becomes ready
+ * @callback goServerOnReady
+ * @param {voidCallback} callback - The logic to run
+ * @returns {voidCallback} unsub method
+ */
+
+/**
+ * Open a file
+ * @callback goServerOpen
+ * @param {string} filePath - The files path
+ * @param {string} fileContent - The files content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Send a edit of a document
+ * @callback goServerEdit
+ * @param {JSONRpcEdit} edit - The edit
+ * @returns {void} Nothing
+ */
+
+/**
+ * The shape of the callback to run when the go lsp responds with a message
+ * @callback goServerOnResponseCallback
+ * @param {JSONRpcNotification} payload - The message from the server
+ * @returns {void | Promise<void>} A promise or nothing
+ */
+/**
+ * Run logic when the 
+ * @callback goServerOnResponse
+ * @param {goServerOnResponseCallback} callback - The logic to run 
+ * @returns {voidCallback} unsub callback
+ */
+
+/**
  * Holds all the specific language servers the backend supports
- * @typedef {"js/ts" | "python"} languageServer
+ * @typedef {"js/ts" | "python" | "go"} languageServer
  */
 
 /**
@@ -853,8 +920,10 @@
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  * @property {pythonServer} pythonServer - Contains all the api's for the python language server
- * 
+ *
  * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
+ *
+ * @property {goServer} goServer - Contains all the code to use the go language server api's
  *
  */
 

@@ -1055,9 +1055,74 @@ export type pythonServerOnResponseCallback = (message: JSONRpcNotification) => v
  */
 export type pythonServerOnResponse = (callback: pythonServerOnResponseCallback) => voidCallback;
 /**
+ * Represents the go language server
+ */
+export type goServer = {
+    /**
+     * - Start the lsp
+     */
+    start: goServerStart;
+    /**
+     * - Stop the lsp
+     */
+    stop: goServerStop;
+    /**
+     * - Check if the server is readfy or not
+     */
+    isReady: goServerisReady;
+    /**
+     * - Run logic when the server becomes ready
+     */
+    onReady: goServerOnReady;
+    /**
+     * - Run logic when the go lsp produces a response
+     */
+    onResponse: goServerOnResponse;
+    /**
+     * - Open a file
+     */
+    open: goServerOpen;
+    /**
+     * - Edit a file
+     */
+    edit: goServerEdit;
+};
+/**
+ * Start the go language server
+ */
+export type goServerStart = (workSpaceFolder: string) => Promise<boolean>;
+/**
+ * Stop the go lsp
+ */
+export type goServerStop = () => Promise<boolean>;
+/**
+ * Indicates if the go lsp server is ready for messages
+ */
+export type goServerisReady = () => Promise<boolean>;
+/**
+ * Runs callback when the go server becomes ready
+ */
+export type goServerOnReady = (callback: voidCallback) => voidCallback;
+/**
+ * Open a file
+ */
+export type goServerOpen = (filePath: string, fileContent: string) => void;
+/**
+ * Send a edit of a document
+ */
+export type goServerEdit = (edit: JSONRpcEdit) => void;
+/**
+ * The shape of the callback to run when the go lsp responds with a message
+ */
+export type goServerOnResponseCallback = (payload: JSONRpcNotification) => void | Promise<void>;
+/**
+ * Run logic when the
+ */
+export type goServerOnResponse = (callback: goServerOnResponseCallback) => voidCallback;
+/**
  * Holds all the specific language servers the backend supports
  */
-export type languageServer = "js/ts" | "python";
+export type languageServer = "js/ts" | "python" | "go";
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
@@ -1106,6 +1171,10 @@ export type ElectronApi = {
      * - Contains helpers todo with URL / URI's
      */
     urlApi: urlApi;
+    /**
+     * - Contains all the code to use the go language server api's
+     */
+    goServer: goServer;
 };
 /**
  * Extends the global `window` object to include the Electron API.

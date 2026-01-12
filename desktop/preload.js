@@ -1,6 +1,43 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").goServer}
+ */
+const goServer = {
+  isReady: () => ipcRenderer.invoke("go:is:ready"),
+  start: (wsp) => ipcRenderer.invoke("go:start", wsp),
+  stop: () => ipcRenderer.invoke("go:stop"),
+  onReady: (callback) => {
+    let listener = () => {
+      callback();
+    };
+
+    ipcRenderer.on("go:ready", listener);
+
+    return () => {
+      ipcRenderer.removeListener("go:ready", listener);
+    };
+  },
+  onResponse: (callback) => {
+    /**
+     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").goServerOnResponseCallback>}
+     */
+    let listener = async (_, payload) => {
+      await callback(payload);
+    };
+
+    ipcRenderer.on("go:message", listener);
+
+    return () => {
+      ipcRenderer.removeListener("go:message", listener);
+    };
+  },
+
+  open: (fp, fc) => ipcRenderer.send("go:open", fp, fc),
+  edit: (payload) => ipcRenderer.send("go:edit", payload),
+};
+
+/**
  * @type {import("./type").urlApi}
  */
 const urlApi = {
@@ -227,6 +264,7 @@ const api = {
   chromeWindowApi,
   pythonServer,
   urlApi,
+  goServer,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

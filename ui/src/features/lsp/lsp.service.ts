@@ -1,6 +1,4 @@
-import { Diagnostic } from '@codemirror/lint';
 import { fileNode } from './../../gen/type.d';
-import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import {
@@ -12,12 +10,7 @@ import {
 import { getElectronApi } from '../../utils';
 import type { Text } from '@codemirror/state';
 import { server } from 'typescript';
-import {
-  JSONRpcEdit,
-  JSONRpcNotification,
-  languageServer,
-  voidCallback,
-} from '../../gen/type';
+import { JSONRpcEdit, languageServer, voidCallback } from '../../gen/type';
 import {
   TextDocumentContentChangeEvent,
   Position,
@@ -68,6 +61,9 @@ export class LspService implements ILsp {
         this.api.pythonServer.open(filePath, fileContent);
         break;
 
+      case 'go':
+        this.api.goServer.open(filePath, fileContent);
+        break;
       default:
         break;
     }
@@ -98,6 +94,12 @@ export class LspService implements ILsp {
 
       case 'python':
         this.api.pythonServer.edit(
+          codeMirrorViewUpdateToJSONRpcEdit(view, fileNode),
+        );
+        break;
+
+      case 'go':
+        this.api.goServer.edit(
           codeMirrorViewUpdateToJSONRpcEdit(view, fileNode),
         );
         break;
@@ -162,6 +164,31 @@ export class LspService implements ILsp {
 
           await callback(structuredClone(this.fileAndDiagMap));
         });
+
+      case 'go':
+        return this.api.goServer.onResponse(async (message) => {
+          console.log(message);
+
+          if (!message.params?.uri || !message.params?.diagnostics) return;
+          if (!this.diagnosticKeys.has(message.method)) return;
+
+          const filePath = await this.api.urlApi.fileUriToAbsolutePath(
+            message.params.uri,
+          );
+          const normFilePath = normalizeElectronPath(filePath);
+          const diagnostics = convertRpcToFlufDiagnostics(view, message);
+          const diagKey = message.method;
+
+          let currentMap =
+            this.fileAndDiagMap.get(normFilePath) ??
+            new Map<diagnosticType, FlufDiagnostic[]>();
+
+          currentMap.set(diagKey, diagnostics);
+
+          this.fileAndDiagMap.set(normFilePath, currentMap);
+
+          await callback(structuredClone(this.fileAndDiagMap));
+        });
       default:
         return () => {};
     }
@@ -175,6 +202,10 @@ export class LspService implements ILsp {
 
       case 'python':
         // It's automatic for proper LSP's
+        break;
+
+      case 'go':
+        // It's automatic becuase it follow LSP spec
         break;
 
       default:
@@ -202,6 +233,10 @@ export class LspService implements ILsp {
       case 'js/ts':
         this.api.tsServer.start(workSpaceFolder);
         break;
+
+      case 'go':
+        this.api.goServer.start(workSpaceFolder);
+        break;
       default:
         break;
     }
@@ -217,6 +252,10 @@ export class LspService implements ILsp {
         this.api.tsServer.stop();
         break;
 
+      case 'go':
+        this.api.goServer.stop();
+        break;
+
       default:
         break;
     }
@@ -230,8 +269,25 @@ export class LspService implements ILsp {
       case 'js/ts':
         return this.api.tsServer.onReady(callback);
 
+      case 'go':
+        return this.api.goServer.onReady(callback);
+
       default:
         return () => {};
+    }
+  };
+
+  isReady = async (langServer: languageServer) => {
+    switch (langServer) {
+      case 'js/ts':
+        return false;
+      case 'python':
+        return false;
+      case 'go':
+        return await this.api.goServer.isReady();
+
+      default:
+        return false;
     }
   };
 }
