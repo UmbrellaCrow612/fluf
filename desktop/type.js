@@ -825,6 +825,18 @@
  */
 
 /**
+ * Represents the go language server
+ * @typedef {Object} goServer
+ */
+
+/**
+ * Start the go language server
+ * @callback goServerStart
+ * @param {string} workSpaceFolder - The folder to open the lsp in
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
  * Holds all the specific language servers the backend supports
  * @typedef {"js/ts" | "python"} languageServer
  */
@@ -855,6 +867,8 @@
  * @property {pythonServer} pythonServer - Contains all the api's for the python language server
  * 
  * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
+ * 
+ * @property {goServer} goServer - Contains all the code to use the go language server api's
  *
  */
 

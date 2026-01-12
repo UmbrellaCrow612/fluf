@@ -55,9 +55,20 @@ const getPythonServerPath = () => {
     : path.join(__dirname, "node_modules", "pyright", "langserver.index.js");
 };
 
+/**
+ * Get the path to the go gopls binary
+ * @returns {string} The path
+ */
+const getGoServerPath = () => {
+  return isPackaged()
+    ? path.join(process.resourcesPath, "bin")
+    : path.join(__dirname, "bin");
+};
+
 module.exports = {
   isPackaged,
   binPath,
   getTypescriptServerPath,
   getPythonServerPath,
+  getGoServerPath
 };
