@@ -207,6 +207,12 @@ const startGoPlsImpl = async (_, workSpaceFolder) => {
       logger.error("Go language server " + chunk.toString());
     });
 
+    spawnRef.on("exit", (code) => {
+      if (code == 1) {
+        cleanState(); // any malformed request causes it to exit
+      }
+    });
+
     /** @type {import("vscode-languageserver-protocol").InitializeParams} */
     let params = {
       capabilities: {
