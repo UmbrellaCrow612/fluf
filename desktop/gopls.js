@@ -124,15 +124,20 @@ function writeToStdin(message) {
  * @param {import("vscode-languageserver-protocol").ResponseMessage} message
  */
 function handleLspResponse(message) {
-  if (message.id !== undefined && pendingRequest.has(Number(message.id))) {
-    pendingRequest.get(Number(message.id))?.resolve(true);
-    pendingRequest.delete(Number(message.id));
+  const id = Number(message.id);
+  if (message.id !== undefined && pendingRequest.has(id)) {
+    const prom = pendingRequest.get(id);
+
+    if (message.error) {
+      prom?.reject(message.error);
+    } else {
+      prom?.resolve(message.result);
+    }
+    pendingRequest.delete(id);
   }
 
-  if (mainWindowRef) {
+  if (mainWindowRef && !mainWindowRef.isDestroyed()) {
     mainWindowRef.webContents.send("go:message", message);
-  } else {
-    logger.error("No main window ref to sedn go lsp message");
   }
 }
 
@@ -312,14 +317,5 @@ const registerGoPlsListeners = (ipcMain, mainWindow) => {
   ipcMain.handle("go:stop", stopGoPlsImpl);
 };
 
-async function test() {
-  await startGoPlsImpl(undefined, "C:\\dev\\fluf\\desktop");
-
-  setTimeout(async () => {
-    await stopGoPlsImpl(undefined);
-  }, 5000);
-}
-
-test();
 
 module.exports = { registerGoPlsListeners };
