@@ -257,6 +257,47 @@ const startGoPlsImpl = async (_, workSpaceFolder) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").goServerStop>}
+ */
+const stopGoPlsImpl = async () => {
+  try {
+    if (!isServerActive || !spawnRef) return true;
+
+    try {
+      await sendRequest("shutdown", {});
+    } catch (error) {
+      logger.error("Python stop requested hanged " + JSON.stringify(error));
+    }
+
+    writeToStdin({
+      jsonrpc: "2.0",
+      method: "exit",
+    });
+
+    return new Promise((resolve) => {
+      let forceClearTimeout = setTimeout(() => {
+        spawnRef?.kill();
+        cleanState();
+        resolve(true);
+
+        logger.error("Forced go lsp exit");
+      }, 3000);
+
+      spawnRef?.on("exit", () => {
+        clearTimeout(forceClearTimeout);
+        cleanState();
+        resolve(true);
+      });
+    });
+  } catch (error) {
+    logger.error(
+      "Failed to stop python language server " + JSON.stringify(error),
+    );
+    return false;
+  }
+};
+
+/**
  * Register all gopls listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -265,6 +306,7 @@ const registerGoPlsListeners = (ipcMain, mainWindow) => {
   mainWindowRef = mainWindow;
 
   ipcMain.handle("go:start", startGoPlsImpl);
+  ipcMain.handle("go:stop", stopGoPlsImpl);
 };
 
 module.exports = { registerGoPlsListeners };

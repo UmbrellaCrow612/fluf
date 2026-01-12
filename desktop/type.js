@@ -827,12 +827,20 @@
 /**
  * Represents the go language server
  * @typedef {Object} goServer
+ * @property {goServerStart} start - Start the lsp
+ * @property {goServerStop} stop = Stop the lsp
  */
 
 /**
  * Start the go language server
  * @callback goServerStart
  * @param {string} workSpaceFolder - The folder to open the lsp in
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Stop the go lsp
+ * @callback goServerStop
  * @returns {Promise<boolean>} If it could or could not
  */
 
