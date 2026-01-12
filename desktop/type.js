@@ -830,7 +830,10 @@
  * @property {goServerStart} start - Start the lsp
  * @property {goServerStop} stop - Stop the lsp
  * @property {goServerisReady} isReady - Check if the server is readfy or not
- * @property {goServerOnReady} onReady - Run logic when the server becomes ready 
+ * @property {goServerOnReady} onReady - Run logic when the server becomes ready
+ * 
+ * @property {goServerOpen} open - Open a file
+ * @property {goServerEdit} edit - Edit a file
  */
 
 /**
@@ -860,8 +863,23 @@
  */
 
 /**
+ * Open a file
+ * @callback goServerOpen
+ * @param {string} filePath - The files path
+ * @param {string} fileContent - The files content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Send a edit of a document
+ * @callback goServerEdit
+ * @param {JSONRpcEdit} edit - The edit
+ * @returns {void} Nothing
+ */
+
+/**
  * Holds all the specific language servers the backend supports
- * @typedef {"js/ts" | "python"} languageServer
+ * @typedef {"js/ts" | "python" | "go"} languageServer
  */
 
 /**

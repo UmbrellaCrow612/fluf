@@ -53,6 +53,11 @@ const getSeq = () => seq++;
 const pendingRequest = new Map();
 
 /**
+ * Contains a map of specific file path and there document version
+ */
+const documentVersions = new Map();
+
+/**
  * Resets state of variable used
  */
 function cleanState() {
@@ -67,6 +72,7 @@ function cleanState() {
   seq = 0;
   Array.from(pendingRequest.values()).forEach((x) => x.reject());
   pendingRequest.clear();
+  documentVersions.clear();
 }
 
 /**
@@ -310,6 +316,72 @@ const stopGoLanguageServer = async () => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").goServerOpen>}
+ */
+const openImpl = (_, filePath, fileContent) => {
+  try {
+    let normfp = path.normalize(filePath);
+    documentVersions.set(normfp, 1);
+
+    /**
+     * @type {import("vscode-languageserver-protocol").NotificationMessage}
+     */
+    let object = {
+      jsonrpc: "2.0",
+      /** @type {import("./type").LanguageServerProtocolMethod} */
+      method: "textDocument/didOpen",
+      /** @type {import("vscode-languageserver-protocol").DidOpenTextDocumentParams} */
+      params: {
+        textDocument: {
+          languageId: "go",
+          text: fileContent,
+          uri: createUri(filePath),
+          version: 1,
+        },
+      },
+    };
+
+    writeToStdin(object);
+  } catch (error) {
+    logger.error("Failed to open file in go lsp ", JSON.stringify(error));
+  }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").goServerEdit>}
+ */
+const editImpl = (_, payload) => {
+  try {
+    let normfp = path.normalize(payload.filePath);
+    let version = documentVersions.get(normfp) ?? 1;
+    let newVersion = version + 1;
+    documentVersions.set(normfp, newVersion);
+
+    /**
+     * @type {import("vscode-languageserver-protocol").NotificationMessage}
+     */
+    let object = {
+      jsonrpc: "2.0",
+      /** @type {import("./type").LanguageServerProtocolMethod} */
+      method: "textDocument/didChange",
+
+      /** @type {import("vscode-languageserver-protocol").DidChangeTextDocumentParams} */
+      params: {
+        textDocument: {
+          uri: createUri(normfp),
+          version: newVersion,
+        },
+        contentChanges: payload.changes,
+      },
+    };
+
+    writeToStdin(object);
+  } catch (error) {
+    logger.error("Failed to edit document in go lsp");
+  }
+};
+
+/**
  * Register all gopls listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -319,17 +391,10 @@ const registerGoLanguageServerListeners = (ipcMain, mainWindow) => {
 
   ipcMain.handle("go:start", startGoLanguageServer);
   ipcMain.handle("go:stop", stopGoLanguageServer);
+
+  ipcMain.on("go:open", openImpl);
+  ipcMain.on("go:edit", editImpl);
 };
-
-// async function test() {
-//   await startGoLanguageServer(undefined, "C:\\dev\\fluf\\desktop");
-
-//   setTimeout(async () => {
-//     await stopGoPlsImpl();
-//   });
-// }
-
-// test();
 
 module.exports = {
   registerGoLanguageServerListeners,
