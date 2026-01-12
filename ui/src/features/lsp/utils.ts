@@ -2,7 +2,7 @@
  * Contains utils related to LSP (Language server protocol) logic
  */
 
-import { languageServer } from "../../gen/type";
+import { languageServer } from '../../gen/type';
 
 /**
  * Get the specific language server needed for the file based on it's extension
@@ -19,6 +19,9 @@ export function getLanguageServer(extension: string): languageServer | null {
 
     case '.py':
       return 'python';
+
+    case '.go':
+      return 'go';
 
     default:
       console.log('Unsuported language server for file');

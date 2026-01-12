@@ -10,12 +10,10 @@ import { server } from 'typescript';
 import { FlufDiagnostic } from '../diagnostic/type';
 
 /**
- * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key these are produced from the backend either by a LSP or another 
+ * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key these are produced from the backend either by a LSP or another
  * code checker as a form of indeitifying specific event / messages and there content
  */
-export type diagnosticType =
-  | tsServerOutputEvent
-  | LanguageServerProtocolMethod;
+export type diagnosticType = tsServerOutputEvent | LanguageServerProtocolMethod;
 
 /**
  * Represents a file path as a key then a map of specific diagnostics as keys then all of them
@@ -119,6 +117,13 @@ export interface ILsp {
    * @returns Unsub method to remove the callback
    */
   onReady: (callback: voidCallback, langServer: languageServer) => voidCallback;
+
+  /**
+   * Check if a server is ready i.e started and can recieve other lsp messages
+   * @param langServer The language server to check
+   * @returns If it is or is not active
+   */
+  isReady: (langServer: languageServer) => Promise<boolean>;
 }
 
 /**
