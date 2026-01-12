@@ -23,7 +23,7 @@ const goServer = {
      * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").goServerOnResponseCallback>}
      */
     let listener = async (_, payload) => {
-      callback(payload);
+      await callback(payload);
     };
 
     ipcRenderer.on("go:message", listener);
