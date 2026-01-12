@@ -1,6 +1,4 @@
-import { Diagnostic } from '@codemirror/lint';
 import { fileNode } from './../../gen/type.d';
-import { EditorState } from '@codemirror/state';
 import { Injectable } from '@angular/core';
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import {
@@ -14,7 +12,6 @@ import type { Text } from '@codemirror/state';
 import { server } from 'typescript';
 import {
   JSONRpcEdit,
-  JSONRpcNotification,
   languageServer,
   voidCallback,
 } from '../../gen/type';

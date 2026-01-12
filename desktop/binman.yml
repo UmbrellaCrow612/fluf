@@ -48,3 +48,28 @@ binaries:
         x64: "^fsearch$"
       darwin:
         x64: "^fsearch$"
+
+  - name: gopls
+    urls:
+      windows:
+        x64: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-windows-amd64.tar.gz
+      linux:
+        x64: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-linux-amd64.tar.gz
+      darwin:
+        x64: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-darwin-arm64.tar.gz
+
+    sha256:
+      windows:
+        x64: 3bca2855397d459b71997dd8cb22cf43efcbb950d22aeb14c3663f403179b0ec
+      linux:
+        x64: f7163011d877bd16b611836f729da7ff0f44ffaa372caf9aea96cda4b3f9f59b
+      darwin:
+        x64: 5ea718a1b0ee6ca6c12da6c7db093b378469e173ef9288adba65d43f5e2c3786
+
+    patterns:
+      windows:
+        x64: "^gopls(.exe)?$"
+      linux:
+        x64: "^gopls$"
+      darwin:
+        x64: "^gopls$"
