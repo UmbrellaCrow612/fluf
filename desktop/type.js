@@ -634,7 +634,7 @@
  * @property {tsServerStart} start - Start the Typescript server
  * @property {tsServerStop} stop - Stops the Typescript server
  * @property {tsServerOnReady} onReady - Run logic when the typescript server is ready
- * 
+ *
  * @property {tsServerOpenFile} open - Opens a file
  * @property {tsServerEditFile} edit - Edit the file in the stream
  * @property {tsServerCloseFile} close - Close file into the stream
@@ -718,7 +718,7 @@
  *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
  *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
  *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
- *          | "textDocument/publishDiagnostics" 
+ *          | "textDocument/publishDiagnostics"
  * } LanguageServerProtocolMethod
  */
 
@@ -828,7 +828,9 @@
  * Represents the go language server
  * @typedef {Object} goServer
  * @property {goServerStart} start - Start the lsp
- * @property {goServerStop} stop = Stop the lsp
+ * @property {goServerStop} stop - Stop the lsp
+ * @property {goServerisReady} isReady - Check if the server is readfy or not
+ * @property {goServerOnReady} onReady - Run logic when the server becomes ready 
  */
 
 /**
@@ -842,6 +844,19 @@
  * Stop the go lsp
  * @callback goServerStop
  * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Indicates if the go lsp server is ready for messages
+ * @callback goServerisReady
+ * @returns {Promise<boolean>} If the server is ready or not for messages
+ */
+
+/**
+ * Runs callback when the go server becomes ready
+ * @callback goServerOnReady
+ * @param {voidCallback} callback - The logic to run
+ * @returns {voidCallback} unsub method
  */
 
 /**
@@ -873,9 +888,9 @@
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  * @property {pythonServer} pythonServer - Contains all the api's for the python language server
- * 
+ *
  * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
- * 
+ *
  * @property {goServer} goServer - Contains all the code to use the go language server api's
  *
  */

@@ -187,7 +187,7 @@ function parseStdin() {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").goServerStart>}
  */
-const startGoPlsImpl = async (_, workSpaceFolder) => {
+const startGoLanguageServer = async (_, workSpaceFolder) => {
   try {
     if (isServerActive) {
       logger.info(
@@ -267,9 +267,9 @@ const startGoPlsImpl = async (_, workSpaceFolder) => {
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").goServerStop>}
+ * @type {import("./type").goServerStop}
  */
-const stopGoPlsImpl = async () => {
+const stopGoLanguageServer = async () => {
   try {
     if (!isServerActive || !spawnRef) return true;
 
@@ -278,7 +278,7 @@ const stopGoPlsImpl = async () => {
     try {
       await sendRequest("shutdown", {});
     } catch (error) {
-      logger.error("Go stop requested hanged " + JSON.stringify(error));
+      logger.error("Go shutdown requested hanged " + JSON.stringify(error));
     }
 
     writeToStdin({
@@ -314,21 +314,25 @@ const stopGoPlsImpl = async () => {
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
  */
-const registerGoPlsListeners = (ipcMain, mainWindow) => {
+const registerGoLanguageServerListeners = (ipcMain, mainWindow) => {
   mainWindowRef = mainWindow;
 
-  ipcMain.handle("go:start", startGoPlsImpl);
-  ipcMain.handle("go:stop", stopGoPlsImpl);
+  ipcMain.handle("go:start", startGoLanguageServer);
+  ipcMain.handle("go:stop", stopGoLanguageServer);
 };
 
 // async function test() {
-//   await startGoPlsImpl(undefined, "C:\\dev\\fluf\\desktop");
+//   await startGoLanguageServer(undefined, "C:\\dev\\fluf\\desktop");
 
 //   setTimeout(async () => {
-//     await stopGoPlsImpl(undefined);
+//     await stopGoPlsImpl();
 //   });
 // }
 
 // test();
 
-module.exports = { registerGoPlsListeners };
+module.exports = {
+  registerGoLanguageServerListeners,
+  startGoLanguageServer,
+  stopGoLanguageServer,
+};

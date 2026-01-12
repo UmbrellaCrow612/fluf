@@ -7,7 +7,10 @@ const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
-const { registerTsListeners, stopTypescriptLanguageServer } = require("./typescript");
+const {
+  registerTsListeners,
+  stopTypescriptLanguageServer,
+} = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerPathListeners } = require("./path");
 const { registerFsListeners, cleanUpWatchers } = require("./fs");
@@ -19,6 +22,10 @@ const {
 } = require("./python");
 const { logger } = require("./logger");
 const { registerUrlListeners } = require("./url");
+const {
+  registerGoLanguageServerListeners,
+  stopGoLanguageServer,
+} = require("./gopls");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -79,14 +86,16 @@ app.whenReady().then(() => {
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
   reigsterPythonLanguageServerListeners(ipcMain, mainWindow);
-  registerUrlListeners(ipcMain)
+  registerUrlListeners(ipcMain);
+  registerGoLanguageServerListeners(ipcMain, mainWindow);
 });
 
 app.on("before-quit", async (event) => {
   if (!isQuitting) {
     event.preventDefault();
     await stopPythonLanguageServer();
-    await stopTypescriptLanguageServer()
+    await stopTypescriptLanguageServer();
+    await stopGoLanguageServer();
 
     cleanUpWatchers();
     cleanUpShells();
