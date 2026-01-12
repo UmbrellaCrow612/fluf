@@ -200,7 +200,7 @@ const startGoPlsImpl = async (_, workSpaceFolder) => {
     }
     await fs.access(exePath);
 
-    let spawnRef = spawn(exePath, ["serve"]);
+    spawnRef = spawn(exePath, ["serve"]);
 
     spawnRef.stdout.on("data", (chunk) => {
       stdoutBuffer = Buffer.concat([stdoutBuffer, chunk]);
@@ -236,6 +236,7 @@ const startGoPlsImpl = async (_, workSpaceFolder) => {
       rootUri: createUri(_workSpaceFolder),
     };
 
+    logger.info("Attempting to initialize go lsp");
     await sendRequest("initialize", params);
 
     writeToStdin({
@@ -263,10 +264,12 @@ const stopGoPlsImpl = async () => {
   try {
     if (!isServerActive || !spawnRef) return true;
 
+    logger.info("Attempting to stop go lsp");
+
     try {
       await sendRequest("shutdown", {});
     } catch (error) {
-      logger.error("Python stop requested hanged " + JSON.stringify(error));
+      logger.error("Go stop requested hanged " + JSON.stringify(error));
     }
 
     writeToStdin({
@@ -287,12 +290,12 @@ const stopGoPlsImpl = async () => {
         clearTimeout(forceClearTimeout);
         cleanState();
         resolve(true);
+
+        logger.info("Go lsp stoped");
       });
     });
   } catch (error) {
-    logger.error(
-      "Failed to stop python language server " + JSON.stringify(error),
-    );
+    logger.error("Failed to stop go language server " + JSON.stringify(error));
     return false;
   }
 };
@@ -308,5 +311,15 @@ const registerGoPlsListeners = (ipcMain, mainWindow) => {
   ipcMain.handle("go:start", startGoPlsImpl);
   ipcMain.handle("go:stop", stopGoPlsImpl);
 };
+
+async function test() {
+  await startGoPlsImpl(undefined, "C:\\dev\\fluf\\desktop");
+
+  setTimeout(async () => {
+    await stopGoPlsImpl(undefined);
+  }, 5000);
+}
+
+test();
 
 module.exports = { registerGoPlsListeners };
