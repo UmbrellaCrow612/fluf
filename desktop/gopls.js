@@ -7,10 +7,11 @@
 
 const { spawn } = require("child_process");
 const { logger } = require("./logger");
-const { getGoServerPath } = require("./packing");
+const { binPath } = require("./packing");
 const fs = require("fs/promises");
 const path = require("path");
 const { createUri } = require("./lsp");
+const { binmanResolve } = require("umbr-binman");
 
 /**
  * Refrence to the main window
@@ -193,7 +194,10 @@ const startGoPlsImpl = async (_, workSpaceFolder) => {
     const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
     await fs.access(_workSpaceFolder);
 
-    let exePath = getGoServerPath();
+    let exePath = await binmanResolve("gopls", ["gopls"], binPath());
+    if (!exePath) {
+      throw new Error("No gopls exe path");
+    }
     await fs.access(exePath);
 
     let spawnRef = spawn(exePath, ["serve"]);
