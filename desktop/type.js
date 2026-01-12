@@ -831,6 +831,7 @@
  * @property {goServerStop} stop - Stop the lsp
  * @property {goServerisReady} isReady - Check if the server is readfy or not
  * @property {goServerOnReady} onReady - Run logic when the server becomes ready
+ * @property {goServerOnResponse} onResponse - Run logic when the go lsp produces a response
  * 
  * @property {goServerOpen} open - Open a file
  * @property {goServerEdit} edit - Edit a file
@@ -875,6 +876,19 @@
  * @callback goServerEdit
  * @param {JSONRpcEdit} edit - The edit
  * @returns {void} Nothing
+ */
+
+/**
+ * The shape of the callback to run when the go lsp responds with a message
+ * @callback goServerOnResponseCallback
+ * @param {JSONRpcNotification} payload - The message from the server
+ * @returns {void | Promise<void>} A promise or nothing
+ */
+/**
+ * Run logic when the 
+ * @callback goServerOnResponse
+ * @param {goServerOnResponseCallback} callback - The logic to run 
+ * @returns {voidCallback} unsub callback
  */
 
 /**

@@ -382,6 +382,13 @@ const editImpl = (_, payload) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").goServerisReady>}
+ */
+const isReadyImpl = async () => {
+  return isServerActive;
+};
+
+/**
  * Register all gopls listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -391,6 +398,8 @@ const registerGoLanguageServerListeners = (ipcMain, mainWindow) => {
 
   ipcMain.handle("go:start", startGoLanguageServer);
   ipcMain.handle("go:stop", stopGoLanguageServer);
+
+  ipcMain.handle("go:is:ready", isReadyImpl);
 
   ipcMain.on("go:open", openImpl);
   ipcMain.on("go:edit", editImpl);
