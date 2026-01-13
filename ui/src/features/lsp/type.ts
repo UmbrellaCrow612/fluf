@@ -8,6 +8,7 @@ import {
 } from '../../gen/type';
 import { server } from 'typescript';
 import { FlufDiagnostic } from '../diagnostic/type';
+import { Completion } from '@codemirror/autocomplete';
 
 /**
  * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key these are produced from the backend either by a LSP or another
@@ -129,11 +130,12 @@ export interface ILsp {
 /**
  * Runs when the lang server responds and it's specific response it then parsed and passed to you
  * @param  fileAndDiagMap Contains a map of files and another map that for the specifc file has a diag type and it's diagnostics
- * @param  fileAndCompletionMap Contains a map of specific file and all it's auto complete info
+ * @param completions - Contains a list of completions fromn the server
  * @returns {void} Nothing
  */
 export type LanguageServiceCallback = (
   fileAndDiagMap: fileDiagnosticMap,
+  completions: Completion[]
 ) => void | Promise<void>;
 
 /**

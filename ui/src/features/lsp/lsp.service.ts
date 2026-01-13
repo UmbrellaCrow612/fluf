@@ -20,6 +20,8 @@ import { FlufDiagnostic } from '../diagnostic/type';
 import { convertTsToFlufDiagnostics } from './typescript';
 import { convertRpcToFlufDiagnostics } from './jsonrpc';
 import { normalizeElectronPath } from '../path/utils';
+import { lspCompletionToCodeMirrorCompletions } from './autocomplete';
+import { Completion } from '@codemirror/autocomplete';
 
 /**
  * Central LSP language server protcol class that impl, forwards requests correct lang server and offers a clean API
@@ -37,7 +39,7 @@ export class LspService implements ILsp {
   /**
    * Holds completions recived from the server
    */
-  private completions = [];
+  private completions: Completion[] = [];
 
   /**
    * List of specific diagnostics keys we listen to that contain error / suggestion information without putting every key in the file diag map
@@ -148,17 +150,54 @@ export class LspService implements ILsp {
           currentMap.set(diagKey, diagnostics);
           this.fileAndDiagMap.set(filePath, currentMap);
 
-          await callback(structuredClone(this.fileAndDiagMap)); // need diff JS refrence
+          await callback(
+            structuredClone(this.fileAndDiagMap),
+            this.completions,
+          ); // need diff JS refrence
         });
 
       case 'python':
         return this.api.pythonServer.onResponse(async (message) => {
           console.log(message);
 
-          if(isLspCompletionMessage(message)){
-            // convert it to code mirror completions
-            // pass it to callback
-            // current diagmap and completions buyt dont return
+          if (!message.params?.uri || !message.params?.diagnostics) return;
+          if (!this.diagnosticKeys.has(message.method)) return;
+
+          const filePath = await this.api.urlApi.fileUriToAbsolutePath(
+            message.params.uri,
+          );
+          const normFilePath = normalizeElectronPath(filePath);
+          const diagnostics = convertRpcToFlufDiagnostics(view, message);
+          const diagKey = message.method;
+
+          let currentMap =
+            this.fileAndDiagMap.get(normFilePath) ??
+            new Map<diagnosticType, FlufDiagnostic[]>();
+
+          currentMap.set(diagKey, diagnostics);
+
+          this.fileAndDiagMap.set(normFilePath, currentMap);
+
+          await callback(
+            structuredClone(this.fileAndDiagMap),
+            this.completions,
+          );
+        });
+
+      case 'go':
+        return this.api.goServer.onResponse(async (message) => {
+          console.log(message);
+
+          if (isLspCompletionMessage(message)) {
+            this.completions = lspCompletionToCodeMirrorCompletions(
+              view,
+              message as any,
+            );
+
+            await callback(
+              structuredClone(this.fileAndDiagMap),
+              this.completions,
+            );
           }
 
           if (!message.params?.uri || !message.params?.diagnostics) return;
@@ -179,32 +218,10 @@ export class LspService implements ILsp {
 
           this.fileAndDiagMap.set(normFilePath, currentMap);
 
-          await callback(structuredClone(this.fileAndDiagMap));
-        });
-
-      case 'go':
-        return this.api.goServer.onResponse(async (message) => {
-          console.log(message);
-
-          if (!message.params?.uri || !message.params?.diagnostics) return;
-          if (!this.diagnosticKeys.has(message.method)) return;
-
-          const filePath = await this.api.urlApi.fileUriToAbsolutePath(
-            message.params.uri,
+          await callback(
+            structuredClone(this.fileAndDiagMap),
+            this.completions,
           );
-          const normFilePath = normalizeElectronPath(filePath);
-          const diagnostics = convertRpcToFlufDiagnostics(view, message);
-          const diagKey = message.method;
-
-          let currentMap =
-            this.fileAndDiagMap.get(normFilePath) ??
-            new Map<diagnosticType, FlufDiagnostic[]>();
-
-          currentMap.set(diagKey, diagnostics);
-
-          this.fileAndDiagMap.set(normFilePath, currentMap);
-
-          await callback(structuredClone(this.fileAndDiagMap));
         });
       default:
         return () => {};

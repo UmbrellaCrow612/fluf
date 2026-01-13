@@ -24,6 +24,7 @@ import { getLanguageExtension } from './language';
 import { applyExternalDiagnostics } from './lint';
 import { FlufDiagnostic } from '../diagnostic/type';
 import { normalizeElectronPath } from '../path/utils';
+import { Completion } from '@codemirror/autocomplete';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -40,6 +41,7 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly lspService = inject(LspService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
+
   private readonly workSpaceFolder = computed(() =>
     this.appContext.selectedDirectoryPath(),
   );
@@ -62,6 +64,9 @@ export class TextFileEditorComponent implements OnInit {
 
   /** Holds the current diagnostics for the file */
   private currentDiagnostics: FlufDiagnostic[] = [];
+
+  /** Holds the current completion from the server */
+  private completions: Completion[] = [];
 
   /**
    * Sends the file and a get error to the server for the given file node
@@ -133,7 +138,9 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView,
-      async (fileDiagMap) => {
+      async (fileDiagMap, completions) => {
+        this.completions = completions
+
         console.log('UI should render diagnostics');
         console.log(fileDiagMap);
 
