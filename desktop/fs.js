@@ -151,7 +151,7 @@ const readDirImpl = async (_, dirPath) => {
 
     return filenodes;
   } catch (error) {
-    logger.error("Failed to read directory", JSON.stringify(error));
+    logger.error("Failed to read directory " + JSON.stringify(error));
     return [];
   }
 };

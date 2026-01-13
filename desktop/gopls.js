@@ -343,7 +343,7 @@ const openImpl = (_, filePath, fileContent) => {
 
     writeToStdin(object);
   } catch (error) {
-    logger.error("Failed to open file in go lsp ", JSON.stringify(error));
+    logger.error("Failed to open file in go lsp " + JSON.stringify(error));
   }
 };
 

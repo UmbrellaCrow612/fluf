@@ -49,43 +49,40 @@ const logger = {
 
   /**
    * Logs informational messages
-   * @param {...any} messages
+   * @param {string} message
    * @returns {void}
    */
-  info(...messages) {
+  info(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.log(
-      `\x1b[36m[INFO]\x1b[0m ${this._timestamp()}${location} -`,
-      ...messages,
+      `\x1b[36m[INFO]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
   },
 
   /**
    * Logs warning messages
-   * @param {...any} messages
+   * @param {string} message
    * @returns {void}
    */
-  warn(...messages) {
+  warn(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.warn(
-      `\x1b[33m[WARN]\x1b[0m ${this._timestamp()}${location} -`,
-      ...messages,
+      `\x1b[33m[WARN]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
   },
 
   /**
    * Logs error messages
-   * @param {...any} messages
+   * @param {string} message The message string
    * @returns {void}
    */
-  error(...messages) {
+  error(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.error(
-      `\x1b[31m[ERROR]\x1b[0m ${this._timestamp()}${location} -`,
-      ...messages,
+      `\x1b[31m[ERROR]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
   },
 };
