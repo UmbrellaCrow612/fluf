@@ -1,21 +1,21 @@
-/*
- * Contains code related to logging to the console
- */
+const fs = require("fs");
+const path = require("path");
 
 /**
- * Checks if running in developer mode.
- * Evaluated lazily to allow env loading after imports.
- * @returns {boolean}
+ * Checks whether the application is running in developer mode.
+ * Evaluated lazily to allow environment loading after imports.
+ *
+ * @returns {boolean} True if MODE=dev
  */
 function isDevMode() {
   return process.env.MODE === "dev";
 }
 
 /**
- * Gets the file, line, and column of the caller.
- * Only used in dev mode.
+ * Resolves the file, line, and column of the calling function.
+ * Only used in developer mode for debugging.
  *
- * @returns {string}
+ * @returns {string} Caller location in "file:line:column" format
  */
 function getCallerLocation() {
   const stack = new Error().stack;
@@ -35,12 +35,128 @@ function getCallerLocation() {
 }
 
 /**
- * Simple ANSI-colored logger with timestamp.
- * Includes caller info ONLY in dev mode.
+ * Directory where log files are stored.
+ * Resolved relative to the current working directory.
+ *
+ * @type {string}
+ */
+const LOG_DIR = path.join(process.cwd(), "logs");
+
+/**
+ * Number of days to retain log files.
+ *
+ * @type {number}
+ */
+const RETENTION_DAYS = 30;
+
+/**
+ * Needs to make the log file exists with some blocking but only on load
+ */
+fs.mkdirSync(LOG_DIR, { recursive: true });
+
+/**
+ * Resolves the log file path for the current date.
+ * This naturally rotates logs daily.
+ *
+ * @returns {string} Absolute path to today's log file
+ */
+function getTodayLogFilePath() {
+  const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  return path.join(LOG_DIR, `app-${date}.log`);
+}
+
+/**
+ * Flag to ensure old logs are trimmed only once per process lifecycle.
+ *
+ * @type {boolean}
+ */
+let hasTrimmedOldLogs = false;
+
+/**
+ * Deletes log files older than the configured retention period.
+ * Runs asynchronously and silently ignores failures.
+ *
+ * @returns {void}
+ */
+function trimOldLogs() {
+  if (hasTrimmedOldLogs) return;
+  hasTrimmedOldLogs = true;
+
+  const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+  fs.promises
+    .readdir(LOG_DIR)
+    .then((files) => {
+      files.forEach((file) => {
+        const match = file.match(/^app-(\d{4}-\d{2}-\d{2})\.log$/);
+        if (!match) return;
+
+        const fileDate = new Date(match[1]).getTime();
+        if (fileDate < cutoff) {
+          fs.promises.unlink(path.join(LOG_DIR, file)).catch(() => {});
+        }
+      });
+    })
+    .catch(() => {});
+}
+
+/**
+ * In-memory queue of pending log entries.
+ *
+ * @type {string[]}
+ */
+const logQueue = [];
+
+/**
+ * Indicates whether a flush operation is currently in progress.
+ *
+ * @type {boolean}
+ */
+let isFlushing = false;
+
+/**
+ * Enqueues a formatted log entry for asynchronous file writing.
+ *
+ * @param {string} entry Formatted log line
+ * @returns {void}
+ */
+function enqueueLog(entry) {
+  logQueue.push(entry);
+  trimOldLogs();
+  flushQueueAsync();
+}
+
+/**
+ * Flushes queued log entries to disk asynchronously in batches.
+ * Preserves ordering and avoids concurrent writes.
+ *
+ * @returns {Promise<void>}
+ */
+async function flushQueueAsync() {
+  if (isFlushing) return;
+  isFlushing = true;
+
+  try {
+    while (logQueue.length > 0) {
+      const batch = logQueue.splice(0, logQueue.length).join("");
+      const filePath = getTodayLogFilePath();
+      await fs.promises.appendFile(filePath, batch, "utf8");
+    }
+  } catch (err) {
+    // Avoid recursion into logger on failure
+    console.error("Failed to write logs:", err);
+  } finally {
+    isFlushing = false;
+  }
+}
+
+/**
+ * Simple ANSI-colored logger with async file persistence.
  */
 const logger = {
   /**
-   * Returns the current datetime in ISO format
+   * Returns the current timestamp in ISO 8601 format.
+   *
    * @returns {string}
    */
   _timestamp() {
@@ -48,46 +164,78 @@ const logger = {
   },
 
   /**
-   * Logs informational messages
-   * @param {...any} messages
+   * Formats a log entry for file output.
+   *
+   * @param {"INFO"|"WARN"|"ERROR"} level Log level
+   * @param {string} message Log message
+   * @param {string} location Caller location (optional)
+   * @returns {string} Formatted log entry
+   */
+  _formatFileEntry(level, message, location) {
+    return `[${level}] ${this._timestamp()}${location} - ${message}\n`;
+  },
+
+  /**
+   * Logs an informational message.
+   *
+   * @param {string} message Message to log
    * @returns {void}
    */
-  info(...messages) {
+  info(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.log(
-      `\x1b[36m[INFO]\x1b[0m ${this._timestamp()}${location} -`,
-      ...messages,
+      `\x1b[36m[INFO]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
+
+    enqueueLog(this._formatFileEntry("INFO", message, location));
   },
 
   /**
-   * Logs warning messages
-   * @param {...any} messages
+   * Logs a warning message.
+   *
+   * @param {string} message Message to log
    * @returns {void}
    */
-  warn(...messages) {
+  warn(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.warn(
-      `\x1b[33m[WARN]\x1b[0m ${this._timestamp()}${location} -`,
-      ...messages,
+      `\x1b[33m[WARN]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
+
+    enqueueLog(this._formatFileEntry("WARN", message, location));
   },
 
   /**
-   * Logs error messages
-   * @param {...any} messages
+   * Logs an error message.
+   *
+   * @param {string} message Message to log
    * @returns {void}
    */
-  error(...messages) {
+  error(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.error(
-      `\x1b[31m[ERROR]\x1b[0m ${this._timestamp()}${location} -`,
-      ...messages,
+      `\x1b[31m[ERROR]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
+
+    enqueueLog(this._formatFileEntry("ERROR", message, location));
   },
 };
+
+process.on("beforeExit", async () => {
+  await flushQueueAsync();
+});
+
+process.on("SIGINT", async () => {
+  await flushQueueAsync();
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  await flushQueueAsync();
+  process.exit(0);
+});
 
 module.exports = { logger };

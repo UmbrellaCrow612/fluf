@@ -30,7 +30,7 @@ const binPath = () => {
       ? path.join(process.resourcesPath, "bin")
       : path.join(__dirname, "bin");
   } catch (error) {
-    logger.error("Failed to get bin path", error);
+    logger.error("Failed to get bin path " + JSON.stringify(error));
     return "";
   }
 };

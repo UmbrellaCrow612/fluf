@@ -265,11 +265,11 @@ const startTypeScriptLanguageServer = async (_, workspacefolder) => {
     });
 
     childSpawnRef.stderr.on("data", (data) => {
-      logger.error("TS Server stderr:", data.toString());
+      logger.error("TS Server stderr: " + data.toString());
     });
 
     childSpawnRef.on("close", (code) => {
-      logger.info("Typescript language server exited with code", code);
+      logger.info("Typescript language server exited with code " + code);
     });
 
     isServerStarted = true;

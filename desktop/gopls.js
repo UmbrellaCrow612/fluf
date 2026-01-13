@@ -343,7 +343,7 @@ const openImpl = (_, filePath, fileContent) => {
 
     writeToStdin(object);
   } catch (error) {
-    logger.error("Failed to open file in go lsp ", JSON.stringify(error));
+    logger.error("Failed to open file in go lsp " + JSON.stringify(error));
   }
 };
 
@@ -382,6 +382,37 @@ const editImpl = (_, payload) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").goServerCompletion>}
+ */
+const completionImpl = (_, fp, pos, ctx) => {
+  try {
+    /** @type {import("vscode-languageserver-protocol").RequestMessage} */
+    let object = {
+      id: getSeq(),
+      jsonrpc: "2.0",
+      /** @type {import("./type").LanguageServerProtocolMethod} */
+      method: "textDocument/completion",
+      /**
+       * @type {import("vscode-languageserver-protocol").CompletionParams}
+       */
+      params: {
+        textDocument: {
+          uri: createUri(fp),
+        },
+        position: pos,
+        context: ctx,
+      },
+    };
+
+    writeToStdin(object);
+  } catch (error) {
+    logger.error(
+      "Failed to make a completion request in go lsp " + JSON.stringify(error),
+    );
+  }
+};
+
+/**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").goServerisReady>}
  */
 const isReadyImpl = async () => {
@@ -403,6 +434,7 @@ const registerGoLanguageServerListeners = (ipcMain, mainWindow) => {
 
   ipcMain.on("go:open", openImpl);
   ipcMain.on("go:edit", editImpl);
+  ipcMain.on("go:completion", completionImpl);
 };
 
 module.exports = {

@@ -13,9 +13,6 @@ import {
 import { basicSetup } from 'codemirror';
 import { EditorView, gutter } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
-import { html } from '@codemirror/lang-html';
-import { css } from '@codemirror/lang-css';
-import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { fileNode, languageServer, voidCallback } from '../../gen/type';
@@ -27,6 +24,12 @@ import { getLanguageExtension } from './language';
 import { applyExternalDiagnostics } from './lint';
 import { FlufDiagnostic } from '../diagnostic/type';
 import { normalizeElectronPath } from '../path/utils';
+import {
+  autocompletion,
+  Completion,
+  CompletionContext,
+  CompletionResult,
+} from '@codemirror/autocomplete';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -43,6 +46,7 @@ export class TextFileEditorComponent implements OnInit {
   );
   private readonly lspService = inject(LspService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
+
   private readonly workSpaceFolder = computed(() =>
     this.appContext.selectedDirectoryPath(),
   );
@@ -65,6 +69,28 @@ export class TextFileEditorComponent implements OnInit {
 
   /** Holds the current diagnostics for the file */
   private currentDiagnostics: FlufDiagnostic[] = [];
+
+  /** Holds the current completion from the server */
+  private completions: Completion[] = [];
+
+  private completionSource = async (
+    context: CompletionContext,
+  ): Promise<CompletionResult | null> => {
+    // Always return completions if we have any, even without explicit trigger
+    if (this.completions.length === 0) {
+      return null;
+    }
+
+    // Get the word before cursor - more lenient matching
+    const word = context.matchBefore(/\w*/);
+
+    // Return completions even if there's no word yet (for triggering on every keystroke)
+    return {
+      from: word?.from ?? context.pos,
+      options: this.completions,
+      validFor: /^\w*$/,
+    };
+  };
 
   /**
    * Sends the file and a get error to the server for the given file node
@@ -136,16 +162,20 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView,
-      async (fileDiagMap) => {
+      async (fileDiagMap, completions) => {
+        this.completions = completions;
+        console.log('UI should render completions');
+        console.log(completions);
+
         console.log('UI should render diagnostics');
         console.log(fileDiagMap);
 
-        let normFilePath = normalizeElectronPath(this.openFileNode()?.path!)
+        let normFilePath = normalizeElectronPath(this.openFileNode()?.path!);
         let map = fileDiagMap.get(normFilePath);
         let values = Array.from(map?.values() ?? []).flat();
 
         this.currentDiagnostics = values;
-        this.inMemoryContextService.problems.set(fileDiagMap)
+        this.inMemoryContextService.problems.set(fileDiagMap);
 
         applyExternalDiagnostics(this.codeMirrorView!, values);
       },
@@ -184,10 +214,12 @@ export class TextFileEditorComponent implements OnInit {
    * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    if (!this.openFileNode()) return;
+    let node = this.openFileNode();
+    if (!node) return;
 
     if (this.languageServer && update.docChanged) {
-      this.lspService.Edit(update, this.openFileNode()!, this.languageServer);
+      this.lspService.Edit(update, node, this.languageServer);
+      this.lspService.Completion(update, node, this.languageServer);
       this.diagnosticsEvent();
     }
 
@@ -244,6 +276,12 @@ export class TextFileEditorComponent implements OnInit {
         this.updateListener,
         linter(() => this.currentDiagnostics),
         lintGutter(),
+        autocompletion({
+          override: [this.completionSource],
+          activateOnTyping: true, 
+          maxRenderedOptions: 50,
+          defaultKeymap: true, 
+        }),
       ],
     });
 

@@ -115,7 +115,7 @@ function parseStdout() {
     const header = stdoutBuffer.subarray(0, sepIndex).toString("ascii");
     const match = header.match(/Content-Length: (\d+)/i);
     if (!match) {
-      logger.error("No Content-Length found:", header);
+      logger.error("No Content-Length found: " + header);
       stdoutBuffer = stdoutBuffer.subarray(sepIndex + 4);
       continue;
     }
@@ -129,7 +129,7 @@ function parseStdout() {
       const json = JSON.parse(contentBuffer.toString("utf-8"));
       notifyUI(json);
     } catch (err) {
-      logger.error("Failed to parse JSON:", contentBuffer.toString("utf-8"));
+      logger.error("Failed to parse JSON: " + contentBuffer.toString("utf-8"));
     }
 
     stdoutBuffer = stdoutBuffer.subarray(totalLength);
@@ -201,8 +201,8 @@ async function startPythonLanguageServer(workSpaceFolder) {
       params: {},
     });
 
-    if(mainWindowRef){
-      mainWindowRef.webContents.send("python:ready")
+    if (mainWindowRef) {
+      mainWindowRef.webContents.send("python:ready");
     }
 
     logger.info("Started python language server at " + langServerPath);
