@@ -54,19 +54,27 @@ const createWindow = () => {
     },
   });
 
-  if (process.env.MODE === "dev") {
+  let mode = process.env.MODE;
+  if (!mode) {
+    logger.error(".env does not contain .env value MODE");
+    throw new Error(".env");
+  }
+
+  let devUIPort = process.env.DEV_UI_PORT;
+  if (!devUIPort) {
+    logger.error(".env does not contain .env value DEV_UI_PORT");
+    throw new Error(".env");
+  }
+
+  if (mode === "dev") {
     // In dev we can just load the running app on the website port it is running on instead of loading it from file system works the same
-    console.log(
+    logger.info(
       "Running dev mode loading website from " + process.env.DEV_UI_PORT + "\n",
     );
 
-    let devUIPort = process.env.DEV_UI_PORT;
-    if (!devUIPort) {
-      throw new Error("No dev UI port DEV_UI_PORT env set or missing");
-    }
-
     mainWindow.loadURL(devUIPort);
   } else {
+    logger.info("Running application from build index.html")
     mainWindow.loadFile("index.html");
   }
 };
