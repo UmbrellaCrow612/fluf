@@ -24,7 +24,12 @@ import { getLanguageExtension } from './language';
 import { applyExternalDiagnostics } from './lint';
 import { FlufDiagnostic } from '../diagnostic/type';
 import { normalizeElectronPath } from '../path/utils';
-import { Completion } from '@codemirror/autocomplete';
+import {
+  autocompletion,
+  Completion,
+  CompletionContext,
+  CompletionResult,
+} from '@codemirror/autocomplete';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -67,6 +72,25 @@ export class TextFileEditorComponent implements OnInit {
 
   /** Holds the current completion from the server */
   private completions: Completion[] = [];
+
+  private completionSource = async (
+    context: CompletionContext,
+  ): Promise<CompletionResult | null> => {
+    // Always return completions if we have any, even without explicit trigger
+    if (this.completions.length === 0) {
+      return null;
+    }
+
+    // Get the word before cursor - more lenient matching
+    const word = context.matchBefore(/\w*/);
+
+    // Return completions even if there's no word yet (for triggering on every keystroke)
+    return {
+      from: word?.from ?? context.pos,
+      options: this.completions,
+      validFor: /^\w*$/,
+    };
+  };
 
   /**
    * Sends the file and a get error to the server for the given file node
@@ -139,7 +163,9 @@ export class TextFileEditorComponent implements OnInit {
       this.languageServer,
       this.codeMirrorView,
       async (fileDiagMap, completions) => {
-        this.completions = completions
+        this.completions = completions;
+        console.log('UI should render completions');
+        console.log(completions);
 
         console.log('UI should render diagnostics');
         console.log(fileDiagMap);
@@ -250,6 +276,12 @@ export class TextFileEditorComponent implements OnInit {
         this.updateListener,
         linter(() => this.currentDiagnostics),
         lintGutter(),
+        autocompletion({
+          override: [this.completionSource],
+          activateOnTyping: true, 
+          maxRenderedOptions: 50,
+          defaultKeymap: true, 
+        }),
       ],
     });
 
