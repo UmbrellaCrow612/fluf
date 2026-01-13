@@ -49,6 +49,9 @@ const LOG_DIR = path.join(process.cwd(), "logs");
  */
 const RETENTION_DAYS = 30;
 
+/**
+ * Needs to make the log file exists with some blocking but only on load
+ */
 fs.mkdirSync(LOG_DIR, { recursive: true });
 
 /**
