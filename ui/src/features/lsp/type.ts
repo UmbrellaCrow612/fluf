@@ -55,15 +55,15 @@ export interface ILsp {
   ) => void;
 
   /**
-   * Get completion information
-   * @param filePath The files path
-   * @param lineNumber The line number (1-based)
-   * @param lineOffest The character offset (on the line) (1-based)
-   * @param langServer The specific language server to send it to
-   * @returns Nothing
+   * Completion information
+   * @param view The editor vie
+   * @param fileNode The file node
+   * @param langServer The language server
+   * @returns 
    */
   Completion: (
-    args: server.protocol.CompletionsRequestArgs,
+    view: ViewUpdate,
+    fileNode: fileNode,
     langServer: languageServer,
   ) => void;
 

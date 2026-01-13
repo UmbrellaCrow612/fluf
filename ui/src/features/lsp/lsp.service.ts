@@ -14,6 +14,7 @@ import { JSONRpcEdit, languageServer, voidCallback } from '../../gen/type';
 import {
   TextDocumentContentChangeEvent,
   Position,
+  CompletionContext,
 } from 'vscode-languageserver-protocol';
 import { FlufDiagnostic } from '../diagnostic/type';
 import { convertTsToFlufDiagnostics } from './typescript';
@@ -70,12 +71,17 @@ export class LspService implements ILsp {
   };
 
   Completion = (
-    args: server.protocol.CompletionsRequestArgs,
+    view: ViewUpdate,
+    fileNode: fileNode,
     langServer: languageServer,
   ) => {
     switch (langServer) {
-      case 'js/ts':
-        this.api.tsServer.completion(args);
+      case 'go':
+        this.api.goServer.completion(
+          fileNode.path,
+          getCompletionPositionLsp(view),
+          getCompletionContextLsp(view),
+        );
         break;
 
       default:
@@ -289,6 +295,62 @@ export class LspService implements ILsp {
       default:
         return false;
     }
+  };
+}
+
+/**
+ * Get the completion context from CodeMirror view
+ */
+function getCompletionContextLsp(update: ViewUpdate): CompletionContext {
+  const { state, transactions } = update;
+
+  // Check if this update was triggered by user typing
+  const isUserTyping = transactions.some((tr) => tr.isUserEvent('input.type'));
+
+  if (!isUserTyping) {
+    // Manual invocation (e.g., Ctrl+Space)
+    return {
+      triggerKind: 1, // CompletionTriggerKind.Invoked
+    };
+  }
+
+  // Get the character that was just typed
+  const cursorPos = state.selection.main.head;
+  const charBefore =
+    cursorPos > 0 ? state.doc.sliceString(cursorPos - 1, cursorPos) : '';
+
+  // Common trigger characters for completion
+  const triggerCharacters = ['.', ':', '<', '"', "'", '/', '@', '#'];
+
+  if (triggerCharacters.includes(charBefore)) {
+    return {
+      triggerKind: 2, // CompletionTriggerKind.TriggerCharacter
+      triggerCharacter: charBefore,
+    };
+  }
+
+  // Typing but not a trigger character
+  return {
+    triggerKind: 1, // CompletionTriggerKind.Invoked
+  };
+}
+
+/**
+ * Get the completion position from CodeMirror view for an LSP position - this is where the cursor is
+ */
+function getCompletionPositionLsp(update: ViewUpdate): Position {
+  const { state } = update;
+  const cursorPos = state.selection.main.head;
+
+  // Get the line number (0-based in CodeMirror, also 0-based in LSP)
+  const line = state.doc.lineAt(cursorPos);
+
+  // Get the character position within the line (0-based)
+  const character = cursorPos - line.from;
+
+  return {
+    line: line.number - 1, // CodeMirror lines are 1-based, LSP is 0-based
+    character: character,
   };
 }
 

@@ -13,9 +13,6 @@ import {
 import { basicSetup } from 'codemirror';
 import { EditorView, gutter } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
-import { html } from '@codemirror/lang-html';
-import { css } from '@codemirror/lang-css';
-import { javascript } from '@codemirror/lang-javascript';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { fileNode, languageServer, voidCallback } from '../../gen/type';
@@ -140,12 +137,12 @@ export class TextFileEditorComponent implements OnInit {
         console.log('UI should render diagnostics');
         console.log(fileDiagMap);
 
-        let normFilePath = normalizeElectronPath(this.openFileNode()?.path!)
+        let normFilePath = normalizeElectronPath(this.openFileNode()?.path!);
         let map = fileDiagMap.get(normFilePath);
         let values = Array.from(map?.values() ?? []).flat();
 
         this.currentDiagnostics = values;
-        this.inMemoryContextService.problems.set(fileDiagMap)
+        this.inMemoryContextService.problems.set(fileDiagMap);
 
         applyExternalDiagnostics(this.codeMirrorView!, values);
       },
@@ -184,10 +181,12 @@ export class TextFileEditorComponent implements OnInit {
    * Keeps state updated whenever doc changes and run custom logic when it changes
    */
   updateListener = EditorView.updateListener.of((update) => {
-    if (!this.openFileNode()) return;
+    let node = this.openFileNode();
+    if (!node) return;
 
     if (this.languageServer && update.docChanged) {
-      this.lspService.Edit(update, this.openFileNode()!, this.languageServer);
+      this.lspService.Edit(update, node, this.languageServer);
+      this.lspService.Completion(update, node, this.languageServer);
       this.diagnosticsEvent();
     }
 

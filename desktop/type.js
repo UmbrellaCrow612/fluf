@@ -718,7 +718,7 @@
  *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
  *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
  *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
- *          | "textDocument/publishDiagnostics"
+ *          | "textDocument/publishDiagnostics" | "textDocument/completion"
  * } LanguageServerProtocolMethod
  */
 
@@ -835,6 +835,16 @@
  * 
  * @property {goServerOpen} open - Open a file
  * @property {goServerEdit} edit - Edit a file
+ * @property {goServerCompletion} completion - Get file completions
+ */
+
+/**
+ * Send a completion request
+ * @callback goServerCompletion
+ * @param {string} filePath - The files path
+ * @param {import("vscode-languageserver-protocol").Position} position - Where the completion is taking place
+ * @param {import("vscode-languageserver-protocol").CompletionContext} context - What type of completion it is
+ * @returns {void} Nothing
  */
 
 /**

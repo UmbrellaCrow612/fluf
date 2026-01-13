@@ -911,7 +911,7 @@ export type shellApi = {
  * List of all methods that can be in the method of a request / message / Notification
  * based on the action you want to perform read the link below and send that method
  */
-export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics";
+export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics" | "textDocument/completion";
 /**
  * Version of jsonrpc's
  */
@@ -1086,7 +1086,15 @@ export type goServer = {
      * - Edit a file
      */
     edit: goServerEdit;
+    /**
+     * - Get file completions
+     */
+    completion: goServerCompletion;
 };
+/**
+ * Send a completion request
+ */
+export type goServerCompletion = (filePath: string, position: import("vscode-languageserver-protocol").Position, context: import("vscode-languageserver-protocol").CompletionContext) => void;
 /**
  * Start the go language server
  */

@@ -35,6 +35,7 @@ const goServer = {
 
   open: (fp, fc) => ipcRenderer.send("go:open", fp, fc),
   edit: (payload) => ipcRenderer.send("go:edit", payload),
+  completion: (...args) => ipcRenderer.send("go:completion", ...args),
 };
 
 /**
