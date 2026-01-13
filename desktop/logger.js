@@ -1,6 +1,9 @@
 /*
- * Contains code related to logging to the console
+ * Console + async file logger
  */
+
+const fs = require("fs/promises");
+const path = require("path");
 
 /**
  * Checks if running in developer mode.
@@ -34,10 +37,43 @@ function getCallerLocation() {
   return `${file}:${line}:${column}`;
 }
 
+const LOG_FILE_PATH = path.join(process.cwd(), "app.log");
+
 /**
- * Simple ANSI-colored logger with timestamp.
- * Includes caller info ONLY in dev mode.
+ * @type {string[]}
  */
+const logQueue = [];
+let isFlushing = false;
+
+/**
+ * Push a log entry into the async queue
+ * @param {string} entry
+ */
+function enqueueLog(entry) {
+  logQueue.push(entry);
+  flushQueueAsync();
+}
+
+/**
+ * Flush queue to disk asynchronously (batched)
+ */
+async function flushQueueAsync() {
+  if (isFlushing) return;
+  isFlushing = true;
+
+  try {
+    while (logQueue.length > 0) {
+      const batch = logQueue.splice(0, logQueue.length).join("");
+      await fs.appendFile(LOG_FILE_PATH, batch, "utf8");
+    }
+  } catch (err) {
+    // Last-resort failure handling (do NOT recurse into logger)
+    console.error("Failed to write logs to file:", err);
+  } finally {
+    isFlushing = false;
+  }
+}
+
 const logger = {
   /**
    * Returns the current datetime in ISO format
@@ -48,9 +84,19 @@ const logger = {
   },
 
   /**
+   * Formats a log entry for file output
+   * @param {string} level
+   * @param {string} message
+   * @param {string} location
+   * @returns {string} formatted string
+   */
+  _formatFileEntry(level, message, location) {
+    return `[${level}] ${this._timestamp()}${location} - ${message}\n`;
+  },
+
+  /**
    * Logs informational messages
    * @param {string} message
-   * @returns {void}
    */
   info(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
@@ -58,12 +104,13 @@ const logger = {
     console.log(
       `\x1b[36m[INFO]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
+
+    enqueueLog(this._formatFileEntry("INFO", message, location));
   },
 
   /**
    * Logs warning messages
    * @param {string} message
-   * @returns {void}
    */
   warn(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
@@ -71,12 +118,13 @@ const logger = {
     console.warn(
       `\x1b[33m[WARN]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
+
+    enqueueLog(this._formatFileEntry("WARN", message, location));
   },
 
   /**
    * Logs error messages
-   * @param {string} message The message string
-   * @returns {void}
+   * @param {string} message
    */
   error(message) {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
@@ -84,6 +132,8 @@ const logger = {
     console.error(
       `\x1b[31m[ERROR]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
+
+    enqueueLog(this._formatFileEntry("ERROR", message, location));
   },
 };
 
