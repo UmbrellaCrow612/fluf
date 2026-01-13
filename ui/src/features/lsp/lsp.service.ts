@@ -35,6 +35,11 @@ export class LspService implements ILsp {
   private fileAndDiagMap: fileDiagnosticMap = new Map();
 
   /**
+   * Holds completions recived from the server
+   */
+  private completions = [];
+
+  /**
    * List of specific diagnostics keys we listen to that contain error / suggestion information without putting every key in the file diag map
    * these are keys from typescript and other proper LSP responses
    */
@@ -149,6 +154,12 @@ export class LspService implements ILsp {
       case 'python':
         return this.api.pythonServer.onResponse(async (message) => {
           console.log(message);
+
+          if(isLspCompletionMessage(message)){
+            // convert it to code mirror completions
+            // pass it to callback
+            // current diagmap and completions buyt dont return
+          }
 
           if (!message.params?.uri || !message.params?.diagnostics) return;
           if (!this.diagnosticKeys.has(message.method)) return;
@@ -296,6 +307,16 @@ export class LspService implements ILsp {
         return false;
     }
   };
+}
+
+/**
+ *
+ * @param object The message recived from the server
+ */
+function isLspCompletionMessage(object: any) {
+  if (object?.result?.items && typeof object?.result?.items?.length)
+    return true;
+  return false;
 }
 
 /**
