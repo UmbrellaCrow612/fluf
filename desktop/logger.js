@@ -79,8 +79,7 @@ function trimOldLogs() {
   if (hasTrimmedOldLogs) return;
   hasTrimmedOldLogs = true;
 
-  const cutoff =
-    Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
   fs.promises
     .readdir(LOG_DIR)
@@ -183,7 +182,7 @@ const logger = {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.log(
-      `\x1b[36m[INFO]\x1b[0m ${this._timestamp()}${location} - ${message}`
+      `\x1b[36m[INFO]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
 
     enqueueLog(this._formatFileEntry("INFO", message, location));
@@ -199,7 +198,7 @@ const logger = {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.warn(
-      `\x1b[33m[WARN]\x1b[0m ${this._timestamp()}${location} - ${message}`
+      `\x1b[33m[WARN]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
 
     enqueueLog(this._formatFileEntry("WARN", message, location));
@@ -215,11 +214,25 @@ const logger = {
     const location = isDevMode() ? ` [${getCallerLocation()}]` : "";
 
     console.error(
-      `\x1b[31m[ERROR]\x1b[0m ${this._timestamp()}${location} - ${message}`
+      `\x1b[31m[ERROR]\x1b[0m ${this._timestamp()}${location} - ${message}`,
     );
 
     enqueueLog(this._formatFileEntry("ERROR", message, location));
   },
 };
+
+process.on("beforeExit", async () => {
+  await flushQueueAsync();
+});
+
+process.on("SIGINT", async () => {
+  await flushQueueAsync();
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  await flushQueueAsync();
+  process.exit(0);
+});
 
 module.exports = { logger };
