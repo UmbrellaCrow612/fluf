@@ -13,16 +13,6 @@ const fs = require("fs/promises");
 const nodePath = require("path");
 const { createUri } = require("./lsp");
 
-/**
- * Indicates if the LSP has been started
- */
-let initialized = false;
-/**
- * If id the request for init
- * @type {number | null}
- */
-let initializeRequestId = null;
-
 let seq = 0;
 /** Get the next number */
 const getSeq = () => seq++;
@@ -78,7 +68,7 @@ async function sendRequest(method, params) {
   const id = getSeq();
   return new Promise((resolve, reject) => {
     pendingRequests.set(id, { resolve, reject });
-    write({
+    writeToStdin({
       jsonrpc: "2.0",
       id,
       method,
@@ -104,29 +94,6 @@ function notifyUI(message) {
     const object = pendingRequests.get(Number(message.id));
     pendingRequests.delete(Number(message.id));
     object?.resolve(message);
-  }
-
-  if (message.id === initializeRequestId && message.result && !initialized) {
-    initialized = true;
-
-    write({
-      jsonrpc: "2.0",
-      method: "initialized",
-      params: {},
-    });
-
-    logger.info("Python language server initialized");
-    if (mainWindowRef) {
-      mainWindowRef.webContents.send("python:ready");
-    }
-  }
-
-  if (!initialized && message.id !== undefined) {
-    logger.warn(
-      "Python language server not yet init ignoring message " +
-        JSON.stringify(message),
-    );
-    return;
   }
 
   if (mainWindowRef) {
@@ -182,7 +149,7 @@ async function startPythonLanguageServer(workSpaceFolder) {
         "Python language server already started in a given workspacen folder " +
           selectedWorkSpaceFolder,
       );
-      return false;
+      return true;
     }
 
     const _workSpaceFolder = nodePath.normalize(
@@ -207,34 +174,38 @@ async function startPythonLanguageServer(workSpaceFolder) {
       logger.error(chunk.toString());
     });
 
-    logger.info("Started python language server at " + langServerPath);
+    logger.info("Python language server initialize sent");
 
-    // We need to initlize it
-    initializeRequestId = getSeq();
-
-    write({
-      jsonrpc: "2.0",
-      id: initializeRequestId,
-      /** @type {import("./type").LanguageServerProtocolMethod}*/
-      method: "initialize",
-
-      /** @type {import("vscode-languageserver-protocol").InitializeParams} */
-      params: {
-        processId: spawnRef.pid ?? null,
-        capabilities: {},
-        workspaceFolders: [
-          {
-            uri: createUri(_workSpaceFolder),
-            name: nodePath.basename(_workSpaceFolder) ?? "root",
-          },
-        ],
-        clientInfo: {
-          name: "Fluf",
-          version: "1.0.0",
+    /** @type {import("vscode-languageserver-protocol").InitializeParams} */
+    let initParam = {
+      processId: spawnRef.pid ?? null,
+      capabilities: {},
+      workspaceFolders: [
+        {
+          uri: createUri(_workSpaceFolder),
+          name: nodePath.basename(_workSpaceFolder) ?? "root",
         },
-        rootUri: createUri(_workSpaceFolder),
+      ],
+      clientInfo: {
+        name: nodePath.basename(_workSpaceFolder),
+        version: "1",
       },
+      rootUri: createUri(_workSpaceFolder),
+    };
+
+    await sendRequest("initialize", initParam);
+
+    writeToStdin({
+      jsonrpc: "2.0",
+      method: "initialized",
+      params: {},
     });
+
+    if(mainWindowRef){
+      mainWindowRef.webContents.send("python:ready")
+    }
+
+    logger.info("Started python language server at " + langServerPath);
 
     isServerStarted = true;
     selectedWorkSpaceFolder = _workSpaceFolder;
@@ -251,11 +222,14 @@ async function startPythonLanguageServer(workSpaceFolder) {
  * Used when you want to reset state
  */
 function cleanupState() {
+  documentVersions.clear();
+  Array.from(pendingRequests.values()).forEach((x) => x.reject());
+
+  spawnRef?.kill();
+
   isServerStarted = false;
   selectedWorkSpaceFolder = null;
   spawnRef = null;
-  initialized = false;
-  initializeRequestId = null;
 }
 
 /**
@@ -264,28 +238,25 @@ function cleanupState() {
  */
 async function stopPythonLanguageServer() {
   try {
-    if (!spawnRef) return false;
+    if (!spawnRef || !isServerStarted) return true;
 
-    if (initialized) {
-      logger.info("Sending shutdown request for python language server");
-      try {
-        await sendRequest("shutdown", null);
-      } catch (e) {
-        logger.warn("Shutdown request timed out, forcing exit.");
-      }
+    logger.info("Sending shutdown request for python language server");
 
-      write({
-        jsonrpc: "2.0",
-        method: "exit",
-      });
+    try {
+      await sendRequest("shutdown", null);
+    } catch (e) {
+      logger.warn("Shutdown request timed out, forcing exit.");
     }
+
+    writeToStdin({
+      jsonrpc: "2.0",
+      method: "exit",
+    });
 
     return new Promise((resolve) => {
       const forceKillTimeout = setTimeout(() => {
-        if (spawnRef) {
-          logger.warn("Server didn't exit, killing process.");
-          spawnRef.kill("SIGKILL");
-        }
+        logger.warn("Server didn't exit, killing process.");
+        spawnRef?.kill("SIGKILL");
         cleanupState();
         resolve(true);
       }, 2000);
@@ -293,8 +264,8 @@ async function stopPythonLanguageServer() {
       spawnRef?.on("exit", () => {
         clearTimeout(forceKillTimeout);
         cleanupState();
-        logger.info("Stopped python language server gracefully");
         resolve(true);
+        logger.info("Stopped python language server gracefully");
       });
     });
   } catch (error) {
@@ -311,7 +282,7 @@ async function stopPythonLanguageServer() {
  * Safe write with error handling
  * @param {Partial<import("vscode-languageserver-protocol").RequestMessage> | Partial<import("vscode-languageserver-protocol").NotificationMessage>} request
  */
-function write(request) {
+function writeToStdin(request) {
   if (!spawnRef || !spawnRef.stdin.writable) return;
 
   try {
@@ -323,8 +294,6 @@ function write(request) {
     logger.error("Failed to write to stdin: " + JSON.stringify(err));
   }
 }
-
-
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").pythonServerOpen>}
@@ -353,7 +322,7 @@ const openImpl = (_, filePath, fileContent) => {
       },
     };
 
-    write(object);
+    writeToStdin(object);
   } catch (error) {
     logger.error(
       "Failed to open file in python language server " + JSON.stringify(error),
@@ -384,7 +353,7 @@ const editImpl = (_, payload) => {
   let newVersion = previousVersion + 1;
   documentVersions.set(normPath, newVersion);
 
-  write({
+  writeToStdin({
     jsonrpc: "2.0",
     /** @type {import("./type").LanguageServerProtocolMethod} */
     method: "textDocument/didChange",
