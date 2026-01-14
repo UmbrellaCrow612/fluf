@@ -136,9 +136,9 @@ export class TextFileEditorComponent implements OnInit {
       this.lspService.hover(node, position, this.languageServer);
     }
 
-    const info = this.hoverInformation.trim();
+    let info = this.hoverInformation.trim();
     if (info.length > 0) {
-      console.log("Rendering tooltip")
+      console.log('Rendering tooltip');
       return {
         pos: word.from,
         end: word.to,
@@ -227,6 +227,7 @@ export class TextFileEditorComponent implements OnInit {
       async (fileDiagMap, completions, hoverInfo) => {
         this.completions = completions;
         this.hoverInformation = hoverInfo;
+
         console.log('UI should render completions');
         console.log(completions);
 
