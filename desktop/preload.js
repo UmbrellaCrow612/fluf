@@ -36,6 +36,7 @@ const goServer = {
   open: (...args) => ipcRenderer.send("go:open", ...args),
   edit: (...args) => ipcRenderer.send("go:edit", ...args),
   completion: (...args) => ipcRenderer.send("go:completion", ...args),
+  hover: (...args) => ipcRenderer.send("go:hover", ...args),
 };
 
 /**

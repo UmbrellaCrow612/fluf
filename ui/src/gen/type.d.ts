@@ -911,7 +911,7 @@ export type shellApi = {
  * List of all methods that can be in the method of a request / message / Notification
  * based on the action you want to perform read the link below and send that method
  */
-export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics" | "textDocument/completion";
+export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics" | "textDocument/completion" | "textDocument/hover";
 /**
  * Version of jsonrpc's
  */
@@ -1090,6 +1090,10 @@ export type goServer = {
      * - Get file completions
      */
     completion: goServerCompletion;
+    /**
+     * - Get hover information
+     */
+    hover: goServerHover;
 };
 /**
  * Send a completion request
@@ -1127,6 +1131,10 @@ export type goServerOnResponseCallback = (payload: JSONRpcNotification) => void 
  * Run logic when the
  */
 export type goServerOnResponse = (callback: goServerOnResponseCallback) => voidCallback;
+/**
+ * Get hover information
+ */
+export type goServerHover = (filePath: string, position: import("vscode-languageserver-protocol").Position) => void;
 /**
  * Holds all the specific language servers the backend supports
  */
