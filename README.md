@@ -28,6 +28,8 @@ A simple text editor written in electron and angular
 
 - JSON RPC LSP support for now python (pyright) and go (gopls)
 
+- Hover information and auto complete via LSP 
+
 ---
 
 ## **Project Overview**
