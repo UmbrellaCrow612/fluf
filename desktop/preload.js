@@ -4,9 +4,9 @@ const { contextBridge, ipcRenderer } = require("electron");
  * @type {import("./type").goServer}
  */
 const goServer = {
-  isReady: () => ipcRenderer.invoke("go:is:ready"),
-  start: (wsp) => ipcRenderer.invoke("go:start", wsp),
-  stop: () => ipcRenderer.invoke("go:stop"),
+  isReady: (...args) => ipcRenderer.invoke("go:is:ready", ...args),
+  start: (...args) => ipcRenderer.invoke("go:start", ...args),
+  stop: (...args) => ipcRenderer.invoke("go:stop", ...args),
   onReady: (callback) => {
     let listener = () => {
       callback();
@@ -33,8 +33,8 @@ const goServer = {
     };
   },
 
-  open: (fp, fc) => ipcRenderer.send("go:open", fp, fc),
-  edit: (payload) => ipcRenderer.send("go:edit", payload),
+  open: (...args) => ipcRenderer.send("go:open", ...args),
+  edit: (...args) => ipcRenderer.send("go:edit", ...args),
   completion: (...args) => ipcRenderer.send("go:completion", ...args),
 };
 
@@ -42,17 +42,18 @@ const goServer = {
  * @type {import("./type").urlApi}
  */
 const urlApi = {
-  fileUriToAbsolutePath: (furl) => ipcRenderer.invoke("uri:to:path", furl),
+  fileUriToAbsolutePath: (...args) =>
+    ipcRenderer.invoke("uri:to:path", ...args),
 };
 
 /**
  * @type {import("./type").pythonServer}
  */
 const pythonServer = {
-  start: (wsf) => ipcRenderer.invoke("python:start", wsf),
-  stop: () => ipcRenderer.invoke("python:stop"),
-  open: (fp, fc) => ipcRenderer.send("python:file:open", fp, fc),
-  edit: (payload) => ipcRenderer.send("python:file:edit", payload),
+  start: (...args) => ipcRenderer.invoke("python:start", ...args),
+  stop: (...args) => ipcRenderer.invoke("python:stop", ...args),
+  open: (...args) => ipcRenderer.send("python:file:open", ...args),
+  edit: (...args) => ipcRenderer.send("python:file:edit", ...args),
 
   onReady: (callback) => {
     /** Runs when event is fired */
@@ -86,32 +87,32 @@ const pythonServer = {
  * @type {import("./type").ripgrepApi}
  */
 const ripgrepApi = {
-  search: (options) => ipcRenderer.invoke("ripgrep:search", options),
+  search: (...args) => ipcRenderer.invoke("ripgrep:search", ...args),
 };
 
 /**
  * @type {import("./type").chromeWindowApi}
  */
 const chromeWindowApi = {
-  isMaximized: () => ipcRenderer.invoke("window:ismaximized"),
-  minimize: () => ipcRenderer.send("window:minimize"),
-  maximize: () => ipcRenderer.send("window:maximize"),
-  close: () => ipcRenderer.send("window:close"),
-  restore: () => ipcRenderer.send("window:restore"),
+  isMaximized: (...args) => ipcRenderer.invoke("window:ismaximized", ...args),
+  minimize: (...args) => ipcRenderer.send("window:minimize", ...args),
+  maximize: (...args) => ipcRenderer.send("window:maximize", ...args),
+  close: (...args) => ipcRenderer.send("window:close", ...args),
+  restore: (...args) => ipcRenderer.send("window:restore", ...args),
 };
 
 /**
  * @type {import("./type").fsApi}
  */
 const fsApi = {
-  readFile: (fp) => ipcRenderer.invoke("file:read", fp),
-  write: (fp, c) => ipcRenderer.invoke("file:write", fp, c),
-  createFile: (fp) => ipcRenderer.invoke("file:create", fp),
-  exists: (path) => ipcRenderer.invoke("fs:exists", path),
-  remove: (path) => ipcRenderer.invoke("fs:remove", path),
-  readDir: (path) => ipcRenderer.invoke("dir:read", path),
-  createDirectory: (p) => ipcRenderer.invoke("dir:create", p),
-  selectFolder: () => ipcRenderer.invoke("dir:select"),
+  readFile: (...args) => ipcRenderer.invoke("file:read", ...args),
+  write: (...args) => ipcRenderer.invoke("file:write", ...args),
+  createFile: (...args) => ipcRenderer.invoke("file:create", ...args),
+  exists: (...args) => ipcRenderer.invoke("fs:exists", ...args),
+  remove: (...args) => ipcRenderer.invoke("fs:remove", ...args),
+  readDir: (...args) => ipcRenderer.invoke("dir:read", ...args),
+  createDirectory: (...args) => ipcRenderer.invoke("dir:create", ...args),
+  selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
 
   onChange: (path, callback) => {
     /**
@@ -134,30 +135,29 @@ const fsApi = {
     };
   },
 
-  stopWatching: (path) => ipcRenderer.send("fs:unwatch", path),
-  saveTo: (content, options) =>
-    ipcRenderer.invoke("file:save:to", content, options),
-  selectFile: () => ipcRenderer.invoke("file:select"),
+  stopWatching: (...args) => ipcRenderer.send("fs:unwatch", ...args),
+  saveTo: (...args) => ipcRenderer.invoke("file:save:to", ...args),
+  selectFile: (...args) => ipcRenderer.invoke("file:select", ...args),
 };
 
 /**
  * @type {import("./type").pathApi}
  */
 const pathApi = {
-  normalize: (fp) => ipcRenderer.invoke("path:normalize", fp),
-  relative: (f, t) => ipcRenderer.invoke("path:relative", f, t),
-  sep: () => ipcRenderer.invoke("path:sep"),
+  normalize: (...args) => ipcRenderer.invoke("path:normalize", ...args),
+  relative: (...args) => ipcRenderer.invoke("path:relative", ...args),
+  sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
   join: (...args) => ipcRenderer.invoke("path:join", ...args),
-  isAbsolute: (p) => ipcRenderer.invoke("path:isabsolute", p),
+  isAbsolute: (...args) => ipcRenderer.invoke("path:isabsolute", ...args),
 };
 
 /** @type {import("./type").shellApi} */
 const shellApi = {
-  create: (dir) => ipcRenderer.invoke("shell:create", dir),
-  kill: (pid) => ipcRenderer.invoke("shell:kill", pid),
-  resize: (pid, col, row) => ipcRenderer.invoke("shell:resize", pid, col, row),
-  write: (pid, chunk) => {
-    ipcRenderer.send("shell:write", pid, chunk);
+  create: (...args) => ipcRenderer.invoke("shell:create", ...args),
+  kill: (...args) => ipcRenderer.invoke("shell:kill", ...args),
+  resize: (...args) => ipcRenderer.invoke("shell:resize", ...args),
+  write: (...args) => {
+    ipcRenderer.send("shell:write", ...args);
   },
   onChange: (pid, callback) => {
     /**
@@ -193,10 +193,10 @@ const shellApi = {
  * @type {import("./type").gitApi}
  */
 const gitApi = {
-  hasGit: () => ipcRenderer.invoke("has:git"),
-  isGitInitialized: (dir) => ipcRenderer.invoke("git:is:init", dir),
-  initializeGit: (dir) => ipcRenderer.invoke("git:init", dir),
-  gitStatus: (dir) => ipcRenderer.invoke("git:status", dir),
+  hasGit: (...args) => ipcRenderer.invoke("has:git", ...args),
+  isGitInitialized: (...args) => ipcRenderer.invoke("git:is:init", ...args),
+  initializeGit: (...args) => ipcRenderer.invoke("git:init", ...args),
+  gitStatus: (...args) => ipcRenderer.invoke("git:status", ...args),
 };
 
 /** @type {import("./type").tsServer} */
@@ -214,12 +214,12 @@ const tsServer = {
     return () => ipcRenderer.removeListener("tsserver:message", listener);
   },
 
-  close: (filePath) => ipcRenderer.send("tsserver:file:close", filePath),
-  edit: (args) => ipcRenderer.send("tsserver:file:edit", args),
-  open: (filePath, content) =>
-    ipcRenderer.send("tsserver:file:open", filePath, content),
-  completion: (args) => ipcRenderer.send("tsserver:file:completion", args),
-  errors: (filePath) => ipcRenderer.send("tsserver:file:error", filePath),
+  close: (...args) => ipcRenderer.send("tsserver:file:close", ...args),
+  edit: (...args) => ipcRenderer.send("tsserver:file:edit", ...args),
+  open: (...args) => ipcRenderer.send("tsserver:file:open", ...args),
+  completion: (...args) =>
+    ipcRenderer.send("tsserver:file:completion", ...args),
+  errors: (...args) => ipcRenderer.send("tsserver:file:error", ...args),
   onReady: (callback) => {
     let listener = () => {
       callback();
@@ -231,23 +231,22 @@ const tsServer = {
       ipcRenderer.removeListener("tsserver:ready", listener);
     };
   },
-  start: (workSpaceFolder) =>
-    ipcRenderer.invoke("tsserver:start", workSpaceFolder),
-  stop: () => ipcRenderer.invoke("tsserver:stop"),
+  start: (...args) => ipcRenderer.invoke("tsserver:start", ...args),
+  stop: (...args) => ipcRenderer.invoke("tsserver:stop", ...args),
 };
 
 /**
  * @type {import("./type").fsearchApi}
  */
 const fsearchApi = {
-  search: (options) => ipcRenderer.invoke("fsearch", options),
+  search: (...args) => ipcRenderer.invoke("fsearch", ...args),
 };
 
 /**
  * @type {import("./type").clipboardApi}
  */
 const clipboardApi = {
-  writeImage: (fp) => ipcRenderer.invoke("clipboard:write:image", fp),
+  writeImage: (...args) => ipcRenderer.invoke("clipboard:write:image", ...args),
 };
 
 /**

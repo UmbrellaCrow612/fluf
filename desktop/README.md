@@ -11,25 +11,16 @@ npm run binman
 npm run start
 ```
 
-# Style guide
+# Style Guide
 
-- Use plain js common js
-- Write function defitions with ` * @callback readFile` then implament them like this for type checking
+* Use plain JavaScript (CommonJS) with JSDoc.
+* Write types in `types.js`.
+* Use `CombinCallback` on the backend side to type the listener with the public API and the Electron event being attached. This saves us from having to write another type for it.
+* In `preload.js`, make each API have its own object that contains the related features, for example `shellApi`.
+* In `preload.js`, when typing the APIs, if they do not receive a callback as a parameter, use `...args` for the parameters and pass them to IPC as `...args`.
+  This saves trouble when extending the API usage: the frontend will throw a type error if you don’t pass the required arguments, and they will automatically be forwarded through the bridge.
+* Whenever you extend `types.js`, run `npx tsc` in the `desktop` directory to generate the types for the UI.
 
-```js
-/**
- * @type {readFile}
- */
-const readFileImpl = async (event = undefined, filePath) => {
-  return "";
-};
-```
-
-# Type checking
-
-cmd
-
-run `npx tsc` to see for any errors and generating frontend ts types to use and generate types for ui
 
 # Info
 
