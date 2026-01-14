@@ -11,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
-import { EditorView, gutter } from '@codemirror/view';
+import { EditorView, hoverTooltip } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
@@ -30,6 +30,7 @@ import {
   CompletionContext,
   CompletionResult,
 } from '@codemirror/autocomplete';
+import { Position } from 'vscode-languageserver-protocol';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -58,6 +59,26 @@ export class TextFileEditorComponent implements OnInit {
       await this.displayFile();
       this.initLangServer(node);
     });
+  }
+
+  getWordAt(doc: import('@codemirror/state').Text, pos: number) {
+    const line = doc.lineAt(pos);
+    const lineText = line.text;
+
+    let start = pos - line.from;
+    let end = start;
+
+    // Expand left
+    while (start > 0 && /\w/.test(lineText[start - 1])) start--;
+    // Expand right
+    while (end < lineText.length && /\w/.test(lineText[end])) end++;
+
+    if (start === end) return null;
+
+    return {
+      from: line.from + start,
+      to: line.from + end,
+    };
   }
 
   /** Callback to unsub reacting to language server changes */
@@ -91,6 +112,47 @@ export class TextFileEditorComponent implements OnInit {
       validFor: /^\w*$/,
     };
   };
+
+  /** Holds he current hover information */
+  private hoverInformation: string = '';
+  hoverExtension = hoverTooltip((view, pos, side) => {
+    const doc = view.state.doc;
+
+    const word = this.getWordAt(doc, pos);
+    if (!word) return null;
+
+    const wordText = doc.sliceString(word.from, word.to);
+
+    const line = doc.lineAt(pos);
+    const position: Position = {
+      line: line.number - 1, // zero-based
+      character: pos - line.from, // zero-based
+    };
+
+    console.log('Hovered word:', wordText);
+
+    const node = this.openFileNode();
+    if (node && this.languageServer) {
+      this.lspService.hover(node, position, this.languageServer);
+    }
+
+    let info = this.hoverInformation.trim();
+    if (info.length > 0) {
+      console.log('Rendering tooltip');
+      return {
+        pos: word.from,
+        end: word.to,
+        above: true,
+        create(view) {
+          const dom = document.createElement('div');
+          dom.textContent = info;
+          return { dom };
+        },
+      };
+    }
+
+    return null;
+  });
 
   /**
    * Sends the file and a get error to the server for the given file node
@@ -162,13 +224,18 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSub = this.lspService.OnResponse(
       this.languageServer,
       this.codeMirrorView,
-      async (fileDiagMap, completions) => {
+      async (fileDiagMap, completions, hoverInfo) => {
         this.completions = completions;
+        this.hoverInformation = hoverInfo;
+
         console.log('UI should render completions');
         console.log(completions);
 
         console.log('UI should render diagnostics');
         console.log(fileDiagMap);
+
+        console.log('UI should render hover information');
+        console.log(hoverInfo);
 
         let normFilePath = normalizeElectronPath(this.openFileNode()?.path!);
         let map = fileDiagMap.get(normFilePath);
@@ -278,10 +345,11 @@ export class TextFileEditorComponent implements OnInit {
         lintGutter(),
         autocompletion({
           override: [this.completionSource],
-          activateOnTyping: true, 
+          activateOnTyping: true,
           maxRenderedOptions: 50,
-          defaultKeymap: true, 
+          defaultKeymap: true,
         }),
+        this.hoverExtension,
       ],
     });
 

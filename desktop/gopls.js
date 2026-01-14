@@ -420,6 +420,36 @@ const isReadyImpl = async () => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").goServerHover>}
+ */
+const hoverImpl = (_, fp, pos) => {
+  try {
+    /**
+     * @type {import("vscode-languageserver-protocol").RequestMessage}
+     */
+    let object = {
+      id: getSeq(),
+      jsonrpc: "2.0",
+      /** @type {import("./type").LanguageServerProtocolMethod} */
+      method: "textDocument/hover",
+      /** @type {import("vscode-languageserver-protocol").HoverParams} */
+      params: {
+        position: pos,
+        textDocument: {
+          uri: createUri(fp),
+        },
+      },
+    };
+
+    writeToStdin(object)
+  } catch (error) {
+    logger.error(
+      "Failed to send hover information for go lsp " + JSON.stringify(error),
+    );
+  }
+};
+
+/**
  * Register all gopls listeners
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -435,6 +465,7 @@ const registerGoLanguageServerListeners = (ipcMain, mainWindow) => {
   ipcMain.on("go:open", openImpl);
   ipcMain.on("go:edit", editImpl);
   ipcMain.on("go:completion", completionImpl);
+  ipcMain.on("go:hover", hoverImpl)
 };
 
 module.exports = {

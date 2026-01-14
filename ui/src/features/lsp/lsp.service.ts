@@ -42,6 +42,11 @@ export class LspService implements ILsp {
   private completions: Completion[] = [];
 
   /**
+   * Hover information sent from the server
+   */
+  private hoverInformation: string = '';
+
+  /**
    * List of specific diagnostics keys we listen to that contain error / suggestion information without putting every key in the file diag map
    * these are keys from typescript and other proper LSP responses
    */
@@ -153,6 +158,7 @@ export class LspService implements ILsp {
           await callback(
             structuredClone(this.fileAndDiagMap),
             this.completions,
+            this.hoverInformation,
           ); // need diff JS refrence
         });
 
@@ -181,6 +187,7 @@ export class LspService implements ILsp {
           await callback(
             structuredClone(this.fileAndDiagMap),
             this.completions,
+            this.hoverInformation,
           );
         });
 
@@ -197,6 +204,17 @@ export class LspService implements ILsp {
             await callback(
               structuredClone(this.fileAndDiagMap),
               this.completions,
+              this.hoverInformation,
+            );
+          }
+
+          if (isHoverMessage(message)) {
+            let o = message as any;
+            this.hoverInformation = o?.result?.contents?.value ?? '';
+            await callback(
+              structuredClone(this.fileAndDiagMap),
+              this.completions,
+              this.hoverInformation,
             );
           }
 
@@ -221,6 +239,7 @@ export class LspService implements ILsp {
           await callback(
             structuredClone(this.fileAndDiagMap),
             this.completions,
+            this.hoverInformation,
           );
         });
       default:
@@ -324,6 +343,21 @@ export class LspService implements ILsp {
         return false;
     }
   };
+
+  hover = (
+    fileNode: fileNode,
+    position: Position,
+    langServer: languageServer,
+  ) => {
+    switch (langServer) {
+      case 'go':
+        this.api.goServer.hover(fileNode.path, position);
+        break;
+
+      default:
+        break;
+    }
+  };
 }
 
 /**
@@ -332,6 +366,20 @@ export class LspService implements ILsp {
  */
 function isLspCompletionMessage(object: any) {
   if (object?.result?.items && typeof object?.result?.items?.length)
+    return true;
+  return false;
+}
+
+/**
+ * If a response object is a JSON rpc hover information object
+ * @param object The object
+ * @returns True or false
+ */
+function isHoverMessage(object: any): boolean {
+  if (
+    object?.result?.contents?.value &&
+    object?.result?.contents?.kind === 'markdown'
+  )
     return true;
   return false;
 }

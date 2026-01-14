@@ -9,6 +9,7 @@ import {
 import { server } from 'typescript';
 import { FlufDiagnostic } from '../diagnostic/type';
 import { Completion } from '@codemirror/autocomplete';
+import { Position } from 'vscode-languageserver-protocol';
 
 /**
  * List of all the specific diagnostics keys can be which the contain all the diagnostics for said key these are produced from the backend either by a LSP or another
@@ -60,7 +61,7 @@ export interface ILsp {
    * @param view The editor vie
    * @param fileNode The file node
    * @param langServer The language server
-   * @returns 
+   * @returns
    */
   Completion: (
     view: ViewUpdate,
@@ -125,17 +126,32 @@ export interface ILsp {
    * @returns If it is or is not active
    */
   isReady: (langServer: languageServer) => Promise<boolean>;
+
+  /**
+   * Get hover information
+   * @param fileNode - The file
+   * @param position The position of the cursor
+   * @param langServer The language server
+   * @returns Nothing
+   */
+  hover: (
+    fileNode: fileNode,
+    position: Position,
+    langServer: languageServer,
+  ) => void;
 }
 
 /**
  * Runs when the lang server responds and it's specific response it then parsed and passed to you
  * @param  fileAndDiagMap Contains a map of files and another map that for the specifc file has a diag type and it's diagnostics
  * @param completions - Contains a list of completions fromn the server
+ * @param hoverInformation - Contains string markdown if the hover information
  * @returns {void} Nothing
  */
 export type LanguageServiceCallback = (
   fileAndDiagMap: fileDiagnosticMap,
-  completions: Completion[]
+  completions: Completion[],
+  hoverInformation:string
 ) => void | Promise<void>;
 
 /**

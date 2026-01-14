@@ -718,7 +718,7 @@
  *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
  *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
  *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
- *          | "textDocument/publishDiagnostics" | "textDocument/completion"
+ *          | "textDocument/publishDiagnostics" | "textDocument/completion" | "textDocument/hover"
  * } LanguageServerProtocolMethod
  */
 
@@ -832,10 +832,11 @@
  * @property {goServerisReady} isReady - Check if the server is readfy or not
  * @property {goServerOnReady} onReady - Run logic when the server becomes ready
  * @property {goServerOnResponse} onResponse - Run logic when the go lsp produces a response
- * 
+ *
  * @property {goServerOpen} open - Open a file
  * @property {goServerEdit} edit - Edit a file
  * @property {goServerCompletion} completion - Get file completions
+ * @property {goServerHover} hover - Get hover information
  */
 
 /**
@@ -895,10 +896,18 @@
  * @returns {void | Promise<void>} A promise or nothing
  */
 /**
- * Run logic when the 
+ * Run logic when the
  * @callback goServerOnResponse
- * @param {goServerOnResponseCallback} callback - The logic to run 
+ * @param {goServerOnResponseCallback} callback - The logic to run
  * @returns {voidCallback} unsub callback
+ */
+
+/**
+ * Get hover information
+ * @callback goServerHover
+ * @param {string} filePath - The file to get the hover info for
+ * @param {import("vscode-languageserver-protocol").Position} position - The cursor position at which to get it =
+ * @returns {void} Nothing
  */
 
 /**
