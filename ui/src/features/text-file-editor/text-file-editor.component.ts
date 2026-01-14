@@ -11,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
-import { EditorView, gutter, hoverTooltip } from '@codemirror/view';
+import { EditorView, hoverTooltip } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
