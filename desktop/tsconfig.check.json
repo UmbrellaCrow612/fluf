@@ -1,14 +1,21 @@
 {
   "compilerOptions": {
-    "checkJs": true,
     "allowJs": true,
+    "checkJs": true,
+
     "strict": true,
     "noUnusedParameters": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictBindCallApply": true,
     "strictBuiltinIteratorReturn": true,
-    "strictPropertyInitialization": true,
     "alwaysStrict": true,
-  }
+
+    "noEmit": true,
+
+    "module": "commonjs",
+    "moduleResolution": "node"
+  },
+  "include": ["**/*.js"],
+  "exclude": ["node_modules", "dist", "build"]
 }
