@@ -154,59 +154,72 @@ function runGitCommand(args, cwd, timeOut = 5000) {
   });
 }
 
+/** @type {import("./type").hasGit} */
+const hasGitImpl = async () => {
+  try {
+    const version = await runGitCommand(["--version"], process.cwd());
+    return version.startsWith("git");
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").initializeGit>}
+ */
+const gitInitImpl = async (_, dir) => {
+  let p = path.normalize(path.resolve(dir));
+
+  try {
+    await runGitCommand(["init"], p);
+
+    return true;
+  } catch (error) {
+    logger.error("Failed to init git repo " + p + " " + JSON.stringify(error));
+    return false;
+  }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").isGitInitialized>}
+ */
+const igGitInit = async (_, dir) => {
+  let gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
+
+  try {
+    await fs.access(gitPath);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").gitStatus>}
+ */
+const gitStatusImpl = async (_, dir) => {
+  try {
+    const stdout = await runGitCommand(
+      ["status"],
+      path.normalize(path.resolve(dir)),
+    );
+
+    return parseGitStatus(stdout);
+  } catch (err) {
+    logger.error("Failed to check status " + JSON.stringify(err));
+    return null;
+  }
+};
+
 /**
  * Registers all listeners and handlers for git
  * @param {import("electron").IpcMain} ipcMain
  */
 const registerGitListeners = (ipcMain) => {
-  ipcMain.handle("has:git", async () => {
-    try {
-      const version = await runGitCommand(["--version"], process.cwd());
-      return version.startsWith("git");
-    } catch {
-      return false;
-    }
-  });
-
-  ipcMain.handle("git:init", async (event, dir) => {
-    let p = path.normalize(path.resolve(dir));
-
-    try {
-      await runGitCommand(["init"], p);
-
-      return true;
-    } catch (error) {
-      logger.error(
-        "Failed to init git repo " + p + " " + JSON.stringify(error),
-      );
-      return false;
-    }
-  });
-
-  ipcMain.handle("git:is:init", async (event, dir) => {
-    let gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
-
-    try {
-      await fs.access(gitPath);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  });
-
-  ipcMain.handle("git:status", async (event, dir) => {
-    try {
-      const stdout = await runGitCommand(
-        ["status"],
-        path.normalize(path.resolve(dir)),
-      );
-
-      return parseGitStatus(stdout);
-    } catch (err) {
-      logger.error("Failed to check status " + JSON.stringify(err));
-      return null;
-    }
-  });
+  ipcMain.handle("has:git", hasGitImpl);
+  ipcMain.handle("git:init", gitInitImpl);
+  ipcMain.handle("git:is:init", igGitInit);
+  ipcMain.handle("git:status", gitStatusImpl);
 };
 
 module.exports = {
