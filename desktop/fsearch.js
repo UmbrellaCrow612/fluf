@@ -5,7 +5,7 @@
 const fs = require("fs");
 const { spawn } = require("child_process");
 const { binPath } = require("./packing");
-const { binmanResolve } = require("umbr-binman");
+const binmanResolve = require("umbr-binman");
 
 /** @type {import("./type").fsearchOptions} */
 const defaultSearchOptions = {

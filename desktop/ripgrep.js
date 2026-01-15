@@ -4,8 +4,8 @@
 
 const fs = require("fs");
 const { spawn } = require("child_process");
-const { binmanResolve } = require("umbr-binman");
 const { binPath } = require("./packing");
+const binmanResolve = require("umbr-binman");
 
 /**
  * Parses ripgrep --vimgrep stdout and converts it to structured objects

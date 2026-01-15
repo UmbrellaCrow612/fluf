@@ -1,75 +1,53 @@
-binaries:
-  - name: ripgrep
-    urls:
-      linux:
-        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
-      darwin:
-        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-apple-darwin.tar.gz
-      windows:
-        x64: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip
+- name: ripgrep
+  platforms:
+    linux:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz
+        sha256: "1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599"
+        pattern: "^rg$"
+    darwin:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-apple-darwin.tar.gz
+        sha256: "64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882"
+        pattern: "^rg$"
+    win32:
+      x64:
+        url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip
+        sha256: "124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a"
+        pattern: "^rg\\.exe$"
 
-    sha256:
-      linux:
-        x64: 1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599
-      darwin:
-        x64: 64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882
-      windows:
-        x64: 124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a
+- name: fsearch
+  platforms:
+    linux:
+      x64:
+        url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_linux_amd64.zip
+        sha256: "787535a8a916864d7da280c385aaf4d6347c0c26fc4613c2dceb1a7b6261dce2"
+        pattern: "(?i)^fsearch$"
+    darwin:
+      x64:
+        url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_darwin_amd64.zip
+        sha256: "b2e7b014394a0eec5b820f802ed98fe70ad6a30d840775c7ed5fd68900c8f037"
+        pattern: "(?i)^fsearch$"
+    win32:
+      x64:
+        url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_windows_amd64.zip
+        sha256: "e18e6cfcba3ba5fb6626ab7dc65e3ef3ce7b3d996c806eee659c5457f64290a3"
+        pattern: "(?i)^fsearch(.exe)?$"
 
-    patterns:
-      linux:
-        x64: "^rg$"
-      darwin:
-        x64: "^rg$"
-      windows:
-        x64: "^rg\\.exe$"
-
-  - name: fsearch
-    urls:
-      windows:
-        x64: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_windows_amd64.zip
-      linux:
-        x64: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_linux_amd64.zip
-      darwin:
-        x64: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_darwin_amd64.zip
-
-    sha256:
-      windows:
-        x64: e18e6cfcba3ba5fb6626ab7dc65e3ef3ce7b3d996c806eee659c5457f64290a3
-      linux:
-        x64: 787535a8a916864d7da280c385aaf4d6347c0c26fc4613c2dceb1a7b6261dce2
-      darwin:
-        x64: b2e7b014394a0eec5b820f802ed98fe70ad6a30d840775c7ed5fd68900c8f037
-
-    patterns:
-      windows:
-        x64: "^fsearch(.exe)?$"
-      linux:
-        x64: "^fsearch$"
-      darwin:
-        x64: "^fsearch$"
-
-  - name: gopls
-    urls:
-      windows:
-        x64: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-windows-amd64.tar.gz
-      linux:
-        x64: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-linux-amd64.tar.gz
-      darwin:
-        x64: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-darwin-arm64.tar.gz
-
-    sha256:
-      windows:
-        x64: 3bca2855397d459b71997dd8cb22cf43efcbb950d22aeb14c3663f403179b0ec
-      linux:
-        x64: f7163011d877bd16b611836f729da7ff0f44ffaa372caf9aea96cda4b3f9f59b
-      darwin:
-        x64: 5ea718a1b0ee6ca6c12da6c7db093b378469e173ef9288adba65d43f5e2c3786
-
-    patterns:
-      windows:
-        x64: "^gopls(.exe)?$"
-      linux:
-        x64: "^gopls$"
-      darwin:
-        x64: "^gopls$"
+- name: gopls
+  platforms:
+    linux:
+      x64:
+        url: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-linux-amd64.tar.gz
+        sha256: "f7163011d877bd16b611836f729da7ff0f44ffaa372caf9aea96cda4b3f9f59b"
+        pattern: "^gopls$"
+    darwin:
+      x64:
+        url: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-darwin-arm64.tar.gz
+        sha256: "5ea718a1b0ee6ca6c12da6c7db093b378469e173ef9288adba65d43f5e2c3786"
+        pattern: "^gopls$"
+    win32:
+      x64:
+        url: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-windows-amd64.tar.gz
+        sha256: "3bca2855397d459b71997dd8cb22cf43efcbb950d22aeb14c3663f403179b0ec"
+        pattern: "^gopls(.exe)?$"

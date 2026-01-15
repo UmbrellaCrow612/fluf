@@ -11,7 +11,7 @@ const { binPath } = require("./packing");
 const fs = require("fs/promises");
 const path = require("path");
 const { createUri } = require("./lsp");
-const { binmanResolve } = require("umbr-binman");
+const binmanResolve = require("umbr-binman");
 
 /**
  * Refrence to the main window
