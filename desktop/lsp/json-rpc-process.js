@@ -117,6 +117,26 @@ class JsonRpcProcess {
         logger.error(`LSP stderr: ${chunk.toString()}`);
       });
 
+      this.#spawnRef.on("error", (error) => {
+        logger.error(`Process error for ${this.#command}: ${error.message}`);
+        this.#isStarted = false;
+        this.#pendingRequests.forEach(({ reject }) => {
+          reject(new Error(`Process error: ${error.message}`));
+        });
+        this.#pendingRequests.clear();
+      });
+
+      this.#spawnRef.on("exit", (code, signal) => {
+        logger.info(
+          `Process ${this.#command} exited with code ${code}, signal ${signal}`,
+        );
+        this.#isStarted = false;
+        this.#pendingRequests.forEach(({ reject }) => {
+          reject(new Error(`Process exited with code ${code}`));
+        });
+        this.#pendingRequests.clear();
+      });
+
       this.#isStarted = true;
     } catch (error) {
       this.#isStarted = false;
@@ -160,18 +180,16 @@ class JsonRpcProcess {
    */
   Exit() {
     this.#write({
-      id: null,
       jsonrpc: "2.0",
       method: "exit",
     });
   }
 
   /**
-   * Call after making a initlized request
+   * Call after making a initlized  request
    */
   Initialized() {
     this.#write({
-      id: null,
       jsonrpc: "2.0",
       method: "initialized",
       params: {},
@@ -306,7 +324,7 @@ class JsonRpcProcess {
 
   /**
    * Write a request to the stdin stream of the process
-   * @param {import("vscode-languageserver-protocol").RequestMessage} message The message
+   * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} message The message
    */
   #write(message) {
     if (!this.#isStarted) {
@@ -319,12 +337,12 @@ class JsonRpcProcess {
     }
 
     if (!this.#spawnRef) {
-      console.error("No child process spawned for command: " + this.#command);
+      logger.error("No child process spawned for command: " + this.#command);
       return;
     }
 
     if (!this.#spawnRef.stdin.writable) {
-      console.error("Cannot write to process command: " + this.#command);
+      logger.error("Cannot write to process command: " + this.#command);
       return;
     }
 
