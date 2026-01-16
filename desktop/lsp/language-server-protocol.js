@@ -56,6 +56,9 @@ class JsonRpcLanguageServer {
       await rc.SendRequest("initialize", params);
       rc.Initialized();
 
+      logger.info(
+        `Language server started for command: ${command} at workspace folder: ${wsf}`,
+      );
       return true;
     } catch (error) {
       logger.error(
@@ -97,6 +100,10 @@ class JsonRpcLanguageServer {
       rc.Shutdown();
 
       this.#workSpaceRpcMap.delete(_workSpaceFolder);
+
+      logger.info(
+        `Language server stoped for command: ${rc.GetCommand()} at workspace folder: ${workSpaceFolder}`,
+      );
       return true;
     } catch (error) {
       logger.error(

@@ -14,6 +14,14 @@ class JsonRpcProcess {
   #command = null;
 
   /**
+   * Get the command spawned for a given the given process
+   * @returns {string | null}
+   */
+  GetCommand() {
+    return this.#command;
+  }
+
+  /**
    * Aguments passed on spawn
    * @type {string[]}
    */
