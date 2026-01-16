@@ -932,9 +932,9 @@
  */
 
 /**
- * Base used for language servers implameation
+ * Base used for language servers impl all language server will follow this structure
  * @typedef {Object} ILanguageServer
- * @property {ILanguageServerStart} Start
+ * @property {ILanguageServerStart} Start - Begin the language server
  */
 
 /**

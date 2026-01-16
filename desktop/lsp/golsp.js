@@ -1,5 +1,7 @@
+const binmanResolve = require("umbr-binman");
 const { logger } = require("../logger");
 const { JsonRpcLanguageServer } = require("./language-server-protocol");
+const { binPath } = require("../packing");
 
 /**
  * @typedef {import("../type").ILanguageServer} l
@@ -15,7 +17,12 @@ class GoLanguageServer extends JsonRpcLanguageServer {
    */
   async Start(workSpaceFolder) {
     try {
-      return this._start("gopls", ["serve"], workSpaceFolder);
+      let exePath = await binmanResolve("gopls", ["gopls"], binPath());
+      if (!exePath) {
+        throw new Error("No gopls exe path");
+      }
+
+      return this._start(exePath, ["serve"], workSpaceFolder);
     } catch (error) {
       logger.error(
         "Failed to start go language server " + JSON.stringify(error),

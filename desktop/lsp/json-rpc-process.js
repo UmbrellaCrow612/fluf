@@ -125,9 +125,32 @@ class JsonRpcProcess {
   }
 
   /**
-   * Send a Initialized message once you have send the initzlise request
+   * Shutdown the process and cleanup resources - not the same as stop - this is like a extreme cleanup at the very end
+   * @returns {void}
    */
-  Initialize() {
+  Shutdown() {
+    try {
+      if (this.#spawnRef && !this.#spawnRef.killed) {
+        this.#spawnRef.kill();
+      }
+
+      this.#pendingRequests.forEach(({ reject }) => {
+        reject(new Error("Process shutdown"));
+      });
+
+      this.#pendingRequests.clear();
+      this.#onDataCallbacks.clear();
+      this.#isStarted = false;
+      this.#spawnRef = null;
+    } catch (error) {
+      logger.error("Failed to shutdown rpc process " + JSON.stringify(error));
+    }
+  }
+
+  /**
+   * Call after making a initlized request
+   */
+  Initialized() {
     this.#write({
       id: null,
       jsonrpc: "2.0",
