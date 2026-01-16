@@ -932,9 +932,17 @@
  */
 
 /**
+ * Stop the language server for a given work space
+ * @callback ILanguageServerStop
+ * @param {string} workspaceFolder
+ * @returns {Promise<boolean>}
+ */
+
+/**
  * Base used for language servers impl all language server will follow this structure
  * @typedef {Object} ILanguageServer
  * @property {ILanguageServerStart} Start - Begin the language server
+ * @property {ILanguageServerStop} Stop - Stop the language server
  */
 
 /**

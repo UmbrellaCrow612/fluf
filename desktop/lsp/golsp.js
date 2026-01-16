@@ -30,6 +30,13 @@ class GoLanguageServer extends JsonRpcLanguageServer {
       return false;
     }
   }
+
+  /**
+   * @type {import("../type").ILanguageServerStop}
+   */
+  async Stop(wsf) {
+    return this._stop(wsf);
+  }
 }
 
 module.exports = {
