@@ -80,9 +80,24 @@ class JsonRpcLanguageServer {
    */
   async _stop(workSpaceFolder) {
     try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
 
+      if (!rc) {
+        return false;
+      }
 
-        return true
+      try {
+        await rc.SendRequest("shutdown", {});
+      } catch (error) {
+        logger.error("Shutdown requested hanged " + JSON.stringify(error));
+      }
+
+      rc.Exit();
+      rc.Shutdown();
+
+      this.#workSpaceRpcMap.delete(_workSpaceFolder);
+      return true;
     } catch (error) {
       logger.error(
         "Failed to stop language server for work space folder " +

@@ -148,6 +148,17 @@ class JsonRpcProcess {
   }
 
   /**
+   * Write exit request call after shutdown request
+   */
+  Exit() {
+    this.#write({
+      id: null,
+      jsonrpc: "2.0",
+      method: "exit",
+    });
+  }
+
+  /**
    * Call after making a initlized request
    */
   Initialized() {
