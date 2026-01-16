@@ -916,6 +916,18 @@
  */
 
 /**
+ * Start
+ * @callback LanguageServerStart
+ * @param {string} workspaceFolder
+ * @returns {Promise<boolean>}
+ */
+
+/**
+ * @typedef {Object} ILanguageServer
+ * @property {LanguageServerStart} Start
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -953,4 +965,4 @@
  * @property {ElectronApi} electronApi - The attached Electron API.
  */
 
-export {};
+module.exports = {  };

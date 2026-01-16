@@ -10,6 +10,8 @@
     "strictBuiltinIteratorReturn": true,
     "strictPropertyInitialization": true,
     "alwaysStrict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "module": "nodenext",
+    "target": "esnext"
   }
 }
