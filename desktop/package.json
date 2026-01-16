@@ -10,7 +10,7 @@
     "build:windows": "node build.js windows",
     "binman": "npx binman .",
     "binman:linux": "npx binman . --platforms=linux",
-    "binman:windows": "npx binman . --platforms=windows",
+    "binman:windows": "npx binman . --platforms=win32",
     "binman:darwin": "npx binman . --platforms=darwin"
   },
   "keywords": [],
