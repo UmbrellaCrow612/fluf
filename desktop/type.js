@@ -916,21 +916,31 @@
  */
 
 /**
- * Start
+ * Used in the base class
  * @callback LanguageServerStart
+ * @param {string} command - Start the language server with the exe command
+ * @param {string[]} args - Addtional args
+ * @param {string} workspaceFolder - The folder opened in UI
+ * @returns {Promise<boolean>}
+ */
+
+/**
+ * Start the language server for a given work space
+ * @callback ILanguageServerStart
  * @param {string} workspaceFolder
  * @returns {Promise<boolean>}
  */
 
 /**
+ * Base used for language servers implameation
  * @typedef {Object} ILanguageServer
- * @property {LanguageServerStart} Start
+ * @property {ILanguageServerStart} Start
  */
 
 /**
- * Run logic when data has been parsed from a lsp 
+ * Run logic when data has been parsed from a lsp
  * @callback LanguageServerOnDataCallback
- * @param {import("vscode-languageserver-protocol").NotificationMessage} response - The LSP response
+ * @param {import("vscode-languageserver-protocol").NotificationMessage | import("vscode-languageserver-protocol").ResponseMessage} response - The LSP response
  * @returns {void}
  */
 
@@ -972,4 +982,4 @@
  * @property {ElectronApi} electronApi - The attached Electron API.
  */
 
-module.exports = {  };
+module.exports = {};

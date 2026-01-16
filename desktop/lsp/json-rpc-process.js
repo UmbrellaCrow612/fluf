@@ -2,7 +2,7 @@ const { spawn } = require("child_process");
 const { logger } = require("../logger");
 
 /**
- * Used as a generic way to interact with a JSONRpc compliant LSP
+ * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command
  *
  * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
  */
@@ -62,6 +62,20 @@ class JsonRpcProcess {
   #onDataCallbacks = new Set();
 
   /**
+   * Holds the PID number of the spawend process
+   * @type {number | undefined}
+   */
+  #pid = undefined;
+
+  /**
+   * Get the PID number of the process
+   * @returns {number | undefined}
+   */
+  GetPid() {
+    return this.#pid;
+  }
+
+  /**
    * Required for spawn of the LSP
    * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
@@ -71,6 +85,10 @@ class JsonRpcProcess {
     this.#args = args;
   }
 
+  /**
+   * Start the process
+   * @returns {void}
+   */
   Start() {
     try {
       if (this.#isStarted) {
@@ -80,18 +98,42 @@ class JsonRpcProcess {
       if (!this.#command) throw new Error("Command not passed");
       this.#spawnRef = spawn(this.#command, this.#args);
 
+      this.#pid = this.#spawnRef.pid;
+
       this.#spawnRef.stdout.on("data", (chunk) => {
         this.#stdoutBuffer = Buffer.concat([this.#stdoutBuffer, chunk]);
         this.#parseStdout();
       });
+
+      this.#spawnRef.stderr.on("data", (chunk) => {
+        logger.error(`LSP stderr: ${chunk.toString()}`);
+      });
+
+      this.#isStarted = true;
     } catch (error) {
+      this.#isStarted = false;
+
       logger.error(
         "Failed to start JSON RPC process with command " +
           this.#command +
           " error: " +
           JSON.stringify(error),
       );
+
+      throw error;
     }
+  }
+
+  /**
+   * Send a Initialized message once you have send the initzlise request
+   */
+  Initialize() {
+    this.#write({
+      id: null,
+      jsonrpc: "2.0",
+      method: "initialized",
+      params: {},
+    });
   }
 
   /**
@@ -111,7 +153,7 @@ class JsonRpcProcess {
    * Make a request to the process and awit a response
    * @param {import("../type").LanguageServerProtocolMethod} method - The specific method to send
    * @param {any} params - Any shape of params for the request being sent
-   * @returns {Promise<boolean>} The promise to await
+   * @returns {Promise<any>} The promise to await
    */
   SendRequest(method, params) {
     try {
@@ -128,7 +170,7 @@ class JsonRpcProcess {
 
         setTimeout(() => {
           if (this.#pendingRequests.has(requestId)) {
-            this.#pendingRequests.get(requestId)?.reject();
+            this.#pendingRequests.get(requestId)?.reject("Request timed out");
             this.#pendingRequests.delete(requestId);
           }
         }, 4500);
@@ -198,10 +240,25 @@ class JsonRpcProcess {
 
   /**
    * Notifys on listener  that a message has been parsed fromn the lsp
-   * @param {any} response
+   * @param {import("vscode-languageserver-protocol").ResponseMessage} response
    * @returns {void}
    */
   #notify(response) {
+    if (
+      response.id !== null &&
+      this.#pendingRequests.has(Number(response.id))
+    ) {
+      const obj = this.#pendingRequests.get(Number(response.id));
+
+      if (response.error) {
+        obj?.reject(response.error);
+      } else {
+        obj?.resolve(response.result);
+      }
+
+      this.#pendingRequests.delete(Number(response.id));
+    }
+
     this.#onDataCallbacks.forEach((cb) => cb(response));
   }
 
