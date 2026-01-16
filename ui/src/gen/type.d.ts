@@ -259,23 +259,23 @@ export type pathApi = {
 /**
  * Calls path absolute
  */
-export type pathIsabsolute = (path: string) => boolean;
+export type pathIsabsolute = (path: string) => Promise<boolean>;
 /**
  * Calls path.join
  */
-export type pathJoin = (...args: string[]) => string;
+export type pathJoin = (...args: string[]) => Promise<string>;
 /**
  * Get the path seperator calls path.sep
  */
-export type pathSep = () => string;
+export type pathSep = () => Promise<string>;
 /**
  * Method to fix a filepath
  */
-export type normalizePath = (path: string) => string;
+export type normalizePath = (path: string) => Promise<string>;
 /**
  * Get the relative path
  */
-export type relativePath = (from: string, to: string) => string;
+export type relativePath = (from: string, to: string) => Promise<string>;
 /**
  * List of args to pass to ripgrep to search
  */
