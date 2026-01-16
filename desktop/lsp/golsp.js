@@ -1,6 +1,6 @@
 const binmanResolve = require("umbr-binman");
 const { logger } = require("../logger");
-const { JsonRpcLanguageServer } = require("./language-server-protocol");
+const { JsonRpcLanguageServer } = require("./json-rpc-language-server");
 const { binPath } = require("../packing");
 
 /**

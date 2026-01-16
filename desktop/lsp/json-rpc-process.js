@@ -219,7 +219,25 @@ class JsonRpcProcess {
     try {
       let requestId = this.#getId();
       return new Promise((resolve, reject) => {
-        this.#pendingRequests.set(requestId, { resolve, reject });
+        const timeoutId = setTimeout(() => {
+          if (this.#pendingRequests.has(requestId)) {
+            this.#pendingRequests
+              .get(requestId)
+              ?.reject(new Error("Request timed out"));
+            this.#pendingRequests.delete(requestId);
+          }
+        }, 4500);
+
+        this.#pendingRequests.set(requestId, {
+          resolve: (value) => {
+            clearTimeout(timeoutId);
+            resolve(value);
+          },
+          reject: (reason) => {
+            clearTimeout(timeoutId);
+            reject(reason);
+          },
+        });
 
         this.#write({
           id: requestId,
@@ -227,13 +245,6 @@ class JsonRpcProcess {
           method,
           params,
         });
-
-        setTimeout(() => {
-          if (this.#pendingRequests.has(requestId)) {
-            this.#pendingRequests.get(requestId)?.reject("Request timed out");
-            this.#pendingRequests.delete(requestId);
-          }
-        }, 4500);
       });
     } catch (error) {
       logger.error(
