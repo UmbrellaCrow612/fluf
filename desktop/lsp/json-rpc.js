@@ -1,6 +1,5 @@
-import { logger } from "../logger";
-
 const { spawn } = require("child_process");
+const { logger } = require("../logger");
 
 /**
  * Used as a generic way to interact with a JSONRpc compliant LSP
@@ -30,6 +29,25 @@ class JsonRpcProcess {
    * Indicates if the process has been started
    */
   #isStarted = false;
+
+  /**
+   * Holds the pending requests made to the process
+   *
+   * - `Key` - The request ID
+   * - `Value` - The promises reject and accept callbacks used to complete or fail it
+   * @type {Map<number, {resolve: (value: any) => void, reject: (reason?: any) => void}>}
+   */
+  #pendingRequests = new Map();
+
+  /** Holds the next ID  */
+  #id = 0;
+  /**
+   * Gets the next id
+   * @returns {number} - The next id
+   */
+  #getId() {
+    return this.#id++;
+  }
 
   /**
    * Required for spawn of the LSP
@@ -62,9 +80,41 @@ class JsonRpcProcess {
   /**
    * Make a request to the process and awit a response
    * @param {import("../type").LanguageServerProtocolMethod} method - The specific method to send
-   * @param {any} args - Any shape of arguments
+   * @param {any} params - Any shape of params for the request being sent
+   * @returns {Promise<boolean>} The promise to await
    */
-  SendRequest(method, args) {}
+  SendRequest(method, params) {
+    try {
+      let requestId = this.#getId();
+      return new Promise((resolve, reject) => {
+        this.#pendingRequests.set(requestId, { resolve, reject });
+
+        this.#write({
+          id: requestId,
+          jsonrpc: "2.0",
+          method,
+          params,
+        });
+
+        setTimeout(() => {
+          if (this.#pendingRequests.has(requestId)) {
+            this.#pendingRequests.get(requestId)?.reject();
+            this.#pendingRequests.delete(requestId);
+          }
+        }, 4500);
+      });
+    } catch (error) {
+      logger.error(
+        "Failed to send request for command: " +
+          this.#command +
+          " " +
+          JSON.stringify(error),
+      );
+      return new Promise((_, reject) => {
+        reject();
+      });
+    }
+  }
 
   /**
    * Write a request to the stdin stream of the process

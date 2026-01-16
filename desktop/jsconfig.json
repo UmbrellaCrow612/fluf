@@ -11,7 +11,7 @@
     "strictPropertyInitialization": true,
     "alwaysStrict": true,
     "skipLibCheck": true,
-    "module": "nodenext",
+    "module": "commonjs",
     "target": "esnext"
   }
 }
