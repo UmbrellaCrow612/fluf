@@ -928,6 +928,13 @@
  */
 
 /**
+ * Run logic when data has been parsed from a lsp 
+ * @callback LanguageServerOnDataCallback
+ * @param {import("vscode-languageserver-protocol").NotificationMessage} response - The LSP response
+ * @returns {void}
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi

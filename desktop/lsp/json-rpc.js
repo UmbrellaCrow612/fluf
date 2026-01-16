@@ -50,6 +50,18 @@ class JsonRpcProcess {
   }
 
   /**
+   * Holds the buffer data sent out from the stdin stream from the spawned cmd
+   * @type {Buffer}
+   */
+  #stdoutBuffer = Buffer.alloc(0);
+
+  /**
+   * Holds all the listener  callbacks to be run when a lsp response is parsed
+   * @type {Set<import("../type").LanguageServerOnDataCallback>}
+   */
+  #onDataCallbacks = new Set();
+
+  /**
    * Required for spawn of the LSP
    * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
@@ -67,6 +79,11 @@ class JsonRpcProcess {
       }
       if (!this.#command) throw new Error("Command not passed");
       this.#spawnRef = spawn(this.#command, this.#args);
+
+      this.#spawnRef.stdout.on("data", (chunk) => {
+        this.#stdoutBuffer = Buffer.concat([this.#stdoutBuffer, chunk]);
+        this.#parseStdout();
+      });
     } catch (error) {
       logger.error(
         "Failed to start JSON RPC process with command " +
@@ -75,6 +92,19 @@ class JsonRpcProcess {
           JSON.stringify(error),
       );
     }
+  }
+
+  /**
+   * Register a callback to be run when data from the lsp has been parsed
+   * @param {import("../type").LanguageServerOnDataCallback} callback - The callback to run when data has been parsed
+   * @returns {import("../type").voidCallback} Callback to remove the listener  callback from being run
+   */
+  OnData(callback) {
+    this.#onDataCallbacks.add(callback);
+
+    return () => {
+      this.#onDataCallbacks.delete(callback);
+    };
   }
 
   /**
@@ -114,6 +144,65 @@ class JsonRpcProcess {
         reject();
       });
     }
+  }
+
+  /**
+   * Parses the stdout and notifys intrested parties of the message parsed
+   */
+  #parseStdout() {
+    while (true) {
+      const headerEnd = this.#stdoutBuffer.indexOf("\r\n\r\n");
+      if (headerEnd === -1) {
+        return;
+      }
+
+      const headers = this.#stdoutBuffer
+        .subarray(0, headerEnd)
+        .toString("utf-8");
+      const contentLengthMatch = headers.match(/Content-Length: (\d+)/i);
+
+      if (!contentLengthMatch) {
+        logger.error("No Content-Length header found");
+        this.#stdoutBuffer = this.#stdoutBuffer.subarray(headerEnd + 4);
+        continue;
+      }
+
+      const contentLength = parseInt(contentLengthMatch[1], 10);
+      const messageStart = headerEnd + 4;
+      const messageEnd = messageStart + contentLength;
+
+      if (this.#stdoutBuffer.length < messageEnd) {
+        return;
+      }
+
+      const messageBody = this.#stdoutBuffer
+        .subarray(messageStart, messageEnd)
+        .toString("utf-8");
+
+      try {
+        const response = JSON.parse(messageBody);
+        this.#notify(response);
+      } catch (err) {
+        logger.error(
+          "Failed to parse response for command: " +
+            this.#command +
+            " " +
+            JSON.stringify(err),
+        );
+        logger.error("Raw body " + messageBody);
+      }
+
+      this.#stdoutBuffer = this.#stdoutBuffer.subarray(messageEnd);
+    }
+  }
+
+  /**
+   * Notifys on listener  that a message has been parsed fromn the lsp
+   * @param {any} response
+   * @returns {void}
+   */
+  #notify(response) {
+    this.#onDataCallbacks.forEach((cb) => cb(response));
   }
 
   /**
