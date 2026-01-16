@@ -85,7 +85,7 @@ app.whenReady().then(() => {
   registerGitListeners(ipcMain);
   registerFsearchListeners(ipcMain);
   registerClipboardListeners(ipcMain);
-  registerPdfListeners(ipcMain, protocol);
+  registerPdfListeners(protocol);
   registerImageListeners(protocol);
   registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);

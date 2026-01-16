@@ -27,10 +27,9 @@ const registerPdfProtocol = (protocol) => {
 
 /**
  * Called on app ready, contains protocol hanlers which are added in app ready state
- * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").Protocol} protocol
  */
-const registerPdfListeners = (ipcMain, protocol) => {
+const registerPdfListeners = (protocol) => {
   protocol.handle("pdf", async (request) => {
     try {
       let rawPath = request.url.replace("pdf://", "");
