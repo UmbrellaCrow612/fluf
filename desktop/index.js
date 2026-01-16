@@ -12,7 +12,6 @@ const {
   stopTypescriptLanguageServer,
 } = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
-const { registerPathListeners } = require("./path");
 const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
 const { registerRipgrepListeners } = require("./ripgrep");
@@ -86,11 +85,10 @@ app.whenReady().then(() => {
   registerGitListeners(ipcMain);
   registerFsearchListeners(ipcMain);
   registerClipboardListeners(ipcMain);
-  registerPdfListeners(ipcMain, protocol);
-  registerImageListeners(ipcMain, protocol);
+  registerPdfListeners(protocol);
+  registerImageListeners(protocol);
   registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);
-  registerPathListeners(ipcMain);
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
   reigsterPythonLanguageServerListeners(ipcMain, mainWindow);

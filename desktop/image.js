@@ -25,10 +25,9 @@ function registerImageProtocol(protocol) {
 
 /**
  * Register all ipcmain image listeners and custom protocols for image related actions
- * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").Protocol} protocol
  */
-function registerImageListeners(ipcMain, protocol) {
+function registerImageListeners(protocol) {
   protocol.handle("image", async (request) => {
     try {
       let rawPath = request.url.replace("image://", "");

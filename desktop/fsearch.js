@@ -141,7 +141,7 @@ const buildArgs = (options) => {
  * @returns {Promise<import("./type").fsearchResult[]>}
  */
 const searchWithFSearch = async (options) => {
-  let bpath = binPath()
+  let bpath = binPath();
   const exePath = await binmanResolve("fsearch", ["fsearch"], bpath);
 
   if (!exePath) throw new Error("fsearch executable not found");
@@ -205,22 +205,19 @@ const searchWithFSearch = async (options) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsearch>}
+ */
+const fsearchImpl = async (_, options) => {
+  let newOptions = { ...defaultSearchOptions, ...options };
+  return await searchWithFSearch(newOptions);
+};
+
+/**
  * Register fsearch listeners
  * @param {import("electron").IpcMain} ipcMain
  */
 function registerFsearchListeners(ipcMain) {
-  ipcMain.handle(
-    "fsearch",
-    /**
-     * @param {import("electron").IpcMainInvokeEvent} event
-     * @param {import("./type").fsearchOptions} options
-     * @returns {Promise<import("./type").fsearchResult[]>}
-     */
-    async (event, options) => {
-      let newOptions = { ...defaultSearchOptions, ...options };
-      return await searchWithFSearch(newOptions);
-    },
-  );
+  ipcMain.handle("fsearch", fsearchImpl);
 }
 
 module.exports = { registerFsearchListeners };

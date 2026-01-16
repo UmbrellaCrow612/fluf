@@ -259,23 +259,23 @@ export type pathApi = {
 /**
  * Calls path absolute
  */
-export type pathIsabsolute = (path: string) => Promise<boolean>;
+export type pathIsabsolute = (path: string) => boolean;
 /**
  * Calls path.join
  */
-export type pathJoin = (...args: string[]) => Promise<string>;
+export type pathJoin = (...args: string[]) => string;
 /**
  * Get the path seperator calls path.sep
  */
-export type pathSep = () => Promise<string>;
+export type pathSep = () => string;
 /**
  * Method to fix a filepath
  */
-export type normalizePath = (path: string) => Promise<string>;
+export type normalizePath = (path: string) => string;
 /**
  * Get the relative path
  */
-export type relativePath = (from: string, to: string) => Promise<string>;
+export type relativePath = (from: string, to: string) => string;
 /**
  * List of args to pass to ripgrep to search
  */
@@ -663,7 +663,7 @@ export type tsServerOutputBodyScriptElementKind = {
  * Mapped from `typescript.d.ts -> export type CompletionEntry`
  */
 export type tsServerOutputBodyCompletionEntry = {
-    kind?: "" | "string" | "function" | "link" | "index" | "type" | "module" | "label" | "script" | "var" | "directory" | "method" | "class" | "getter" | "setter" | "accessor" | "warning" | "construct" | "keyword" | "local class" | "interface" | "enum" | "enum member" | "local var" | "using" | "await using" | "local function" | "property" | "constructor" | "call" | "parameter" | "type parameter" | "primitive type" | "alias" | "const" | "let" | "external module name" | "JSX attribute" | "link name" | "link text" | undefined;
+    kind?: "" | "string" | "function" | "warning" | "keyword" | "label" | "alias" | "directory" | "link" | "script" | "module" | "class" | "local class" | "interface" | "type" | "enum" | "enum member" | "var" | "local var" | "using" | "await using" | "local function" | "method" | "getter" | "setter" | "property" | "accessor" | "constructor" | "call" | "index" | "construct" | "parameter" | "type parameter" | "primitive type" | "const" | "let" | "external module name" | "JSX attribute" | "link name" | "link text" | undefined;
     kindModifiers?: string | undefined;
     name?: string | undefined;
     sortText?: string | undefined;
@@ -725,7 +725,7 @@ export type tsServerOutput = {
     /**
      * - What type this message is
      */
-    type?: "event" | "request" | "response" | undefined;
+    type?: "request" | "response" | "event" | undefined;
     /**
      * - What type of event was emitted
      */

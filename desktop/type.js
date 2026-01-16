@@ -236,7 +236,7 @@
  * Calls path absolute
  * @callback pathIsabsolute
  * @param {string} path
- * @returns {Promise<boolean>}
+ * @returns {boolean}
  */
 
 /**
@@ -244,20 +244,20 @@
  *
  * @callback pathJoin
  * @param {...string} args - Path segments to join
- * @returns {Promise<string>} Joined path
+ * @returns {string} Joined path
  */
 
 /**
  * Get the path seperator calls path.sep
  * @callback pathSep
- * @returns {Promise<string>}
+ * @returns {string}
  */
 
 /**
  * Method to fix a filepath
  * @callback normalizePath
  * @param {string} path - The file path string
- * @returns {Promise<string>} The normalized path or empty string
+ * @returns {string} The normalized path or empty string
  */
 
 /**
@@ -265,7 +265,7 @@
  * @callback relativePath
  * @param {string} from
  * @param {string} to
- * @returns {Promise<string>} The relative path or empty string
+ * @returns {string} The relative path or empty string
  */
 
 /**

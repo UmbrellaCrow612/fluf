@@ -21,6 +21,13 @@ npm run start
   This saves trouble when extending the API usage: the frontend will throw a type error if you don’t pass the required arguments, and they will automatically be forwarded through the bridge.
 * Whenever you extend `types.js`, run `npx tsc` in the `desktop` directory to generate the types for the UI.
 
+# Type checking 
+
+- tsconfig.check.json holds rules from jsconfig but allows us to just use it for type checking
+
+```bash
+npx tsc -p tsconfig.check.json
+```
 
 # Info
 

@@ -127,7 +127,7 @@ function buildRipgrepArgs(options) {
  * @returns {Promise<import("./type").ripGrepResult[]>}
  */
 async function searchWithRipGrep(options) {
-  let bpath = binPath()
+  let bpath = binPath();
   const ripGrepPath = await binmanResolve("ripgrep", ["rg"], bpath);
 
   if (!ripGrepPath) throw new Error("Ripgrep path is undefined");
@@ -181,24 +181,18 @@ async function searchWithRipGrep(options) {
 }
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").ripgrepSearch>}
+ */
+const searchImpl = async (_, options) => {
+  return await searchWithRipGrep(options);
+};
+
+/**
  * Register ripgrep listeners
  * @param {import("electron").IpcMain} ipcMain
  */
 const registerRipgrepListeners = (ipcMain) => {
-  ipcMain.handle(
-    "ripgrep:search",
-    /**
-     * @param {import("electron").IpcMainInvokeEvent} event
-     * @param {import("./type").ripgrepArgsOptions} options
-     * @returns {Promise<import("./type").ripGrepResult[]>}
-     */
-    async (
-      event,
-      /** @type {import("./type").ripgrepArgsOptions}*/ options,
-    ) => {
-      return await searchWithRipGrep(options);
-    },
-  );
+  ipcMain.handle("ripgrep:search", searchImpl);
 };
 
 module.exports = {
