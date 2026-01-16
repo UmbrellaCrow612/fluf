@@ -10,5 +10,6 @@
     "strictBuiltinIteratorReturn": true,
     "strictPropertyInitialization": true,
     "alwaysStrict": true,
+    "skipLibCheck": true
   }
 }

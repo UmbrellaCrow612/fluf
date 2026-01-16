@@ -91,9 +91,8 @@ async function recursiveFetchUntilFound(
   }
 
   // If the target path doesn't start with this node's path, it's not in this subtree
-  const normalizedNodePath = await electronApi.pathApi.normalize(node.path);
-  const normalizedTargetPath =
-    await electronApi.pathApi.normalize(targetFilePath);
+  const normalizedNodePath = electronApi.pathApi.normalize(node.path);
+  const normalizedTargetPath = electronApi.pathApi.normalize(targetFilePath);
 
   if (!normalizedTargetPath.startsWith(normalizedNodePath)) {
     return false;
@@ -147,28 +146,27 @@ async function getFirstFolderAfterBase(
   basePath: string,
   descendantPath: string,
 ): Promise<string> {
-  const normalizedBase = await electronApi.pathApi.normalize(basePath);
-  const normalizedDescendant =
-    await electronApi.pathApi.normalize(descendantPath);
+  const normalizedBase = electronApi.pathApi.normalize(basePath);
+  const normalizedDescendant = electronApi.pathApi.normalize(descendantPath);
 
-  const relativePath = await electronApi.pathApi.relative(
+  const relativePath = electronApi.pathApi.relative(
     normalizedBase,
     normalizedDescendant,
   );
 
   if (
     relativePath.startsWith('..') ||
-    (await electronApi.pathApi.isAbsolute(relativePath))
+    electronApi.pathApi.isAbsolute(relativePath)
   ) {
     throw new Error('descendantPath is not a descendant of basePath');
   }
 
-  let seperator = await electronApi.pathApi.sep();
+  let seperator = electronApi.pathApi.sep();
 
   const segments = relativePath.split(seperator);
   const firstFolder = segments[0];
 
-  const result = await electronApi.pathApi.join(normalizedBase, firstFolder);
+  const result = electronApi.pathApi.join(normalizedBase, firstFolder);
 
   return result;
 }

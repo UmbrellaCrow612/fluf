@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");
+const path = require("path")
 
 /**
  * @type {import("./type").goServer}
@@ -145,11 +146,11 @@ const fsApi = {
  * @type {import("./type").pathApi}
  */
 const pathApi = {
-  normalize: (...args) => ipcRenderer.invoke("path:normalize", ...args),
-  relative: (...args) => ipcRenderer.invoke("path:relative", ...args),
-  sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
-  join: (...args) => ipcRenderer.invoke("path:join", ...args),
-  isAbsolute: (...args) => ipcRenderer.invoke("path:isabsolute", ...args),
+  normalize: (...args) => path.normalize(...args),
+  relative: (...args) => path.relative(...args),
+  sep: () => path.sep,
+  join: (...args) => path.join(...args),
+  isAbsolute: (...args) => path.isAbsolute(...args),
 };
 
 /** @type {import("./type").shellApi} */
