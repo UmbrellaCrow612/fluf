@@ -1,7 +1,6 @@
 const { logger } = require("../logger");
 const { GoLanguageServer } = require("./impl/golsp");
 const { LanguageServerManager } = require("./manager");
-const path = require("path");
 
 /**
  * Refrence to main window to send events without needed a ipc event
@@ -34,9 +33,7 @@ const startImpl = async (_, wsf, langId) => {
     return false;
   }
 
-  const _workSpaceFolder = path.normalize(path.resolve(wsf));
-
-  return lsp.Start(_workSpaceFolder);
+  return lsp.Start(wsf);
 };
 
 /**
@@ -49,8 +46,7 @@ const stopLspImpl = async (_, wsf, langId) => {
     return true;
   }
 
-  const _workSpaceFolder = path.normalize(wsf);
-  return lsp.Stop(_workSpaceFolder);
+  return lsp.Stop(wsf);
 };
 
 /**
