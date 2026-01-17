@@ -988,7 +988,7 @@
  * Send a text document did open notification
  * @callback ILanguageServerDidOpenTextDocument
  * @param {string} workspaceFolder - The workspace folder it is for
- * @param {string} uri - Document URI
+ * @param {string} filePath - The path to file being opened for example `./file.js` etc
  * @param {languageId} languageId - Language identifier (e.g., "javascript", "python")
  * @param {number} version - Document version
  * @param {string} text - Document content

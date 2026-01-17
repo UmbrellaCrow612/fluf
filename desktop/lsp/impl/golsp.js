@@ -7,7 +7,7 @@ const { binPath } = require("../../packing");
  */
 
 /**
- * The go language server implementation
+ * The go language server implementation using JSON rpc
  * @implements {ILanguageServer}
  */
 class GoLanguageServer extends JsonRpcLanguageServer {
@@ -47,8 +47,8 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerDidOpenTextDocument}
    */
-  DidOpenTextDocument(wsf, uri, langId, version, text) {
-    return this._didOpenTextDocument(wsf, uri, langId, version, text);
+  DidOpenTextDocument(wsf, filePath, langId, version, text) {
+    return this._didOpenTextDocument(wsf, filePath, langId, version, text);
   }
 
   /**

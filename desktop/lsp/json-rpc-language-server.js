@@ -162,13 +162,13 @@ class JsonRpcLanguageServer {
   /**
    * Open a document in the language server process
    * @param {string} workSpaceFolder - The workspace folder path
-   * @param {string} uri - The documents file path in URI format for example `file:\\c:\dev\example.js`
+   * @param {string} filePath - The documents file path
    * @param {string} languageId - The language it for example `go` or `js`
    * @param {number} version - The documents version
    * @param {string} text - The documents full text content
    * @returns {void} Write's to the process
    */
-  _didOpenTextDocument(workSpaceFolder, uri, languageId, version, text) {
+  _didOpenTextDocument(workSpaceFolder, filePath, languageId, version, text) {
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
@@ -185,10 +185,10 @@ class JsonRpcLanguageServer {
         return;
       }
 
-      rc.DidOpenTextDocument(uri, languageId, version, text);
+      rc.DidOpenTextDocument(createUri(filePath), languageId, version, text);
     } catch (error) {
       logger.error(
-        `Failed to open document for workspace folder ${workSpaceFolder} uri: ${uri} languageId: ${languageId} version:${version} content-length: ${text.length}`,
+        `Failed to open document for workspace folder ${workSpaceFolder} filePath: ${filePath} languageId: ${languageId} version:${version} content-length: ${text.length}`,
       );
       logger.error(JSON.stringify(error));
     }

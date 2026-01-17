@@ -1219,7 +1219,7 @@ export type ILanguageServerGetWorkspaceFolders = () => string[];
 /**
  * Send a text document did open notification
  */
-export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, uri: string, languageId: languageId, version: number, text: string) => void;
+export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, filePath: string, languageId: languageId, version: number, text: string) => void;
 /**
  * Represents the client which sends and recives LSP messages via UI side
  */
