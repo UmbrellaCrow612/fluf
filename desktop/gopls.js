@@ -10,8 +10,8 @@ const { logger } = require("./logger");
 const { binPath } = require("./packing");
 const fs = require("fs/promises");
 const path = require("path");
-const { createUri } = require("./lsp");
 const binmanResolve = require("umbr-binman");
+const { createUri } = require("./lsp/uri");
 
 /**
  * Refrence to the main window

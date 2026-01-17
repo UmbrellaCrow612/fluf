@@ -1,7 +1,3 @@
-/**
- * Contains code related to LSP (Language server protocol)
- */
-
 const path = require("path");
 
 /**

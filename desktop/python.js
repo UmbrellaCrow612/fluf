@@ -11,7 +11,7 @@ const { logger } = require("./logger");
 const { getPythonServerPath } = require("./packing");
 const fs = require("fs/promises");
 const nodePath = require("path");
-const { createUri } = require("./lsp");
+const { createUri } = require("./lsp/uri");
 
 let seq = 0;
 /** Get the next number */

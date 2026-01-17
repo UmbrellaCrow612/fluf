@@ -1,7 +1,7 @@
 const { logger } = require("../logger");
-const { createUri } = require("../lsp");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
+const { createUri } = require("./uri");
 
 /**
  * @typedef {import("../type").ILanguageServer} ILanguageServer
