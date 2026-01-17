@@ -142,8 +142,43 @@ class JsonRpcLanguageServer {
    * Get a list of workspace folders that have a active LSP process running for them
    * @returns {string[]} List of workspace folder paths
    */
-  _getWorkSpaceFolders(){
-    return Array.from(this.#workSpaceRpcMap.keys())
+  _getWorkSpaceFolders() {
+    return Array.from(this.#workSpaceRpcMap.keys());
+  }
+
+  /**
+   * Open a document in the language server process
+   * @param {string} workSpaceFolder - The workspace folder path
+   * @param {string} uri - The documents file path in URI format for example `file:\\c:\dev\example.js`
+   * @param {string} languageId - The language it for example `go` or `js`
+   * @param {number} version - The documents version
+   * @param {string} text - The documents full text content
+   * @returns {void} Write's to the process
+   */
+  _didOpenTextDocument(workSpaceFolder, uri, languageId, version, text) {
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+        return;
+      }
+
+      if (!rc.IsStarted()) {
+        logger.error(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      rc.DidOpenTextDocument(uri, languageId, version, text);
+    } catch (error) {
+      logger.error(
+        `Failed to open document for workspace folder ${workSpaceFolder} uri: ${uri} languageId: ${languageId} version:${version} content-length: ${text.length}`,
+      );
+      logger.error(JSON.stringify(error));
+    }
   }
 }
 

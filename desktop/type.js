@@ -943,14 +943,29 @@
  */
 
 /**
+ * Send a text document did open notification
+ * @callback ILanguageServerDidOpenTextDocument
+ * @param {string} workspaceFolder - The workspace folder it is for
+ * @param {string} uri - Document URI
+ * @param {string} languageId - Language identifier (e.g., "javascript", "python")
+ * @param {number} version - Document version
+ * @param {string} text - Document content
+ * @returns {void} Nothing
+ */
+
+/**
  * Base interface for language server implementations.
- * All language servers should follow this structure
+ * All language servers should follow this structure.
+ * 
+ * Lifecycle
  * @typedef {Object} ILanguageServer
  * @property {ILanguageServerStart} Start - Begin the language server
  * @property {ILanguageServerStop} Stop - Stop the language server
  * @property {ILanguageServerIsRunning} IsRunning - Checks if the server is running for a given workspace
  * @property {ILanguageServerGetWorkspaceFolders} GetWorkspaceFolders - Get active workspaces
  *
+ * Text Synchronization (Notifications - don't expect responses)
+ * @property {ILanguageServerDidOpenTextDocument} DidOpenTextDocument - Notify document opened
  */
 
 /**

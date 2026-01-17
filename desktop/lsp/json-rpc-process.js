@@ -39,6 +39,14 @@ class JsonRpcProcess {
   #isStarted = false;
 
   /**
+   * Check if the process ir running
+   * @returns {boolean} If it is or is not
+   */
+  IsStarted() {
+    return this.#isStarted;
+  }
+
+  /**
    * Holds the pending requests made to the process
    *
    * - `Key` - The request ID
@@ -253,6 +261,31 @@ class JsonRpcProcess {
         reject();
       });
     }
+  }
+
+  /**
+   * Send a textDocument/didOpen notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @param {string} languageId - The language identifier (e.g., "go", "python", "javascript")
+   * @param {number} version - The initial document version (typically starts at 1)
+   * @param {string} text - The full text content of the document
+   * @returns {void}
+   */
+  DidOpenTextDocument(uri, languageId, version, text) {
+    this.#write({
+      jsonrpc: "2.0",
+      /** @type {import("../type").LanguageServerProtocolMethod} */
+      method: "textDocument/didOpen",
+      /** @type {import("vscode-languageserver-protocol").DidOpenTextDocumentParams} */
+      params: {
+        textDocument: {
+          uri: uri,
+          languageId: languageId,
+          version: version,
+          text: text,
+        },
+      },
+    });
   }
 
   /**

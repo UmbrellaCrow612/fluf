@@ -16,19 +16,12 @@ class GoLanguageServer extends JsonRpcLanguageServer {
    * @type {import("../type").ILanguageServerStart}
    */
   async Start(workSpaceFolder) {
-    try {
-      let exePath = await binmanResolve("gopls", ["gopls"], binPath());
-      if (!exePath) {
-        throw new Error("No gopls exe path");
-      }
-
-      return this._start(exePath, ["serve"], workSpaceFolder);
-    } catch (error) {
-      logger.error(
-        "Failed to start go language server " + JSON.stringify(error),
-      );
-      return false;
+    let exePath = await binmanResolve("gopls", ["gopls"], binPath());
+    if (!exePath) {
+      throw new Error("No gopls exe path");
     }
+
+    return this._start(exePath, ["serve"], workSpaceFolder);
   }
 
   /**
@@ -51,20 +44,35 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   GetWorkspaceFolders() {
     return this._getWorkSpaceFolders();
   }
+
+  /**
+   * @type {import("../type").ILanguageServerDidOpenTextDocument}
+   */
+  DidOpenTextDocument(wsf, uri, langId, version, text) {
+    return this._didOpenTextDocument(wsf, uri, langId, version, text);
+  }
 }
 
 // async function test() {
 //   let golsp = new GoLanguageServer();
 
-//   console.log(await golsp.IsRunning(""));
-//   console.log(await golsp.IsRunning("C:\\dev\\fluf\\desktop"));
+//   console.log(golsp.IsRunning(""));
+//   console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
 
 //   await golsp.Start("C:\\dev\\fluf\\desktop");
-//   console.log(await golsp.IsRunning("C:\\dev\\fluf\\desktop"));
+//   console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
+
+//   await golsp.DidOpenTextDocument(
+//     "C:\\dev\\fluf\\desktop",
+//     "file:///C:/dev/fluf/desktop/example.go",
+//     "go",
+//     1,
+//     "",
+//   );
 
 //   setTimeout(async () => {
 //     await golsp.Stop("C:\\dev\\fluf\\desktop");
-//     console.log(await golsp.IsRunning("C:\\dev\\fluf\\desktop"));
+//     console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
 //   }, 4000);
 // }
 
