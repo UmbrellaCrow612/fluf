@@ -20,6 +20,7 @@ npm run start
 * In `preload.js`, when typing the APIs, if they do not receive a callback as a parameter, use `...args` for the parameters and pass them to IPC as `...args`.
   This saves trouble when extending the API usage: the frontend will throw a type error if you don’t pass the required arguments, and they will automatically be forwarded through the bridge.
 * Whenever you extend `types.js`, run `npx tsc` in the `desktop` directory to generate the types for the UI.
+* Use template strings for messages / logs
 
 # Type checking 
 

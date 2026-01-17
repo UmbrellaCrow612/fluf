@@ -2,24 +2,15 @@
  * Contains utils related to LSP (Language server protocol) logic
  */
 
-import { languageServer } from '../../gen/type';
+import { languageId } from '../../gen/type';
 
 /**
  * Get the specific language server needed for the file based on it's extension
  * @param extension The file extension
  * @returns Lang server or null
  */
-export function getLanguageServer(extension: string): languageServer | null {
+export function getLanguageId(extension: string): languageId | null {
   switch (extension) {
-    case '.js':
-    case '.mjs':
-    case '.cjs':
-    case '.ts':
-      return 'js/ts';
-
-    case '.py':
-      return 'python';
-
     case '.go':
       return 'go';
 

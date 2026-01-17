@@ -1,4 +1,4 @@
-import { fileNode, languageServer } from '../../gen/type';
+import { fileNode, languageId } from '../../gen/type';
 import { fileDiagnosticMap } from '../lsp/type';
 /**
  * Represents what elements from the side bar can be in a active state i.e the elements that can be clicked to show said render component off
@@ -103,7 +103,7 @@ export type AppContext = {
  * Represents a map of specific language server and if it is active
  */
 export type ActiveLanguageServer = {
-  [K in languageServer]: boolean;
+  [K in languageId]: boolean;
 };
 
 /**
@@ -174,7 +174,7 @@ export type InMemoryAppContext = {
   /**
    * Holds the current language server needed for the given open file thats open i.e the one the code editor is sending the requests to for the given open file being edited via the lsp
    */
-  currentLanguageServer: languageServer | null;
+  currentLanguageServer: languageId | null;
 
   /**
    * Represents language servers and if they are active i.e sent a start request and it was ready

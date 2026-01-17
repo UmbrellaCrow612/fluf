@@ -911,8 +911,108 @@
  */
 
 /**
- * Holds all the specific language servers the backend supports
- * @typedef {"js/ts" | "python" | "go"} languageServer
+ * Holds the values language id can be.
+ *
+ * It is also a way of indicating which lsp have been impl
+ * @typedef {"go"} languageId
+ */
+
+/**
+ * Base interface for language server implementations.
+ * All language servers should follow this structure.
+ *
+ * Lifecycle
+ * @typedef {Object} ILanguageServer
+ * @property {ILanguageServerStart} Start - Begin the language server
+ * @property {ILanguageServerStop} Stop - Stop the language server
+ * @property {ILanguageServerStopAll} StopAll - Stop all workspace lsp's
+ * @property {ILanguageServerIsRunning} IsRunning - Checks if the server is running for a given workspace
+ * @property {ILanguageServerGetWorkspaceFolders} GetWorkspaceFolders - Get active workspaces
+ *
+ * Text Synchronization (Notifications - don't expect responses)
+ * @property {ILanguageServerDidOpenTextDocument} DidOpenTextDocument - Notify document opened
+ */
+
+/**
+ * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
+ * @callback ILanguageServerStart
+ * @param {string} workspaceFolder - The path to the folder to open the LSP for
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Stop the language server for a given work space
+ * @callback ILanguageServerStop
+ * @param {string} workspaceFolder
+ * @returns {Promise<boolean>}
+ */
+
+/**
+ * Stop all workspace lsp processes for a lsp
+ * @callback ILanguageServerStopAll
+ * @returns {Promise<ILanguageServerStopAllResult[]>} List of workspace folders and there stopped result
+ */
+
+/**
+ * Holds workspace folder and it's stoped result
+ * @typedef {Object} ILanguageServerStopAllResult
+ * @property {string} workSpaceFolder - The specific workspace folder path
+ * @property {boolean} result - If it was able to be stoped ot not
+ */
+
+/**
+ * Check if the language server is running for a given workspace
+ * @callback ILanguageServerIsRunning
+ * @param {string} workSpaceFolder - The path to check
+ * @returns {boolean} If it is or is not
+ */
+
+/**
+ * Get all active workspace folders
+ * @callback ILanguageServerGetWorkspaceFolders
+ * @returns {string[]} List of workspace folder paths
+ */
+
+/**
+ * Send a text document did open notification
+ * @callback ILanguageServerDidOpenTextDocument
+ * @param {string} workspaceFolder - The workspace folder it is for
+ * @param {string} uri - Document URI
+ * @param {string} languageId - Language identifier (e.g., "javascript", "python")
+ * @param {number} version - Document version
+ * @param {string} text - Document content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Represents the client which sends and recives LSP messages via UI side
+ * @typedef {Object} ILanguageServerClient
+ *
+ * @property {ILanguageServerClientStart} start - Start a specific LSP in a workspace for the given language
+ * @property {ILanguageServerClientStop} stop - Stop a specific LSP for a given workspace and language
+ */
+
+/**
+ * Start a specific language server
+ * @callback ILanguageServerClientStart
+ * @param {string} workSpaceFolder - The folder to start the lsp in
+ * @param {languageId}  languageId - The specific language lsp to start
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Stop a language server for a given work space
+ * @callback ILanguageServerClientStop
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId}  languageId - The specific language lsp to stop
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Run logic when data has been parsed from a lsp
+ * @callback LanguageServerOnDataCallback
+ * @param {import("vscode-languageserver-protocol").NotificationMessage | import("vscode-languageserver-protocol").ResponseMessage} response - The LSP response
+ * @returns {void}
  */
 
 /**
@@ -944,6 +1044,8 @@
  *
  * @property {goServer} goServer - Contains all the code to use the go language server api's
  *
+ * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
+ *
  */
 
 /**
@@ -953,4 +1055,4 @@
  * @property {ElectronApi} electronApi - The attached Electron API.
  */
 
-export {};
+module.exports = {};

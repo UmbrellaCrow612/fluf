@@ -15,10 +15,9 @@ import { EditorView, hoverTooltip } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
-import { fileNode, languageServer, voidCallback } from '../../gen/type';
+import { fileNode, languageId, voidCallback } from '../../gen/type';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import { LspService } from '../lsp/lsp.service';
-import { getLanguageServer } from '../lsp/utils';
+import { getLanguageId } from '../lsp/utils';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { applyExternalDiagnostics } from './lint';
@@ -45,7 +44,6 @@ export class TextFileEditorComponent implements OnInit {
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(
     'code_mirror_container',
   );
-  private readonly lspService = inject(LspService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
 
   private readonly workSpaceFolder = computed(() =>
@@ -57,7 +55,7 @@ export class TextFileEditorComponent implements OnInit {
       let node = this.appContext.currentOpenFileInEditor();
 
       await this.displayFile();
-      this.initLangServer(node);
+      await this.initLangServer(node);
     });
   }
 
@@ -86,7 +84,7 @@ export class TextFileEditorComponent implements OnInit {
   /** Unsub method to no longer run logic defined in the on ready method  */
   private onReadyUnsub: voidCallback | null = null;
 
-  private languageServer: languageServer | null = null;
+  private languageId: languageId | null = null;
 
   /** Holds the current diagnostics for the file */
   private currentDiagnostics: FlufDiagnostic[] = [];
@@ -132,8 +130,8 @@ export class TextFileEditorComponent implements OnInit {
     console.log('Hovered word:', wordText);
 
     const node = this.openFileNode();
-    if (node && this.languageServer) {
-      this.lspService.hover(node, position, this.languageServer);
+    if (node && this.languageId) {
+      // this.lspService.hover(node, position, this.languageServer);
     }
 
     let info = this.hoverInformation.trim();
@@ -158,20 +156,19 @@ export class TextFileEditorComponent implements OnInit {
    * Sends the file and a get error to the server for the given file node
    */
   private openFileInLanguageServer() {
-    this.lspService.Open(
-      this.openFileNode()!.path,
-      this.stringContent,
-      this.languageServer!,
-    );
-
-    this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
+    // this.lspService.Open(
+    //   this.openFileNode()!.path,
+    //   this.stringContent,
+    //   this.languageServer!,
+    // );
+    // this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
   }
 
   /**
    * Launch the language server - AFTER - rendering the UI for the given node in the UI
    * @param fileNode The current open file node in the editor view
    */
-  private initLangServer(fileNode: fileNode | null) {
+  private async initLangServer(fileNode: fileNode | null) {
     console.log('Language server being started');
     if (!fileNode) {
       console.warn('No file selected cannot start language server');
@@ -191,64 +188,69 @@ export class TextFileEditorComponent implements OnInit {
       this.onReadyUnsub();
     }
 
-    this.languageServer = getLanguageServer(fileNode.extension);
-    this.inMemoryContextService.currentLanguageServer.set(this.languageServer);
-    if (!this.languageServer) {
+    this.languageId = getLanguageId(fileNode.extension);
+    this.inMemoryContextService.currentLanguageServer.set(this.languageId);
+    if (!this.languageId) {
       console.warn('No language server found for ' + fileNode.extension);
       return;
     }
 
-    this.lspService.Start(this.workSpaceFolder()!, this.languageServer);
-    let isServerActive = untracked(
-      () =>
-        this.inMemoryContextService.activeLanguageServers()[
-          this.languageServer!
-        ],
+    let res = await this.api.lspClient.start(
+      this.workSpaceFolder()!,
+      this.languageId,
     );
-    if (isServerActive) {
-      console.log('Sent open file request from restored state');
-      this.openFileInLanguageServer();
-    }
+    console.log('Backend response ' + res);
+    // this.lspService.Start(this.workSpaceFolder()!, this.languageServer);
+    // let isServerActive = untracked(
+    //   () =>
+    //     this.inMemoryContextService.activeLanguageServers()[
+    //       this.languageServer!
+    //     ],
+    // );
+    // if (isServerActive) {
+    //   console.log('Sent open file request from restored state');
+    //   this.openFileInLanguageServer();
+    // }
 
-    this.onReadyUnsub = this.lspService.onReady(() => {
-      const langKey = String(this.languageServer);
-      this.inMemoryContextService.activeLanguageServers.update((servers) => ({
-        ...servers,
-        [langKey]: true,
-      }));
+    // this.onReadyUnsub = this.lspService.onReady(() => {
+    //   const langKey = String(this.languageServer);
+    //   this.inMemoryContextService.activeLanguageServers.update((servers) => ({
+    //     ...servers,
+    //     [langKey]: true,
+    //   }));
 
-      this.openFileInLanguageServer();
-      console.log('Sent open file request from on ready');
-    }, this.languageServer);
+    //   this.openFileInLanguageServer();
+    //   console.log('Sent open file request from on ready');
+    // }, this.languageServer);
 
-    this.serverUnSub = this.lspService.OnResponse(
-      this.languageServer,
-      this.codeMirrorView,
-      async (fileDiagMap, completions, hoverInfo) => {
-        this.completions = completions;
-        this.hoverInformation = hoverInfo;
+    // this.serverUnSub = this.lspService.OnResponse(
+    //   this.languageServer,
+    //   this.codeMirrorView,
+    //   async (fileDiagMap, completions, hoverInfo) => {
+    //     this.completions = completions;
+    //     this.hoverInformation = hoverInfo;
 
-        console.log('UI should render completions');
-        console.log(completions);
+    //     console.log('UI should render completions');
+    //     console.log(completions);
 
-        console.log('UI should render diagnostics');
-        console.log(fileDiagMap);
+    //     console.log('UI should render diagnostics');
+    //     console.log(fileDiagMap);
 
-        console.log('UI should render hover information');
-        console.log(hoverInfo);
+    //     console.log('UI should render hover information');
+    //     console.log(hoverInfo);
 
-        let normFilePath = normalizeElectronPath(this.openFileNode()?.path!);
-        let map = fileDiagMap.get(normFilePath);
-        let values = Array.from(map?.values() ?? []).flat();
+    //     let normFilePath = normalizeElectronPath(this.openFileNode()?.path!);
+    //     let map = fileDiagMap.get(normFilePath);
+    //     let values = Array.from(map?.values() ?? []).flat();
 
-        this.currentDiagnostics = values;
-        this.inMemoryContextService.problems.set(fileDiagMap);
+    //     this.currentDiagnostics = values;
+    //     this.inMemoryContextService.problems.set(fileDiagMap);
 
-        applyExternalDiagnostics(this.codeMirrorView!, values);
-      },
-    );
+    //     applyExternalDiagnostics(this.codeMirrorView!, values);
+    //   },
+    // );
 
-    console.log('Language server started for ' + this.languageServer);
+    console.log('Language server started for ' + this.languageId);
   }
 
   private saveTimeout: any;
@@ -284,11 +286,11 @@ export class TextFileEditorComponent implements OnInit {
     let node = this.openFileNode();
     if (!node) return;
 
-    if (this.languageServer && update.docChanged) {
-      this.lspService.Edit(update, node, this.languageServer);
-      this.lspService.Completion(update, node, this.languageServer);
-      this.diagnosticsEvent();
-    }
+    // if (this.languageServer && update.docChanged) {
+    //   this.lspService.Edit(update, node, this.languageServer);
+    //   this.lspService.Completion(update, node, this.languageServer);
+    //   this.diagnosticsEvent();
+    // }
 
     if (update.docChanged) {
       this.stringContent = update.state.doc.toString();
@@ -307,9 +309,8 @@ export class TextFileEditorComponent implements OnInit {
     }
 
     this.diagTimeout = setTimeout(() => {
-      if (!this.openFileNode() || !this.languageServer) return;
-
-      this.lspService.Error(this.openFileNode()!.path, this.languageServer);
+      // if (!this.openFileNode() || !this.languageServer) return;
+      // this.lspService.Error(this.openFileNode()!.path, this.languageServer);
     }, 200);
   }
 
