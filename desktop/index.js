@@ -26,6 +26,7 @@ const {
   stopGoLanguageServer,
 } = require("./gopls");
 const { registerPathListeners } = require("./path");
+const { registerLanguageServerListener } = require("./lsp/bridge");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -94,8 +95,10 @@ app.whenReady().then(() => {
   registerWindowListener(ipcMain);
   reigsterPythonLanguageServerListeners(ipcMain, mainWindow);
   registerUrlListeners(ipcMain);
-  registerPathListeners(ipcMain)
+  registerPathListeners(ipcMain);
   registerGoLanguageServerListeners(ipcMain, mainWindow);
+
+  registerLanguageServerListener(ipcMain, mainWindow);
 });
 
 app.on("before-quit", async (event) => {

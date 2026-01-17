@@ -1136,9 +1136,78 @@ export type goServerOnResponse = (callback: goServerOnResponseCallback) => voidC
  */
 export type goServerHover = (filePath: string, position: import("vscode-languageserver-protocol").Position) => void;
 /**
- * Holds all the specific language servers the backend supports
+ * Holds the values language id can be.
+ *
+ * It is also a way of indicating which lsp have been impl
  */
-export type languageServer = "js/ts" | "python" | "go";
+export type languageId = "go";
+/**
+ * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
+ */
+export type ILanguageServerStart = (workspaceFolder: string) => Promise<boolean>;
+/**
+ * Stop the language server for a given work space
+ */
+export type ILanguageServerStop = (workspaceFolder: string) => Promise<boolean>;
+/**
+ * Check if the language server is running for a given workspace
+ */
+export type ILanguageServerIsRunning = (workSpaceFolder: string) => boolean;
+/**
+ * Get all active workspace folders
+ */
+export type ILanguageServerGetWorkspaceFolders = () => string[];
+/**
+ * Send a text document did open notification
+ */
+export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, uri: string, languageId: string, version: number, text: string) => void;
+/**
+ * Base interface for language server implementations.
+ * All language servers should follow this structure.
+ *
+ * Lifecycle
+ */
+export type ILanguageServer = {
+    /**
+     * - Begin the language server
+     */
+    Start: ILanguageServerStart;
+    /**
+     * - Stop the language server
+     */
+    Stop: ILanguageServerStop;
+    /**
+     * - Checks if the server is running for a given workspace
+     */
+    IsRunning: ILanguageServerIsRunning;
+    /**
+     * - Get active workspaces
+     *
+     * Text Synchronization (Notifications - don't expect responses)
+     */
+    GetWorkspaceFolders: ILanguageServerGetWorkspaceFolders;
+    /**
+     * - Notify document opened
+     */
+    DidOpenTextDocument: ILanguageServerDidOpenTextDocument;
+};
+/**
+ * Represents the client which sends and recives LSP messages
+ */
+export type ILanguageServerClient = {
+    /**
+     * - Start a specific LSP in a workspace for the given language
+     */
+    start: ILanguageServerClientStart;
+};
+/**
+ * Start a specific language server
+ */
+export type ILanguageServerClientStart = (workSpaceFolder: string, languageId: languageId) => Promise<boolean>;
+/**
+ * Run logic when data has been parsed from a lsp
+ */
+export type LanguageServerOnDataCallback = (response: import("vscode-languageserver-protocol").NotificationMessage | import("vscode-languageserver-protocol").ResponseMessage) => void;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
@@ -1191,6 +1260,10 @@ export type ElectronApi = {
      * - Contains all the code to use the go language server api's
      */
     goServer: goServer;
+    /**
+     * - Contains all the UI api's to interact with LSP
+     */
+    lspClient: ILanguageServerClient;
 };
 /**
  * Extends the global `window` object to include the Electron API.

@@ -1,19 +1,18 @@
 const binmanResolve = require("umbr-binman");
-const { logger } = require("../logger");
-const { JsonRpcLanguageServer } = require("./json-rpc-language-server");
-const { binPath } = require("../packing");
+const { JsonRpcLanguageServer } = require("../json-rpc-language-server");
+const { binPath } = require("../../packing");
 
 /**
- * @typedef {import("../type").ILanguageServer} l
+ * @typedef {import("../../type").ILanguageServer} l
  */
 
 /**
- * The go language server
+ * The go language server implementation
  * @implements {l}
  */
 class GoLanguageServer extends JsonRpcLanguageServer {
   /**
-   * @type {import("../type").ILanguageServerStart}
+   * @type {import("../../type").ILanguageServerStart}
    */
   async Start(workSpaceFolder) {
     let exePath = await binmanResolve("gopls", ["gopls"], binPath());
@@ -25,28 +24,28 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   }
 
   /**
-   * @type {import("../type").ILanguageServerStop}
+   * @type {import("../../type").ILanguageServerStop}
    */
   async Stop(wsf) {
     return this._stop(wsf);
   }
 
   /**
-   * @type {import("../type").ILanguageServerIsRunning}
+   * @type {import("../../type").ILanguageServerIsRunning}
    */
   IsRunning(wsf) {
     return this._isRunning(wsf);
   }
 
   /**
-   * @type {import("../type").ILanguageServerGetWorkspaceFolders}
+   * @type {import("../../type").ILanguageServerGetWorkspaceFolders}
    */
   GetWorkspaceFolders() {
     return this._getWorkSpaceFolders();
   }
 
   /**
-   * @type {import("../type").ILanguageServerDidOpenTextDocument}
+   * @type {import("../../type").ILanguageServerDidOpenTextDocument}
    */
   DidOpenTextDocument(wsf, uri, langId, version, text) {
     return this._didOpenTextDocument(wsf, uri, langId, version, text);

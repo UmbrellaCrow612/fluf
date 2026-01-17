@@ -1,6 +1,13 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").ILanguageServerClient}
+ */
+const lspClient = {
+  start: (...args) => ipcRenderer.invoke("lsp:start", ...args),
+};
+
+/**
  * @type {import("./type").goServer}
  */
 const goServer = {
@@ -266,6 +273,7 @@ const api = {
   pythonServer,
   urlApi,
   goServer,
+  lspClient,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

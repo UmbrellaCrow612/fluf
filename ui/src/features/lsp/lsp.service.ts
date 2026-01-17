@@ -10,7 +10,7 @@ import {
 import { getElectronApi } from '../../utils';
 import type { Text } from '@codemirror/state';
 import { server } from 'typescript';
-import { JSONRpcEdit, languageServer, voidCallback } from '../../gen/type';
+import { JSONRpcEdit, voidCallback } from '../../gen/type';
 import {
   TextDocumentContentChangeEvent,
   Position,
