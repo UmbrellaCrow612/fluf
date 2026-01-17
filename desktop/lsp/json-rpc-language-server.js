@@ -130,8 +130,9 @@ class JsonRpcLanguageServer {
   /**
    * Check if a language server process is running for a given work space folder
    * @param {string} workSpaceFolder - The workspace folder to check
+   * @returns {boolean} If it is or is not
    */
-  async _isRunning(workSpaceFolder) {
+  _isRunning(workSpaceFolder) {
     return this.#workSpaceRpcMap.has(
       path.normalize(path.resolve(workSpaceFolder)),
     );

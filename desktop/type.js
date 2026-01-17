@@ -933,7 +933,7 @@
  * Check if the language server is running for a given workspace
  * @callback ILanguageServerIsRunning
  * @param {string} workSpaceFolder - The path to check
- * @returns {Promise<boolean>} If it is or is not
+ * @returns {boolean} If it is or is not
  */
 
 /**

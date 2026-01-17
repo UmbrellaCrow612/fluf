@@ -41,7 +41,7 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../type").ILanguageServerIsRunning}
    */
-  async IsRunning(wsf) {
+  IsRunning(wsf) {
     return this._isRunning(wsf);
   }
 }
