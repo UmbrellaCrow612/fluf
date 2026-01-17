@@ -470,6 +470,4 @@ const registerGoLanguageServerListeners = (ipcMain, mainWindow) => {
 
 module.exports = {
   registerGoLanguageServerListeners,
-  startGoLanguageServer,
-  stopGoLanguageServer,
 };

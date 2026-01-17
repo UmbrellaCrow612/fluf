@@ -122,6 +122,25 @@ class JsonRpcLanguageServer {
   }
 
   /**
+   * Stop all language servers active for all workspaces
+   * @returns {Promise<import("../type").ILanguageServerStopAllResult[]>} All stop values for all workspaces
+   */
+  async _stopAll() {
+    let wsfs = this.#workSpaceRpcMap.keys();
+    /** @type {import("../type").ILanguageServerStopAllResult[]} */
+    let result = [];
+
+    for (const wsf of wsfs) {
+      result.push({
+        workSpaceFolder: wsf,
+        result: await this._stop(wsf),
+      });
+    }
+
+    return result;
+  }
+
+  /**
    * Check if a language server process is running for a given work space folder
    * @param {string} workSpaceFolder - The workspace folder to check
    * @returns {boolean} If it is or is not

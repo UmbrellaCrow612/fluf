@@ -17,6 +17,8 @@ class LanguageServerManager {
    *
    * - Key - @see {languageId} The specific language
    * - Value - @see {ILanguageServer} The language server impl
+   * 
+   * @type {Map<languageId, ILanguageServer>}
    */
   #languageLspMap = new Map();
 
@@ -43,6 +45,14 @@ class LanguageServerManager {
    */
   Get(languageId) {
     return this.#languageLspMap.get(languageId);
+  }
+
+  /**
+   * Get all language servers registered
+   * @returns {ILanguageServer[]} List of language servers registered
+   */
+  GetAll(){
+    return Array.from(this.#languageLspMap.values())
   }
 }
 

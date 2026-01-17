@@ -3,12 +3,12 @@ const { JsonRpcLanguageServer } = require("../json-rpc-language-server");
 const { binPath } = require("../../packing");
 
 /**
- * @typedef {import("../../type").ILanguageServer} l
+ * @typedef {import("../../type").ILanguageServer} ILanguageServer
  */
 
 /**
  * The go language server implementation
- * @implements {l}
+ * @implements {ILanguageServer}
  */
 class GoLanguageServer extends JsonRpcLanguageServer {
   /**
@@ -26,7 +26,7 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerStop}
    */
-  async Stop(wsf) {
+  Stop(wsf) {
     return this._stop(wsf);
   }
 
@@ -49,6 +49,13 @@ class GoLanguageServer extends JsonRpcLanguageServer {
    */
   DidOpenTextDocument(wsf, uri, langId, version, text) {
     return this._didOpenTextDocument(wsf, uri, langId, version, text);
+  }
+
+  /**
+   * @type {import("../../type").ILanguageServerStopAll}
+   */
+  StopAll() {
+    return this._stopAll();
   }
 }
 

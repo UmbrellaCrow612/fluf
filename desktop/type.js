@@ -918,6 +918,22 @@
  */
 
 /**
+ * Base interface for language server implementations.
+ * All language servers should follow this structure.
+ *
+ * Lifecycle
+ * @typedef {Object} ILanguageServer
+ * @property {ILanguageServerStart} Start - Begin the language server
+ * @property {ILanguageServerStop} Stop - Stop the language server
+ * @property {ILanguageServerStopAll} StopAll - Stop all workspace lsp's
+ * @property {ILanguageServerIsRunning} IsRunning - Checks if the server is running for a given workspace
+ * @property {ILanguageServerGetWorkspaceFolders} GetWorkspaceFolders - Get active workspaces
+ *
+ * Text Synchronization (Notifications - don't expect responses)
+ * @property {ILanguageServerDidOpenTextDocument} DidOpenTextDocument - Notify document opened
+ */
+
+/**
  * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
  * @callback ILanguageServerStart
  * @param {string} workspaceFolder - The path to the folder to open the LSP for
@@ -929,6 +945,19 @@
  * @callback ILanguageServerStop
  * @param {string} workspaceFolder
  * @returns {Promise<boolean>}
+ */
+
+/**
+ * Stop all workspace lsp processes for a lsp
+ * @callback ILanguageServerStopAll
+ * @returns {Promise<ILanguageServerStopAllResult[]>} List of workspace folders and there stopped result
+ */
+
+/**
+ * Holds workspace folder and it's stoped result
+ * @typedef {Object} ILanguageServerStopAllResult
+ * @property {string} workSpaceFolder - The specific workspace folder path
+ * @property {boolean} result - If it was able to be stoped ot not
  */
 
 /**
@@ -956,32 +985,26 @@
  */
 
 /**
- * Base interface for language server implementations.
- * All language servers should follow this structure.
- *
- * Lifecycle
- * @typedef {Object} ILanguageServer
- * @property {ILanguageServerStart} Start - Begin the language server
- * @property {ILanguageServerStop} Stop - Stop the language server
- * @property {ILanguageServerIsRunning} IsRunning - Checks if the server is running for a given workspace
- * @property {ILanguageServerGetWorkspaceFolders} GetWorkspaceFolders - Get active workspaces
- *
- * Text Synchronization (Notifications - don't expect responses)
- * @property {ILanguageServerDidOpenTextDocument} DidOpenTextDocument - Notify document opened
- */
-
-/**
- * Represents the client which sends and recives LSP messages
+ * Represents the client which sends and recives LSP messages via UI side
  * @typedef {Object} ILanguageServerClient
- *  
+ *
  * @property {ILanguageServerClientStart} start - Start a specific LSP in a workspace for the given language
+ * @property {ILanguageServerClientStop} stop - Stop a specific LSP for a given workspace and language
  */
 
 /**
- * Start a specific language server 
+ * Start a specific language server
  * @callback ILanguageServerClientStart
  * @param {string} workSpaceFolder - The folder to start the lsp in
  * @param {languageId}  languageId - The specific language lsp to start
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Stop a language server for a given work space
+ * @callback ILanguageServerClientStop
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId}  languageId - The specific language lsp to stop
  * @returns {Promise<boolean>} If it could or could not
  */
 
@@ -1020,7 +1043,7 @@
  * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
  *
  * @property {goServer} goServer - Contains all the code to use the go language server api's
- * 
+ *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
  *
  */

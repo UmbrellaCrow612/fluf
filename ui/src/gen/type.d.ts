@@ -1142,26 +1142,6 @@ export type goServerHover = (filePath: string, position: import("vscode-language
  */
 export type languageId = "go";
 /**
- * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
- */
-export type ILanguageServerStart = (workspaceFolder: string) => Promise<boolean>;
-/**
- * Stop the language server for a given work space
- */
-export type ILanguageServerStop = (workspaceFolder: string) => Promise<boolean>;
-/**
- * Check if the language server is running for a given workspace
- */
-export type ILanguageServerIsRunning = (workSpaceFolder: string) => boolean;
-/**
- * Get all active workspace folders
- */
-export type ILanguageServerGetWorkspaceFolders = () => string[];
-/**
- * Send a text document did open notification
- */
-export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, uri: string, languageId: string, version: number, text: string) => void;
-/**
  * Base interface for language server implementations.
  * All language servers should follow this structure.
  *
@@ -1176,6 +1156,10 @@ export type ILanguageServer = {
      * - Stop the language server
      */
     Stop: ILanguageServerStop;
+    /**
+     * - Stop all workspace lsp's
+     */
+    StopAll: ILanguageServerStopAll;
     /**
      * - Checks if the server is running for a given workspace
      */
@@ -1192,18 +1176,63 @@ export type ILanguageServer = {
     DidOpenTextDocument: ILanguageServerDidOpenTextDocument;
 };
 /**
- * Represents the client which sends and recives LSP messages
+ * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
+ */
+export type ILanguageServerStart = (workspaceFolder: string) => Promise<boolean>;
+/**
+ * Stop the language server for a given work space
+ */
+export type ILanguageServerStop = (workspaceFolder: string) => Promise<boolean>;
+/**
+ * Stop all workspace lsp processes for a lsp
+ */
+export type ILanguageServerStopAll = () => Promise<ILanguageServerStopAllResult[]>;
+/**
+ * Holds workspace folder and it's stoped result
+ */
+export type ILanguageServerStopAllResult = {
+    /**
+     * - The specific workspace folder path
+     */
+    workSpaceFolder: string;
+    /**
+     * - If it was able to be stoped ot not
+     */
+    result: boolean;
+};
+/**
+ * Check if the language server is running for a given workspace
+ */
+export type ILanguageServerIsRunning = (workSpaceFolder: string) => boolean;
+/**
+ * Get all active workspace folders
+ */
+export type ILanguageServerGetWorkspaceFolders = () => string[];
+/**
+ * Send a text document did open notification
+ */
+export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, uri: string, languageId: string, version: number, text: string) => void;
+/**
+ * Represents the client which sends and recives LSP messages via UI side
  */
 export type ILanguageServerClient = {
     /**
      * - Start a specific LSP in a workspace for the given language
      */
     start: ILanguageServerClientStart;
+    /**
+     * - Stop a specific LSP for a given workspace and language
+     */
+    stop: ILanguageServerClientStop;
 };
 /**
  * Start a specific language server
  */
 export type ILanguageServerClientStart = (workSpaceFolder: string, languageId: languageId) => Promise<boolean>;
+/**
+ * Stop a language server for a given work space
+ */
+export type ILanguageServerClientStop = (workSpaceFolder: string, languageId: languageId) => Promise<boolean>;
 /**
  * Run logic when data has been parsed from a lsp
  */

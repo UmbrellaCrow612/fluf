@@ -21,12 +21,12 @@ const {
 } = require("./python");
 const { logger } = require("./logger");
 const { registerUrlListeners } = require("./url");
-const {
-  registerGoLanguageServerListeners,
-  stopGoLanguageServer,
-} = require("./gopls");
+const { registerGoLanguageServerListeners } = require("./gopls");
 const { registerPathListeners } = require("./path");
-const { registerLanguageServerListener } = require("./lsp/bridge");
+const {
+  registerLanguageServerListener,
+  stopAllLanguageServers,
+} = require("./lsp/bridge");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -104,9 +104,11 @@ app.whenReady().then(() => {
 app.on("before-quit", async (event) => {
   if (!isQuitting) {
     event.preventDefault();
+
+    await stopAllLanguageServers();
+
     await stopPythonLanguageServer();
     await stopTypescriptLanguageServer();
-    await stopGoLanguageServer();
 
     cleanUpWatchers();
     cleanUpShells();

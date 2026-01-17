@@ -8,7 +8,6 @@ import { fileNode } from '../../../../gen/type';
 import { removeNodeIfExists } from '../../../file-explorer/fileNode';
 import { InMemoryContextService } from '../../../app-context/app-in-memory-context.service';
 import { OpenNodeInEditor } from '../../../file-explorer/helper';
-import { LspService } from '../../../lsp/lsp.service';
 import { getElectronApi } from '../../../../utils';
 import { normalizeElectronPath } from '../../../path/utils';
 
@@ -21,7 +20,6 @@ import { normalizeElectronPath } from '../../../path/utils';
 export class FileTabItemComponent {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
-  private readonly lspService = inject(LspService);
   private readonly api = getElectronApi();
 
   fileNode = input.required<fileNode>();
@@ -55,7 +53,7 @@ export class FileTabItemComponent {
 
     let langServer = this.inMemoryContextService.currentLanguageServer();
     if (langServer) {
-      this.lspService.Close(this.fileNode().path, langServer);
+      // this.lspService.Close(this.fileNode().path, langServer);
     }
 
     const currentActiveNode = this.appContext.currentOpenFileInEditor();

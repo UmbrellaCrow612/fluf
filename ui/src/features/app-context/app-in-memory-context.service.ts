@@ -81,8 +81,6 @@ export class InMemoryContextService {
   readonly activeLanguageServers = signal<
     InMemoryAppContext['activeLanguageServers']
   >({
-    'js/ts': false,
-    python: false,
     go: false
   });
 }
