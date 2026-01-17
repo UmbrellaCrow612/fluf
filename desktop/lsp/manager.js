@@ -17,7 +17,7 @@ class LanguageServerManager {
    *
    * - Key - @see {languageId} The specific language
    * - Value - @see {ILanguageServer} The language server impl
-   * 
+   *
    * @type {Map<languageId, ILanguageServer>}
    */
   #languageLspMap = new Map();
@@ -28,6 +28,12 @@ class LanguageServerManager {
    * @param {ILanguageServer} lsp - The languages implementation of the LSP
    */
   Register(languageId, lsp) {
+    if (!languageId || typeof languageId !== "string")
+      throw new TypeError("languageId must be a non-empty string");
+
+    if (!lsp || typeof lsp !== "object")
+      throw new TypeError("lsp must be an object");
+
     if (this.#languageLspMap.has(languageId)) {
       logger.warn(
         `Language server already registered languageId: ${languageId}`,
@@ -44,6 +50,9 @@ class LanguageServerManager {
    * @returns {ILanguageServer | undefined} - The languages LSP if it was registered or nothing
    */
   Get(languageId) {
+    if (!languageId || typeof languageId !== "string")
+      throw new TypeError("languageId must be a non-empty string");
+
     return this.#languageLspMap.get(languageId);
   }
 
@@ -51,8 +60,8 @@ class LanguageServerManager {
    * Get all language servers registered
    * @returns {ILanguageServer[]} List of language servers registered
    */
-  GetAll(){
-    return Array.from(this.#languageLspMap.values())
+  GetAll() {
+    return Array.from(this.#languageLspMap.values());
   }
 }
 
