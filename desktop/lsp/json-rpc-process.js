@@ -97,6 +97,14 @@ class JsonRpcProcess {
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
    */
   constructor(command, args = []) {
+    if (!command || typeof command !== "string")
+      throw new TypeError("command must be a non-empty string");
+
+    if (!Array.isArray(args)) throw new TypeError("args must be an array");
+
+    if (!args.every((arg) => typeof arg === "string"))
+      throw new TypeError("all elements in args must be strings");
+
     this.#command = command;
     this.#args = args;
   }
@@ -203,6 +211,9 @@ class JsonRpcProcess {
    * @returns {import("../type").voidCallback} Callback to remove the listener  callback from being run
    */
   OnData(callback) {
+    if (!callback || typeof callback !== "function")
+      throw new TypeError("callback must be a function");
+
     this.#onDataCallbacks.add(callback);
 
     return () => {
@@ -217,6 +228,12 @@ class JsonRpcProcess {
    * @returns {Promise<any>} The promise to await
    */
   SendRequest(method, params) {
+    if (!method || typeof method !== "string")
+      throw new TypeError("method must be a non-empty string");
+
+    if (params !== undefined && params !== null && typeof params !== "object")
+      throw new TypeError("params must be an object, null, or undefined");
+
     try {
       let requestId = this.#getId();
       return new Promise((resolve, reject) => {
@@ -251,9 +268,8 @@ class JsonRpcProcess {
       logger.error(
         `Failed to send request for command: ${this.#command} ${JSON.stringify(error)}`,
       );
-      return new Promise((_, reject) => {
-        reject();
-      });
+
+      throw error;
     }
   }
 
@@ -381,6 +397,9 @@ class JsonRpcProcess {
    * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} message The message
    */
   #write(message) {
+    if (!message || typeof message !== "object")
+      throw new TypeError("message must be an object");
+
     if (!this.#isStarted) {
       logger.error(
         `Cannot write to process command: ${this.#command} as it is not yet started`,
@@ -407,6 +426,8 @@ class JsonRpcProcess {
       logger.error(
         `Failed to write to stdin stream of command: ${this.#command} error: ${JSON.stringify(error)}`,
       );
+
+      throw error;
     }
   }
 }
