@@ -137,6 +137,14 @@ class JsonRpcLanguageServer {
       path.normalize(path.resolve(workSpaceFolder)),
     );
   }
+
+  /**
+   * Get a list of workspace folders that have a active LSP process running for them
+   * @returns {string[]} List of workspace folder paths
+   */
+  _getWorkSpaceFolders(){
+    return Array.from(this.#workSpaceRpcMap.keys())
+  }
 }
 
 module.exports = { JsonRpcLanguageServer };

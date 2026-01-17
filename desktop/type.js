@@ -937,13 +937,20 @@
  */
 
 /**
+ * Get all active workspace folders
+ * @callback ILanguageServerGetWorkspaceFolders
+ * @returns {string[]} List of workspace folder paths
+ */
+
+/**
  * Base interface for language server implementations.
  * All language servers should follow this structure
  * @typedef {Object} ILanguageServer
  * @property {ILanguageServerStart} Start - Begin the language server
  * @property {ILanguageServerStop} Stop - Stop the language server
- * 
  * @property {ILanguageServerIsRunning} IsRunning - Checks if the server is running for a given workspace
+ * @property {ILanguageServerGetWorkspaceFolders} GetWorkspaceFolders - Get active workspaces
+ *
  */
 
 /**

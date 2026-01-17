@@ -44,6 +44,13 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   IsRunning(wsf) {
     return this._isRunning(wsf);
   }
+
+  /**
+   * @type {import("../type").ILanguageServerGetWorkspaceFolders}
+   */
+  GetWorkspaceFolders() {
+    return this._getWorkSpaceFolders();
+  }
 }
 
 // async function test() {
