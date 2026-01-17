@@ -282,6 +282,20 @@ class JsonRpcProcess {
    * @returns {void}
    */
   DidOpenTextDocument(uri, languageId, version, text) {
+    if (!uri || typeof uri !== "string")
+      throw new TypeError("uri must be a non-empty string");
+
+    if (!languageId || typeof languageId !== "string")
+      throw new TypeError("languageId must be a non-empty string");
+
+    if (
+      typeof version !== "number" ||
+      !Number.isInteger(version) ||
+      version < 0
+    )
+      throw new TypeError("version must be a non-negative integer");
+
+    if (typeof text !== "string") throw new TypeError("text must be a string");
     this.#write({
       jsonrpc: "2.0",
       /** @type {import("../type").LanguageServerProtocolMethod} */
@@ -306,6 +320,19 @@ class JsonRpcProcess {
    * @returns {void}
    */
   DidChangeTextDocument(uri, version, contentChanges) {
+    if (!uri || typeof uri !== "string")
+      throw new TypeError("uri must be a non-empty string");
+
+    if (
+      typeof version !== "number" ||
+      !Number.isInteger(version) ||
+      version < 0
+    )
+      throw new TypeError("version must be a non-negative integer");
+
+    if (!Array.isArray(contentChanges))
+      throw new TypeError("contentChanges must be an array");
+
     this.#write({
       jsonrpc: "2.0",
       /** @type {import("../type").LanguageServerProtocolMethod} */
@@ -374,6 +401,9 @@ class JsonRpcProcess {
    * @returns {void}
    */
   #notify(response) {
+    if (!response || typeof response !== "object")
+      throw new TypeError("response must be an object");
+
     if (
       response.id !== null &&
       this.#pendingRequests.has(Number(response.id))
