@@ -15,6 +15,8 @@ const { createUri } = require("./uri");
  * - Methods that implement {@link ILanguageServer} interface should be defined in subclasses
  * - Methods should start with `_` indicating it is a shared for all lsp impl can use
  * - Use Template strings
+ * - Validate params types and values if they do not match throw typeErrors
+ * - Re throw any errors after logging them
  *
  * @see {ILanguageServer} for the interface this class is designed to support
  */
@@ -33,6 +35,15 @@ class JsonRpcLanguageServer {
    * @returns {Promise<boolean>} If it could or could not start it
    */
   async _start(command, args, wsf) {
+    if (!command || typeof command !== "string")
+      throw new TypeError("command must be a non-empty string");
+
+    if (!args || !Array.isArray(args))
+      throw new TypeError("args must be an array");
+
+    if (!wsf || typeof wsf !== "string")
+      throw new TypeError("workSpaceFolder must be a non-empty string");
+
     let rc = new JsonRpcProcess(command, args);
     const _workSpaceFolder = path.normalize(path.resolve(wsf));
 
@@ -80,7 +91,7 @@ class JsonRpcLanguageServer {
       rc.Shutdown();
       this.#workSpaceRpcMap.delete(_workSpaceFolder);
 
-      return false;
+      throw error;
     }
   }
 
@@ -90,6 +101,9 @@ class JsonRpcLanguageServer {
    * @returns {Promise<boolean>}
    */
   async _stop(workSpaceFolder) {
+    if (!workSpaceFolder || typeof workSpaceFolder !== "string")
+      throw new TypeError("workspace-folder must be a non empty string ");
+
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
       const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
@@ -117,7 +131,8 @@ class JsonRpcLanguageServer {
       logger.error(
         `Failed to stop language server for work space folder ${workSpaceFolder}`,
       );
-      return false;
+
+      throw error;
     }
   }
 
@@ -126,7 +141,7 @@ class JsonRpcLanguageServer {
    * @returns {Promise<import("../type").ILanguageServerStopAllResult[]>} All stop values for all workspaces
    */
   async _stopAll() {
-    let wsfs = this.#workSpaceRpcMap.keys();
+    let wsfs = Array.from(this.#workSpaceRpcMap.keys());
     /** @type {import("../type").ILanguageServerStopAllResult[]} */
     let result = [];
 
@@ -169,6 +184,20 @@ class JsonRpcLanguageServer {
    * @returns {void} Write's to the process
    */
   _didOpenTextDocument(workSpaceFolder, filePath, languageId, version, text) {
+    if (!workSpaceFolder || typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non-empty string");
+
+    if (!filePath || typeof filePath !== "string")
+      throw new TypeError("filePath must be a non-empty string");
+
+    if (!languageId || typeof languageId !== "string")
+      throw new TypeError("languageId must be a non-empty string");
+
+    if (typeof version !== "number" || version < 0)
+      throw new TypeError("version must be a non-negative number");
+
+    if (typeof text !== "string") throw new TypeError("text must be a string");
+
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
@@ -191,6 +220,8 @@ class JsonRpcLanguageServer {
         `Failed to open document for workspace folder ${workSpaceFolder} filePath: ${filePath} languageId: ${languageId} version:${version} content-length: ${text.length}`,
       );
       logger.error(JSON.stringify(error));
+
+      throw error;
     }
   }
 
@@ -203,6 +234,18 @@ class JsonRpcLanguageServer {
    * @returns {void} Nothing
    */
   _didChangeTextDocument(workSpaceFolder, filePath, version, changes) {
+    if (!workSpaceFolder || typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non-empty string");
+
+    if (!filePath || typeof filePath !== "string")
+      throw new TypeError("filePath must be a non-empty string");
+
+    if (typeof version !== "number" || version < 0)
+      throw new TypeError("version must be a non-negative number");
+
+    if (!Array.isArray(changes))
+      throw new TypeError("changes must be an array");
+
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
@@ -225,6 +268,7 @@ class JsonRpcLanguageServer {
         `Failed to sync document changes for workspace folder: ${workSpaceFolder} file: ${filePath} version: ${version} changes count: ${changes.length}`,
       );
       logger.error(JSON.stringify(error));
+      throw error;
     }
   }
 }
