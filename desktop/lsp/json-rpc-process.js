@@ -296,6 +296,7 @@ class JsonRpcProcess {
       throw new TypeError("version must be a non-negative integer");
 
     if (typeof text !== "string") throw new TypeError("text must be a string");
+
     this.#write({
       jsonrpc: "2.0",
       /** @type {import("../type").LanguageServerProtocolMethod} */
@@ -439,12 +440,14 @@ class JsonRpcProcess {
 
     if (!this.#spawnRef) {
       logger.error(`No child process spawned for command: ${this.#command}`);
-      return;
+      throw new Error("Trying to write to child process but it is undefined");
     }
 
     if (!this.#spawnRef.stdin.writable) {
       logger.error(`Cannot write to process command: ${this.#command}`);
-      return;
+      throw new Error(
+        "Trying to write to child process but stdin is not writable",
+      );
     }
 
     try {
