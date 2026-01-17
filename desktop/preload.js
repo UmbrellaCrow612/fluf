@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require("electron");
  */
 const lspClient = {
   start: (...args) => ipcRenderer.invoke("lsp:start", ...args),
+  stop: (...args) => ipcRenderer.invoke("lsp:stop", ...args)
 };
 
 /**
