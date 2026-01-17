@@ -54,7 +54,7 @@ const stopLspImpl = async (_, wsf, langId) => {
 };
 
 /**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientDidChangeTextDocument>}
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidChangeTextDocument>}
  */
 const docChangedImpl = (
   _,
@@ -74,6 +74,32 @@ const docChangedImpl = (
 };
 
 /**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidOpenTextDocument>}
+ */
+const openDocImpl = (
+  _,
+  workSpaceFolder,
+  languageId,
+  filePath,
+  version,
+  documentText,
+) => {
+  let lsp = languageServerManager.Get(languageId);
+  if (!lsp) {
+    logger.warn(`No language server language: ${languageId}`);
+    return;
+  }
+
+  lsp.DidOpenTextDocument(
+    workSpaceFolder,
+    filePath,
+    languageId,
+    version,
+    documentText,
+  );
+};
+
+/**
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -84,7 +110,8 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
   ipcMain.handle("lsp:start", startImpl);
   ipcMain.handle("lsp:stop", stopLspImpl);
 
-  ipcMain.handle("lsp:document:change", docChangedImpl);
+  ipcMain.on("lsp:document:open", openDocImpl);
+  ipcMain.on("lsp:document:change", docChangedImpl);
 };
 
 module.exports = { registerLanguageServerListener, stopAllLanguageServers };

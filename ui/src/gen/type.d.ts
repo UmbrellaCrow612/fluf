@@ -1233,6 +1233,10 @@ export type ILanguageServerClient = {
      */
     stop: ILanguageServerClientStop;
     /**
+     * - Open a document in the LSP
+     */
+    didOpenTextDocument: ILanguageServerClientDidOpenTextDocument;
+    /**
      * - Sync document changes with LSP view
      */
     didChangeTextDocument: ILanguageServerClientDidChangeTextDocument;
@@ -1249,6 +1253,10 @@ export type ILanguageServerClientStop = (workSpaceFolder: string, languageId: la
  * Sync document changes with the LSP
  */
 export type ILanguageServerClientDidChangeTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string, version: number, changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]) => void;
+/**
+ * Open a document
+ */
+export type ILanguageServerClientDidOpenTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string, version: number, documentText: string) => void;
 /**
  * Run logic when data has been parsed from a lsp
  */

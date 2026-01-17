@@ -1002,6 +1002,7 @@
  * @property {ILanguageServerClientStart} start - Start a specific LSP in a workspace for the given language
  * @property {ILanguageServerClientStop} stop - Stop a specific LSP for a given workspace and language
  *
+ * @property {ILanguageServerClientDidOpenTextDocument} didOpenTextDocument - Open a document in the LSP
  * @property {ILanguageServerClientDidChangeTextDocument} didChangeTextDocument - Sync document changes with LSP view
  */
 
@@ -1029,6 +1030,17 @@
  * @param {string} filePath - The path to the file that changed
  * @param {number} version - The documents version after being changed
  * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - List of changes made to file
+ * @returns {void} Nothing
+ */
+
+/**
+ * Open a document
+ * @callback ILanguageServerClientDidOpenTextDocument
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId} languageId - The language of the file
+ * @param {string} filePath - The path to the file for exmaple `c:/dev/file.js`
+ * @param {number} version - The documents version
+ * @param {string} documentText - The full file text
  * @returns {void} Nothing
  */
 
@@ -1065,7 +1077,7 @@
  * @property {pythonServer} pythonServer - Contains all the api's for the python language server
  *
  * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
- * 
+ *
  * @property {goServer} goServer
  *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP

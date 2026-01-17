@@ -8,6 +8,7 @@ const lspClient = {
   stop: (...args) => ipcRenderer.invoke("lsp:stop", ...args),
 
   didChangeTextDocument: (...args) => ipcRenderer.send("lsp:document:change", ...args),
+  didOpenTextDocument: (...args) => ipcRenderer.send("lsp:document:open", ...args)
 };
 
 /**
