@@ -17,7 +17,13 @@ class JsonRpcLanguageServer {
    */
   #workSpaceRpcMap = new Map();
 
-  /** @type {import("../type").LanguageServerStart} */
+  /**
+   * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
+   * @param {string} command - The command like `gopls` or path to the xe binary to launch it like `c:\dev\bin\gopls.exe` 
+   * @param {string[]} args - Addtional arguments to pass to the spawned process like `["--stdio"]` 
+   * @param {string} wsf - The path to the workspace folder to run the lsp for 
+   * @returns {Promise<boolean>} If it could or could not start it
+   */
   async _start(command, args, wsf) {
     let rc = new JsonRpcProcess(command, args);
     const _workSpaceFolder = path.normalize(path.resolve(wsf));

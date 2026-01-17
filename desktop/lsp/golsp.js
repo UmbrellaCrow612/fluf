@@ -39,18 +39,17 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   }
 }
 
-async function test() {
-  let golsp = new GoLanguageServer();
+// async function test() {
+//   let golsp = new GoLanguageServer();
 
-  await golsp.Start("C:\\dev\\fluf\\desktop")
+//   await golsp.Start("C:\\dev\\fluf\\desktop")
 
+//   setTimeout(async () => {
+//     await golsp.Stop("C:\\dev\\fluf\\desktop")
+//   }, 4000)
+// }
 
-  setTimeout(async () => {
-    await golsp.Stop("C:\\dev\\fluf\\desktop")
-  }, 4000)
-}
-
-test();
+// test();
 
 module.exports = {
   GoLanguageServer,

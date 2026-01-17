@@ -2,7 +2,7 @@ const { spawn } = require("child_process");
 const { logger } = require("../logger");
 
 /**
- * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command
+ * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command.
  *
  * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
  */
@@ -157,26 +157,22 @@ class JsonRpcProcess {
    * @returns {void}
    */
   Shutdown() {
-    try {
-      if (this.#spawnRef && !this.#spawnRef.killed) {
-        this.#spawnRef.kill();
-      }
-
-      this.#pendingRequests.forEach(({ reject }) => {
-        reject(new Error("Process shutdown"));
-      });
-
-      this.#pendingRequests.clear();
-      this.#onDataCallbacks.clear();
-      this.#isStarted = false;
-      this.#spawnRef = null;
-    } catch (error) {
-      logger.error("Failed to shutdown rpc process " + JSON.stringify(error));
+    if (this.#spawnRef && !this.#spawnRef.killed) {
+      this.#spawnRef.kill();
     }
+
+    this.#pendingRequests.forEach(({ reject }) => {
+      reject(new Error("Process shutdown"));
+    });
+
+    this.#pendingRequests.clear();
+    this.#onDataCallbacks.clear();
+    this.#isStarted = false;
+    this.#spawnRef = null;
   }
 
   /**
-   * Write exit request call after shutdown request
+   * Write exit request - call after `shutdown request`
    */
   Exit() {
     this.#write({

@@ -916,15 +916,6 @@
  */
 
 /**
- * Used in the base class
- * @callback LanguageServerStart
- * @param {string} command - Start the language server with the exe command
- * @param {string[]} args - Addtional args
- * @param {string} workspaceFolder - The folder opened in UI
- * @returns {Promise<boolean>}
- */
-
-/**
  * Start the language server for a given work space
  * @callback ILanguageServerStart
  * @param {string} workspaceFolder
