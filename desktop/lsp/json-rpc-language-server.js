@@ -1,14 +1,21 @@
-/**
- * @typedef {import("../type").ILanguageServer} l
- */
-
 const { logger } = require("../logger");
 const { createUri } = require("../lsp");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
 
 /**
- * Base class that impl common json rpc lsp
+ * @typedef {import("../type").ILanguageServer} ILanguageServer
+ */
+
+/**
+ * Base class that implements common JSON-RPC LSP functionality.
+ *
+ * Convention:
+ *
+ * - Methods that implement {@link ILanguageServer} interface should be defined in subclasses
+ * - Methods should start with `_` indicating it is a shared for all lsp impl can use
+ *
+ * @see {ILanguageServer} for the interface this class is designed to support
  */
 class JsonRpcLanguageServer {
   /**
@@ -19,9 +26,9 @@ class JsonRpcLanguageServer {
 
   /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
-   * @param {string} command - The command like `gopls` or path to the xe binary to launch it like `c:\dev\bin\gopls.exe` 
-   * @param {string[]} args - Addtional arguments to pass to the spawned process like `["--stdio"]` 
-   * @param {string} wsf - The path to the workspace folder to run the lsp for 
+   * @param {string} command - The command like `gopls` or path to the xe binary to launch it like `c:\dev\bin\gopls.exe`
+   * @param {string[]} args - Addtional arguments to pass to the spawned process like `["--stdio"]`
+   * @param {string} wsf - The path to the workspace folder to run the lsp for
    * @returns {Promise<boolean>} If it could or could not start it
    */
   async _start(command, args, wsf) {
@@ -118,6 +125,16 @@ class JsonRpcLanguageServer {
       );
       return false;
     }
+  }
+
+  /**
+   * Check if a language server process is running for a given work space folder
+   * @param {string} workSpaceFolder - The workspace folder to check
+   */
+  async _isRunning(workSpaceFolder) {
+    return this.#workSpaceRpcMap.has(
+      path.normalize(path.resolve(workSpaceFolder)),
+    );
   }
 }
 

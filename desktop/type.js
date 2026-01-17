@@ -930,10 +930,20 @@
  */
 
 /**
- * Base used for language servers impl all language server will follow this structure
+ * Check if the language server is running for a given workspace
+ * @callback ILanguageServerIsRunning
+ * @param {string} workSpaceFolder - The path to check
+ * @returns {Promise<boolean>} If it is or is not
+ */
+
+/**
+ * Base interface for language server implementations.
+ * All language servers should follow this structure
  * @typedef {Object} ILanguageServer
  * @property {ILanguageServerStart} Start - Begin the language server
  * @property {ILanguageServerStop} Stop - Stop the language server
+ * 
+ * @property {ILanguageServerIsRunning} IsRunning - Checks if the server is running for a given workspace
  */
 
 /**

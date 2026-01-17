@@ -37,16 +37,28 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   async Stop(wsf) {
     return this._stop(wsf);
   }
+
+  /**
+   * @type {import("../type").ILanguageServerIsRunning}
+   */
+  async IsRunning(wsf) {
+    return this._isRunning(wsf);
+  }
 }
 
 // async function test() {
 //   let golsp = new GoLanguageServer();
 
-//   await golsp.Start("C:\\dev\\fluf\\desktop")
+//   console.log(await golsp.IsRunning(""));
+//   console.log(await golsp.IsRunning("C:\\dev\\fluf\\desktop"));
+
+//   await golsp.Start("C:\\dev\\fluf\\desktop");
+//   console.log(await golsp.IsRunning("C:\\dev\\fluf\\desktop"));
 
 //   setTimeout(async () => {
-//     await golsp.Stop("C:\\dev\\fluf\\desktop")
-//   }, 4000)
+//     await golsp.Stop("C:\\dev\\fluf\\desktop");
+//     console.log(await golsp.IsRunning("C:\\dev\\fluf\\desktop"));
+//   }, 4000);
 // }
 
 // test();
