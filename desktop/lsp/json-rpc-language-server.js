@@ -14,6 +14,7 @@ const path = require("path");
  *
  * - Methods that implement {@link ILanguageServer} interface should be defined in subclasses
  * - Methods should start with `_` indicating it is a shared for all lsp impl can use
+ * - Use Template strings
  *
  * @see {ILanguageServer} for the interface this class is designed to support
  */
@@ -38,10 +39,7 @@ class JsonRpcLanguageServer {
     try {
       if (this.#workSpaceRpcMap.has(_workSpaceFolder)) {
         logger.warn(
-          "Language server already started for command: " +
-            command +
-            " at workspace folder: " +
-            _workSpaceFolder,
+          `Language server already started for command: ${command} at workspace folder: ${_workSpaceFolder}`,
         );
         return true;
       }
@@ -75,10 +73,7 @@ class JsonRpcLanguageServer {
       return true;
     } catch (error) {
       logger.error(
-        "Failed to start language server. command: " +
-          command +
-          " workspace folder " +
-          wsf,
+        `Failed to start language server. command: ${command} workspace folder ${wsf}`,
       );
       logger.error(JSON.stringify(error));
 
@@ -106,7 +101,7 @@ class JsonRpcLanguageServer {
       try {
         await rc.SendRequest("shutdown", {});
       } catch (error) {
-        logger.error("Shutdown requested hanged " + JSON.stringify(error));
+        logger.error(`Shutdown requested hanged ${JSON.stringify(error)}`);
       }
 
       rc.Exit();
@@ -120,8 +115,7 @@ class JsonRpcLanguageServer {
       return true;
     } catch (error) {
       logger.error(
-        "Failed to stop language server for work space folder " +
-          workSpaceFolder,
+        `Failed to stop language server for work space folder ${workSpaceFolder}`,
       );
       return false;
     }

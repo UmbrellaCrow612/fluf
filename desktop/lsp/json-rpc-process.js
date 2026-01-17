@@ -108,7 +108,7 @@ class JsonRpcProcess {
   Start() {
     try {
       if (this.#isStarted) {
-        logger.info("JSON Rpc already started for command " + this.#command);
+        logger.info(`JSON Rpc already started for command ${this.#command}`);
         return;
       }
       if (!this.#command) throw new Error("Command not passed");
@@ -150,10 +150,7 @@ class JsonRpcProcess {
       this.#isStarted = false;
 
       logger.error(
-        "Failed to start JSON RPC process with command " +
-          this.#command +
-          " error: " +
-          JSON.stringify(error),
+        `Failed to start JSON RPC process with command ${this.#command} error: ${JSON.stringify(error)}`,
       );
 
       throw error;
@@ -252,10 +249,7 @@ class JsonRpcProcess {
       });
     } catch (error) {
       logger.error(
-        "Failed to send request for command: " +
-          this.#command +
-          " " +
-          JSON.stringify(error),
+        `Failed to send request for command: ${this.#command} ${JSON.stringify(error)}`,
       );
       return new Promise((_, reject) => {
         reject();
@@ -326,10 +320,7 @@ class JsonRpcProcess {
         this.#notify(response);
       } catch (err) {
         logger.error(
-          "Failed to parse response for command: " +
-            this.#command +
-            " " +
-            JSON.stringify(err),
+          `Failed to parse response for command: ${this.#command} ${JSON.stringify(err)}`,
         );
         logger.error("Raw body " + messageBody);
       }
@@ -369,20 +360,18 @@ class JsonRpcProcess {
   #write(message) {
     if (!this.#isStarted) {
       logger.error(
-        "Cannot write to process command: " +
-          this.#command +
-          " as it is not yet started",
+        `Cannot write to process command: ${this.#command} as it is not yet started`,
       );
       return;
     }
 
     if (!this.#spawnRef) {
-      logger.error("No child process spawned for command: " + this.#command);
+      logger.error(`No child process spawned for command: ${this.#command}`);
       return;
     }
 
     if (!this.#spawnRef.stdin.writable) {
-      logger.error("Cannot write to process command: " + this.#command);
+      logger.error(`Cannot write to process command: ${this.#command}`);
       return;
     }
 
@@ -393,10 +382,7 @@ class JsonRpcProcess {
       this.#spawnRef.stdin.write(writeContent);
     } catch (error) {
       logger.error(
-        "Failed to write to stdin stream of command: " +
-          this.#command +
-          " error: " +
-          JSON.stringify(error),
+        `Failed to write to stdin stream of command: ${this.#command} error: ${JSON.stringify(error)}`,
       );
     }
   }
