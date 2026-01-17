@@ -1174,7 +1174,15 @@ export type ILanguageServer = {
      * - Notify document opened
      */
     DidOpenTextDocument: ILanguageServerDidOpenTextDocument;
+    /**
+     * - Notify document content changed
+     */
+    DidChangeTextDocument: ILanguageServerDidChangeTextDocument;
 };
+/**
+ * Send document changes to the LSP
+ */
+export type ILanguageServerDidChangeTextDocument = (workSpaceFolder: string, filePath: string, version: number, changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]) => void;
 /**
  * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
  */
@@ -1211,7 +1219,7 @@ export type ILanguageServerGetWorkspaceFolders = () => string[];
 /**
  * Send a text document did open notification
  */
-export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, uri: string, languageId: string, version: number, text: string) => void;
+export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, uri: string, languageId: languageId, version: number, text: string) => void;
 /**
  * Represents the client which sends and recives LSP messages via UI side
  */
@@ -1224,6 +1232,10 @@ export type ILanguageServerClient = {
      * - Stop a specific LSP for a given workspace and language
      */
     stop: ILanguageServerClientStop;
+    /**
+     * - Sync document changes with LSP view
+     */
+    didChangeTextDocument: ILanguageServerClientDidChangeTextDocument;
 };
 /**
  * Start a specific language server
@@ -1233,6 +1245,10 @@ export type ILanguageServerClientStart = (workSpaceFolder: string, languageId: l
  * Stop a language server for a given work space
  */
 export type ILanguageServerClientStop = (workSpaceFolder: string, languageId: languageId) => Promise<boolean>;
+/**
+ * Sync document changes with the LSP
+ */
+export type ILanguageServerClientDidChangeTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string, version: number, changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]) => void;
 /**
  * Run logic when data has been parsed from a lsp
  */
@@ -1285,9 +1301,6 @@ export type ElectronApi = {
      * - Contains helpers todo with URL / URI's
      */
     urlApi: urlApi;
-    /**
-     * - Contains all the code to use the go language server api's
-     */
     goServer: goServer;
     /**
      * - Contains all the UI api's to interact with LSP

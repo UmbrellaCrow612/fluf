@@ -193,6 +193,40 @@ class JsonRpcLanguageServer {
       logger.error(JSON.stringify(error));
     }
   }
+
+  /**
+   * Send document changes
+   * @param {string} workSpaceFolder - The workspace folder path
+   * @param {string} filePath - Path to the file that changed
+   * @param {number} version - The documents version after changes
+   * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - List of changes applied to the document
+   * @returns {void} Nothing
+   */
+  _didChangeTextDocument(workSpaceFolder, filePath, version, changes) {
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+        return;
+      }
+
+      if (!rc.IsStarted()) {
+        logger.error(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      rc.DidChangeTextDocument(createUri(filePath), version, changes);
+    } catch (error) {
+      logger.error(
+        `Failed to sync document changes for workspace folder: ${workSpaceFolder} file: ${filePath} version: ${version} changes count: ${changes.length}`,
+      );
+      logger.error(JSON.stringify(error));
+    }
+  }
 }
 
 module.exports = { JsonRpcLanguageServer };

@@ -283,6 +283,29 @@ class JsonRpcProcess {
   }
 
   /**
+   * Send a textDocument/didChange notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @param {number} version - The document version (increments with each change)
+   * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} contentChanges - The content changes
+   * @returns {void}
+   */
+  DidChangeTextDocument(uri, version, contentChanges) {
+    this.#write({
+      jsonrpc: "2.0",
+      /** @type {import("../type").LanguageServerProtocolMethod} */
+      method: "textDocument/didChange",
+      /** @type {import("vscode-languageserver-protocol").DidChangeTextDocumentParams} */
+      params: {
+        textDocument: {
+          uri: uri,
+          version: version,
+        },
+        contentChanges: contentChanges,
+      },
+    });
+  }
+
+  /**
    * Parses the stdout and notifys intrested parties of the message parsed
    */
   #parseStdout() {

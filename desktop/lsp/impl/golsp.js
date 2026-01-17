@@ -57,32 +57,14 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   StopAll() {
     return this._stopAll();
   }
+
+  /**
+   * @type {import("../../type").ILanguageServerDidChangeTextDocument}
+   */
+  DidChangeTextDocument(wsf, fp, version, changes) {
+    return this._didChangeTextDocument(wsf, fp, version, changes);
+  }
 }
-
-// async function test() {
-//   let golsp = new GoLanguageServer();
-
-//   console.log(golsp.IsRunning(""));
-//   console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
-
-//   await golsp.Start("C:\\dev\\fluf\\desktop");
-//   console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
-
-//   await golsp.DidOpenTextDocument(
-//     "C:\\dev\\fluf\\desktop",
-//     "file:///C:/dev/fluf/desktop/example.go",
-//     "go",
-//     1,
-//     "",
-//   );
-
-//   setTimeout(async () => {
-//     await golsp.Stop("C:\\dev\\fluf\\desktop");
-//     console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
-//   }, 4000);
-// }
-
-// test();
 
 module.exports = {
   GoLanguageServer,

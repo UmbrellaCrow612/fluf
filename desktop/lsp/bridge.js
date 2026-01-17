@@ -28,45 +28,49 @@ const stopAllLanguageServers = async () => {
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStart>}
  */
 const startImpl = async (_, wsf, langId) => {
-  try {
-    let lsp = languageServerManager.Get(langId);
-    if (!lsp) {
-      logger.warn(`No language server registered for language: ${langId}`);
-      return false;
-    }
-
-    const _workSpaceFolder = path.normalize(path.resolve(wsf));
-
-    return lsp.Start(_workSpaceFolder);
-  } catch (error) {
-    logger.error(
-      `Failed to start language server for workspace folder: ${wsf} and language: ${langId}`,
-    );
-    logger.error(JSON.stringify(error));
+  let lsp = languageServerManager.Get(langId);
+  if (!lsp) {
+    logger.warn(`No language server registered for language: ${langId}`);
     return false;
   }
+
+  const _workSpaceFolder = path.normalize(path.resolve(wsf));
+
+  return lsp.Start(_workSpaceFolder);
 };
 
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStop>}
  */
 const stopLspImpl = async (_, wsf, langId) => {
-  try {
-    let lsp = languageServerManager.Get(langId);
-    if (!lsp) {
-      logger.warn(`No language server language: ${langId}`);
-      return true;
-    }
-
-    const _workSpaceFolder = path.normalize(wsf);
-    return lsp.Stop(_workSpaceFolder);
-  } catch (error) {
-    logger.error(
-      `Failed to stop language server for workspace folder: ${wsf} and language: ${langId}`,
-    );
-    logger.error(JSON.stringify(error));
-    return false;
+  let lsp = languageServerManager.Get(langId);
+  if (!lsp) {
+    logger.warn(`No language server language: ${langId}`);
+    return true;
   }
+
+  const _workSpaceFolder = path.normalize(wsf);
+  return lsp.Stop(_workSpaceFolder);
+};
+
+/**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientDidChangeTextDocument>}
+ */
+const docChangedImpl = (
+  _,
+  workSpaceFolder,
+  languageId,
+  filePath,
+  version,
+  changes,
+) => {
+  let lsp = languageServerManager.Get(languageId);
+  if (!lsp) {
+    logger.warn(`No language server language: ${languageId}`);
+    return;
+  }
+
+  lsp.DidChangeTextDocument(workSpaceFolder, filePath, version, changes);
 };
 
 /**
@@ -79,6 +83,8 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
 
   ipcMain.handle("lsp:start", startImpl);
   ipcMain.handle("lsp:stop", stopLspImpl);
+
+  ipcMain.handle("lsp:document:change", docChangedImpl);
 };
 
 module.exports = { registerLanguageServerListener, stopAllLanguageServers };
