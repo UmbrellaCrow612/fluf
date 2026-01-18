@@ -276,6 +276,15 @@ class JsonRpcProcess {
   }
 
   /**
+   * Register callback for diagnostics
+   * @param {LanguageServerOnNotificationCallback} callback
+   * @returns {import("../type").voidCallback} Unsubscribe function
+   */
+  OnDiagnostics(callback) {
+    return this.OnNotification("textDocument/publishDiagnostics", callback);
+  }
+
+  /**
    * Register callback for LSP errors
    * @param {import("../type").LanguageServerOnError} callback
    * @returns {import("../type").voidCallback} Unsubscribe function
