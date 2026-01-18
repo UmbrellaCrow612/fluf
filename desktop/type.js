@@ -1074,10 +1074,17 @@
  */
 
 /**
- * Run logic when data has been parsed from a lsp
+ * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
  * @callback LanguageServerOnDataCallback
- * @param {import("vscode-languageserver-protocol").NotificationMessage | import("vscode-languageserver-protocol").ResponseMessage} response - The LSP response
+ * @param {any} response - The LSP response
  * @returns {void}
+ */
+
+/**
+ * The callback to run when a notification has been parsed
+ * @callback LanguageServerOnNotificationCallback
+ * @param {any} result - The parsed notification data
+ * @returns {void} Nothing
  */
 
 /**

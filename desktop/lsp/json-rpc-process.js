@@ -3,6 +3,14 @@ const { logger } = require("../logger");
 const { isUri } = require("./uri");
 
 /**
+ * @typedef {import("../type").LanguageServerProtocolMethod} LanguageServerProtocolMethod
+ */
+
+/**
+ * @typedef {import("../type").LanguageServerOnNotificationCallback} LanguageServerOnNotificationCallback
+ */
+
+/**
  * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command.
  *
  * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
@@ -73,10 +81,22 @@ class JsonRpcProcess {
   #stdoutBuffer = Buffer.alloc(0);
 
   /**
-   * Holds all the listener  callbacks to be run when a lsp response is parsed
+   * Holds all the listener callbacks to be run when a lsp response is parsed - passes all parsed messages / notifications and responses, does not filter out any
    * @type {Set<import("../type").LanguageServerOnDataCallback>}
    */
   #onDataCallbacks = new Set();
+
+  /**
+   * Holds all listener callbacks to run when the LSP responds and is it a notification
+   *
+   * - `Key`: The specific method from @see LanguageServerProtocolMethod
+   * - `Value`: List of callbacks to run
+   *
+   * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
+   *
+   * @type {Map<LanguageServerProtocolMethod, Set<LanguageServerOnNotificationCallback>>}
+   */
+  #onNotificationCallbacks = new Map();
 
   /**
    * Holds the PID number of the spawend process
@@ -181,6 +201,7 @@ class JsonRpcProcess {
 
     this.#pendingRequests.clear();
     this.#onDataCallbacks.clear();
+    this.#onNotificationCallbacks.clear();
     this.#isStarted = false;
     this.#spawnRef = null;
   }
@@ -207,7 +228,8 @@ class JsonRpcProcess {
   }
 
   /**
-   * Register a callback to be run when data from the lsp has been parsed
+   * Register a callback to be run when data from the lsp has been parsed this will recieve all messages / notifications and rsponses use as generiuc way to see what
+   * the LSP is producing for specific notfications use the notfications on methods
    * @param {import("../type").LanguageServerOnDataCallback} callback - The callback to run when data has been parsed
    * @returns {import("../type").voidCallback} Callback to remove the listener  callback from being run
    */
@@ -223,10 +245,33 @@ class JsonRpcProcess {
   }
 
   /**
+   * Register callback for specific LSP notifications
+   * @param {LanguageServerProtocolMethod} method - The notification method (e.g., "textDocument/publishDiagnostics")
+   * @param {LanguageServerOnNotificationCallback} callback - The callback to run
+   * @returns {import("../type").voidCallback} Unsubscribe function
+   */
+  OnNotification(method, callback) {
+    if (typeof method !== "string")
+      throw new TypeError("method must be a non empty string");
+
+    if (!callback || typeof callback !== "function")
+      throw new TypeError("callback must be a function");
+
+    if (!this.#onNotificationCallbacks.has(method)) {
+      this.#onNotificationCallbacks.set(method, new Set());
+    }
+    this.#onNotificationCallbacks.get(method)?.add(callback);
+
+    return () => {
+      this.#onNotificationCallbacks.get(method)?.delete(callback);
+    };
+  }
+
+  /**
    * Make a request to the process and awit a response
    * @param {import("../type").LanguageServerProtocolMethod} method - The specific method to send
    * @param {any} params - Any shape of params for the request being sent
-   * @returns {Promise<any>} The promise to await
+   * @returns {Promise<any>} The promise to await and the value from the request parsed or error
    */
   SendRequest(method, params) {
     if (!method || typeof method !== "string")
@@ -426,9 +471,9 @@ class JsonRpcProcess {
   }
 
   /**
-   * Notifys on listener  that a message has been parsed fromn the lsp
-   * @param {import("vscode-languageserver-protocol").ResponseMessage} response
-   * @returns {void}
+   * Notifys any listener's that a message has been parsed fromn the lsp
+   * @param {any} response - Either a response message or notification
+   * @returns {void} Nothing
    */
   #notify(response) {
     if (!response || typeof response !== "object")
@@ -450,6 +495,11 @@ class JsonRpcProcess {
     }
 
     this.#onDataCallbacks.forEach((cb) => cb(response));
+
+    if (response.method && response.id === undefined) {
+      const callbacks = this.#onNotificationCallbacks.get(response.method);
+      callbacks?.forEach((cb) => cb(response.params));
+    }
   }
 
   /**
