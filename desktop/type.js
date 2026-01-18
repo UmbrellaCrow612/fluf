@@ -1088,6 +1088,13 @@
  */
 
 /**
+ * The callback to run when a response produces a error
+ * @callback LanguageServerOnError
+ * @param {any} error - The error parsed
+ * @returns {void}
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi

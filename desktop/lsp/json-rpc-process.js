@@ -99,6 +99,13 @@ class JsonRpcProcess {
   #onNotificationCallbacks = new Map();
 
   /**
+   * Holds a list of callhbacks to run the request made produces an error
+   *
+   * @type {Set<import("../type").LanguageServerOnError>}
+   */
+  #onErrorCallbacks = new Set();
+
+  /**
    * Holds the PID number of the spawend process
    * @type {number | undefined}
    */
@@ -201,6 +208,7 @@ class JsonRpcProcess {
 
     this.#pendingRequests.clear();
     this.#onDataCallbacks.clear();
+    this.#onErrorCallbacks.clear();
     this.#onNotificationCallbacks.clear();
     this.#isStarted = false;
     this.#spawnRef = null;
@@ -268,7 +276,17 @@ class JsonRpcProcess {
   }
 
   /**
-   * Make a request to the process and awit a response
+   * Register callback for LSP errors
+   * @param {import("../type").LanguageServerOnError} callback
+   * @returns {import("../type").voidCallback} Unsubscribe function
+   */
+  OnError(callback) {
+    this.#onErrorCallbacks.add(callback);
+    return () => this.#onErrorCallbacks.delete(callback);
+  }
+
+  /**
+   * Make a request to the process and await a response
    * @param {import("../type").LanguageServerProtocolMethod} method - The specific method to send
    * @param {any} params - Any shape of params for the request being sent
    * @returns {Promise<any>} The promise to await and the value from the request parsed or error
@@ -487,6 +505,7 @@ class JsonRpcProcess {
 
       if (response.error) {
         obj?.reject(response.error);
+        this.#onErrorCallbacks.forEach((cb) => cb(response.error));
       } else {
         obj?.resolve(response.result);
       }
