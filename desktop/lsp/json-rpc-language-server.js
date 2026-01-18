@@ -2,6 +2,7 @@ const { logger } = require("../logger");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
 const { createUri } = require("./uri");
+const { rejectPromise } = require("../promises");
 
 /**
  * @typedef {import("../type").ILanguageServer} ILanguageServer
@@ -305,6 +306,59 @@ class JsonRpcLanguageServer {
       logger.error(
         `Failed to close document work workspace folder: ${workSpaceFolder} file: ${filePath}`,
       );
+      throw error;
+    }
+  }
+
+  /**
+   * Get hover information
+   * @param {string} workSpaceFolder - The workspace where the file lives
+   * @param {string} filePath - The path to the file to close
+   * @param {import("vscode-languageserver-protocol").Position} position - The position at which to get the hover information
+   * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The hover information
+   */
+  _hover(workSpaceFolder, filePath, position) {
+    if (typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non empty string");
+    if (typeof filePath !== "string")
+      throw new TypeError("filePath must be a non empty string");
+    if (typeof position !== "object")
+      throw new TypeError("position must be a object");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+        return rejectPromise(
+          `No LSP process is running for ${_workSpaceFolder}`,
+        );
+      }
+
+      if (!rc.IsStarted()) {
+        logger.error(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+        return rejectPromise(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+      }
+
+      /** @type {import("vscode-languageserver-protocol").HoverParams} */
+      let params = {
+        position,
+        textDocument: {
+          uri: createUri(filePath),
+        },
+      };
+
+      return rc.SendRequest("textDocument/hover", params);
+    } catch (error) {
+      logger.error(
+        `Failed to get hover information for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
+      );
+
       throw error;
     }
   }

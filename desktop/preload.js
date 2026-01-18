@@ -14,6 +14,8 @@ const lspClient = {
     ipcRenderer.send("lsp:document:open", ...args),
   didCloseTextDocument: (...args) =>
     ipcRenderer.send("lsp:document:close", ...args),
+
+  hover: (...args) => ipcRenderer.invoke("lsp:document:hover", ...args),
 };
 
 /**

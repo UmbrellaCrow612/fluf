@@ -1180,9 +1180,19 @@ export type ILanguageServer = {
     DidChangeTextDocument: ILanguageServerDidChangeTextDocument;
     /**
      * - Notify document closed
+     *
+     * Language Features (Requests - expect responses)
      */
     DidCloseTextDocument: ILanguageServerDidCloseTextDocument;
+    /**
+     * - Get hover information
+     */
+    Hover: ILanguageServerHover;
 };
+/**
+ * Get hover information
+ */
+export type ILanguageServerHover = (workSpaceFolder: string, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover>;
 /**
  * Closes a file that was opened
  */
@@ -1256,7 +1266,15 @@ export type ILanguageServerClient = {
      * - Close the document in the LSP
      */
     didCloseTextDocument: ILanguageServerClientDidCloseTextDocument;
+    /**
+     * - Get hover information
+     */
+    hover: ILanguageServerClientHover;
 };
+/**
+ * Get hover information
+ */
+export type ILanguageServerClientHover = (workSpaceFolder: string, languageId: languageId, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover>;
 /**
  * Check if the LSP is running for a given workspace and language
  */

@@ -1,4 +1,5 @@
 const { logger } = require("../logger");
+const { rejectPromise } = require("../promises");
 const { GoLanguageServer } = require("./impl/golsp");
 const { LanguageServerManager } = require("./manager");
 
@@ -122,6 +123,21 @@ const closeDocImpl = (_, workSpaceFolder, languageId, filePath) => {
 };
 
 /**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientHover>}
+ */
+const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
+  let lsp = languageServerManager.Get(languageId);
+  if (!lsp) {
+    logger.error(`No language server language: ${languageId}`);
+    return rejectPromise(
+      `No language server language: ${languageId} cannot provide hover information`,
+    );
+  }
+
+  return lsp.Hover(workSpaceFolder, filePath, position);
+};
+
+/**
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -132,6 +148,8 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
   ipcMain.handle("lsp:start", startImpl);
   ipcMain.handle("lsp:stop", stopLspImpl);
   ipcMain.handle("lsp:is:running", isRunningImpl);
+
+  ipcMain.handle("lsp:document:hover", hoverDocImpl);
 
   ipcMain.on("lsp:document:open", openDocImpl);
   ipcMain.on("lsp:document:change", docChangedImpl);

@@ -933,6 +933,18 @@
  * @property {ILanguageServerDidOpenTextDocument} DidOpenTextDocument - Notify document opened
  * @property {ILanguageServerDidChangeTextDocument} DidChangeTextDocument - Notify document content changed
  * @property {ILanguageServerDidCloseTextDocument} DidCloseTextDocument - Notify document closed
+ *
+ *  Language Features (Requests - expect responses)
+ * @property {ILanguageServerHover} Hover - Get hover information
+ */
+
+/**
+ * Get hover information
+ * @callback ILanguageServerHover
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {string} filePath - The path to the file to get hover information for
+ * @param {import("vscode-languageserver-protocol").Position} position - Where to get the hover information
+ * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The result of a hover request.
  */
 
 /**
@@ -1015,6 +1027,18 @@
  * @property {ILanguageServerClientDidOpenTextDocument} didOpenTextDocument - Open a document in the LSP
  * @property {ILanguageServerClientDidChangeTextDocument} didChangeTextDocument - Sync document changes with LSP view
  * @property {ILanguageServerClientDidCloseTextDocument} didCloseTextDocument - Close the document in the LSP
+ * 
+ * @property {ILanguageServerClientHover} hover - Get hover information
+ */
+
+/**
+ * Get hover information
+ * @callback ILanguageServerClientHover
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {languageId} languageId - The language
+ * @param {string} filePath - The path to the file to get hover information for
+ * @param {import("vscode-languageserver-protocol").Position} position - Where to get the hover information
+ * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The result of a hover request.
  */
 
 /**
