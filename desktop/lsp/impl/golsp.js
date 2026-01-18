@@ -64,6 +64,13 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   DidChangeTextDocument(wsf, fp, version, changes) {
     return this._didChangeTextDocument(wsf, fp, version, changes);
   }
+
+  /**
+   * @type {import("../../type").ILanguageServerDidCloseTextDocument}
+   */
+  DidCloseTextDocument(wsf, fp) {
+    return this._didCloseTextDocument(wsf, fp);
+  }
 }
 
 module.exports = {

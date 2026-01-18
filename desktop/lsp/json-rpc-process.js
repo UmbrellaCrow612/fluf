@@ -1,5 +1,6 @@
 const { spawn } = require("child_process");
 const { logger } = require("../logger");
+const { isUri } = require("./uri");
 
 /**
  * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command.
@@ -39,7 +40,7 @@ class JsonRpcProcess {
   #isStarted = false;
 
   /**
-   * Check if the process ir running
+   * Check if the process is running
    * @returns {boolean} If it is or is not
    */
   IsStarted() {
@@ -288,6 +289,8 @@ class JsonRpcProcess {
     if (!languageId || typeof languageId !== "string")
       throw new TypeError("languageId must be a non-empty string");
 
+    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
+
     if (
       typeof version !== "number" ||
       !Number.isInteger(version) ||
@@ -324,6 +327,8 @@ class JsonRpcProcess {
     if (!uri || typeof uri !== "string")
       throw new TypeError("uri must be a non-empty string");
 
+    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
+
     if (
       typeof version !== "number" ||
       !Number.isInteger(version) ||
@@ -345,6 +350,30 @@ class JsonRpcProcess {
           version: version,
         },
         contentChanges: contentChanges,
+      },
+    });
+  }
+
+  /**
+   * Send a textDocument/didClose notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @returns {void}
+   */
+  DidCloseTextDocument(uri) {
+    if (!uri || typeof uri !== "string")
+      throw new TypeError("uri must be a non-empty string");
+
+    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
+
+    this.#write({
+      jsonrpc: "2.0",
+      /** @type {import("../type").LanguageServerProtocolMethod} */
+      method: "textDocument/didClose",
+      /** @type {import("vscode-languageserver-protocol").DidCloseTextDocumentParams} */
+      params: {
+        textDocument: {
+          uri: uri,
+        },
       },
     });
   }

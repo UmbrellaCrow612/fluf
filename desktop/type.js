@@ -932,6 +932,15 @@
  * Text Synchronization (Notifications - don't expect responses)
  * @property {ILanguageServerDidOpenTextDocument} DidOpenTextDocument - Notify document opened
  * @property {ILanguageServerDidChangeTextDocument} DidChangeTextDocument - Notify document content changed
+ * @property {ILanguageServerDidCloseTextDocument} DidCloseTextDocument - Notify document closed
+ */
+
+/**
+ * Closes a file that was opened
+ * @callback ILanguageServerDidCloseTextDocument
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {string} filePath - The path to the file to close
+ * @returns {void} Nothing
  */
 
 /**
@@ -1005,6 +1014,7 @@
  *
  * @property {ILanguageServerClientDidOpenTextDocument} didOpenTextDocument - Open a document in the LSP
  * @property {ILanguageServerClientDidChangeTextDocument} didChangeTextDocument - Sync document changes with LSP view
+ * @property {ILanguageServerClientDidCloseTextDocument} didCloseTextDocument - Close the document in the LSP
  */
 
 /**
@@ -1012,7 +1022,7 @@
  * @callback ILanguageServerClientIsRunning
  * @param {string} workSpaceFolder - The path to the folder
  * @param {languageId} languageId - The language
- * 
+ *
  * @returns {Promise<boolean>} If it is or is not
  */
 
@@ -1040,6 +1050,15 @@
  * @param {string} filePath - The path to the file that changed
  * @param {number} version - The documents version after being changed
  * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - List of changes made to file
+ * @returns {void} Nothing
+ */
+
+/**
+ * Close the document in the LSP
+ * @callback ILanguageServerClientDidCloseTextDocument
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId} languageId - The language of the file
+ * @param {string} filePath - The path to the file
  * @returns {void} Nothing
  */
 

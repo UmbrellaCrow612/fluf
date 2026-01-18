@@ -271,6 +271,43 @@ class JsonRpcLanguageServer {
       throw error;
     }
   }
+
+  /**
+   * Close a document that was opened
+   * @param {string} workSpaceFolder - The workspace where the file lives
+   * @param {string} filePath - The path to the file to close
+   * @returns {void} Nothing
+   */
+  _didCloseTextDocument(workSpaceFolder, filePath) {
+    if (typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non empty string");
+    if (typeof filePath !== "string")
+      throw new TypeError("filePath must be a non empty string");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+        return;
+      }
+
+      if (!rc.IsStarted()) {
+        logger.error(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      rc.DidCloseTextDocument(createUri(filePath));
+    } catch (error) {
+      logger.error(
+        `Failed to close document work workspace folder: ${workSpaceFolder} file: ${filePath}`,
+      );
+      throw error;
+    }
+  }
 }
 
 module.exports = { JsonRpcLanguageServer };

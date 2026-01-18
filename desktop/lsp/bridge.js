@@ -105,7 +105,20 @@ const isRunningImpl = async (_, workSpaceFolder, languageId) => {
     return false;
   }
 
-  return lsp.IsRunning(workSpaceFolder)
+  return lsp.IsRunning(workSpaceFolder);
+};
+
+/**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidCloseTextDocument>}
+ */
+const closeDocImpl = (_, workSpaceFolder, languageId, filePath) => {
+  let lsp = languageServerManager.Get(languageId);
+  if (!lsp) {
+    logger.warn(`No language server language: ${languageId}`);
+    return;
+  }
+
+  lsp.DidCloseTextDocument(workSpaceFolder, filePath);
 };
 
 /**
@@ -122,6 +135,7 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
 
   ipcMain.on("lsp:document:open", openDocImpl);
   ipcMain.on("lsp:document:change", docChangedImpl);
+  ipcMain.on("lsp:document:close", closeDocImpl);
 };
 
 module.exports = { registerLanguageServerListener, stopAllLanguageServers };

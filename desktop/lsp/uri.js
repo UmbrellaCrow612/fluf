@@ -38,4 +38,17 @@ function createUri(filePath) {
   return `file://${uriPath}`;
 }
 
-module.exports = { createUri };
+/**
+ * Check if a string is a valid document URI
+ * @param {string} uri - The string to check
+ * @returns {boolean} True if the string is a valid file URI, false otherwise
+ */
+function isUri(uri) {
+  if (typeof uri !== "string" || uri.length === 0) {
+    return false;
+  }
+
+  return uri.startsWith("file://");
+}
+
+module.exports = { createUri, isUri };
