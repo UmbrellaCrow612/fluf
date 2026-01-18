@@ -1278,11 +1278,27 @@ export type ILanguageServerClient = {
      * - Listen to when the LSP responds and run logic
      */
     onData: ILanguageServerClientOnData;
+    /**
+     * - Listen to when the server responds with any notification and run logic
+     */
+    onNotifications: ILanguageServerClientOnNotifications;
+    /**
+     * - Listen to when a specific notification is sent out and run logic
+     */
+    onNotification: ILanguageServerClientOnNotification;
 };
 /**
  * Run logic when LSP responds with data
  */
 export type ILanguageServerClientOnData = (callback: LanguageServerOnDataCallback) => voidCallback;
+/**
+ * Run logic when the LSP responds with a any notification
+ */
+export type ILanguageServerClientOnNotifications = (callback: LanguageServerOnNotificationCallback) => voidCallback;
+/**
+ * Listen to a specific notification method produced from the LSp and run logic
+ */
+export type ILanguageServerClientOnNotification = (method: LanguageServerProtocolMethod, callback: LanguageServerOnNotificationCallback) => voidCallback;
 /**
  * Get hover information
  */

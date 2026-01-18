@@ -24,6 +24,38 @@ const lspClient = {
     };
   },
 
+  onNotifications: (callback) => {
+    /**
+     * @param {*} _
+     * @param {*} data
+     */
+    let l = (_, data) => {
+      callback(data);
+    };
+
+    ipcRenderer.on("lsp:notification", l);
+
+    return () => {
+      ipcRenderer.removeListener("lsp:on:notification", l);
+    };
+  },
+
+  onNotification: (method, callback) => {
+    /**
+     * @param {*} _
+     * @param {*} data
+     */
+    let l = (_, data) => {
+      callback(data);
+    };
+
+    ipcRenderer.on(`lsp:notification:${method}`, l);
+
+    return () => {
+      ipcRenderer.removeListener(`lsp:notification:${method}`, l);
+    };
+  },
+
   didChangeTextDocument: (...args) =>
     ipcRenderer.send("lsp:document:change", ...args),
   didOpenTextDocument: (...args) =>

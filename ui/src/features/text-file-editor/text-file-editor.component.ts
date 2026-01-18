@@ -190,13 +190,23 @@ export class TextFileEditorComponent implements OnInit {
       this.workSpaceFolder()!,
       this.languageId,
     );
-    console.log('Backend response ' + res);
+    console.log('Backend response server started: ' + res);
 
     this.serverUnSubs.push(
       this.api.lspClient.onData((obj) => {
         console.log('Server data');
         console.log(JSON.stringify(obj));
       }),
+    );
+
+    this.serverUnSubs.push(
+      this.api.lspClient.onNotification(
+        'textDocument/publishDiagnostics',
+        (data) => {
+          console.warn('pub not recived');
+          console.log(data);
+        },
+      ),
     );
 
     console.log('Language server started for ' + this.languageId);

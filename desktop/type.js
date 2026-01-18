@@ -1037,6 +1037,8 @@
  * @property {ILanguageServerClientHover} hover - Get hover information
  *
  * @property {ILanguageServerClientOnData} onData - Listen to when the LSP responds and run logic
+ * @property {ILanguageServerClientOnNotifications} onNotifications - Listen to when the server responds with any notification and run logic
+ * @property {ILanguageServerClientOnNotification} onNotification - Listen to when a specific notification is sent out and run logic
  */
 
 /**
@@ -1044,6 +1046,21 @@
  * @callback ILanguageServerClientOnData
  * @param {LanguageServerOnDataCallback} callback
  * @returns {voidCallback} Unsub callback
+ */
+
+/**
+ * Run logic when the LSP responds with a any notification
+ * @callback ILanguageServerClientOnNotifications
+ * @param {LanguageServerOnNotificationCallback} callback - The logic to run
+ * @returns {voidCallback} Unsub callack to remove the callback passed from being triggered anymore
+ */
+
+/**
+ * Listen to a specific notification method produced from the LSp and run logic
+ * @callback ILanguageServerClientOnNotification
+ * @param {LanguageServerProtocolMethod} method - The specific method channel to listen to
+ * @param {LanguageServerOnNotificationCallback} callback - The logic to run
+ * @returns {voidCallback} Unsub method
  */
 
 /**
