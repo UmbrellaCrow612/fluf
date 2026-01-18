@@ -20,9 +20,6 @@ import { getLanguageId } from '../lsp/utils';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { FlufDiagnostic } from '../diagnostic/type';
-import {
-  Completion,
-} from '@codemirror/autocomplete';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -116,7 +113,6 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSubs.forEach((cb) => cb());
 
     this.languageId = getLanguageId(fileNode.extension);
-    this.inMemoryContextService.currentLanguageServer.set(this.languageId);
     if (!this.languageId) {
       console.warn('No language server found for ' + fileNode.extension);
       return;
@@ -193,11 +189,16 @@ export class TextFileEditorComponent implements OnInit {
     let node = this.openFileNode();
     if (!node) return;
 
-    // if (this.languageServer && update.docChanged) {
-    //   this.lspService.Edit(update, node, this.languageServer);
-    //   this.lspService.Completion(update, node, this.languageServer);
-    //   this.diagnosticsEvent();
-    // }
+    if (this.languageId && update.docChanged) {
+      this.api.lspClient.didChangeTextDocument(
+        this.workSpaceFolder()!,
+        this.languageId,
+        node.path,
+        1,
+        [],
+      );
+      this.diagnosticsEvent();
+    }
 
     if (update.docChanged) {
       this.stringContent = update.state.doc.toString();
