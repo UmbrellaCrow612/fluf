@@ -1,4 +1,4 @@
-const { logger } = require("../logger");
+const { logger, logError } = require("../logger");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
 const { createUri } = require("./uri");
@@ -101,10 +101,10 @@ class JsonRpcLanguageServer {
       );
       return true;
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to start language server. command: ${command} workspace folder ${wsf}`,
       );
-      logger.error(JSON.stringify(error));
 
       rc.Shutdown();
       this.#workSpaceRpcMap.delete(_workSpaceFolder);
@@ -132,8 +132,8 @@ class JsonRpcLanguageServer {
 
       try {
         await rc.SendRequest("shutdown", {});
-      } catch (error) {
-        logger.error(`Shutdown requested hanged ${JSON.stringify(error)}`);
+      } catch (/** @type {any}*/ error) {
+        logError(error, `Shutdown requested hanged`);
       }
 
       rc.Exit();
@@ -142,11 +142,12 @@ class JsonRpcLanguageServer {
       this.#workSpaceRpcMap.delete(_workSpaceFolder);
 
       logger.info(
-        `Language server stoped for command: ${rc.GetCommand()} at workspace folder: ${workSpaceFolder}`,
+        `Language server stopped for command: ${rc.GetCommand()} at workspace folder: ${workSpaceFolder}`,
       );
       return true;
-    } catch (error) {
-      logger.error(
+    } catch (/** @type {any}*/ error) {
+      logError(
+        error,
         `Failed to stop language server for work space folder ${workSpaceFolder}`,
       );
 
@@ -234,10 +235,10 @@ class JsonRpcLanguageServer {
 
       rc.DidOpenTextDocument(createUri(filePath), languageId, version, text);
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to open document for workspace folder ${workSpaceFolder} filePath: ${filePath} languageId: ${languageId} version:${version} content-length: ${text.length}`,
       );
-      logger.error(JSON.stringify(error));
 
       throw error;
     }
@@ -282,10 +283,10 @@ class JsonRpcLanguageServer {
 
       rc.DidChangeTextDocument(createUri(filePath), version, changes);
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to sync document changes for workspace folder: ${workSpaceFolder} file: ${filePath} version: ${version} changes count: ${changes.length}`,
       );
-      logger.error(JSON.stringify(error));
       throw error;
     }
   }
@@ -320,7 +321,8 @@ class JsonRpcLanguageServer {
 
       rc.DidCloseTextDocument(createUri(filePath));
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to close document work workspace folder: ${workSpaceFolder} file: ${filePath}`,
       );
       throw error;
@@ -372,7 +374,8 @@ class JsonRpcLanguageServer {
 
       return rc.SendRequest("textDocument/hover", params);
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to get hover information for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
       );
 

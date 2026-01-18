@@ -23,6 +23,7 @@ npm run start
 - Use template strings for messages / logs
 - Validate params types and values if they do not match throw typeErrors
 - Re throw any errors after logging them
+- when catch error use `logError`
 
 # Type checking
 

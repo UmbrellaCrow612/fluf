@@ -1,5 +1,5 @@
 const { spawn } = require("child_process");
-const { logger } = require("../logger");
+const { logger, logError } = require("../logger");
 const { isUri } = require("./uri");
 
 /**
@@ -175,7 +175,8 @@ class JsonRpcProcess {
     } catch (error) {
       this.#isStarted = false;
 
-      logger.error(
+      logError(
+        error,
         `Failed to start JSON RPC process with command ${this.#command} error: ${JSON.stringify(error)}`,
       );
 
@@ -188,8 +189,16 @@ class JsonRpcProcess {
    * @returns {void}
    */
   Shutdown() {
+    this.#isStarted = false;
+
     if (this.#spawnRef && !this.#spawnRef.killed) {
-      this.#spawnRef.kill();
+      this.#spawnRef.kill("SIGTERM");
+
+      setTimeout(() => {
+        if (this.#spawnRef && !this.#spawnRef.killed) {
+          this.#spawnRef.kill("SIGKILL");
+        }
+      }, 1000);
     }
 
     this.#pendingRequests.forEach(({ reject }) => {
@@ -197,8 +206,8 @@ class JsonRpcProcess {
     });
 
     this.#pendingRequests.clear();
-    this.#isStarted = false;
     this.#spawnRef = null;
+    this.#mainWindowRef = null;
   }
 
   /**
@@ -235,6 +244,12 @@ class JsonRpcProcess {
     if (params !== undefined && params !== null && typeof params !== "object")
       throw new TypeError("params must be an object, null, or undefined");
 
+    if (!this.#isStarted) {
+      return Promise.reject(
+        new Error(`Process not started for command: ${this.#command}`),
+      );
+    }
+
     try {
       let requestId = this.#getId();
       return new Promise((resolve, reject) => {
@@ -266,7 +281,8 @@ class JsonRpcProcess {
         });
       });
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to send request for command: ${this.#command} ${JSON.stringify(error)}`,
       );
 
@@ -414,16 +430,23 @@ class JsonRpcProcess {
       // Move buffer advancement BEFORE parsing to prevent infinite loops
       this.#stdoutBuffer = this.#stdoutBuffer.subarray(messageEnd);
 
+      let response;
       try {
-        const response = JSON.parse(messageBody);
+        response = JSON.parse(messageBody);
+      } catch (/** @type {any}*/ err) {
+        logError(err, `Failed to parse JSON for command: ${this.#command}`);
+        logger.error("Raw body: " + messageBody);
+        continue;
+      }
+
+      try {
         this.#notify(response);
       } catch (/** @type {any}*/ err) {
-        logger.error(`Failed to parse response for command: ${this.#command}`);
-        logger.error(`Error message: ${err?.message}`);
-        logger.error(JSON.stringify(err));
-        logger.error("Raw body: " + messageBody);
-
-        // we dont re throw as failed message parsing can happend even if its valid just js
+        logError(
+          err,
+          `Failed to notify response for command: ${this.#command}`,
+        );
+        // Continue processing even if notification fails
       }
     }
   }
@@ -446,6 +469,13 @@ class JsonRpcProcess {
 
     if (!this.#mainWindowRef)
       throw new Error("main window is null cannot send events");
+
+    if (this.#mainWindowRef.isDestroyed()) {
+      logger.warn(
+        `Main window destroyed, cannot send LSP events for command: ${this.#command}`,
+      );
+      return;
+    }
 
     if (
       response.id !== null &&
@@ -531,7 +561,8 @@ class JsonRpcProcess {
       const writeContent = `Content-Length: ${contentLength}\r\n\r\n${json}`;
       this.#spawnRef.stdin.write(writeContent);
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to write to stdin stream of command: ${this.#command} error: ${JSON.stringify(error)}`,
       );
 
