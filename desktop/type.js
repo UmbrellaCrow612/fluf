@@ -1017,6 +1017,12 @@
  */
 
 /**
+ * Used try and get the main window
+ * @callback getMainWindow
+ * @returns {import("electron").BrowserWindow | null} The window object ref
+ */
+
+/**
  * Represents the client which sends and recives LSP messages via UI side
  * @typedef {Object} ILanguageServerClient
  *
@@ -1029,7 +1035,7 @@
  * @property {ILanguageServerClientDidCloseTextDocument} didCloseTextDocument - Close the document in the LSP
  *
  * @property {ILanguageServerClientHover} hover - Get hover information
- * 
+ *
  * @property {ILanguageServerClientOnData} onData - Listen to when the LSP responds and run logic
  */
 

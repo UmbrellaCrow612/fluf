@@ -24,10 +24,13 @@ const { rejectPromise } = require("../promises");
 class JsonRpcLanguageServer {
   /**
    * Required for LSP to work
-   * @param {import("electron").BrowserWindow | null} mainWindow - Refrence to the main window to send events
+   * @param {import("../type").getMainWindow} getMainWindow - Used to fetch the main window ref
    */
-  constructor(mainWindow) {
-    this.#mainWindowRef = mainWindow;
+  constructor(getMainWindow) {
+    if (typeof getMainWindow !== "function")
+      throw new TypeError("getMainWindow is not a function");
+
+    this.#getMainWindow = getMainWindow;
   }
 
   /**
@@ -37,9 +40,10 @@ class JsonRpcLanguageServer {
   #workSpaceRpcMap = new Map();
 
   /**
-   * @type {import("electron").BrowserWindow | null}
+   * Used to fetch the main widow - this is becuase on init it's null
+   * @type {import("../type").getMainWindow | null}
    */
-  #mainWindowRef = null;
+  #getMainWindow = null;
 
   /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
@@ -58,7 +62,7 @@ class JsonRpcLanguageServer {
     if (!wsf || typeof wsf !== "string")
       throw new TypeError("workSpaceFolder must be a non-empty string");
 
-    let rc = new JsonRpcProcess(command, args, this.#mainWindowRef);
+    let rc = new JsonRpcProcess(command, args, this.#getMainWindow);
     const _workSpaceFolder = path.normalize(path.resolve(wsf));
 
     try {

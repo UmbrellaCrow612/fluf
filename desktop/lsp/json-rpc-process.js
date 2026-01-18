@@ -93,7 +93,13 @@ class JsonRpcProcess {
   }
 
   /**
-   * Refrence to the main window to send out events
+   * Used to get the main window
+   * @type {import("../type").getMainWindow | null}
+   */
+  #getMainWindow = null;
+
+  /**
+   * Refrence to the main window to send events
    * @type {import("electron").BrowserWindow | null}
    */
   #mainWindowRef = null;
@@ -102,9 +108,9 @@ class JsonRpcProcess {
    * Required for spawn of the LSP
    * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
-   * @param {import("electron").BrowserWindow | null} mainWindow - Refrence to the main window to send out events
+   * @param {import("../type").getMainWindow | null} getMainWindow - Used to get the main window ref
    */
-  constructor(command, args, mainWindow) {
+  constructor(command, args, getMainWindow) {
     if (!command || typeof command !== "string")
       throw new TypeError("command must be a non-empty string");
 
@@ -113,9 +119,12 @@ class JsonRpcProcess {
     if (!args.every((arg) => typeof arg === "string"))
       throw new TypeError("all elements in args must be strings");
 
+    if (typeof getMainWindow !== "function")
+      throw new TypeError("getMainWindow is not a function");
+
     this.#command = command;
     this.#args = args;
-    this.#mainWindowRef = mainWindow;
+    this.#getMainWindow = getMainWindow;
   }
 
   /**
@@ -370,7 +379,7 @@ class JsonRpcProcess {
   }
 
   /**
-   * Parses the stdout and notifys intrested parties of the message parsed
+   * Parses the stdout and notifies interested parties of the message parsed
    */
   #parseStdout() {
     while (true) {
@@ -402,17 +411,20 @@ class JsonRpcProcess {
         .subarray(messageStart, messageEnd)
         .toString("utf-8");
 
+      // Move buffer advancement BEFORE parsing to prevent infinite loops
+      this.#stdoutBuffer = this.#stdoutBuffer.subarray(messageEnd);
+
       try {
         const response = JSON.parse(messageBody);
         this.#notify(response);
-      } catch (err) {
-        logger.error(
-          `Failed to parse response for command: ${this.#command} ${JSON.stringify(err)}`,
-        );
-        logger.error("Raw body " + messageBody);
-      }
+      } catch (/** @type {any}*/ err) {
+        logger.error(`Failed to parse response for command: ${this.#command}`);
+        logger.error(`Error message: ${err?.message}`);
+        logger.error(JSON.stringify(err));
+        logger.error("Raw body: " + messageBody);
 
-      this.#stdoutBuffer = this.#stdoutBuffer.subarray(messageEnd);
+        // we dont re throw as failed message parsing can happend even if its valid just js
+      }
     }
   }
 
@@ -424,6 +436,16 @@ class JsonRpcProcess {
   #notify(response) {
     if (!response || typeof response !== "object")
       throw new TypeError("response must be an object");
+
+    if (!this.#getMainWindow)
+      throw new Error("getMainWindow is null cannot get main window");
+
+    if (!this.#mainWindowRef) {
+      this.#mainWindowRef = this.#getMainWindow();
+    }
+
+    if (!this.#mainWindowRef)
+      throw new Error("main window is null cannot send events");
 
     if (
       response.id !== null &&

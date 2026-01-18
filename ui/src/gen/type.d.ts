@@ -1186,27 +1186,9 @@ export type ILanguageServer = {
     DidCloseTextDocument: ILanguageServerDidCloseTextDocument;
     /**
      * - Get hover information
-     *
-     * Callback's for data / notifications
      */
     Hover: ILanguageServerHover;
-    /**
-     * - Listen to any data produced by the LSP and run logic
-     */
-    OnData: ILanguageServerOnData;
-    /**
-     * - Listen to when the LSP produces a notification and run logic
-     */
-    OnNotification: ILanguageServerOnNotification;
 };
-/**
- * Listen to when the LSP produces a notification and run logic when it does
- */
-export type ILanguageServerOnNotification = (workSpaceFolder: string, method: LanguageServerProtocolMethod, callback: LanguageServerOnNotificationCallback) => voidCallback;
-/**
- * Listen to any response / notification / data produces by the LSP output
- */
-export type ILanguageServerOnData = (workSpaceFolder: string, callback: LanguageServerOnDataCallback) => voidCallback;
 /**
  * Get hover information
  */
@@ -1257,6 +1239,10 @@ export type ILanguageServerGetWorkspaceFolders = () => string[];
  */
 export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, filePath: string, languageId: languageId, version: number, text: string) => void;
 /**
+ * Used try and get the main window
+ */
+export type getMainWindow = () => import("electron").BrowserWindow | null;
+/**
  * Represents the client which sends and recives LSP messages via UI side
  */
 export type ILanguageServerClient = {
@@ -1289,22 +1275,14 @@ export type ILanguageServerClient = {
      */
     hover: ILanguageServerClientHover;
     /**
-     * - Listen to the LSP when it produces an output and run logic
+     * - Listen to when the LSP responds and run logic
      */
     onData: ILanguageServerClientOnData;
-    /**
-     * - Listen to when the LSP produces notifications
-     */
-    onNotification: ILanguageServerClientOnNotification;
 };
 /**
- * Listen to LSP notification and run custom logic
+ * Run logic when LSP responds with data
  */
-export type ILanguageServerClientOnNotification = (workSpaceFolder: string, languageId: languageId, method: LanguageServerProtocolMethod, callback: LanguageServerOnNotificationCallback) => Promise<voidCallback>;
-/**
- * Listen to the LSP and run callback when it produces any LSP message
- */
-export type ILanguageServerClientOnData = (workSpaceFolder: string, languageId: languageId, callback: LanguageServerOnDataCallback) => Promise<voidCallback>;
+export type ILanguageServerClientOnData = (callback: LanguageServerOnDataCallback) => voidCallback;
 /**
  * Get hover information
  */

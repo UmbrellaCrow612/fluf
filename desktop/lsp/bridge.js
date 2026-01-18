@@ -9,8 +9,13 @@ const { LanguageServerManager } = require("./manager");
  */
 let mainWindowRef = null;
 
+/** @type {import("../type").getMainWindow} */
+const getMainWindow = () => {
+  return mainWindowRef;
+};
+
 var languageServerManager = new LanguageServerManager();
-languageServerManager.Register("go", new GoLanguageServer(mainWindowRef));
+languageServerManager.Register("go", new GoLanguageServer(getMainWindow));
 
 /**
  * Helper to stop and clean up all language servers
