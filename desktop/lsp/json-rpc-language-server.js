@@ -116,7 +116,7 @@ class JsonRpcLanguageServer {
   /**
    * Stop the language server at a given workspace folder if one was started
    * @param {string} workSpaceFolder - The workspace folder to stop
-   * @returns {Promise<boolean>}
+   * @returns {Promise<boolean>} If it could or could not
    */
   async _stop(workSpaceFolder) {
     if (!workSpaceFolder || typeof workSpaceFolder !== "string")
@@ -127,7 +127,7 @@ class JsonRpcLanguageServer {
       const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
 
       if (!rc) {
-        return false;
+        return true;
       }
 
       try {

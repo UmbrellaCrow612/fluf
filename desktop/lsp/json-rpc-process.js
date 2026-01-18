@@ -457,26 +457,7 @@ class JsonRpcProcess {
    * @returns {void} Nothing
    */
   #notify(response) {
-    if (!response || typeof response !== "object")
-      throw new TypeError("response must be an object");
-
-    if (!this.#getMainWindow)
-      throw new Error("getMainWindow is null cannot get main window");
-
-    if (!this.#mainWindowRef) {
-      this.#mainWindowRef = this.#getMainWindow();
-    }
-
-    if (!this.#mainWindowRef)
-      throw new Error("main window is null cannot send events");
-
-    if (this.#mainWindowRef.isDestroyed()) {
-      logger.warn(
-        `Main window destroyed, cannot send LSP events for command: ${this.#command}`,
-      );
-      return;
-    }
-
+    // We need to resolve pending requests first to stop hanging
     if (
       response.id !== null &&
       this.#pendingRequests.has(Number(response.id))
@@ -497,6 +478,26 @@ class JsonRpcProcess {
       }
 
       this.#pendingRequests.delete(Number(response.id));
+    }
+
+    if (!response || typeof response !== "object")
+      throw new TypeError("response must be an object");
+
+    if (!this.#getMainWindow)
+      throw new Error("getMainWindow is null cannot get main window");
+
+    if (!this.#mainWindowRef) {
+      this.#mainWindowRef = this.#getMainWindow();
+    }
+
+    if (!this.#mainWindowRef)
+      throw new Error("main window is null cannot send events");
+
+    if (this.#mainWindowRef.isDestroyed()) {
+      logger.warn(
+        `Main window destroyed, cannot send LSP events for command: ${this.#command}`,
+      );
+      return;
     }
 
     // Send all data
