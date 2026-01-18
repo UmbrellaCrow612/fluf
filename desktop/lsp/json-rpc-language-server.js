@@ -362,6 +362,44 @@ class JsonRpcLanguageServer {
       throw error;
     }
   }
+
+  /**
+   * Listen to LSP output and run custom logic
+   * @param {string} workSpaceFolder The workspace path
+   * @param {import("../type").LanguageServerOnDataCallback} callback
+   * @returns {import("../type").voidCallback} Unsubscribe the callback when called
+   */
+  _onData(workSpaceFolder, callback) {
+    if (typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non empty string");
+    if (typeof callback !== "function")
+      throw new TypeError("callback must be a function");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+        return () => {};
+      }
+
+      if (!rc.IsStarted()) {
+        logger.warn(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+        return () => {};
+      }
+
+      return rc.OnData(callback);
+    } catch (error) {
+      logger.error(
+        `Failed to add on data callback for workspace: ${workSpaceFolder}`,
+      );
+
+      throw error;
+    }
+  }
 }
 
 module.exports = { JsonRpcLanguageServer };

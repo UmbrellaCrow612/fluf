@@ -936,6 +936,17 @@
  *
  *  Language Features (Requests - expect responses)
  * @property {ILanguageServerHover} Hover - Get hover information
+ *
+ * Callback's for data / notifications
+ * @property {ILanguageServerOnData} OnData - Listen to any data produced by the LSP and run logic
+ */
+
+/**
+ * Listen to any response / notification / data produces by the LSP output
+ * @callback ILanguageServerOnData
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {LanguageServerOnDataCallback} callback - The callback to run
+ * @returns {voidCallback} Unsubscribe the callback
  */
 
 /**
@@ -1027,8 +1038,19 @@
  * @property {ILanguageServerClientDidOpenTextDocument} didOpenTextDocument - Open a document in the LSP
  * @property {ILanguageServerClientDidChangeTextDocument} didChangeTextDocument - Sync document changes with LSP view
  * @property {ILanguageServerClientDidCloseTextDocument} didCloseTextDocument - Close the document in the LSP
- * 
+ *
  * @property {ILanguageServerClientHover} hover - Get hover information
+ * 
+ * @property {ILanguageServerClientOnData} onData - Listen to the LSP when it produces an output and run logic
+ */
+
+/**
+ * Listen to the LSP and run callback when it produces any LSP message
+ * @callback ILanguageServerClientOnData
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {languageId} languageId - The language
+ * @param {LanguageServerOnDataCallback} callback - The logic to run
+ * @returns {Promise<voidCallback>} Unsubscribe the callback when called
  */
 
 /**

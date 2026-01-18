@@ -138,6 +138,19 @@ const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
 };
 
 /**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientOnData>}
+ */
+const onDataImpl = async (_, workSpaceFolder, languageId, callback) => {
+  let lsp = languageServerManager.Get(languageId);
+  if (!lsp) {
+    logger.warn(`No language server language: ${languageId}`);
+    return () => {};
+  }
+
+  return lsp.OnData(workSpaceFolder, callback);
+};
+
+/**
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -150,6 +163,7 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
   ipcMain.handle("lsp:is:running", isRunningImpl);
 
   ipcMain.handle("lsp:document:hover", hoverDocImpl);
+  ipcMain.handle("lsp:on:data", onDataImpl);
 
   ipcMain.on("lsp:document:open", openDocImpl);
   ipcMain.on("lsp:document:change", docChangedImpl);
