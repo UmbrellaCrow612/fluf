@@ -1178,7 +1178,15 @@ export type ILanguageServer = {
      * - Notify document content changed
      */
     DidChangeTextDocument: ILanguageServerDidChangeTextDocument;
+    /**
+     * - Notify document closed
+     */
+    DidCloseTextDocument: ILanguageServerDidCloseTextDocument;
 };
+/**
+ * Closes a file that was opened
+ */
+export type ILanguageServerDidCloseTextDocument = (workSpaceFolder: string, filePath: string) => void;
 /**
  * Send document changes to the LSP
  */
@@ -1233,6 +1241,10 @@ export type ILanguageServerClient = {
      */
     stop: ILanguageServerClientStop;
     /**
+     * - Check if a LSP for a given workspace and language is running
+     */
+    isRunning: ILanguageServerClientIsRunning;
+    /**
      * - Open a document in the LSP
      */
     didOpenTextDocument: ILanguageServerClientDidOpenTextDocument;
@@ -1240,7 +1252,15 @@ export type ILanguageServerClient = {
      * - Sync document changes with LSP view
      */
     didChangeTextDocument: ILanguageServerClientDidChangeTextDocument;
+    /**
+     * - Close the document in the LSP
+     */
+    didCloseTextDocument: ILanguageServerClientDidCloseTextDocument;
 };
+/**
+ * Check if the LSP is running for a given workspace and language
+ */
+export type ILanguageServerClientIsRunning = (workSpaceFolder: string, languageId: languageId) => Promise<boolean>;
 /**
  * Start a specific language server
  */
@@ -1254,13 +1274,25 @@ export type ILanguageServerClientStop = (workSpaceFolder: string, languageId: la
  */
 export type ILanguageServerClientDidChangeTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string, version: number, changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]) => void;
 /**
+ * Close the document in the LSP
+ */
+export type ILanguageServerClientDidCloseTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string) => void;
+/**
  * Open a document
  */
 export type ILanguageServerClientDidOpenTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string, version: number, documentText: string) => void;
 /**
- * Run logic when data has been parsed from a lsp
+ * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
  */
-export type LanguageServerOnDataCallback = (response: import("vscode-languageserver-protocol").NotificationMessage | import("vscode-languageserver-protocol").ResponseMessage) => void;
+export type LanguageServerOnDataCallback = (response: any) => void;
+/**
+ * The callback to run when a notification has been parsed
+ */
+export type LanguageServerOnNotificationCallback = (result: any) => void;
+/**
+ * The callback to run when a response produces a error
+ */
+export type LanguageServerOnError = (error: any) => void;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */

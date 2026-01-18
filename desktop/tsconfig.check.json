@@ -15,6 +15,7 @@
 
     "module": "commonjs",
     "moduleResolution": "node",
+    "target": "esnext",
     "skipLibCheck": true
   },
   "include": ["**/*.js"],

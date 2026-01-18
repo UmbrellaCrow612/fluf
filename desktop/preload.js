@@ -6,9 +6,14 @@ const { contextBridge, ipcRenderer } = require("electron");
 const lspClient = {
   start: (...args) => ipcRenderer.invoke("lsp:start", ...args),
   stop: (...args) => ipcRenderer.invoke("lsp:stop", ...args),
+  isRunning: (...args) => ipcRenderer.invoke("lsp:is:running", ...args),
 
-  didChangeTextDocument: (...args) => ipcRenderer.send("lsp:document:change", ...args),
-  didOpenTextDocument: (...args) => ipcRenderer.send("lsp:document:open", ...args)
+  didChangeTextDocument: (...args) =>
+    ipcRenderer.send("lsp:document:change", ...args),
+  didOpenTextDocument: (...args) =>
+    ipcRenderer.send("lsp:document:open", ...args),
+  didCloseTextDocument: (...args) =>
+    ipcRenderer.send("lsp:document:close", ...args),
 };
 
 /**
