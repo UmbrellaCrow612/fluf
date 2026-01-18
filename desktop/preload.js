@@ -58,9 +58,7 @@ const lspClient = {
 
   onReady: (callback) => {
     /**
-     * @param {*} _ - The IPC event object
-     * @param {string} languageId - The language ID sent from main process
-     * @param {string} workSpaceFolder - The workspace folder sent from main process
+     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").ILanguageServerClientOnReadyCallback>}
      */
     const list = (_, languageId, workSpaceFolder) => {
       callback(languageId, workSpaceFolder);

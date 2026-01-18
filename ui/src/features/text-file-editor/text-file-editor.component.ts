@@ -198,7 +198,8 @@ export class TextFileEditorComponent implements OnInit {
     );
 
     this.serverUnSubs.push(
-      this.api.lspClient.onReady(() => {
+      this.api.lspClient.onReady((langId, wsf) => {
+        console.log(`On ready called languageId ${langId} workspace: ${wsf}`)
         this.openFileInLanguageServer(); // on ready open the current file in LSP
       }),
     );
@@ -220,7 +221,7 @@ export class TextFileEditorComponent implements OnInit {
       this.api.lspClient.onNotification(
         'textDocument/publishDiagnostics',
         (data) => {
-          console.warn('pub not recived');
+          console.warn('diagnostics published');
           console.log(data);
         },
       ),

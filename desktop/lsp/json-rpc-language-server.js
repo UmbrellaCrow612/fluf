@@ -84,11 +84,13 @@ class JsonRpcLanguageServer {
       throw new Error("getMainWindow is null cannot get the main window");
 
     if (!this.#mainWindowRef) {
-      this.#mainWindowRef = this.#getMainWindow(); // we do this becuase we dont know when main widow becomes available 
+      this.#mainWindowRef = this.#getMainWindow(); // we do this becuase we dont know when main widow becomes available
     }
 
     if (!this.#mainWindowRef)
       throw new Error("mainWindowRef is null cannot sent events");
+
+    if (!this.#languageId) throw new Error("languageId is null");
 
     let rc = new JsonRpcProcess(
       command,

@@ -1045,8 +1045,15 @@
 /**
  * Run logic for the first time when a server just becomes ready to recieve messages
  * @callback ILanguageServerClientOnReady
- * @param {(...args) => void} callback - The callback to run when it becomes ready
+ * @param {ILanguageServerClientOnReadyCallback} callback - The callback to run when it becomes ready
  * @returns {voidCallback} Unsub method
+ */
+
+/**
+ * @callback ILanguageServerClientOnReadyCallback
+ * @param {languageId} languageId - The specific language
+ * @param {string} workSpaceFolder - The path to folder
+ * @returns {void} Nothing
  */
 
 /**

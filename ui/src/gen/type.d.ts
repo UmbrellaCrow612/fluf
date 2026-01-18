@@ -1294,7 +1294,8 @@ export type ILanguageServerClient = {
 /**
  * Run logic for the first time when a server just becomes ready to recieve messages
  */
-export type ILanguageServerClientOnReady = (callback: (...args: any) => void) => voidCallback;
+export type ILanguageServerClientOnReady = (callback: ILanguageServerClientOnReadyCallback) => voidCallback;
+export type ILanguageServerClientOnReadyCallback = (languageId: languageId, workSpaceFolder: string) => void;
 /**
  * Run logic when LSP responds with data
  */
