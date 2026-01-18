@@ -8,8 +8,21 @@ const lspClient = {
   stop: (...args) => ipcRenderer.invoke("lsp:stop", ...args),
   isRunning: (...args) => ipcRenderer.invoke("lsp:is:running", ...args),
 
-  onData: (...args) => ipcRenderer.invoke("lsp:on:data", ...args),
-  onNotification: (...args) => ipcRenderer.invoke("lsp:on:notification", ...args),
+  onData: (callback) => {
+    /**
+     * @param {*} _
+     * @param {*} object
+     */
+    let l = (_, object) => {
+      callback(object);
+    };
+
+    ipcRenderer.on("lsp:data", l);
+
+    return () => {
+      ipcRenderer.removeListener("lsp:data", l);
+    };
+  },
 
   didChangeTextDocument: (...args) =>
     ipcRenderer.send("lsp:document:change", ...args),

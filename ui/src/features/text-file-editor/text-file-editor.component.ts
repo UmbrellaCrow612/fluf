@@ -79,10 +79,7 @@ export class TextFileEditorComponent implements OnInit {
     };
   }
 
-  /** Callback to unsub reacting to language server changes */
-  private serverUnSub: voidCallback | null = null;
-  /** Unsub method to no longer run logic defined in the on ready method  */
-  private onReadyUnsub: voidCallback | null = null;
+  private serverUnSubs: voidCallback[] = [];
 
   private languageId: languageId | null = null;
 
@@ -180,13 +177,7 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    if (this.serverUnSub) {
-      this.serverUnSub();
-    }
-
-    if (this.onReadyUnsub) {
-      this.onReadyUnsub();
-    }
+    this.serverUnSubs.forEach((cb) => cb());
 
     this.languageId = getLanguageId(fileNode.extension);
     this.inMemoryContextService.currentLanguageServer.set(this.languageId);
@@ -200,55 +191,17 @@ export class TextFileEditorComponent implements OnInit {
       this.languageId,
     );
     console.log('Backend response ' + res);
-    // this.lspService.Start(this.workSpaceFolder()!, this.languageServer);
-    // let isServerActive = untracked(
-    //   () =>
-    //     this.inMemoryContextService.activeLanguageServers()[
-    //       this.languageServer!
-    //     ],
-    // );
-    // if (isServerActive) {
-    //   console.log('Sent open file request from restored state');
-    //   this.openFileInLanguageServer();
-    // }
 
-    // this.onReadyUnsub = this.lspService.onReady(() => {
-    //   const langKey = String(this.languageServer);
-    //   this.inMemoryContextService.activeLanguageServers.update((servers) => ({
-    //     ...servers,
-    //     [langKey]: true,
-    //   }));
-
-    //   this.openFileInLanguageServer();
-    //   console.log('Sent open file request from on ready');
-    // }, this.languageServer);
-
-    // this.serverUnSub = this.lspService.OnResponse(
-    //   this.languageServer,
-    //   this.codeMirrorView,
-    //   async (fileDiagMap, completions, hoverInfo) => {
-    //     this.completions = completions;
-    //     this.hoverInformation = hoverInfo;
-
-    //     console.log('UI should render completions');
-    //     console.log(completions);
-
-    //     console.log('UI should render diagnostics');
-    //     console.log(fileDiagMap);
-
-    //     console.log('UI should render hover information');
-    //     console.log(hoverInfo);
-
-    //     let normFilePath = normalizeElectronPath(this.openFileNode()?.path!);
-    //     let map = fileDiagMap.get(normFilePath);
-    //     let values = Array.from(map?.values() ?? []).flat();
-
-    //     this.currentDiagnostics = values;
-    //     this.inMemoryContextService.problems.set(fileDiagMap);
-
-    //     applyExternalDiagnostics(this.codeMirrorView!, values);
-    //   },
-    // );
+    this.serverUnSubs.push(
+      await this.api.lspClient.onData(
+        this.workSpaceFolder()!,
+        this.languageId,
+        (res) => {
+          console.log('Server responded');
+          console.log(res);
+        },
+      ),
+    );
 
     console.log('Language server started for ' + this.languageId);
   }
@@ -321,9 +274,7 @@ export class TextFileEditorComponent implements OnInit {
 
   async ngOnInit() {
     this.destroyRef.onDestroy(() => {
-      if (this.serverUnSub) {
-        this.serverUnSub();
-      }
+      this.serverUnSubs.forEach((x) => x());
     });
   }
 

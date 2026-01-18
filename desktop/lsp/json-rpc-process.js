@@ -7,11 +7,9 @@ const { isUri } = require("./uri");
  */
 
 /**
- * @typedef {import("../type").LanguageServerOnNotificationCallback} LanguageServerOnNotificationCallback
- */
-
-/**
- * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command.
+ * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command combined with electron event sending,
+ * this is done as electron `preload.js` cannot accept callbacks as params so we need to attach them in the `preload.js` file then send events to run said callbacks that where
+ * attached in the `preload.js` file.
  *
  * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
  */
@@ -81,31 +79,6 @@ class JsonRpcProcess {
   #stdoutBuffer = Buffer.alloc(0);
 
   /**
-   * Holds all the listener callbacks to be run when a lsp response is parsed - passes all parsed messages / notifications and responses, does not filter out any
-   * @type {Set<import("../type").LanguageServerOnDataCallback>}
-   */
-  #onDataCallbacks = new Set();
-
-  /**
-   * Holds all listener callbacks to run when the LSP responds and is it a notification
-   *
-   * - `Key`: The specific method from @see LanguageServerProtocolMethod
-   * - `Value`: List of callbacks to run
-   *
-   * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
-   *
-   * @type {Map<LanguageServerProtocolMethod, Set<LanguageServerOnNotificationCallback>>}
-   */
-  #onNotificationCallbacks = new Map();
-
-  /**
-   * Holds a list of callhbacks to run the request made produces an error
-   *
-   * @type {Set<import("../type").LanguageServerOnError>}
-   */
-  #onErrorCallbacks = new Set();
-
-  /**
    * Holds the PID number of the spawend process
    * @type {number | undefined}
    */
@@ -120,11 +93,18 @@ class JsonRpcProcess {
   }
 
   /**
+   * Refrence to the main window to send out events
+   * @type {import("electron").BrowserWindow | null}
+   */
+  #mainWindowRef = null;
+
+  /**
    * Required for spawn of the LSP
    * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
+   * @param {import("electron").BrowserWindow | null} mainWindow - Refrence to the main window to send out events
    */
-  constructor(command, args = []) {
+  constructor(command, args, mainWindow) {
     if (!command || typeof command !== "string")
       throw new TypeError("command must be a non-empty string");
 
@@ -135,6 +115,7 @@ class JsonRpcProcess {
 
     this.#command = command;
     this.#args = args;
+    this.#mainWindowRef = mainWindow;
   }
 
   /**
@@ -207,9 +188,6 @@ class JsonRpcProcess {
     });
 
     this.#pendingRequests.clear();
-    this.#onDataCallbacks.clear();
-    this.#onErrorCallbacks.clear();
-    this.#onNotificationCallbacks.clear();
     this.#isStarted = false;
     this.#spawnRef = null;
   }
@@ -233,65 +211,6 @@ class JsonRpcProcess {
       method: "initialized",
       params: {},
     });
-  }
-
-  /**
-   * Register a callback to be run when data from the lsp has been parsed this will recieve all messages / notifications and responses use as generiuc way to see what
-   * the LSP is producing. For specific notfications use the notfications on methods provided.
-   * @param {import("../type").LanguageServerOnDataCallback} callback - The callback to run when data has been parsed
-   * @returns {import("../type").voidCallback} Callback to remove the listener  callback from being run
-   */
-  OnData(callback) {
-    if (!callback || typeof callback !== "function")
-      throw new TypeError("callback must be a function");
-
-    this.#onDataCallbacks.add(callback);
-
-    return () => {
-      this.#onDataCallbacks.delete(callback);
-    };
-  }
-
-  /**
-   * Register callback for specific LSP notifications
-   * @param {LanguageServerProtocolMethod} method - The notification method (e.g., "textDocument/publishDiagnostics")
-   * @param {LanguageServerOnNotificationCallback} callback - The callback to run
-   * @returns {import("../type").voidCallback} Unsubscribe function
-   */
-  OnNotification(method, callback) {
-    if (typeof method !== "string")
-      throw new TypeError("method must be a non empty string");
-
-    if (!callback || typeof callback !== "function")
-      throw new TypeError("callback must be a function");
-
-    if (!this.#onNotificationCallbacks.has(method)) {
-      this.#onNotificationCallbacks.set(method, new Set());
-    }
-    this.#onNotificationCallbacks.get(method)?.add(callback);
-
-    return () => {
-      this.#onNotificationCallbacks.get(method)?.delete(callback);
-    };
-  }
-
-  /**
-   * Register callback for diagnostics
-   * @param {LanguageServerOnNotificationCallback} callback
-   * @returns {import("../type").voidCallback} Unsubscribe function
-   */
-  OnDiagnostics(callback) {
-    return this.OnNotification("textDocument/publishDiagnostics", callback);
-  }
-
-  /**
-   * Register callback for LSP errors
-   * @param {import("../type").LanguageServerOnError} callback
-   * @returns {import("../type").voidCallback} Unsubscribe function
-   */
-  OnError(callback) {
-    this.#onErrorCallbacks.add(callback);
-    return () => this.#onErrorCallbacks.delete(callback);
   }
 
   /**
@@ -514,7 +433,13 @@ class JsonRpcProcess {
 
       if (response.error) {
         obj?.reject(response.error);
-        this.#onErrorCallbacks.forEach((cb) => cb(response.error));
+
+        // Send error event with full context
+        this.#mainWindowRef?.webContents.send("lsp:error", {
+          command: this.#command,
+          error: response.error,
+          id: response.id,
+        });
       } else {
         obj?.resolve(response.result);
       }
@@ -522,11 +447,32 @@ class JsonRpcProcess {
       this.#pendingRequests.delete(Number(response.id));
     }
 
-    this.#onDataCallbacks.forEach((cb) => cb(response));
+    // Send all data
+    this.#mainWindowRef?.webContents.send("lsp:data", {
+      command: this.#command,
+      response: response,
+    });
 
-    if (response.method && response.id === undefined) {
-      const callbacks = this.#onNotificationCallbacks.get(response.method);
-      callbacks?.forEach((cb) => cb(response.params));
+    // Handle notifications (has method, no id)
+    if (
+      response.method &&
+      (response.id === undefined || response.id === null)
+    ) {
+      // Send specific event for the notification method
+      this.#mainWindowRef?.webContents.send("lsp:notification", {
+        command: this.#command,
+        method: response.method,
+        params: response.params,
+      });
+
+      // Send method-specific event for convenience
+      this.#mainWindowRef?.webContents.send(
+        `lsp:notification:${response.method}`,
+        {
+          command: this.#command,
+          params: response.params,
+        },
+      );
     }
   }
 

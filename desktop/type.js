@@ -936,27 +936,6 @@
  *
  *  Language Features (Requests - expect responses)
  * @property {ILanguageServerHover} Hover - Get hover information
- *
- * Callback's for data / notifications
- * @property {ILanguageServerOnData} OnData - Listen to any data produced by the LSP and run logic
- * @property {ILanguageServerOnNotification} OnNotification - Listen to when the LSP produces a notification and run logic
- */
-
-/**
- * Listen to when the LSP produces a notification and run logic when it does
- * @callback ILanguageServerOnNotification
- * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
- * @param {LanguageServerProtocolMethod} method - The notification method to subscribe to
- * @param {LanguageServerOnNotificationCallback} callback - The callback to run
- * @returns {voidCallback} Unsubscribe the callback
- */
-
-/**
- * Listen to any response / notification / data produces by the LSP output
- * @callback ILanguageServerOnData
- * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
- * @param {LanguageServerOnDataCallback} callback - The callback to run
- * @returns {voidCallback} Unsubscribe the callback
  */
 
 /**
@@ -1050,28 +1029,15 @@
  * @property {ILanguageServerClientDidCloseTextDocument} didCloseTextDocument - Close the document in the LSP
  *
  * @property {ILanguageServerClientHover} hover - Get hover information
- *
- * @property {ILanguageServerClientOnData} onData - Listen to the LSP when it produces an output and run logic
- * @property {ILanguageServerClientOnNotification} onNotification - Listen to when the LSP produces notifications
+ * 
+ * @property {ILanguageServerClientOnData} onData - Listen to when the LSP responds and run logic
  */
 
 /**
- * Listen to LSP notification and run custom logic
- * @callback ILanguageServerClientOnNotification
- * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
- * @param {languageId} languageId - The language
- * @param {LanguageServerProtocolMethod} method - The specific method to listen to
- * @param {LanguageServerOnNotificationCallback} callback - The callback to run when a notification is parsed
- * @returns {Promise<voidCallback>} Unsub callback
- */
-
-/**
- * Listen to the LSP and run callback when it produces any LSP message
+ * Run logic when LSP responds with data
  * @callback ILanguageServerClientOnData
- * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
- * @param {languageId} languageId - The language
- * @param {LanguageServerOnDataCallback} callback - The logic to run
- * @returns {Promise<voidCallback>} Unsubscribe the callback when called
+ * @param {LanguageServerOnDataCallback} callback
+ * @returns {voidCallback} Unsub callback
  */
 
 /**

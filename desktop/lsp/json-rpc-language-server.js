@@ -23,10 +23,23 @@ const { rejectPromise } = require("../promises");
  */
 class JsonRpcLanguageServer {
   /**
+   * Required for LSP to work
+   * @param {import("electron").BrowserWindow | null} mainWindow - Refrence to the main window to send events
+   */
+  constructor(mainWindow) {
+    this.#mainWindowRef = mainWindow;
+  }
+
+  /**
    * Holds a map of specific workspace folders normalized and abs and there rpc
    * @type {Map<string, JsonRpcProcess>}
    */
   #workSpaceRpcMap = new Map();
+
+  /**
+   * @type {import("electron").BrowserWindow | null}
+   */
+  #mainWindowRef = null;
 
   /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
@@ -45,7 +58,7 @@ class JsonRpcLanguageServer {
     if (!wsf || typeof wsf !== "string")
       throw new TypeError("workSpaceFolder must be a non-empty string");
 
-    let rc = new JsonRpcProcess(command, args);
+    let rc = new JsonRpcProcess(command, args, this.#mainWindowRef);
     const _workSpaceFolder = path.normalize(path.resolve(wsf));
 
     try {
@@ -357,85 +370,6 @@ class JsonRpcLanguageServer {
     } catch (error) {
       logger.error(
         `Failed to get hover information for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
-      );
-
-      throw error;
-    }
-  }
-
-  /**
-   * Listen to LSP output and run custom logic
-   * @param {string} workSpaceFolder The workspace path
-   * @param {import("../type").LanguageServerOnDataCallback} callback
-   * @returns {import("../type").voidCallback} Unsubscribe the callback when called
-   */
-  _onData(workSpaceFolder, callback) {
-    if (typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non empty string");
-    if (typeof callback !== "function")
-      throw new TypeError("callback must be a function");
-
-    try {
-      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
-
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
-      if (!rc) {
-        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
-        return () => {};
-      }
-
-      if (!rc.IsStarted()) {
-        logger.warn(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
-        );
-        return () => {};
-      }
-
-      return rc.OnData(callback);
-    } catch (error) {
-      logger.error(
-        `Failed to add on data callback for workspace: ${workSpaceFolder}`,
-      );
-
-      throw error;
-    }
-  }
-
-  /**
-   * Listen to LSP notifications and run logic
-   * @param {string} workSpaceFolder
-   * @param {import("../type").LanguageServerProtocolMethod} method
-   * @param {import("../type").LanguageServerOnNotificationCallback} callback
-   * @returns {import("../type").voidCallback} Unsubscribe callback to no longer run the callback
-   */
-  _onNotification(workSpaceFolder, method, callback) {
-    if (typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non empty string");
-    if (typeof callback !== "function")
-      throw new TypeError("callback must be a function");
-    if (typeof method !== "string")
-      throw new TypeError("method must be a non empty string");
-
-    try {
-      const _wsf = path.normalize(path.resolve(workSpaceFolder));
-
-      const rc = this.#workSpaceRpcMap.get(_wsf);
-      if (!rc) {
-        logger.warn(`No LSP process is running for ${_wsf}`);
-        return () => {};
-      }
-
-      if (!rc.IsStarted()) {
-        logger.warn(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_wsf}`,
-        );
-        return () => {};
-      }
-
-      return rc.OnNotification(method, callback);
-    } catch (error) {
-      logger.error(
-        `Failed to add on notification for workspace: ${workSpaceFolder}`,
       );
 
       throw error;
