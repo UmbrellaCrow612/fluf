@@ -84,7 +84,7 @@ class JsonRpcLanguageServer {
       throw new Error("getMainWindow is null cannot get the main window");
 
     if (!this.#mainWindowRef) {
-      this.#mainWindowRef = this.#getMainWindow();
+      this.#mainWindowRef = this.#getMainWindow(); // we do this becuase we dont know when main widow becomes available 
     }
 
     if (!this.#mainWindowRef)
