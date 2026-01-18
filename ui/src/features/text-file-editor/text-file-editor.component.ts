@@ -186,6 +186,12 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
+    this.serverUnSubs.push(
+      this.api.lspClient.onReady(() => {
+        console.error('On error ran yoooo');
+      }),
+    );
+
     let res = await this.api.lspClient.start(
       this.workSpaceFolder()!,
       this.languageId,

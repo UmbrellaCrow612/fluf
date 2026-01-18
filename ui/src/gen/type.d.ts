@@ -1286,7 +1286,15 @@ export type ILanguageServerClient = {
      * - Listen to when a specific notification is sent out and run logic
      */
     onNotification: ILanguageServerClientOnNotification;
+    /**
+     * - Listen to when the server just becomes ready and run logic
+     */
+    onReady: ILanguageServerClientOnReady;
 };
+/**
+ * Run logic for the first time when a server just becomes ready to recieve messages
+ */
+export type ILanguageServerClientOnReady = (callback: (...args: any) => void) => voidCallback;
 /**
  * Run logic when LSP responds with data
  */

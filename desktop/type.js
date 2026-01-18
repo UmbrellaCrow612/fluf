@@ -1039,6 +1039,14 @@
  * @property {ILanguageServerClientOnData} onData - Listen to when the LSP responds and run logic
  * @property {ILanguageServerClientOnNotifications} onNotifications - Listen to when the server responds with any notification and run logic
  * @property {ILanguageServerClientOnNotification} onNotification - Listen to when a specific notification is sent out and run logic
+ * @property {ILanguageServerClientOnReady} onReady - Listen to when the server just becomes ready and run logic
+ */
+
+/**
+ * Run logic for the first time when a server just becomes ready to recieve messages
+ * @callback ILanguageServerClientOnReady
+ * @param {(...args) => void} callback - The callback to run when it becomes ready
+ * @returns {voidCallback} Unsub method
  */
 
 /**

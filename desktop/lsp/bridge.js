@@ -9,13 +9,16 @@ const { LanguageServerManager } = require("./manager");
  */
 let mainWindowRef = null;
 
-/** @type {import("../type").getMainWindow} */
+/**
+ * Used to fetch the ref to the main window
+ * @type {import("../type").getMainWindow}
+ */
 const getMainWindow = () => {
   return mainWindowRef;
 };
 
 var languageServerManager = new LanguageServerManager();
-languageServerManager.Register("go", new GoLanguageServer(getMainWindow));
+languageServerManager.Register("go", new GoLanguageServer(getMainWindow, "go"));
 
 /**
  * Helper to stop and clean up all language servers

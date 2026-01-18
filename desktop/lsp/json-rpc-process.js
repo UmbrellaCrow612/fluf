@@ -105,12 +105,26 @@ class JsonRpcProcess {
   #mainWindowRef = null;
 
   /**
-   * Required for spawn of the LSP
+   * Holds the workspace folder this was spawned for for exmaple `c:/dev/some/project`
+   * @type {string | null}
+   */
+  #workSpaceFolder = null;
+
+  /**
+   * Holds the language this is for exmaple `go` or `js` etc
+   * @type {import("../type").languageId | null}
+   */
+  #languageId = null;
+
+  /**
+   * Required for spawn of the process to work and properly spawn and communicate as needed
    * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
    * @param {import("../type").getMainWindow | null} getMainWindow - Used to get the main window ref
+   * @param {string} workSpaceFolder - The workspace this is for exmaple `c:/dev/some/project/`
+   * @param {import("../type").languageId | null} languageId - The specific language this is for exmaple `go` or `js` etc
    */
-  constructor(command, args, getMainWindow) {
+  constructor(command, args, getMainWindow, workSpaceFolder, languageId) {
     if (!command || typeof command !== "string")
       throw new TypeError("command must be a non-empty string");
 
@@ -122,9 +136,18 @@ class JsonRpcProcess {
     if (typeof getMainWindow !== "function")
       throw new TypeError("getMainWindow is not a function");
 
+    if (typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non empty string");
+
+    if (typeof languageId !== "string")
+      throw new TypeError("languageId must be a non empty string");
+
     this.#command = command;
     this.#args = args;
     this.#getMainWindow = getMainWindow;
+    this.#workSpaceFolder = workSpaceFolder;
+    this.#languageId = languageId;
+    this.#mainWindowRef = this.#getMainWindow();
   }
 
   /**
@@ -132,6 +155,9 @@ class JsonRpcProcess {
    * @returns {void}
    */
   Start() {
+    if (!this.#getMainWindow)
+      throw new Error("getMainWindow is null cannot fetch main window");
+
     try {
       if (this.#isStarted) {
         logger.info(`JSON Rpc already started for command ${this.#command}`);
@@ -469,9 +495,10 @@ class JsonRpcProcess {
 
         // Send error event with full context
         this.#mainWindowRef?.webContents.send("lsp:error", {
-          command: this.#command,
           error: response.error,
           id: response.id,
+          languageId: this.#languageId,
+          workSpaceFolder: this.#workSpaceFolder,
         });
       } else {
         obj?.resolve(response.result);
@@ -502,8 +529,9 @@ class JsonRpcProcess {
 
     // Send all data
     this.#mainWindowRef?.webContents.send("lsp:data", {
-      command: this.#command,
       response: response,
+      languageId: this.#languageId,
+      workSpaceFolder: this.#workSpaceFolder,
     });
 
     // Handle notifications (has method, no id)
@@ -513,16 +541,18 @@ class JsonRpcProcess {
     ) {
       // Send specific event for the notification method
       this.#mainWindowRef?.webContents.send("lsp:notification", {
-        command: this.#command,
         method: response.method,
         params: response.params,
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
       });
 
       // Send method-specific event for convenience
       this.#mainWindowRef?.webContents.send(
         `lsp:notification:${response.method}`,
         {
-          command: this.#command,
+          languageId: this.#languageId,
+          workSpaceFolder: this.#workSpaceFolder,
           params: response.params,
         },
       );

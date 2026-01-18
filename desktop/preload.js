@@ -56,6 +56,23 @@ const lspClient = {
     };
   },
 
+  onReady: (callback) => {
+    /**
+     * @param {*} _ - The IPC event object
+     * @param {string} languageId - The language ID sent from main process
+     * @param {string} workSpaceFolder - The workspace folder sent from main process
+     */
+    const list = (_, languageId, workSpaceFolder) => {
+      callback(languageId, workSpaceFolder);
+    };
+
+    ipcRenderer.on("lsp:on:ready", list);
+
+    return () => {
+      ipcRenderer.removeListener("lsp:on:ready", list);
+    };
+  },
+
   didChangeTextDocument: (...args) =>
     ipcRenderer.send("lsp:document:change", ...args),
   didOpenTextDocument: (...args) =>
