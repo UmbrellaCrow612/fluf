@@ -7,7 +7,6 @@ import {
   ElementRef,
   inject,
   OnInit,
-  untracked,
   viewChild,
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
@@ -20,16 +19,10 @@ import { InMemoryContextService } from '../app-context/app-in-memory-context.ser
 import { getLanguageId } from '../lsp/utils';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
-import { applyExternalDiagnostics } from './lint';
 import { FlufDiagnostic } from '../diagnostic/type';
-import { normalizeElectronPath } from '../path/utils';
 import {
-  autocompletion,
   Completion,
-  CompletionContext,
-  CompletionResult,
 } from '@codemirror/autocomplete';
-import { Position } from 'vscode-languageserver-protocol';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -86,69 +79,6 @@ export class TextFileEditorComponent implements OnInit {
   /** Holds the current diagnostics for the file */
   private currentDiagnostics: FlufDiagnostic[] = [];
 
-  /** Holds the current completion from the server */
-  private completions: Completion[] = [];
-
-  private completionSource = async (
-    context: CompletionContext,
-  ): Promise<CompletionResult | null> => {
-    // Always return completions if we have any, even without explicit trigger
-    if (this.completions.length === 0) {
-      return null;
-    }
-
-    // Get the word before cursor - more lenient matching
-    const word = context.matchBefore(/\w*/);
-
-    // Return completions even if there's no word yet (for triggering on every keystroke)
-    return {
-      from: word?.from ?? context.pos,
-      options: this.completions,
-      validFor: /^\w*$/,
-    };
-  };
-
-  /** Holds he current hover information */
-  private hoverInformation: string = '';
-  hoverExtension = hoverTooltip((view, pos, side) => {
-    const doc = view.state.doc;
-
-    const word = this.getWordAt(doc, pos);
-    if (!word) return null;
-
-    const wordText = doc.sliceString(word.from, word.to);
-
-    const line = doc.lineAt(pos);
-    const position: Position = {
-      line: line.number - 1, // zero-based
-      character: pos - line.from, // zero-based
-    };
-
-    console.log('Hovered word:', wordText);
-
-    const node = this.openFileNode();
-    if (node && this.languageId) {
-      // this.lspService.hover(node, position, this.languageServer);
-    }
-
-    let info = this.hoverInformation.trim();
-    if (info.length > 0) {
-      console.log('Rendering tooltip');
-      return {
-        pos: word.from,
-        end: word.to,
-        above: true,
-        create(view) {
-          const dom = document.createElement('div');
-          dom.textContent = info;
-          return { dom };
-        },
-      };
-    }
-
-    return null;
-  });
-
   /**
    * Sends the open file request to LSP
    */
@@ -199,7 +129,7 @@ export class TextFileEditorComponent implements OnInit {
 
     this.serverUnSubs.push(
       this.api.lspClient.onReady((langId, wsf) => {
-        console.log(`On ready called languageId ${langId} workspace: ${wsf}`)
+        console.log(`On ready called languageId ${langId} workspace: ${wsf}`);
         this.openFileInLanguageServer(); // on ready open the current file in LSP
       }),
     );
@@ -212,7 +142,7 @@ export class TextFileEditorComponent implements OnInit {
 
     this.serverUnSubs.push(
       this.api.lspClient.onData((obj) => {
-        console.log('Server data');
+        console.log('On data response');
         console.log(JSON.stringify(obj));
       }),
     );
@@ -221,7 +151,7 @@ export class TextFileEditorComponent implements OnInit {
       this.api.lspClient.onNotification(
         'textDocument/publishDiagnostics',
         (data) => {
-          console.warn('diagnostics published');
+          console.log('diagnostics published');
           console.log(data);
         },
       ),
@@ -319,13 +249,6 @@ export class TextFileEditorComponent implements OnInit {
         this.updateListener,
         linter(() => this.currentDiagnostics),
         lintGutter(),
-        autocompletion({
-          override: [this.completionSource],
-          activateOnTyping: true,
-          maxRenderedOptions: 50,
-          defaultKeymap: true,
-        }),
-        this.hoverExtension,
       ],
     });
 
