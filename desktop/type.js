@@ -1001,9 +1001,19 @@
  *
  * @property {ILanguageServerClientStart} start - Start a specific LSP in a workspace for the given language
  * @property {ILanguageServerClientStop} stop - Stop a specific LSP for a given workspace and language
+ * @property {ILanguageServerClientIsRunning} isRunning - Check if a LSP for a given workspace and language is running
  *
  * @property {ILanguageServerClientDidOpenTextDocument} didOpenTextDocument - Open a document in the LSP
  * @property {ILanguageServerClientDidChangeTextDocument} didChangeTextDocument - Sync document changes with LSP view
+ */
+
+/**
+ * Check if the LSP is running for a given workspace and language
+ * @callback ILanguageServerClientIsRunning
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId} languageId - The language
+ * 
+ * @returns {Promise<boolean>} If it is or is not
  */
 
 /**
