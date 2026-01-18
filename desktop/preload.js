@@ -9,6 +9,7 @@ const lspClient = {
   isRunning: (...args) => ipcRenderer.invoke("lsp:is:running", ...args),
 
   onData: (...args) => ipcRenderer.invoke("lsp:on:data", ...args),
+  onNotification: (...args) => ipcRenderer.invoke("lsp:on:notification", ...args),
 
   didChangeTextDocument: (...args) =>
     ipcRenderer.send("lsp:document:change", ...args),

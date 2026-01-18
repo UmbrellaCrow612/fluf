@@ -400,6 +400,47 @@ class JsonRpcLanguageServer {
       throw error;
     }
   }
+
+  /**
+   * Listen to LSP notifications and run logic
+   * @param {string} workSpaceFolder
+   * @param {import("../type").LanguageServerProtocolMethod} method
+   * @param {import("../type").LanguageServerOnNotificationCallback} callback
+   * @returns {import("../type").voidCallback} Unsubscribe callback to no longer run the callback
+   */
+  _onNotification(workSpaceFolder, method, callback) {
+    if (typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non empty string");
+    if (typeof callback !== "function")
+      throw new TypeError("callback must be a function");
+    if (typeof method !== "string")
+      throw new TypeError("method must be a non empty string");
+
+    try {
+      const _wsf = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_wsf);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_wsf}`);
+        return () => {};
+      }
+
+      if (!rc.IsStarted()) {
+        logger.warn(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_wsf}`,
+        );
+        return () => {};
+      }
+
+      return rc.OnNotification(method, callback);
+    } catch (error) {
+      logger.error(
+        `Failed to add on notification for workspace: ${workSpaceFolder}`,
+      );
+
+      throw error;
+    }
+  }
 }
 
 module.exports = { JsonRpcLanguageServer };

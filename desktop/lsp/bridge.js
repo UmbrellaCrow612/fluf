@@ -151,6 +151,25 @@ const onDataImpl = async (_, workSpaceFolder, languageId, callback) => {
 };
 
 /**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientOnNotification>}
+ */
+const onNotificationImpl = async (
+  _,
+  workSpaceFolder,
+  languageId,
+  method,
+  callback,
+) => {
+  let lsp = languageServerManager.Get(languageId);
+  if (!lsp) {
+    logger.warn(`No language server language: ${languageId}`);
+    return () => {};
+  }
+
+  return lsp.OnNotification(workSpaceFolder, method, callback);
+};
+
+/**
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -164,6 +183,7 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
 
   ipcMain.handle("lsp:document:hover", hoverDocImpl);
   ipcMain.handle("lsp:on:data", onDataImpl);
+  ipcMain.handle("lsp:on:notification", onNotificationImpl);
 
   ipcMain.on("lsp:document:open", openDocImpl);
   ipcMain.on("lsp:document:change", docChangedImpl);
