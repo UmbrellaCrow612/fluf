@@ -150,15 +150,21 @@ export class TextFileEditorComponent implements OnInit {
   });
 
   /**
-   * Sends the file and a get error to the server for the given file node
+   * Sends the open file request to LSP
    */
   private openFileInLanguageServer() {
-    // this.lspService.Open(
-    //   this.openFileNode()!.path,
-    //   this.stringContent,
-    //   this.languageServer!,
-    // );
-    // this.lspService.Error(this.openFileNode()!.path, this.languageServer!);
+    let wsf = this.workSpaceFolder();
+    let fp = this.openFileNode()?.path;
+
+    if (!wsf || !fp || !this.stringContent || !this.languageId) return;
+
+    this.api.lspClient.didOpenTextDocument(
+      wsf,
+      this.languageId,
+      fp,
+      1,
+      this.stringContent,
+    );
   }
 
   /**
@@ -186,17 +192,22 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
-    this.serverUnSubs.push(
-      this.api.lspClient.onReady(() => {
-        console.error('On error ran yoooo');
-      }),
-    );
-
-    let res = await this.api.lspClient.start(
+    const isStartedAlready = await this.api.lspClient.isRunning(
       this.workSpaceFolder()!,
       this.languageId,
     );
-    console.log('Backend response server started: ' + res);
+
+    this.serverUnSubs.push(
+      this.api.lspClient.onReady(() => {
+        this.openFileInLanguageServer(); // on ready open the current file in LSP
+      }),
+    );
+
+    if (isStartedAlready) {
+      this.openFileInLanguageServer(); // Re open file request in LSP for new file
+    }
+
+    await this.api.lspClient.start(this.workSpaceFolder()!, this.languageId); // try to start
 
     this.serverUnSubs.push(
       this.api.lspClient.onData((obj) => {
