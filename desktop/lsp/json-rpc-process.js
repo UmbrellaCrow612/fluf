@@ -236,8 +236,8 @@ class JsonRpcProcess {
   }
 
   /**
-   * Register a callback to be run when data from the lsp has been parsed this will recieve all messages / notifications and rsponses use as generiuc way to see what
-   * the LSP is producing for specific notfications use the notfications on methods
+   * Register a callback to be run when data from the lsp has been parsed this will recieve all messages / notifications and responses use as generiuc way to see what
+   * the LSP is producing. For specific notfications use the notfications on methods provided.
    * @param {import("../type").LanguageServerOnDataCallback} callback - The callback to run when data has been parsed
    * @returns {import("../type").voidCallback} Callback to remove the listener  callback from being run
    */
