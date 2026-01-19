@@ -58,26 +58,6 @@ export class TextFileEditorComponent implements OnInit {
     });
   }
 
-  getWordAt(doc: import('@codemirror/state').Text, pos: number) {
-    const line = doc.lineAt(pos);
-    const lineText = line.text;
-
-    let start = pos - line.from;
-    let end = start;
-
-    // Expand left
-    while (start > 0 && /\w/.test(lineText[start - 1])) start--;
-    // Expand right
-    while (end < lineText.length && /\w/.test(lineText[end])) end++;
-
-    if (start === end) return null;
-
-    return {
-      from: line.from + start,
-      to: line.from + end,
-    };
-  }
-
   /** List of callbacks that unsub callbacks registred */
   private serverUnSubs: voidCallback[] = [];
 
@@ -85,6 +65,93 @@ export class TextFileEditorComponent implements OnInit {
 
   /** Holds the current diagnostics for the file */
   private currentDiagnostics: Diagnostic[] = [];
+
+  /**
+   * Hover tooltip that uses LSP to get hover information
+   */
+  private wordHoverExtension = hoverTooltip(async (view, pos, side) => {
+    const { from, to, text } = view.state.doc.lineAt(pos);
+    let start = pos;
+    let end = pos;
+
+    // Find word boundaries
+    while (start > from && /\w/.test(text[start - from - 1])) start--;
+    while (end < to && /\w/.test(text[end - from])) end++;
+
+    // Check if pointer is inside a word
+    if ((start === pos && side < 0) || (end === pos && side > 0)) {
+      return null;
+    }
+
+    const word = text.slice(start - from, end - from);
+    console.log('Hovered word:', word);
+
+    // Get workspace folder, language ID, and file path
+    const wsf = this.workSpaceFolder();
+    const filePath = this.openFileNode()?.path;
+
+    if (!wsf || !filePath || !this.languageId) {
+      return null;
+    }
+
+    // Convert CodeMirror position to LSP position
+    const line = view.state.doc.lineAt(pos);
+    const lspPosition = {
+      line: line.number - 1, // LSP uses 0-based line numbers
+      character: pos - line.from,
+    };
+
+    try {
+      // Call LSP hover
+      const hoverResult = await this.api.lspClient.hover(
+        wsf,
+        this.languageId,
+        filePath,
+        lspPosition,
+      );
+
+      console.log('LSP Hover result:', hoverResult);
+
+      // Check if we got hover information
+      if (!hoverResult || !hoverResult.contents) {
+        return null;
+      }
+
+      return {
+        pos: start,
+        end,
+        above: true,
+        create() {
+          const dom = document.createElement('div');
+          dom.className = 'cm-tooltip-hover';
+
+          // Handle different content types
+          if (typeof hoverResult.contents === 'string') {
+            dom.textContent = hoverResult.contents;
+          } else if ('kind' in hoverResult.contents) {
+            // MarkupContent
+            dom.textContent = hoverResult.contents.value;
+          } else if (Array.isArray(hoverResult.contents)) {
+            // MarkedString[]
+            dom.textContent = hoverResult.contents
+              .map((c) => (typeof c === 'string' ? c : c.value))
+              .join('\n');
+          } else {
+            // MarkedString
+            dom.textContent =
+              'language' in hoverResult.contents
+                ? hoverResult.contents.value
+                : hoverResult.contents;
+          }
+
+          return { dom };
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching hover info:', error);
+      return null;
+    }
+  });
 
   /**
    * Sends the open file request to LSP
@@ -167,7 +234,7 @@ export class TextFileEditorComponent implements OnInit {
             params,
             this.codeMirrorView!,
           );
- 
+
           let fp = normalizeElectronPath(uriToFilePath(params.uri));
           let problems = untracked(() => {
             return this.inMemoryContextService.problems();
@@ -175,7 +242,7 @@ export class TextFileEditorComponent implements OnInit {
 
           problems.set(fp, this.currentDiagnostics);
 
-          this.inMemoryContextService.problems.set(structuredClone(problems))
+          this.inMemoryContextService.problems.set(structuredClone(problems));
         },
       ),
     );
@@ -265,6 +332,7 @@ export class TextFileEditorComponent implements OnInit {
         this.updateListener,
         linter(() => this.currentDiagnostics),
         lintGutter(),
+        this.wordHoverExtension,
       ],
     });
 
