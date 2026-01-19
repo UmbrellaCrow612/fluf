@@ -14,6 +14,9 @@ export function getLanguageId(extension: string): languageId | null {
     case '.go':
       return 'go';
 
+    case '.py':
+      return 'python';
+
     default:
       console.log('Unsuported language server for file');
       return null;

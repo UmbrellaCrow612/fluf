@@ -646,7 +646,7 @@ export type LanguageServerjsonrpc = "2.0";
  *
  * It is also a way of indicating which lsp have been impl
  */
-export type languageId = "go";
+export type languageId = "go" | "python";
 /**
  * Base interface for language server implementations.
  * All language servers should follow this structure.

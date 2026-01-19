@@ -1,5 +1,6 @@
 const { logger } = require("../logger");
 const { GoLanguageServer } = require("./impl/golsp");
+const { PythonLanguageServer } = require("./impl/pythonlsp");
 const { LanguageServerManager } = require("./manager");
 
 /**
@@ -18,6 +19,10 @@ const getMainWindow = () => {
 
 var languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer(getMainWindow, "go"));
+languageServerManager.Register(
+  "python",
+  new PythonLanguageServer(getMainWindow, "python"),
+);
 
 /**
  * Helper to stop and clean up all language servers

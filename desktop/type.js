@@ -527,7 +527,7 @@
  * Holds the values language id can be.
  *
  * It is also a way of indicating which lsp have been impl
- * @typedef {"go"} languageId
+ * @typedef {"go" | "python"} languageId
  */
 
 /**
