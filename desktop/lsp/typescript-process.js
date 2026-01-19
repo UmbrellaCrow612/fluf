@@ -165,14 +165,6 @@ class TypeScriptProcess {
         this.#rejectPendingRequests();
       });
 
-      this.#spawnRef.on("close", () => {
-        this.#rejectPendingRequests();
-      });
-
-      this.#spawnRef.on("disconnect", () => {
-        this.#rejectPendingRequests();
-      });
-
       this.#spawnRef.on("exit", () => {
         this.#rejectPendingRequests();
       });
