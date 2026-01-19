@@ -217,7 +217,15 @@ class TypeScriptProcess {
   /**
    * Clears any pending requests to stop hanging
    */
-  #rejectPendingRequests() {}
+  #rejectPendingRequests() {
+    Array.from(this.#pendingRequests.values()).forEach((x) => {
+      x.reject(
+        new Error("Request hanged or process exited without it finishing"),
+      );
+    });
+
+    this.#pendingRequests.clear();
+  }
 
   /**
    * Attempts to parse the stdout buffer and then handle any messages parsed
@@ -297,3 +305,5 @@ class TypeScriptProcess {
     }
   }
 }
+
+module.exports = { TypeScriptProcess };
