@@ -145,6 +145,23 @@ const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
 };
 
 /**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientCompletion>}
+ */
+const completionImpl = (_, workSpaceFolder, languageId, filePath, position) => {
+  let lsp = languageServerManager.Get(languageId);
+  if (!lsp) {
+    logger.error(
+      `No language server language: ${languageId} cannot offer completions`,
+    );
+    return Promise.reject(
+      `No language server language: ${languageId} cannot provide completion information`,
+    );
+  }
+
+  return lsp.Completion(workSpaceFolder, filePath, position);
+};
+
+/**
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
  * @param {import("electron").BrowserWindow | null} mainWindow
@@ -157,6 +174,7 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
   ipcMain.handle("lsp:is:running", isRunningImpl);
 
   ipcMain.handle("lsp:document:hover", hoverDocImpl);
+  ipcMain.handle("lsp:document:completion", completionImpl);
 
   ipcMain.on("lsp:document:open", openDocImpl);
   ipcMain.on("lsp:document:change", docChangedImpl);

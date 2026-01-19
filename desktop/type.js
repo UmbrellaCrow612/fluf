@@ -549,6 +549,16 @@
  *
  *  Language Features (Requests - expect responses)
  * @property {ILanguageServerHover} Hover - Get hover information
+ * @property {ILanguageServerCompletion} Completion - Get completion information
+ */
+
+/**
+ * Get completion suggestions
+ * @callback ILanguageServerCompletion
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {string} filePath - The path to the file to get completions for
+ * @param {import("vscode-languageserver-protocol").Position} position - Where to get the completion suggestions
+ * @returns {Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>} The result of a completion request.
  */
 
 /**
@@ -648,11 +658,22 @@
  * @property {ILanguageServerClientDidCloseTextDocument} didCloseTextDocument - Close the document in the LSP
  *
  * @property {ILanguageServerClientHover} hover - Get hover information
+ * @property {ILanguageServerClientCompletion} completion - Get completion information at a given position
  *
  * @property {ILanguageServerClientOnData} onData - Listen to when the LSP responds and run logic
  * @property {ILanguageServerClientOnNotifications} onNotifications - Listen to when the server responds with any notification and run logic
  * @property {ILanguageServerClientOnNotification} onNotification - Listen to when a specific notification is sent out and run logic
  * @property {ILanguageServerClientOnReady} onReady - Listen to when the server just becomes ready and run logic
+ */
+
+/**
+ * Get completion suggestions at a specific position
+ * @callback ILanguageServerClientCompletion
+ * @param {string} workSpaceFolder - The workspace folder path
+ * @param {languageId} languageId - The language identifier
+ * @param {string} filePath - The file path
+ * @param {import("vscode-languageserver-protocol").Position} position - The position in the document
+ * @returns {Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>} Completion items or list
  */
 
 /**

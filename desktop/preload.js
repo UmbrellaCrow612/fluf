@@ -79,6 +79,8 @@ const lspClient = {
     ipcRenderer.send("lsp:document:close", ...args),
 
   hover: (...args) => ipcRenderer.invoke("lsp:document:hover", ...args),
+  completion: (...args) =>
+    ipcRenderer.invoke("lsp:document:completion", ...args),
 };
 
 /**
