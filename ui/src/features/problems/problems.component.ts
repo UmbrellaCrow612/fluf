@@ -1,7 +1,7 @@
 import { Component, inject, computed } from '@angular/core';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { ProblemItemComponent } from './problem-item/problem-item.component';
-import { FlufDiagnostic } from '../diagnostic/type';
+import { Diagnostic } from '@codemirror/lint';
 
 @Component({
   selector: 'app-problems',
@@ -20,7 +20,7 @@ export class ProblemsComponent {
    * Factory that returns computed signals
    */
   diagnosticsForFile(filePath: string) {
-    return computed<FlufDiagnostic[]>(() => {
+    return computed<Diagnostic[]>(() => {
       const fileMap = this.inMemoryContextService.problems().get(filePath);
       if (!fileMap) return [];
 

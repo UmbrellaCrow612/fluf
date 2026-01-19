@@ -2,7 +2,6 @@ const { logger, logError } = require("../logger");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
 const { createUri } = require("./uri");
-const { rejectPromise } = require("../promises");
 
 /**
  * @typedef {import("../type").ILanguageServer} ILanguageServer
@@ -393,7 +392,7 @@ class JsonRpcLanguageServer {
       const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
-        return rejectPromise(
+        return Promise.reject(
           `No LSP process is running for ${_workSpaceFolder}`,
         );
       }
@@ -402,7 +401,7 @@ class JsonRpcLanguageServer {
         logger.error(
           `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
         );
-        return rejectPromise(
+        return Promise.reject(
           `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
         );
       }
@@ -420,6 +419,60 @@ class JsonRpcLanguageServer {
       logError(
         error,
         `Failed to get hover information for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
+      );
+
+      throw error;
+    }
+  }
+
+  /**
+   * Get completion suggestions
+   * @param {string} workSpaceFolder - The workspace where the file lives
+   * @param {string} filePath - The path to the file
+   * @param {import("vscode-languageserver-protocol").Position} position - The position at which to get completions
+   * @returns {Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>} The completion items or list
+   */
+  _completion(workSpaceFolder, filePath, position) {
+    if (typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non empty string");
+    if (typeof filePath !== "string")
+      throw new TypeError("filePath must be a non empty string");
+    if (typeof position !== "object")
+      throw new TypeError("position must be a object");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+        return Promise.reject(
+          `No LSP process is running for ${_workSpaceFolder}`,
+        );
+      }
+
+      if (!rc.IsStarted()) {
+        logger.error(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+        return Promise.reject(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+      }
+
+      /** @type {import("vscode-languageserver-protocol").CompletionParams} */
+      let params = {
+        position,
+        textDocument: {
+          uri: createUri(filePath),
+        },
+      };
+
+      return rc.SendRequest("textDocument/completion", params);
+    } catch (error) {
+      logError(
+        error,
+        `Failed to get completions for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
       );
 
       throw error;

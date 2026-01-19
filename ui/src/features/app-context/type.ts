@@ -1,5 +1,6 @@
 import { fileNode, languageId } from '../../gen/type';
-import { fileDiagnosticMap } from '../lsp/type';
+import { Diagnostic } from '@codemirror/lint';
+
 /**
  * Represents what elements from the side bar can be in a active state i.e the elements that can be clicked to show said render component off
  */
@@ -144,7 +145,7 @@ export type InMemoryAppContext = {
   /**
    * Contains a list of all specific file's by there path and a map of specific diagnostic error types and then all the diagnostic's of that type
    */
-  problems: fileDiagnosticMap;
+  problems: Map<string, Diagnostic[]>;
 
   /**
    * Contains a list of active shell's PID's

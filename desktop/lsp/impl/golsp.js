@@ -78,6 +78,13 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   Hover(workSpaceFolder, filePath, position) {
     return this._hover(workSpaceFolder, filePath, position);
   }
+
+  /**
+   * @type {import("../../type").ILanguageServerCompletion}
+   */
+  Completion(workSpaceFolder, filePath, position) {
+    return this._completion(workSpaceFolder, filePath, position);
+  }
 }
 
 module.exports = {
