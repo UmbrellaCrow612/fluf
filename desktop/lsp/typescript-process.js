@@ -5,6 +5,7 @@
 const { spawn } = require("child_process");
 const { logError, logger } = require("../logger");
 const path = require("path");
+const { server } = require("typescript");
 
 /**
  * @typedef {import("../type").getMainWindow} getMainWindow
@@ -71,7 +72,7 @@ class TypeScriptProcess {
   #stdoutBuffer = Buffer.alloc(0);
 
   /** Holds the next request number */
-  #seqId = 0;
+  #seqId = 1;
 
   /** Get the next request number */
   #getNextSeq = () => this.#seqId++;
@@ -112,7 +113,7 @@ class TypeScriptProcess {
     if (typeof getMainWindow !== "function")
       throw new TypeError("getMainWindow must be a function");
 
-    this.#command = path.normalize(path.resolve(command));
+    this.#command = command;
     this.#workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
     this.#languageId = languageId;
     this.#getMainWindow = getMainWindow;
@@ -206,7 +207,7 @@ class TypeScriptProcess {
 
         this.#writeToStdin({
           command: command,
-          seq: this.#getNextSeq(),
+          seq: requestId,
           type: "request",
           arguments: params,
         });
@@ -222,9 +223,13 @@ class TypeScriptProcess {
   }
 
   /**
-   * Clears any pending requests to stop hanging
+   * Clears any pending requests to stop hanging and clean up process
    */
   #rejectPendingRequests() {
+    if (this.#spawnRef) {
+      this.#spawnRef.kill();
+    }
+
     Array.from(this.#pendingRequests.values()).forEach((x) => {
       x.reject(
         new Error("Request hanged or process exited without it finishing"),
@@ -238,49 +243,66 @@ class TypeScriptProcess {
    * Attempts to parse the stdout buffer and then handle any messages parsed
    */
   #parseStdout() {
-    let bufferString = this.#stdoutBuffer.toString("utf-8");
-
     while (true) {
+      const bufferString = this.#stdoutBuffer.toString("utf-8");
+
+      // 1. Look for the "Content-Length: X" header
       const headerMatch = bufferString.match(/Content-Length: (\d+)\r?\n\r?\n/);
 
-      if (!headerMatch || headerMatch.index === undefined) {
+      if (!headerMatch) {
+        // No full header found yet, wait for more data
         break;
       }
 
       const contentLength = parseInt(headerMatch[1], 10);
-      const headerEndIndex = headerMatch.index + headerMatch[0].length;
+      const headerLength = headerMatch[0].length;
+      const totalMessageLength = headerLength + contentLength;
 
-      if (bufferString.length < headerEndIndex + contentLength) {
+      // 2. Check if the buffer contains the full body
+      if (this.#stdoutBuffer.length < totalMessageLength) {
+        // Full body hasn't arrived yet
         break;
       }
 
-      const messageBody = bufferString.substring(
-        headerEndIndex,
-        headerEndIndex + contentLength,
+      // 3. Extract the JSON body based on the length
+      const bodyBuffer = this.#stdoutBuffer.subarray(
+        headerLength,
+        totalMessageLength,
       );
+      const bodyString = bodyBuffer.toString("utf-8");
+
+      // 4. Update the buffer to remove the processed message
+      this.#stdoutBuffer = this.#stdoutBuffer.subarray(totalMessageLength);
 
       try {
-        const message = JSON.parse(messageBody);
+        const message = JSON.parse(bodyString);
         this.#handle(message);
       } catch (error) {
-        logError(
-          error,
-          `Failed to parse TSServer message for command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
-        );
-        logger.error(`Raw message body: ${messageBody}`);
+        logError(error, "Failed to parse TSServer JSON body");
       }
-
-      bufferString = bufferString.substring(headerEndIndex + contentLength);
     }
-
-    this.#stdoutBuffer = Buffer.from(bufferString, "utf-8");
   }
-
   /**
    * Given a parsed stdout message to notify those intrested and pass the content along where needed
    * @param {any} message - MEssage parsed from typescript server
    */
   #handle(message) {
+    if (message.type === "response") {
+      const seq = message.request_seq;
+      const pending = this.#pendingRequests.get(seq);
+
+      if (pending) {
+        if (message.success) {
+          pending.resolve(message.body);
+        } else {
+          pending.reject(
+            new Error(message.message || "TSServer request failed"),
+          );
+        }
+        this.#pendingRequests.delete(seq);
+      }
+    }
+
     console.log(message);
   }
 
@@ -292,6 +314,9 @@ class TypeScriptProcess {
   #writeToStdin(message) {
     if (typeof message !== "object")
       throw new TypeError("message must be a object");
+
+    if (!this.#isStarted)
+      throw new Error("cannot write to stdin as process is not started");
 
     if (!this.#spawnRef)
       throw new Error("Cannot write to stdin as process not yet started");
@@ -312,5 +337,31 @@ class TypeScriptProcess {
     }
   }
 }
+
+async function test() {
+  let proc = new TypeScriptProcess(
+    "node",
+    ["C:\\dev\\fluf\\desktop\\node_modules\\typescript\\lib\\tsserver.js"],
+    "C:\\dev\\fluf\\desktop",
+    "go",
+    () => {
+      return null;
+    },
+  );
+
+  proc.Start();
+
+  setTimeout(async () => {
+    try {
+      console.log("Sending Exit request...");
+      await proc.SendRequest(server.protocol.CommandTypes.ex, {});
+      console.log("Exit request completed.");
+    } catch (err) {
+      console.log("Process closed (as expected during exit):", err.message);
+    }
+  }, 4000);
+}
+
+test();
 
 module.exports = { TypeScriptProcess };
