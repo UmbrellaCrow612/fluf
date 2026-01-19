@@ -203,6 +203,13 @@ class TypeScriptProcess {
             reject(reason);
           },
         });
+
+        this.#writeToStdin({
+          command: command,
+          seq: this.#getNextSeq(),
+          type: "request",
+          arguments: params,
+        });
       });
     } catch (error) {
       logError(
