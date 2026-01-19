@@ -176,20 +176,36 @@ class TypeScriptProcess {
   }
 
   /**
-   * Make a request and await typescript server response and recieve it.
+   * Make a request and await typescript server response and receive it.
    * @param {import("typescript").server.protocol.CommandTypes} command - The specific command to make a request
-   * @param {any} params - any addtional params it needed
-   * @returns {Promise<any>} Promise that resolves to the parsed content of the command or rejects
+   * @param {any} params - any additional params it needed
+   * @param {{ expectResponse?: boolean }} [options] - Options for the request
+   * @returns {Promise<any>} Promise that resolves to the parsed content or resolves immediately if expectResponse is false
    */
-  SendRequest(command, params) {
+  SendRequest(command, params, options = { expectResponse: true }) {
     try {
       const requestId = this.#getNextSeq();
+      /** @type {import("typescript").server.protocol.Request} */
+      const payload = {
+        command: command,
+        seq: requestId,
+        type: "request",
+        arguments: params,
+      };
+
+      if (options.expectResponse === false) {
+        this.#writeToStdin(payload);
+        return Promise.resolve();
+      }
+
       return new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
           if (this.#pendingRequests.has(requestId)) {
             this.#pendingRequests
               .get(requestId)
-              ?.reject(new Error(`Request id: ${requestId} timed out`));
+              ?.reject(
+                new Error(`Request id: ${requestId} (${command}) timed out`),
+              );
             this.#pendingRequests.delete(requestId);
           }
         }, 4500);
@@ -205,19 +221,13 @@ class TypeScriptProcess {
           },
         });
 
-        this.#writeToStdin({
-          command: command,
-          seq: requestId,
-          type: "request",
-          arguments: params,
-        });
+        this.#writeToStdin(payload);
       });
     } catch (error) {
       logError(
         error,
         `Failed to send typescript server request. Request command: ${command} request params: ${JSON.stringify(params)}`,
       );
-
       throw error;
     }
   }
@@ -354,7 +364,11 @@ async function test() {
   setTimeout(async () => {
     try {
       console.log("Sending Exit request...");
-      await proc.SendRequest(server.protocol.CommandTypes.ex, {});
+      await proc.SendRequest(
+        server.protocol.CommandTypes.Exit,
+        {},
+        { expectResponse: false },
+      );
       console.log("Exit request completed.");
     } catch (err) {
       console.log("Process closed (as expected during exit):", err.message);
