@@ -65,6 +65,12 @@ class TypeScriptProcess {
   #args = [];
 
   /**
+   * Holds the output produced by the stdout process
+   * @type {Buffer}
+   */
+  #stdoutBuffer = Buffer.alloc(0);
+
+  /**
    * Required to spawn and manage the typescript process
    * @param {string} command - Used to spawn the process can either be a path to a exe or somthing like a command
    * @param {string[]} args - Arguments to pass on spawn such as ["--stdio"] etc
@@ -115,8 +121,9 @@ class TypeScriptProcess {
         cwd: this.#workSpaceFolder,
       });
 
-      this.#spawnRef.stdout.on("data", () => {
-        // collect and prase notify etc
+      this.#spawnRef.stdout.on("data", (chunk) => {
+        this.#stdoutBuffer = Buffer.concat([this.#stdoutBuffer, chunk]);
+        this.#parseStdout();
       });
 
       this.#spawnRef.stderr.on("data", (chunk) => {
@@ -127,22 +134,18 @@ class TypeScriptProcess {
       });
 
       this.#spawnRef.on("error", () => {
-        // reject all pending
         this.#rejectPendingRequests();
       });
 
       this.#spawnRef.on("close", () => {
-        // reject any pending request
         this.#rejectPendingRequests();
       });
 
       this.#spawnRef.on("disconnect", () => {
-        // err reject
         this.#rejectPendingRequests();
       });
 
       this.#spawnRef.on("exit", () => {
-        // reject
         this.#rejectPendingRequests();
       });
 
@@ -156,9 +159,20 @@ class TypeScriptProcess {
     }
   }
 
-  Stop() {}
-
   SendRequest() {}
 
+  /**
+   * Clears any pending requests to stop hanging
+   */
   #rejectPendingRequests() {}
+
+  /**
+   * Attempts to parse the stdout buffer and then handle any messages parsed
+   */
+  #parseStdout() {}
+
+  /**
+   * Given a parsed stdout message to notify those intrested and pass the content along where needed
+   */
+  #handle() {}
 }
