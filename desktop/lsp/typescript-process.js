@@ -169,10 +169,50 @@ class TypeScriptProcess {
   /**
    * Attempts to parse the stdout buffer and then handle any messages parsed
    */
-  #parseStdout() {}
+  #parseStdout() {
+    let bufferString = this.#stdoutBuffer.toString("utf-8");
+
+    while (true) {
+      const headerMatch = bufferString.match(/Content-Length: (\d+)\r?\n\r?\n/);
+
+      if (!headerMatch || headerMatch.index === undefined) {
+        break;
+      }
+
+      const contentLength = parseInt(headerMatch[1], 10);
+      const headerEndIndex = headerMatch.index + headerMatch[0].length;
+
+      if (bufferString.length < headerEndIndex + contentLength) {
+        break;
+      }
+
+      const messageBody = bufferString.substring(
+        headerEndIndex,
+        headerEndIndex + contentLength,
+      );
+
+      try {
+        const message = JSON.parse(messageBody);
+        this.#handle(message);
+      } catch (error) {
+        logError(
+          error,
+          `Failed to parse TSServer message for command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+        );
+        logger.error(`Raw message body: ${messageBody}`);
+      }
+
+      bufferString = bufferString.substring(headerEndIndex + contentLength);
+    }
+
+    this.#stdoutBuffer = Buffer.from(bufferString, "utf-8");
+  }
 
   /**
    * Given a parsed stdout message to notify those intrested and pass the content along where needed
+   * @param {any} message - MEssage parsed from typescript server
    */
-  #handle() {}
+  #handle(message) {
+    console.log(message);
+  }
 }
