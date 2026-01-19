@@ -157,6 +157,7 @@ export class TextFileEditorComponent implements OnInit {
         'textDocument/publishDiagnostics',
         (data) => {
           console.log('diagnostics published');
+          console.log(data.params)
 
           let params = data.params as any as PublishDiagnosticsParams;
           this.currentDiagnostics = lspDiagnosticsToCodeMirror(
