@@ -82,87 +82,11 @@ const lspClient = {
 };
 
 /**
- * @type {import("./type").goServer}
- */
-const goServer = {
-  isReady: (...args) => ipcRenderer.invoke("go:is:ready", ...args),
-  start: (...args) => ipcRenderer.invoke("go:start", ...args),
-  stop: (...args) => ipcRenderer.invoke("go:stop", ...args),
-  onReady: (callback) => {
-    let listener = () => {
-      callback();
-    };
-
-    ipcRenderer.on("go:ready", listener);
-
-    return () => {
-      ipcRenderer.removeListener("go:ready", listener);
-    };
-  },
-  onResponse: (callback) => {
-    /**
-     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").goServerOnResponseCallback>}
-     */
-    let listener = async (_, payload) => {
-      await callback(payload);
-    };
-
-    ipcRenderer.on("go:message", listener);
-
-    return () => {
-      ipcRenderer.removeListener("go:message", listener);
-    };
-  },
-
-  open: (...args) => ipcRenderer.send("go:open", ...args),
-  edit: (...args) => ipcRenderer.send("go:edit", ...args),
-  completion: (...args) => ipcRenderer.send("go:completion", ...args),
-  hover: (...args) => ipcRenderer.send("go:hover", ...args),
-};
-
-/**
  * @type {import("./type").urlApi}
  */
 const urlApi = {
   fileUriToAbsolutePath: (...args) =>
     ipcRenderer.invoke("uri:to:path", ...args),
-};
-
-/**
- * @type {import("./type").pythonServer}
- */
-const pythonServer = {
-  start: (...args) => ipcRenderer.invoke("python:start", ...args),
-  stop: (...args) => ipcRenderer.invoke("python:stop", ...args),
-  open: (...args) => ipcRenderer.send("python:file:open", ...args),
-  edit: (...args) => ipcRenderer.send("python:file:edit", ...args),
-
-  onReady: (callback) => {
-    /** Runs when event is fired */
-    let listener = () => {
-      callback();
-    };
-    ipcRenderer.on("python:ready", listener);
-
-    return () => {
-      ipcRenderer.removeListener("python:ready", listener);
-    };
-  },
-
-  onResponse: (callback) => {
-    /**
-     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").pythonServerOnResponseCallback>}
-     */
-    let listener = async (_, message) => {
-      await callback(message);
-    };
-
-    ipcRenderer.on("python:message", listener);
-
-    return () => {
-      ipcRenderer.removeListener("python:message", listener);
-    };
-  },
 };
 
 /**
@@ -281,42 +205,6 @@ const gitApi = {
   gitStatus: (...args) => ipcRenderer.invoke("git:status", ...args),
 };
 
-/** @type {import("./type").tsServer} */
-const tsServer = {
-  onResponse: (callback) => {
-    /**
-     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").tsServerResponseCallback>}
-     */
-    let listener = async (_event, message) => {
-      await callback(message);
-    };
-
-    ipcRenderer.on("tsserver:message", listener);
-
-    return () => ipcRenderer.removeListener("tsserver:message", listener);
-  },
-
-  close: (...args) => ipcRenderer.send("tsserver:file:close", ...args),
-  edit: (...args) => ipcRenderer.send("tsserver:file:edit", ...args),
-  open: (...args) => ipcRenderer.send("tsserver:file:open", ...args),
-  completion: (...args) =>
-    ipcRenderer.send("tsserver:file:completion", ...args),
-  errors: (...args) => ipcRenderer.send("tsserver:file:error", ...args),
-  onReady: (callback) => {
-    let listener = () => {
-      callback();
-    };
-
-    ipcRenderer.on("tsserver:ready", listener);
-
-    return () => {
-      ipcRenderer.removeListener("tsserver:ready", listener);
-    };
-  },
-  start: (...args) => ipcRenderer.invoke("tsserver:start", ...args),
-  stop: (...args) => ipcRenderer.invoke("tsserver:stop", ...args),
-};
-
 /**
  * @type {import("./type").fsearchApi}
  */
@@ -338,15 +226,12 @@ const api = {
   ripgrepApi,
   fsearchApi,
   gitApi,
-  tsServer,
   clipboardApi,
   shellApi,
   pathApi,
   fsApi,
   chromeWindowApi,
-  pythonServer,
   urlApi,
-  goServer,
   lspClient,
 };
 
