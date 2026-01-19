@@ -7,6 +7,7 @@ import {
   ElementRef,
   inject,
   OnInit,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { basicSetup } from 'codemirror';
@@ -18,7 +19,6 @@ import { fileNode, languageId, voidCallback } from '../../gen/type';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
-import { FlufDiagnostic } from '../diagnostic/type';
 import { getLanguageId } from '../lsp/utils';
 import {
   codeMirrorEditToJsonRpcEdits,
@@ -26,6 +26,8 @@ import {
 } from '../lsp/conversion';
 import { DocumentVersionsService } from '../lsp/document-versions.service';
 import { PublishDiagnosticsParams } from 'vscode-languageserver-protocol';
+import { uriToFilePath } from '../lsp/uri';
+import { normalizeElectronPath } from '../path/utils';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -76,6 +78,7 @@ export class TextFileEditorComponent implements OnInit {
     };
   }
 
+  /** List of callbacks that unsub callbacks registred */
   private serverUnSubs: voidCallback[] = [];
 
   private languageId: languageId | null = null;
@@ -157,13 +160,22 @@ export class TextFileEditorComponent implements OnInit {
         'textDocument/publishDiagnostics',
         (data) => {
           console.log('diagnostics published');
-          console.log(data.params)
+          console.log(data.params);
 
           let params = data.params as any as PublishDiagnosticsParams;
           this.currentDiagnostics = lspDiagnosticsToCodeMirror(
             params,
             this.codeMirrorView!,
           );
+ 
+          let fp = normalizeElectronPath(uriToFilePath(params.uri));
+          let problems = untracked(() => {
+            return this.inMemoryContextService.problems();
+          });
+
+          problems.set(fp, this.currentDiagnostics);
+
+          this.inMemoryContextService.problems.set(structuredClone(problems))
         },
       ),
     );
