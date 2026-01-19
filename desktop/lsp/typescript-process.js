@@ -2,6 +2,10 @@
  * @typedef {import("../type").languageId} languageId
  */
 
+const { spawn } = require("child_process");
+const { logError, logger } = require("../logger");
+const path = require("path");
+
 /**
  * @typedef {import("../type").getMainWindow} getMainWindow
  */
@@ -43,6 +47,24 @@ class TypeScriptProcess {
   #mainWindowRef = null;
 
   /**
+   * Indicates if the process is running - stops it spawing multiple
+   * @type {boolean}
+   */
+  #isStarted = false;
+
+  /**
+   * Ref to the process spawned using the command
+   * @type {import("child_process").ChildProcessWithoutNullStreams  | null}
+   */
+  #spawnRef = null;
+
+  /**
+   * Holds the list of arguments passed to the command on spawn
+   * @type {string[]}
+   */
+  #args = [];
+
+  /**
    * Required to spawn and manage the typescript process
    * @param {string} command - Used to spawn the process can either be a path to a exe or somthing like a command
    * @param {string[]} args - Arguments to pass on spawn such as ["--stdio"] etc
@@ -69,15 +91,74 @@ class TypeScriptProcess {
     if (typeof getMainWindow !== "function")
       throw new TypeError("getMainWindow must be a function");
 
-    this.#command = command;
-    this.#workSpaceFolder = workSpaceFolder;
+    this.#command = path.normalize(path.resolve(command));
+    this.#workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
     this.#languageId = languageId;
     this.#getMainWindow = getMainWindow;
+    this.#args = args;
   }
 
-  Start() {}
+  /**
+   * Starts the process for the workspace folder provided and other options provided
+   * @returns {void} Nothing
+   */
+  Start() {
+    try {
+      if (this.#isStarted) {
+        logger.warn(
+          `Typescript process already started for command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+        );
+        return;
+      }
+
+      this.#spawnRef = spawn(this.#command, this.#args, {
+        cwd: this.#workSpaceFolder,
+      });
+
+      this.#spawnRef.stdout.on("data", () => {
+        // collect and prase notify etc
+      });
+
+      this.#spawnRef.stderr.on("data", (chunk) => {
+        logger.error(
+          `Typescript process for command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId} produced a error`,
+        );
+        logger.error(chunk.toString());
+      });
+
+      this.#spawnRef.on("error", () => {
+        // reject all pending
+        this.#rejectPendingRequests();
+      });
+
+      this.#spawnRef.on("close", () => {
+        // reject any pending request
+        this.#rejectPendingRequests();
+      });
+
+      this.#spawnRef.on("disconnect", () => {
+        // err reject
+        this.#rejectPendingRequests();
+      });
+
+      this.#spawnRef.on("exit", () => {
+        // reject
+        this.#rejectPendingRequests();
+      });
+
+      this.#isStarted = true;
+    } catch (error) {
+      logError(
+        error,
+        `Failed to start typescript process for command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+      );
+      throw error;
+    }
+  }
 
   Stop() {}
 
   SendRequest() {}
+
+  #rejectPendingRequests() {}
 }
