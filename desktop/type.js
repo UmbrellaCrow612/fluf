@@ -439,210 +439,6 @@
  */
 
 /**
- * List of what the value of the event field can be
- * @typedef {"projectLoadingStart" | "projectLoadingFinish" |
- * "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" |
- * "configFileDiag" | "typingsInstallerPid" | "setTypings" | "typingsInstalled" |"telemetry"
- * | "largeFileReferenced"} tsServerOutputEvent
- */
-
-/**
- * Represents a diagnostic sent from ts server output
- * @typedef {Object} tsServerOutputBodyDiagnostic
- * @property {{line:number, offset: number}} start - Cords of the start
- * @property {{line:number, offset: number}} end - Cords of the end
- * @property {string} text - Message
- * @property {number} code - The code
- * @property {"suggestion" | "message" | "error"} category - What type of diagnostic it is
- * @property {boolean} [reportsUnnecessary] - Another field it reports
- */
-
-/**
- * Mapped from enum into a object to use from `typescript.d.ts => enum ScriptElementKind`
- * @typedef {Object} tsServerOutputBodyScriptElementKind
- * @property {""} unknown
- * @property {"warning"} warning
- * @property {"keyword"} keyword
- * @property {"script"} scriptElement
- * @property {"module"} moduleElement
- * @property {"class"} classElement
- * @property {"local class"} localClassElement
- * @property {"interface"} interfaceElement
- * @property {"type"} typeElement
- * @property {"enum"} enumElement
- * @property {"enum member"} enumMemberElement
- * @property {"var"} variableElement
- * @property {"local var"} localVariableElement
- * @property {"using"} variableUsingElement
- * @property {"await using"} variableAwaitUsingElement
- * @property {"function"} functionElement
- * @property {"local function"} localFunctionElement
- * @property {"method"} memberFunctionElement
- * @property {"getter"} memberGetAccessorElement
- * @property {"setter"} memberSetAccessorElement
- * @property {"property"} memberVariableElement
- * @property {"accessor"} memberAccessorVariableElement
- * @property {"constructor"} constructorImplementationElement
- * @property {"call"} callSignatureElement
- * @property {"index"} indexSignatureElement
- * @property {"construct"} constructSignatureElement
- * @property {"parameter"} parameterElement
- * @property {"type parameter"} typeParameterElement
- * @property {"primitive type"} primitiveType
- * @property {"label"} label
- * @property {"alias"} alias
- * @property {"const"} constElement
- * @property {"let"} letElement
- * @property {"directory"} directory
- * @property {"external module name"} externalModuleName
- * @property {"JSX attribute"} jsxAttribute
- * @property {"string"} string
- * @property {"link"} link
- * @property {"link name"} linkName
- * @property {"link text"} linkText
- */
-
-/**
- * Mapped from `typescript.d.ts -> export type CompletionEntry`
- * @typedef {Object} tsServerOutputBodyCompletionEntry
- * @property {tsServerOutputBodyScriptElementKind[keyof tsServerOutputBodyScriptElementKind]} [kind]
- * @property {string} [kindModifiers]
- * @property {string} [name]
- * @property {string} [sortText]
- * @property {string} [insertText]
- * @property {string} [filterText]
- * @property {boolean} [isSnippet]
- * @property {import("typescript").server.protocol.TextSpan} [replacementSpan]
- * @property {boolean} [hasAction]
- * @property {string} [source]
- * @property {any} [sourceDisplay] - if needed type
- * @property {any} [labelDetails] - if needed type
- * @property {boolean} [isRecommended]
- * @property {boolean} [isFromUncheckedFile]
- * @property {boolean} [isPackageJsonImport]
- * @property {boolean} [isImportStatementCompletion]
- * @property {any} [data]
- * @property {string[]} [commitCharacters]
- */
-
-/**
- * The shape the body can be in
- * @typedef {Object} tsServerOutputBody
- * @property {number} [pid] - Optional could contain the PID number
- * @property {string} [file] - The file path
- * @property {tsServerOutputBodyDiagnostic[]} [diagnostics] - List of diagnostics
- * @property {boolean} [isIncomplete] - From completion info
- * @property {tsServerOutputBodyCompletionEntry[]} [entries] - From completion info entries
- */
-
-/**
- * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
- * Could contains any of the below fields
- * @typedef {Object} tsServerOutput
- * @property {number} [seq] - The sequence
- * @property {"request" | "response" | "event"} [type] - What type this message is
- * @property {tsServerOutputEvent} [event] - What type of event was emitted
- * @property {tsServerOutputBody} [body] - The body of the output
- * @property {number} [request_seq] - Sequence number of the request message
- * @property {boolean} [success] - Outcome of the request
- * @property {import("typescript").server.protocol.CommandTypes} [command] - The command requested
- * @property {string} [message] - Optional message
- */
-
-/**
- * @callback tsServerResponseCallback
- * @param {tsServerOutput} message - The message sent
- * @returns {void | Promise<void>} A promise or nothing
- */
-
-/**
- * Register a callback to run when ts server emits a message
- * @callback onTsServerResponse
- * @param {tsServerResponseCallback} callback - The callback to run
- * @returns {voidCallback} Callback to stop running the callback passed
- */
-
-/**
- * Writes the file to tsserver stream to watch it and emit stuff for it in the stream
- * @callback tsServerOpenFile
- * @param {string} filePath - The path to the file
- * @param {string} fileContent - The content of the file
- * @returns {void} Nothing
- */
-
-/**
- * Writes the file to the stream as being edited
- * @callback tsServerEditFile
- * @param {import("typescript").server.protocol.ChangeRequestArgs} args
- * @returns {void} Nothing
- */
-
-/**
- * Closes the file into the stream
- * @callback tsServerCloseFile
- * @param {string} filePath - The path to the file
- * @returns {void} Nothing
- */
-
-/**
- * Used to stream the completion cmd into tsserver
- * @callback tsServerCompletion
- * @param {import("typescript").server.protocol.CompletionsRequestArgs} args - The args needed to the server to send to stream
- * @returns {void} Nothing
- */
-
-/**
- * Represents a shape of an object written to tsserver stdin stream - mainly typed from typescript.d.ts
- * @typedef {object} tsServerWritableObject
- * @property {import("typescript").server.protocol.CommandTypes} command - What command to pass to TS server stdin stream
- * @property {"request"} type - Always "request" for writable messages
- * @property {number} seq - Unique request sequence number
- * @property {any} arguments - Arguments passed to tsserver; shape depends on the command look through typescript.d.ts and then the cmd name and then it's interface
- */
-
-/**
- * Trigger error checking
- * @callback tsServerError
- * @param {string} filePath - The file to check
- * @returns {void} Nothing
- */
-
-/**
- * Start the Typescript / Javascript language server
- * @callback tsServerStart
- * @param {string} workSpaceFolder - The selected directory
- * @returns {Promise<boolean>} If it could or could not
- */
-
-/**
- * Stop the typescript server
- * @callback tsServerStop
- * @returns {Promise<boolean>} If it could or could not
- */
-
-/**
- * Register to run some logic when the Typescript language server is ready
- * @callback tsServerOnReady
- * @param {voidCallback} callback - The logic you want to run
- * @returns {voidCallback} Unsub method
- */
-
-/**
- * The Typescript / Javascript language server
- * @typedef {Object} tsServer
- * @property {onTsServerResponse} onResponse - Register callback when ts server emits a event message.
- * @property {tsServerStart} start - Start the Typescript server
- * @property {tsServerStop} stop - Stops the Typescript server
- * @property {tsServerOnReady} onReady - Run logic when the typescript server is ready
- *
- * @property {tsServerOpenFile} open - Opens a file
- * @property {tsServerEditFile} edit - Edit the file in the stream
- * @property {tsServerCloseFile} close - Close file into the stream
- * @property {tsServerCompletion} completion - Get completion data of the current file and offest into the stream
- * @property {tsServerError} errors - Trigger get error's / checking for a file
- */
-
-/**
  * Create a shell
  * @callback createShell
  * @param {string} directory - The directory to spawn it in
@@ -728,189 +524,6 @@
  */
 
 /**
- * List of the valid language id's you can pass
- * @typedef {"python"} LanguageServerLanguageId
- */
-
-/**
- * Contains all the code to interact with python language server
- * @typedef {Object} pythonServer
- * @property {pythonServerOpen} open - Open a file request
- * @property {pythonServerEdit} edit - Edit a file request
- * @property {pythonServerStart} start - Start the language server
- * @property {pythonServerStop} stop - Stop the language server
- * @property {pythonServerOnReady} onReady - Call some logic when the server becomes avaiable and is set up
- * @property {pythonServerOnResponse} onResponse - Run logic when the server responds
- */
-
-/**
- * Represents the shape of the object sent to a JSON rpc language server indicating the document has changed
- * @typedef {Object} JSONRpcEdit
- * @property {string} filePath - The files path abs
- * @property {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - The text documents changes
- */
-
-/**
- * Edit a file
- * @callback pythonServerEdit
- * @param {JSONRpcEdit} edit - Edit content shape
- * @returns {void} Nothing
- */
-
-/**
- * Being the python language server
- * @callback pythonServerStart
- * @param {string} workSpaceFolder - The path of the selcted root folder opened
- * @returns {Promise<boolean>} Nothing
- */
-
-/**
- * Stops the python langaueg server
- * @callback pythonServerStop
- * @returns {Promise<boolean>} If it could or could not
- */
-
-/**
- * Opens file
- * @callback pythonServerOpen
- * @param {string} filePath - The files path
- * @param {string} fileContent - The files content
- * @returns {void}
- */
-
-/**
- * Call some logic when the python language server is ready
- * @callback pythonServerOnReady
- * @param {voidCallback} callback
- * @returns {voidCallback} UnSub method
- */
-
-/**
- * Represents the shape the notification response object can be listing fields it can possibley have
- * @typedef {Object} JSONRpcNotification
- * @property {string} jsonrpc - Version
- * @property {LanguageServerProtocolMethod} method - Method
- * @property {JSONRpcNotificationParams} [params] - Addtional info
- */
-
-/**
- * Represents the shape the notification params can have
- * @typedef {Object} JSONRpcNotificationParams
- * @property {string} [uri] - The files URI in the shape of for example `file:\\pie.js` encoded
- * @property {number} [version] - Version
- * @property {JSONRpcNotificationParamsDiagnostic[]} diagnostics - List of diagnostics
- */
-
-/**
- * Represents how a diagnostic could look like inside a notification param
- * @typedef {Object} JSONRpcNotificationParamsDiagnostic
- * @property {{start: {line:number,character: number}, end: {line:number, character:number}}} range - Where the thing is located
- * @property {string} message - Infomation
- * @property {number} severity - Severity
- * @property {string} source - Which LSP it is from
- */
-
-/**
- * The shape of the callback that is called when a message is recieved from the python server
- * @callback pythonServerOnResponseCallback
- * @param {JSONRpcNotification} message - Any message
- * @returns {void | Promise<void>} Nothing or a promise
- */
-
-/**
- * Listen to when the server responds and run logic
- * @callback pythonServerOnResponse
- * @param {pythonServerOnResponseCallback} callback - The logic to run
- * @returns {voidCallback} unsub method
- */
-
-/**
- * Represents the go language server
- * @typedef {Object} goServer
- * @property {goServerStart} start - Start the lsp
- * @property {goServerStop} stop - Stop the lsp
- * @property {goServerisReady} isReady - Check if the server is readfy or not
- * @property {goServerOnReady} onReady - Run logic when the server becomes ready
- * @property {goServerOnResponse} onResponse - Run logic when the go lsp produces a response
- *
- * @property {goServerOpen} open - Open a file
- * @property {goServerEdit} edit - Edit a file
- * @property {goServerCompletion} completion - Get file completions
- * @property {goServerHover} hover - Get hover information
- */
-
-/**
- * Send a completion request
- * @callback goServerCompletion
- * @param {string} filePath - The files path
- * @param {import("vscode-languageserver-protocol").Position} position - Where the completion is taking place
- * @param {import("vscode-languageserver-protocol").CompletionContext} context - What type of completion it is
- * @returns {void} Nothing
- */
-
-/**
- * Start the go language server
- * @callback goServerStart
- * @param {string} workSpaceFolder - The folder to open the lsp in
- * @returns {Promise<boolean>} If it could or could not
- */
-
-/**
- * Stop the go lsp
- * @callback goServerStop
- * @returns {Promise<boolean>} If it could or could not
- */
-
-/**
- * Indicates if the go lsp server is ready for messages
- * @callback goServerisReady
- * @returns {Promise<boolean>} If the server is ready or not for messages
- */
-
-/**
- * Runs callback when the go server becomes ready
- * @callback goServerOnReady
- * @param {voidCallback} callback - The logic to run
- * @returns {voidCallback} unsub method
- */
-
-/**
- * Open a file
- * @callback goServerOpen
- * @param {string} filePath - The files path
- * @param {string} fileContent - The files content
- * @returns {void} Nothing
- */
-
-/**
- * Send a edit of a document
- * @callback goServerEdit
- * @param {JSONRpcEdit} edit - The edit
- * @returns {void} Nothing
- */
-
-/**
- * The shape of the callback to run when the go lsp responds with a message
- * @callback goServerOnResponseCallback
- * @param {JSONRpcNotification} payload - The message from the server
- * @returns {void | Promise<void>} A promise or nothing
- */
-/**
- * Run logic when the
- * @callback goServerOnResponse
- * @param {goServerOnResponseCallback} callback - The logic to run
- * @returns {voidCallback} unsub callback
- */
-
-/**
- * Get hover information
- * @callback goServerHover
- * @param {string} filePath - The file to get the hover info for
- * @param {import("vscode-languageserver-protocol").Position} position - The cursor position at which to get it =
- * @returns {void} Nothing
- */
-
-/**
  * Holds the values language id can be.
  *
  * It is also a way of indicating which lsp have been impl
@@ -931,6 +544,38 @@
  *
  * Text Synchronization (Notifications - don't expect responses)
  * @property {ILanguageServerDidOpenTextDocument} DidOpenTextDocument - Notify document opened
+ * @property {ILanguageServerDidChangeTextDocument} DidChangeTextDocument - Notify document content changed
+ * @property {ILanguageServerDidCloseTextDocument} DidCloseTextDocument - Notify document closed
+ *
+ *  Language Features (Requests - expect responses)
+ * @property {ILanguageServerHover} Hover - Get hover information
+ */
+
+/**
+ * Get hover information
+ * @callback ILanguageServerHover
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {string} filePath - The path to the file to get hover information for
+ * @param {import("vscode-languageserver-protocol").Position} position - Where to get the hover information
+ * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The result of a hover request.
+ */
+
+/**
+ * Closes a file that was opened
+ * @callback ILanguageServerDidCloseTextDocument
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {string} filePath - The path to the file to close
+ * @returns {void} Nothing
+ */
+
+/**
+ * Send document changes to the LSP
+ * @callback ILanguageServerDidChangeTextDocument
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {string} filePath - The path to the file that changed
+ * @param {number} version - Documents version increment after every change
+ * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - List of changes made to the document
+ * @returns {void} Nothing
  */
 
 /**
@@ -977,11 +622,17 @@
  * Send a text document did open notification
  * @callback ILanguageServerDidOpenTextDocument
  * @param {string} workspaceFolder - The workspace folder it is for
- * @param {string} uri - Document URI
- * @param {string} languageId - Language identifier (e.g., "javascript", "python")
+ * @param {string} filePath - The path to file being opened for example `./file.js` etc
+ * @param {languageId} languageId - Language identifier (e.g., "javascript", "python")
  * @param {number} version - Document version
  * @param {string} text - Document content
  * @returns {void} Nothing
+ */
+
+/**
+ * Used try and get the main window
+ * @callback getMainWindow
+ * @returns {import("electron").BrowserWindow | null} The window object ref
  */
 
 /**
@@ -990,6 +641,73 @@
  *
  * @property {ILanguageServerClientStart} start - Start a specific LSP in a workspace for the given language
  * @property {ILanguageServerClientStop} stop - Stop a specific LSP for a given workspace and language
+ * @property {ILanguageServerClientIsRunning} isRunning - Check if a LSP for a given workspace and language is running
+ *
+ * @property {ILanguageServerClientDidOpenTextDocument} didOpenTextDocument - Open a document in the LSP
+ * @property {ILanguageServerClientDidChangeTextDocument} didChangeTextDocument - Sync document changes with LSP view
+ * @property {ILanguageServerClientDidCloseTextDocument} didCloseTextDocument - Close the document in the LSP
+ *
+ * @property {ILanguageServerClientHover} hover - Get hover information
+ *
+ * @property {ILanguageServerClientOnData} onData - Listen to when the LSP responds and run logic
+ * @property {ILanguageServerClientOnNotifications} onNotifications - Listen to when the server responds with any notification and run logic
+ * @property {ILanguageServerClientOnNotification} onNotification - Listen to when a specific notification is sent out and run logic
+ * @property {ILanguageServerClientOnReady} onReady - Listen to when the server just becomes ready and run logic
+ */
+
+/**
+ * Run logic for the first time when a server just becomes ready to recieve messages
+ * @callback ILanguageServerClientOnReady
+ * @param {ILanguageServerClientOnReadyCallback} callback - The callback to run when it becomes ready
+ * @returns {voidCallback} Unsub method
+ */
+
+/**
+ * @callback ILanguageServerClientOnReadyCallback
+ * @param {languageId} languageId - The specific language
+ * @param {string} workSpaceFolder - The path to folder
+ * @returns {void} Nothing
+ */
+
+/**
+ * Run logic when LSP responds with data
+ * @callback ILanguageServerClientOnData
+ * @param {LanguageServerOnDataCallback} callback
+ * @returns {voidCallback} Unsub callback
+ */
+
+/**
+ * Run logic when the LSP responds with a any notification
+ * @callback ILanguageServerClientOnNotifications
+ * @param {LanguageServerOnNotificationCallback} callback - The logic to run
+ * @returns {voidCallback} Unsub callack to remove the callback passed from being triggered anymore
+ */
+
+/**
+ * Listen to a specific notification method produced from the LSp and run logic
+ * @callback ILanguageServerClientOnNotification
+ * @param {LanguageServerProtocolMethod} method - The specific method channel to listen to
+ * @param {LanguageServerOnNotificationCallback} callback - The logic to run
+ * @returns {voidCallback} Unsub method
+ */
+
+/**
+ * Get hover information
+ * @callback ILanguageServerClientHover
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {languageId} languageId - The language
+ * @param {string} filePath - The path to the file to get hover information for
+ * @param {import("vscode-languageserver-protocol").Position} position - Where to get the hover information
+ * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The result of a hover request.
+ */
+
+/**
+ * Check if the LSP is running for a given workspace and language
+ * @callback ILanguageServerClientIsRunning
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId} languageId - The language
+ *
+ * @returns {Promise<boolean>} If it is or is not
  */
 
 /**
@@ -1009,9 +727,62 @@
  */
 
 /**
- * Run logic when data has been parsed from a lsp
+ * Sync document changes with the LSP
+ * @callback ILanguageServerClientDidChangeTextDocument
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId} languageId - The language of the file
+ * @param {string} filePath - The path to the file that changed
+ * @param {number} version - The documents version after being changed
+ * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - List of changes made to file
+ * @returns {void} Nothing
+ */
+
+/**
+ * Close the document in the LSP
+ * @callback ILanguageServerClientDidCloseTextDocument
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId} languageId - The language of the file
+ * @param {string} filePath - The path to the file
+ * @returns {void} Nothing
+ */
+
+/**
+ * Open a document
+ * @callback ILanguageServerClientDidOpenTextDocument
+ * @param {string} workSpaceFolder - The path to the folder
+ * @param {languageId} languageId - The language of the file
+ * @param {string} filePath - The path to the file for exmaple `c:/dev/file.js`
+ * @param {number} version - The documents version
+ * @param {string} documentText - The full file text
+ * @returns {void} Nothing
+ */
+
+/**
+ * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
  * @callback LanguageServerOnDataCallback
- * @param {import("vscode-languageserver-protocol").NotificationMessage | import("vscode-languageserver-protocol").ResponseMessage} response - The LSP response
+ * @param {import("vscode-languageserver-protocol").ResponseMessage | import("vscode-languageserver-protocol").NotificationMessage} response - The LSP response
+ * @returns {void}
+ */
+
+/**
+ * Shape of data sent when a notification has been parsed and contains information about which language, workspace and content it is
+ * @typedef {Object} LanguageServerNotificationResponse
+ * @property {languageId} languageId - The specific language this is for
+ * @property {string} workSpaceFolder - The specific work space this is for
+ * @property {import("vscode-languageserver-protocol").NotificationMessage["params"]} params - The shape of params for the given method
+ */
+
+/**
+ * The callback to run when a notification has been parsed
+ * @callback LanguageServerOnNotificationCallback
+ * @param {LanguageServerNotificationResponse} result - The parsed notification data
+ * @returns {void} Nothing
+ */
+
+/**
+ * The callback to run when a response produces a error
+ * @callback LanguageServerOnError
+ * @param {any} error - The error parsed
  * @returns {void}
  */
 
@@ -1028,8 +799,6 @@
  *
  * @property {clipboardApi} clipboardApi - Contains all clipboard api
  *
- * @property {tsServer} tsServer - The ts / typescript language server
- *
  * @property {shellApi} shellApi - Contains all methods to use shells
  *
  * @property {pathApi} pathApi - Contains all path utils
@@ -1038,11 +807,7 @@
  *
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
- * @property {pythonServer} pythonServer - Contains all the api's for the python language server
- *
  * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
- *
- * @property {goServer} goServer - Contains all the code to use the go language server api's
  *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
  *

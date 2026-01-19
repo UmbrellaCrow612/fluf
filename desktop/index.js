@@ -7,21 +7,12 @@ const { registerClipboardListeners } = require("./clipboard");
 const { registerProtocols } = require("./protocol");
 const { registerPdfListeners } = require("./pdf");
 const { registerImageListeners } = require("./image");
-const {
-  registerTsListeners,
-  stopTypescriptLanguageServer,
-} = require("./typescript");
 const { cleanUpShells, registerShellListeners } = require("./shell");
 const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
 const { registerRipgrepListeners } = require("./ripgrep");
-const {
-  reigsterPythonLanguageServerListeners,
-  stopPythonLanguageServer,
-} = require("./python");
 const { logger } = require("./logger");
 const { registerUrlListeners } = require("./url");
-const { registerGoLanguageServerListeners } = require("./gopls");
 const { registerPathListeners } = require("./path");
 const {
   registerLanguageServerListener,
@@ -89,14 +80,11 @@ app.whenReady().then(() => {
   registerClipboardListeners(ipcMain);
   registerPdfListeners(protocol);
   registerImageListeners(protocol);
-  registerTsListeners(ipcMain, mainWindow);
   registerShellListeners(ipcMain, mainWindow);
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
-  reigsterPythonLanguageServerListeners(ipcMain, mainWindow);
   registerUrlListeners(ipcMain);
   registerPathListeners(ipcMain);
-  registerGoLanguageServerListeners(ipcMain, mainWindow);
 
   registerLanguageServerListener(ipcMain, mainWindow);
 });
@@ -106,9 +94,6 @@ app.on("before-quit", async (event) => {
     event.preventDefault();
 
     await stopAllLanguageServers();
-
-    await stopPythonLanguageServer();
-    await stopTypescriptLanguageServer();
 
     cleanUpWatchers();
     cleanUpShells();

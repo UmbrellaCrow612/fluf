@@ -1,8 +1,15 @@
 const { spawn } = require("child_process");
-const { logger } = require("../logger");
+const { logger, logError } = require("../logger");
+const { isUri } = require("./uri");
 
 /**
- * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command.
+ * @typedef {import("../type").LanguageServerProtocolMethod} LanguageServerProtocolMethod
+ */
+
+/**
+ * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command combined with electron event sending,
+ * this is done as electron `preload.js` cannot accept callbacks as params so we need to attach them in the `preload.js` file then send events to run said callbacks that where
+ * attached in the `preload.js` file.
  *
  * @see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
  */
@@ -39,7 +46,7 @@ class JsonRpcProcess {
   #isStarted = false;
 
   /**
-   * Check if the process ir running
+   * Check if the process is running
    * @returns {boolean} If it is or is not
    */
   IsStarted() {
@@ -72,12 +79,6 @@ class JsonRpcProcess {
   #stdoutBuffer = Buffer.alloc(0);
 
   /**
-   * Holds all the listener  callbacks to be run when a lsp response is parsed
-   * @type {Set<import("../type").LanguageServerOnDataCallback>}
-   */
-  #onDataCallbacks = new Set();
-
-  /**
    * Holds the PID number of the spawend process
    * @type {number | undefined}
    */
@@ -92,13 +93,61 @@ class JsonRpcProcess {
   }
 
   /**
-   * Required for spawn of the LSP
+   * Used to get the main window
+   * @type {import("../type").getMainWindow | null}
+   */
+  #getMainWindow = null;
+
+  /**
+   * Refrence to the main window to send events
+   * @type {import("electron").BrowserWindow | null}
+   */
+  #mainWindowRef = null;
+
+  /**
+   * Holds the workspace folder this was spawned for for exmaple `c:/dev/some/project`
+   * @type {string | null}
+   */
+  #workSpaceFolder = null;
+
+  /**
+   * Holds the language this is for exmaple `go` or `js` etc
+   * @type {import("../type").languageId | null}
+   */
+  #languageId = null;
+
+  /**
+   * Required for spawn of the process to work and properly spawn and communicate as needed
    * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
+   * @param {import("../type").getMainWindow | null} getMainWindow - Used to get the main window ref
+   * @param {string} workSpaceFolder - The workspace this is for exmaple `c:/dev/some/project/`
+   * @param {import("../type").languageId | null} languageId - The specific language this is for exmaple `go` or `js` etc
    */
-  constructor(command, args = []) {
+  constructor(command, args, getMainWindow, workSpaceFolder, languageId) {
+    if (!command || typeof command !== "string")
+      throw new TypeError("command must be a non-empty string");
+
+    if (!Array.isArray(args)) throw new TypeError("args must be an array");
+
+    if (!args.every((arg) => typeof arg === "string"))
+      throw new TypeError("all elements in args must be strings");
+
+    if (typeof getMainWindow !== "function")
+      throw new TypeError("getMainWindow is not a function");
+
+    if (typeof workSpaceFolder !== "string")
+      throw new TypeError("workSpaceFolder must be a non empty string");
+
+    if (typeof languageId !== "string")
+      throw new TypeError("languageId must be a non empty string");
+
     this.#command = command;
     this.#args = args;
+    this.#getMainWindow = getMainWindow;
+    this.#workSpaceFolder = workSpaceFolder;
+    this.#languageId = languageId;
+    this.#mainWindowRef = this.#getMainWindow();
   }
 
   /**
@@ -106,6 +155,9 @@ class JsonRpcProcess {
    * @returns {void}
    */
   Start() {
+    if (!this.#getMainWindow)
+      throw new Error("getMainWindow is null cannot fetch main window");
+
     try {
       if (this.#isStarted) {
         logger.info(`JSON Rpc already started for command ${this.#command}`);
@@ -149,7 +201,8 @@ class JsonRpcProcess {
     } catch (error) {
       this.#isStarted = false;
 
-      logger.error(
+      logError(
+        error,
         `Failed to start JSON RPC process with command ${this.#command} error: ${JSON.stringify(error)}`,
       );
 
@@ -162,8 +215,16 @@ class JsonRpcProcess {
    * @returns {void}
    */
   Shutdown() {
+    this.#isStarted = false;
+
     if (this.#spawnRef && !this.#spawnRef.killed) {
-      this.#spawnRef.kill();
+      this.#spawnRef.kill("SIGTERM");
+
+      setTimeout(() => {
+        if (this.#spawnRef && !this.#spawnRef.killed) {
+          this.#spawnRef.kill("SIGKILL");
+        }
+      }, 1000);
     }
 
     this.#pendingRequests.forEach(({ reject }) => {
@@ -171,9 +232,8 @@ class JsonRpcProcess {
     });
 
     this.#pendingRequests.clear();
-    this.#onDataCallbacks.clear();
-    this.#isStarted = false;
     this.#spawnRef = null;
+    this.#mainWindowRef = null;
   }
 
   /**
@@ -198,25 +258,24 @@ class JsonRpcProcess {
   }
 
   /**
-   * Register a callback to be run when data from the lsp has been parsed
-   * @param {import("../type").LanguageServerOnDataCallback} callback - The callback to run when data has been parsed
-   * @returns {import("../type").voidCallback} Callback to remove the listener  callback from being run
-   */
-  OnData(callback) {
-    this.#onDataCallbacks.add(callback);
-
-    return () => {
-      this.#onDataCallbacks.delete(callback);
-    };
-  }
-
-  /**
-   * Make a request to the process and awit a response
+   * Make a request to the process and await a response
    * @param {import("../type").LanguageServerProtocolMethod} method - The specific method to send
    * @param {any} params - Any shape of params for the request being sent
-   * @returns {Promise<any>} The promise to await
+   * @returns {Promise<any>} The promise to await and the value from the request parsed or error
    */
   SendRequest(method, params) {
+    if (!method || typeof method !== "string")
+      throw new TypeError("method must be a non-empty string");
+
+    if (params !== undefined && params !== null && typeof params !== "object")
+      throw new TypeError("params must be an object, null, or undefined");
+
+    if (!this.#isStarted) {
+      return Promise.reject(
+        new Error(`Process not started for command: ${this.#command}`),
+      );
+    }
+
     try {
       let requestId = this.#getId();
       return new Promise((resolve, reject) => {
@@ -248,12 +307,12 @@ class JsonRpcProcess {
         });
       });
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to send request for command: ${this.#command} ${JSON.stringify(error)}`,
       );
-      return new Promise((_, reject) => {
-        reject();
-      });
+
+      throw error;
     }
   }
 
@@ -266,6 +325,23 @@ class JsonRpcProcess {
    * @returns {void}
    */
   DidOpenTextDocument(uri, languageId, version, text) {
+    if (!uri || typeof uri !== "string")
+      throw new TypeError("uri must be a non-empty string");
+
+    if (!languageId || typeof languageId !== "string")
+      throw new TypeError("languageId must be a non-empty string");
+
+    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
+
+    if (
+      typeof version !== "number" ||
+      !Number.isInteger(version) ||
+      version < 0
+    )
+      throw new TypeError("version must be a non-negative integer");
+
+    if (typeof text !== "string") throw new TypeError("text must be a string");
+
     this.#write({
       jsonrpc: "2.0",
       /** @type {import("../type").LanguageServerProtocolMethod} */
@@ -283,7 +359,69 @@ class JsonRpcProcess {
   }
 
   /**
-   * Parses the stdout and notifys intrested parties of the message parsed
+   * Send a textDocument/didChange notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @param {number} version - The document version (increments with each change)
+   * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} contentChanges - The content changes
+   * @returns {void}
+   */
+  DidChangeTextDocument(uri, version, contentChanges) {
+    if (!uri || typeof uri !== "string")
+      throw new TypeError("uri must be a non-empty string");
+
+    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
+
+    if (
+      typeof version !== "number" ||
+      !Number.isInteger(version) ||
+      version < 0
+    )
+      throw new TypeError("version must be a non-negative integer");
+
+    if (!Array.isArray(contentChanges))
+      throw new TypeError("contentChanges must be an array");
+
+    this.#write({
+      jsonrpc: "2.0",
+      /** @type {import("../type").LanguageServerProtocolMethod} */
+      method: "textDocument/didChange",
+      /** @type {import("vscode-languageserver-protocol").DidChangeTextDocumentParams} */
+      params: {
+        textDocument: {
+          uri: uri,
+          version: version,
+        },
+        contentChanges: contentChanges,
+      },
+    });
+  }
+
+  /**
+   * Send a textDocument/didClose notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @returns {void}
+   */
+  DidCloseTextDocument(uri) {
+    if (!uri || typeof uri !== "string")
+      throw new TypeError("uri must be a non-empty string");
+
+    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
+
+    this.#write({
+      jsonrpc: "2.0",
+      /** @type {import("../type").LanguageServerProtocolMethod} */
+      method: "textDocument/didClose",
+      /** @type {import("vscode-languageserver-protocol").DidCloseTextDocumentParams} */
+      params: {
+        textDocument: {
+          uri: uri,
+        },
+      },
+    });
+  }
+
+  /**
+   * Parses the stdout and notifies interested parties of the message parsed
    */
   #parseStdout() {
     while (true) {
@@ -315,26 +453,37 @@ class JsonRpcProcess {
         .subarray(messageStart, messageEnd)
         .toString("utf-8");
 
+      // Move buffer advancement BEFORE parsing to prevent infinite loops
+      this.#stdoutBuffer = this.#stdoutBuffer.subarray(messageEnd);
+
+      let response;
       try {
-        const response = JSON.parse(messageBody);
-        this.#notify(response);
-      } catch (err) {
-        logger.error(
-          `Failed to parse response for command: ${this.#command} ${JSON.stringify(err)}`,
-        );
-        logger.error("Raw body " + messageBody);
+        response = JSON.parse(messageBody);
+      } catch (/** @type {any}*/ err) {
+        logError(err, `Failed to parse JSON for command: ${this.#command}`);
+        logger.error("Raw body: " + messageBody);
+        continue;
       }
 
-      this.#stdoutBuffer = this.#stdoutBuffer.subarray(messageEnd);
+      try {
+        this.#notify(response);
+      } catch (/** @type {any}*/ err) {
+        logError(
+          err,
+          `Failed to notify response for command: ${this.#command}`,
+        );
+        // Continue processing even if notification fails
+      }
     }
   }
 
   /**
-   * Notifys on listener  that a message has been parsed fromn the lsp
-   * @param {import("vscode-languageserver-protocol").ResponseMessage} response
-   * @returns {void}
+   * Notifys any listener's that a message has been parsed fromn the lsp
+   * @param {any} response - Either a response message or notification
+   * @returns {void} Nothing
    */
   #notify(response) {
+    // We need to resolve pending requests first to stop hanging
     if (
       response.id !== null &&
       this.#pendingRequests.has(Number(response.id))
@@ -343,6 +492,14 @@ class JsonRpcProcess {
 
       if (response.error) {
         obj?.reject(response.error);
+
+        // Send error event with full context
+        this.#mainWindowRef?.webContents.send("lsp:error", {
+          error: response.error,
+          id: response.id,
+          languageId: this.#languageId,
+          workSpaceFolder: this.#workSpaceFolder,
+        });
       } else {
         obj?.resolve(response.result);
       }
@@ -350,7 +507,63 @@ class JsonRpcProcess {
       this.#pendingRequests.delete(Number(response.id));
     }
 
-    this.#onDataCallbacks.forEach((cb) => cb(response));
+    if (!response || typeof response !== "object")
+      throw new TypeError("response must be an object");
+
+    if (!this.#getMainWindow)
+      throw new Error("getMainWindow is null cannot get main window");
+
+    if (!this.#mainWindowRef) {
+      this.#mainWindowRef = this.#getMainWindow();
+    }
+
+    if (!this.#mainWindowRef)
+      throw new Error("main window is null cannot send events");
+
+    if (this.#mainWindowRef.isDestroyed()) {
+      logger.warn(
+        `Main window destroyed, cannot send LSP events for command: ${this.#command}`,
+      );
+      return;
+    }
+
+    if (!this.#languageId) throw new Error("No language id cannot send events");
+    if (!this.#workSpaceFolder)
+      throw new Error("No workspace folder cannot send events");
+
+    // Send all data
+    this.#mainWindowRef?.webContents.send("lsp:data", {
+      response: response,
+      languageId: this.#languageId,
+      workSpaceFolder: this.#workSpaceFolder,
+    });
+
+    // Handle notifications (has method, no id)
+    if (
+      response.method &&
+      (response.id === undefined || response.id === null)
+    ) {
+      // Send specific event for the notification method
+      this.#mainWindowRef?.webContents.send("lsp:notification", {
+        method: response.method,
+        params: response.params,
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+      });
+
+      /** @type {import("../type").LanguageServerNotificationResponse} */
+      let notificationData = {
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+        params: response?.params,
+      };
+
+      // Send method-specific event for convenience
+      this.#mainWindowRef?.webContents.send(
+        `lsp:notification:${response.method}`,
+        notificationData,
+      );
+    }
   }
 
   /**
@@ -358,6 +571,9 @@ class JsonRpcProcess {
    * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} message The message
    */
   #write(message) {
+    if (!message || typeof message !== "object")
+      throw new TypeError("message must be an object");
+
     if (!this.#isStarted) {
       logger.error(
         `Cannot write to process command: ${this.#command} as it is not yet started`,
@@ -367,12 +583,14 @@ class JsonRpcProcess {
 
     if (!this.#spawnRef) {
       logger.error(`No child process spawned for command: ${this.#command}`);
-      return;
+      throw new Error("Trying to write to child process but it is undefined");
     }
 
     if (!this.#spawnRef.stdin.writable) {
       logger.error(`Cannot write to process command: ${this.#command}`);
-      return;
+      throw new Error(
+        "Trying to write to child process but stdin is not writable",
+      );
     }
 
     try {
@@ -381,9 +599,12 @@ class JsonRpcProcess {
       const writeContent = `Content-Length: ${contentLength}\r\n\r\n${json}`;
       this.#spawnRef.stdin.write(writeContent);
     } catch (error) {
-      logger.error(
+      logError(
+        error,
         `Failed to write to stdin stream of command: ${this.#command} error: ${JSON.stringify(error)}`,
       );
+
+      throw error;
     }
   }
 }

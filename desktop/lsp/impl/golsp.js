@@ -7,7 +7,7 @@ const { binPath } = require("../../packing");
  */
 
 /**
- * The go language server implementation
+ * The go language server implementation using JSON rpc
  * @implements {ILanguageServer}
  */
 class GoLanguageServer extends JsonRpcLanguageServer {
@@ -47,8 +47,8 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerDidOpenTextDocument}
    */
-  DidOpenTextDocument(wsf, uri, langId, version, text) {
-    return this._didOpenTextDocument(wsf, uri, langId, version, text);
+  DidOpenTextDocument(wsf, filePath, langId, version, text) {
+    return this._didOpenTextDocument(wsf, filePath, langId, version, text);
   }
 
   /**
@@ -57,32 +57,28 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   StopAll() {
     return this._stopAll();
   }
+
+  /**
+   * @type {import("../../type").ILanguageServerDidChangeTextDocument}
+   */
+  DidChangeTextDocument(wsf, fp, version, changes) {
+    return this._didChangeTextDocument(wsf, fp, version, changes);
+  }
+
+  /**
+   * @type {import("../../type").ILanguageServerDidCloseTextDocument}
+   */
+  DidCloseTextDocument(wsf, fp) {
+    return this._didCloseTextDocument(wsf, fp);
+  }
+
+  /**
+   * @type {import("../../type").ILanguageServerHover}
+   */
+  Hover(workSpaceFolder, filePath, position) {
+    return this._hover(workSpaceFolder, filePath, position);
+  }
 }
-
-// async function test() {
-//   let golsp = new GoLanguageServer();
-
-//   console.log(golsp.IsRunning(""));
-//   console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
-
-//   await golsp.Start("C:\\dev\\fluf\\desktop");
-//   console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
-
-//   await golsp.DidOpenTextDocument(
-//     "C:\\dev\\fluf\\desktop",
-//     "file:///C:/dev/fluf/desktop/example.go",
-//     "go",
-//     1,
-//     "",
-//   );
-
-//   setTimeout(async () => {
-//     await golsp.Stop("C:\\dev\\fluf\\desktop");
-//     console.log(golsp.IsRunning("C:\\dev\\fluf\\desktop"));
-//   }, 4000);
-// }
-
-// test();
 
 module.exports = {
   GoLanguageServer,

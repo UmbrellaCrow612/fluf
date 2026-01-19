@@ -224,6 +224,65 @@ const logger = {
   },
 };
 
+/**
+ * Logs an error object with all its details using the logger.
+ * Handles Error instances, objects, and primitive values gracefully.
+ *
+ * @param {any} error - The error to log (Error, object, string, etc.)
+ * @param {string} [context] - Optional context message to prefix the error
+ * @returns {void}
+ */
+function logError(error, context) {
+  // Log context if provided
+  if (context) {
+    logger.error(context);
+  }
+
+  // Handle null/undefined
+  if (error == null) {
+    logger.error(`Error: ${error}`);
+    return;
+  }
+
+  // Handle Error instances
+  if (error instanceof Error) {
+    logger.error(`Error Name: ${error.name}`);
+    logger.error(`Error Message: ${error.message}`);
+
+    if (error.stack) {
+      logger.error(`Stack Trace:\n${error.stack}`);
+    }
+
+    // Log any custom properties - cast to any to avoid index signature error
+    const errorObj = /** @type {any} */ (error);
+    const customProps = Object.keys(errorObj).filter(
+      (key) => key !== "name" && key !== "message" && key !== "stack",
+    );
+
+    if (customProps.length > 0) {
+      logger.error("Additional Properties:");
+      customProps.forEach((key) => {
+        logger.error(`  ${key}: ${JSON.stringify(errorObj[key])}`);
+      });
+    }
+
+    return;
+  }
+
+  // Handle objects
+  if (typeof error === "object") {
+    try {
+      logger.error(`Error Object: ${JSON.stringify(error, null, 2)}`);
+    } catch (stringifyError) {
+      // Fallback if object has circular references
+      logger.error(`Error Object (non-serializable): ${error.toString()}`);
+    }
+    return;
+  }
+
+  // Handle primitives (string, number, boolean)
+  logger.error(`Error: ${String(error)}`);
+}
 process.on("beforeExit", async () => {
   await flushQueueAsync();
 });
@@ -238,4 +297,4 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-module.exports = { logger };
+module.exports = { logger, logError };

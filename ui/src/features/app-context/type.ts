@@ -170,14 +170,4 @@ export type InMemoryAppContext = {
    * Used to indicate if the command palette should be visible or not
    */
   showCommandPalette: boolean;
-
-  /**
-   * Holds the current language server needed for the given open file thats open i.e the one the code editor is sending the requests to for the given open file being edited via the lsp
-   */
-  currentLanguageServer: languageId | null;
-
-  /**
-   * Represents language servers and if they are active i.e sent a start request and it was ready
-   */
-  activeLanguageServers: ActiveLanguageServer;
 };

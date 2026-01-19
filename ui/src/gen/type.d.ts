@@ -576,281 +576,6 @@ export type clipboardApi = {
     writeImage: writeImageToClipboard;
 };
 /**
- * List of what the value of the event field can be
- */
-export type tsServerOutputEvent = "projectLoadingStart" | "projectLoadingFinish" | "projectsUpdatedInBackground" | "syntaxDiag" | "semanticDiag" | "suggestionDiag" | "configFileDiag" | "typingsInstallerPid" | "setTypings" | "typingsInstalled" | "telemetry" | "largeFileReferenced";
-/**
- * Represents a diagnostic sent from ts server output
- */
-export type tsServerOutputBodyDiagnostic = {
-    /**
-     * - Cords of the start
-     */
-    start: {
-        line: number;
-        offset: number;
-    };
-    /**
-     * - Cords of the end
-     */
-    end: {
-        line: number;
-        offset: number;
-    };
-    /**
-     * - Message
-     */
-    text: string;
-    /**
-     * - The code
-     */
-    code: number;
-    /**
-     * - What type of diagnostic it is
-     */
-    category: "suggestion" | "message" | "error";
-    /**
-     * - Another field it reports
-     */
-    reportsUnnecessary?: boolean | undefined;
-};
-/**
- * Mapped from enum into a object to use from `typescript.d.ts => enum ScriptElementKind`
- */
-export type tsServerOutputBodyScriptElementKind = {
-    unknown: "";
-    warning: "warning";
-    keyword: "keyword";
-    scriptElement: "script";
-    moduleElement: "module";
-    classElement: "class";
-    localClassElement: "local class";
-    interfaceElement: "interface";
-    typeElement: "type";
-    enumElement: "enum";
-    enumMemberElement: "enum member";
-    variableElement: "var";
-    localVariableElement: "local var";
-    variableUsingElement: "using";
-    variableAwaitUsingElement: "await using";
-    functionElement: "function";
-    localFunctionElement: "local function";
-    memberFunctionElement: "method";
-    memberGetAccessorElement: "getter";
-    memberSetAccessorElement: "setter";
-    memberVariableElement: "property";
-    memberAccessorVariableElement: "accessor";
-    constructorImplementationElement: "constructor";
-    callSignatureElement: "call";
-    indexSignatureElement: "index";
-    constructSignatureElement: "construct";
-    parameterElement: "parameter";
-    typeParameterElement: "type parameter";
-    primitiveType: "primitive type";
-    label: "label";
-    alias: "alias";
-    constElement: "const";
-    letElement: "let";
-    directory: "directory";
-    externalModuleName: "external module name";
-    jsxAttribute: "JSX attribute";
-    string: "string";
-    link: "link";
-    linkName: "link name";
-    linkText: "link text";
-};
-/**
- * Mapped from `typescript.d.ts -> export type CompletionEntry`
- */
-export type tsServerOutputBodyCompletionEntry = {
-    kind?: "" | "string" | "function" | "warning" | "keyword" | "label" | "alias" | "directory" | "link" | "script" | "module" | "class" | "local class" | "interface" | "type" | "enum" | "enum member" | "var" | "local var" | "using" | "await using" | "local function" | "method" | "getter" | "setter" | "property" | "accessor" | "constructor" | "call" | "index" | "construct" | "parameter" | "type parameter" | "primitive type" | "const" | "let" | "external module name" | "JSX attribute" | "link name" | "link text" | undefined;
-    kindModifiers?: string | undefined;
-    name?: string | undefined;
-    sortText?: string | undefined;
-    insertText?: string | undefined;
-    filterText?: string | undefined;
-    isSnippet?: boolean | undefined;
-    replacementSpan?: import("typescript").server.protocol.TextSpan | undefined;
-    hasAction?: boolean | undefined;
-    source?: string | undefined;
-    /**
-     * - if needed type
-     */
-    sourceDisplay?: any;
-    /**
-     * - if needed type
-     */
-    labelDetails?: any;
-    isRecommended?: boolean | undefined;
-    isFromUncheckedFile?: boolean | undefined;
-    isPackageJsonImport?: boolean | undefined;
-    isImportStatementCompletion?: boolean | undefined;
-    data?: any;
-    commitCharacters?: string[] | undefined;
-};
-/**
- * The shape the body can be in
- */
-export type tsServerOutputBody = {
-    /**
-     * - Optional could contain the PID number
-     */
-    pid?: number | undefined;
-    /**
-     * - The file path
-     */
-    file?: string | undefined;
-    /**
-     * - List of diagnostics
-     */
-    diagnostics?: tsServerOutputBodyDiagnostic[] | undefined;
-    /**
-     * - From completion info
-     */
-    isIncomplete?: boolean | undefined;
-    /**
-     * - From completion info entries
-     */
-    entries?: tsServerOutputBodyCompletionEntry[] | undefined;
-};
-/**
- * Represents a output produced by TS server output stream i.e a single parsed line from Content length all the way to next line
- * Could contains any of the below fields
- */
-export type tsServerOutput = {
-    /**
-     * - The sequence
-     */
-    seq?: number | undefined;
-    /**
-     * - What type this message is
-     */
-    type?: "request" | "response" | "event" | undefined;
-    /**
-     * - What type of event was emitted
-     */
-    event?: tsServerOutputEvent | undefined;
-    /**
-     * - The body of the output
-     */
-    body?: tsServerOutputBody | undefined;
-    /**
-     * - Sequence number of the request message
-     */
-    request_seq?: number | undefined;
-    /**
-     * - Outcome of the request
-     */
-    success?: boolean | undefined;
-    /**
-     * - The command requested
-     */
-    command?: import("typescript").server.protocol.CommandTypes | undefined;
-    /**
-     * - Optional message
-     */
-    message?: string | undefined;
-};
-export type tsServerResponseCallback = (message: tsServerOutput) => void | Promise<void>;
-/**
- * Register a callback to run when ts server emits a message
- */
-export type onTsServerResponse = (callback: tsServerResponseCallback) => voidCallback;
-/**
- * Writes the file to tsserver stream to watch it and emit stuff for it in the stream
- */
-export type tsServerOpenFile = (filePath: string, fileContent: string) => void;
-/**
- * Writes the file to the stream as being edited
- */
-export type tsServerEditFile = (args: import("typescript").server.protocol.ChangeRequestArgs) => void;
-/**
- * Closes the file into the stream
- */
-export type tsServerCloseFile = (filePath: string) => void;
-/**
- * Used to stream the completion cmd into tsserver
- */
-export type tsServerCompletion = (args: import("typescript").server.protocol.CompletionsRequestArgs) => void;
-/**
- * Represents a shape of an object written to tsserver stdin stream - mainly typed from typescript.d.ts
- */
-export type tsServerWritableObject = {
-    /**
-     * - What command to pass to TS server stdin stream
-     */
-    command: import("typescript").server.protocol.CommandTypes;
-    /**
-     * - Always "request" for writable messages
-     */
-    type: "request";
-    /**
-     * - Unique request sequence number
-     */
-    seq: number;
-    /**
-     * - Arguments passed to tsserver; shape depends on the command look through typescript.d.ts and then the cmd name and then it's interface
-     */
-    arguments: any;
-};
-/**
- * Trigger error checking
- */
-export type tsServerError = (filePath: string) => void;
-/**
- * Start the Typescript / Javascript language server
- */
-export type tsServerStart = (workSpaceFolder: string) => Promise<boolean>;
-/**
- * Stop the typescript server
- */
-export type tsServerStop = () => Promise<boolean>;
-/**
- * Register to run some logic when the Typescript language server is ready
- */
-export type tsServerOnReady = (callback: voidCallback) => voidCallback;
-/**
- * The Typescript / Javascript language server
- */
-export type tsServer = {
-    /**
-     * - Register callback when ts server emits a event message.
-     */
-    onResponse: onTsServerResponse;
-    /**
-     * - Start the Typescript server
-     */
-    start: tsServerStart;
-    /**
-     * - Stops the Typescript server
-     */
-    stop: tsServerStop;
-    /**
-     * - Run logic when the typescript server is ready
-     */
-    onReady: tsServerOnReady;
-    /**
-     * - Opens a file
-     */
-    open: tsServerOpenFile;
-    /**
-     * - Edit the file in the stream
-     */
-    edit: tsServerEditFile;
-    /**
-     * - Close file into the stream
-     */
-    close: tsServerCloseFile;
-    /**
-     * - Get completion data of the current file and offest into the stream
-     */
-    completion: tsServerCompletion;
-    /**
-     * - Trigger get error's / checking for a file
-     */
-    errors: tsServerError;
-};
-/**
  * Create a shell
  */
 export type createShell = (directory: string) => Promise<number>;
@@ -917,225 +642,6 @@ export type LanguageServerProtocolMethod = "initialize" | "initialized" | "clien
  */
 export type LanguageServerjsonrpc = "2.0";
 /**
- * List of the valid language id's you can pass
- */
-export type LanguageServerLanguageId = "python";
-/**
- * Contains all the code to interact with python language server
- */
-export type pythonServer = {
-    /**
-     * - Open a file request
-     */
-    open: pythonServerOpen;
-    /**
-     * - Edit a file request
-     */
-    edit: pythonServerEdit;
-    /**
-     * - Start the language server
-     */
-    start: pythonServerStart;
-    /**
-     * - Stop the language server
-     */
-    stop: pythonServerStop;
-    /**
-     * - Call some logic when the server becomes avaiable and is set up
-     */
-    onReady: pythonServerOnReady;
-    /**
-     * - Run logic when the server responds
-     */
-    onResponse: pythonServerOnResponse;
-};
-/**
- * Represents the shape of the object sent to a JSON rpc language server indicating the document has changed
- */
-export type JSONRpcEdit = {
-    /**
-     * - The files path abs
-     */
-    filePath: string;
-    /**
-     * - The text documents changes
-     */
-    changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[];
-};
-/**
- * Edit a file
- */
-export type pythonServerEdit = (edit: JSONRpcEdit) => void;
-/**
- * Being the python language server
- */
-export type pythonServerStart = (workSpaceFolder: string) => Promise<boolean>;
-/**
- * Stops the python langaueg server
- */
-export type pythonServerStop = () => Promise<boolean>;
-/**
- * Opens file
- */
-export type pythonServerOpen = (filePath: string, fileContent: string) => void;
-/**
- * Call some logic when the python language server is ready
- */
-export type pythonServerOnReady = (callback: voidCallback) => voidCallback;
-/**
- * Represents the shape the notification response object can be listing fields it can possibley have
- */
-export type JSONRpcNotification = {
-    /**
-     * - Version
-     */
-    jsonrpc: string;
-    /**
-     * - Method
-     */
-    method: LanguageServerProtocolMethod;
-    /**
-     * - Addtional info
-     */
-    params?: JSONRpcNotificationParams | undefined;
-};
-/**
- * Represents the shape the notification params can have
- */
-export type JSONRpcNotificationParams = {
-    /**
-     * - The files URI in the shape of for example `file:\\pie.js` encoded
-     */
-    uri?: string | undefined;
-    /**
-     * - Version
-     */
-    version?: number | undefined;
-    /**
-     * - List of diagnostics
-     */
-    diagnostics: JSONRpcNotificationParamsDiagnostic[];
-};
-/**
- * Represents how a diagnostic could look like inside a notification param
- */
-export type JSONRpcNotificationParamsDiagnostic = {
-    /**
-     * - Where the thing is located
-     */
-    range: {
-        start: {
-            line: number;
-            character: number;
-        };
-        end: {
-            line: number;
-            character: number;
-        };
-    };
-    /**
-     * - Infomation
-     */
-    message: string;
-    /**
-     * - Severity
-     */
-    severity: number;
-    /**
-     * - Which LSP it is from
-     */
-    source: string;
-};
-/**
- * The shape of the callback that is called when a message is recieved from the python server
- */
-export type pythonServerOnResponseCallback = (message: JSONRpcNotification) => void | Promise<void>;
-/**
- * Listen to when the server responds and run logic
- */
-export type pythonServerOnResponse = (callback: pythonServerOnResponseCallback) => voidCallback;
-/**
- * Represents the go language server
- */
-export type goServer = {
-    /**
-     * - Start the lsp
-     */
-    start: goServerStart;
-    /**
-     * - Stop the lsp
-     */
-    stop: goServerStop;
-    /**
-     * - Check if the server is readfy or not
-     */
-    isReady: goServerisReady;
-    /**
-     * - Run logic when the server becomes ready
-     */
-    onReady: goServerOnReady;
-    /**
-     * - Run logic when the go lsp produces a response
-     */
-    onResponse: goServerOnResponse;
-    /**
-     * - Open a file
-     */
-    open: goServerOpen;
-    /**
-     * - Edit a file
-     */
-    edit: goServerEdit;
-    /**
-     * - Get file completions
-     */
-    completion: goServerCompletion;
-    /**
-     * - Get hover information
-     */
-    hover: goServerHover;
-};
-/**
- * Send a completion request
- */
-export type goServerCompletion = (filePath: string, position: import("vscode-languageserver-protocol").Position, context: import("vscode-languageserver-protocol").CompletionContext) => void;
-/**
- * Start the go language server
- */
-export type goServerStart = (workSpaceFolder: string) => Promise<boolean>;
-/**
- * Stop the go lsp
- */
-export type goServerStop = () => Promise<boolean>;
-/**
- * Indicates if the go lsp server is ready for messages
- */
-export type goServerisReady = () => Promise<boolean>;
-/**
- * Runs callback when the go server becomes ready
- */
-export type goServerOnReady = (callback: voidCallback) => voidCallback;
-/**
- * Open a file
- */
-export type goServerOpen = (filePath: string, fileContent: string) => void;
-/**
- * Send a edit of a document
- */
-export type goServerEdit = (edit: JSONRpcEdit) => void;
-/**
- * The shape of the callback to run when the go lsp responds with a message
- */
-export type goServerOnResponseCallback = (payload: JSONRpcNotification) => void | Promise<void>;
-/**
- * Run logic when the
- */
-export type goServerOnResponse = (callback: goServerOnResponseCallback) => voidCallback;
-/**
- * Get hover information
- */
-export type goServerHover = (filePath: string, position: import("vscode-languageserver-protocol").Position) => void;
-/**
  * Holds the values language id can be.
  *
  * It is also a way of indicating which lsp have been impl
@@ -1174,7 +680,33 @@ export type ILanguageServer = {
      * - Notify document opened
      */
     DidOpenTextDocument: ILanguageServerDidOpenTextDocument;
+    /**
+     * - Notify document content changed
+     */
+    DidChangeTextDocument: ILanguageServerDidChangeTextDocument;
+    /**
+     * - Notify document closed
+     *
+     * Language Features (Requests - expect responses)
+     */
+    DidCloseTextDocument: ILanguageServerDidCloseTextDocument;
+    /**
+     * - Get hover information
+     */
+    Hover: ILanguageServerHover;
 };
+/**
+ * Get hover information
+ */
+export type ILanguageServerHover = (workSpaceFolder: string, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover>;
+/**
+ * Closes a file that was opened
+ */
+export type ILanguageServerDidCloseTextDocument = (workSpaceFolder: string, filePath: string) => void;
+/**
+ * Send document changes to the LSP
+ */
+export type ILanguageServerDidChangeTextDocument = (workSpaceFolder: string, filePath: string, version: number, changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]) => void;
 /**
  * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
  */
@@ -1211,7 +743,11 @@ export type ILanguageServerGetWorkspaceFolders = () => string[];
 /**
  * Send a text document did open notification
  */
-export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, uri: string, languageId: string, version: number, text: string) => void;
+export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, filePath: string, languageId: languageId, version: number, text: string) => void;
+/**
+ * Used try and get the main window
+ */
+export type getMainWindow = () => import("electron").BrowserWindow | null;
 /**
  * Represents the client which sends and recives LSP messages via UI side
  */
@@ -1224,7 +760,68 @@ export type ILanguageServerClient = {
      * - Stop a specific LSP for a given workspace and language
      */
     stop: ILanguageServerClientStop;
+    /**
+     * - Check if a LSP for a given workspace and language is running
+     */
+    isRunning: ILanguageServerClientIsRunning;
+    /**
+     * - Open a document in the LSP
+     */
+    didOpenTextDocument: ILanguageServerClientDidOpenTextDocument;
+    /**
+     * - Sync document changes with LSP view
+     */
+    didChangeTextDocument: ILanguageServerClientDidChangeTextDocument;
+    /**
+     * - Close the document in the LSP
+     */
+    didCloseTextDocument: ILanguageServerClientDidCloseTextDocument;
+    /**
+     * - Get hover information
+     */
+    hover: ILanguageServerClientHover;
+    /**
+     * - Listen to when the LSP responds and run logic
+     */
+    onData: ILanguageServerClientOnData;
+    /**
+     * - Listen to when the server responds with any notification and run logic
+     */
+    onNotifications: ILanguageServerClientOnNotifications;
+    /**
+     * - Listen to when a specific notification is sent out and run logic
+     */
+    onNotification: ILanguageServerClientOnNotification;
+    /**
+     * - Listen to when the server just becomes ready and run logic
+     */
+    onReady: ILanguageServerClientOnReady;
 };
+/**
+ * Run logic for the first time when a server just becomes ready to recieve messages
+ */
+export type ILanguageServerClientOnReady = (callback: ILanguageServerClientOnReadyCallback) => voidCallback;
+export type ILanguageServerClientOnReadyCallback = (languageId: languageId, workSpaceFolder: string) => void;
+/**
+ * Run logic when LSP responds with data
+ */
+export type ILanguageServerClientOnData = (callback: LanguageServerOnDataCallback) => voidCallback;
+/**
+ * Run logic when the LSP responds with a any notification
+ */
+export type ILanguageServerClientOnNotifications = (callback: LanguageServerOnNotificationCallback) => voidCallback;
+/**
+ * Listen to a specific notification method produced from the LSp and run logic
+ */
+export type ILanguageServerClientOnNotification = (method: LanguageServerProtocolMethod, callback: LanguageServerOnNotificationCallback) => voidCallback;
+/**
+ * Get hover information
+ */
+export type ILanguageServerClientHover = (workSpaceFolder: string, languageId: languageId, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover>;
+/**
+ * Check if the LSP is running for a given workspace and language
+ */
+export type ILanguageServerClientIsRunning = (workSpaceFolder: string, languageId: languageId) => Promise<boolean>;
 /**
  * Start a specific language server
  */
@@ -1234,9 +831,46 @@ export type ILanguageServerClientStart = (workSpaceFolder: string, languageId: l
  */
 export type ILanguageServerClientStop = (workSpaceFolder: string, languageId: languageId) => Promise<boolean>;
 /**
- * Run logic when data has been parsed from a lsp
+ * Sync document changes with the LSP
  */
-export type LanguageServerOnDataCallback = (response: import("vscode-languageserver-protocol").NotificationMessage | import("vscode-languageserver-protocol").ResponseMessage) => void;
+export type ILanguageServerClientDidChangeTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string, version: number, changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]) => void;
+/**
+ * Close the document in the LSP
+ */
+export type ILanguageServerClientDidCloseTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string) => void;
+/**
+ * Open a document
+ */
+export type ILanguageServerClientDidOpenTextDocument = (workSpaceFolder: string, languageId: languageId, filePath: string, version: number, documentText: string) => void;
+/**
+ * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
+ */
+export type LanguageServerOnDataCallback = (response: import("vscode-languageserver-protocol").ResponseMessage | import("vscode-languageserver-protocol").NotificationMessage) => void;
+/**
+ * Shape of data sent when a notification has been parsed and contains information about which language, workspace and content it is
+ */
+export type LanguageServerNotificationResponse = {
+    /**
+     * - The specific language this is for
+     */
+    languageId: languageId;
+    /**
+     * - The specific work space this is for
+     */
+    workSpaceFolder: string;
+    /**
+     * - The shape of params for the given method
+     */
+    params: import("vscode-languageserver-protocol").NotificationMessage["params"];
+};
+/**
+ * The callback to run when a notification has been parsed
+ */
+export type LanguageServerOnNotificationCallback = (result: LanguageServerNotificationResponse) => void;
+/**
+ * The callback to run when a response produces a error
+ */
+export type LanguageServerOnError = (error: any) => void;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */
@@ -1258,10 +892,6 @@ export type ElectronApi = {
      */
     clipboardApi: clipboardApi;
     /**
-     * - The ts / typescript language server
-     */
-    tsServer: tsServer;
-    /**
      * - Contains all methods to use shells
      */
     shellApi: shellApi;
@@ -1278,17 +908,9 @@ export type ElectronApi = {
      */
     chromeWindowApi: chromeWindowApi;
     /**
-     * - Contains all the api's for the python language server
-     */
-    pythonServer: pythonServer;
-    /**
      * - Contains helpers todo with URL / URI's
      */
     urlApi: urlApi;
-    /**
-     * - Contains all the code to use the go language server api's
-     */
-    goServer: goServer;
     /**
      * - Contains all the UI api's to interact with LSP
      */

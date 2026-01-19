@@ -12,6 +12,6 @@
     "alwaysStrict": true,
     "skipLibCheck": true,
     "module": "commonjs",
-    "target": "esnext"
+    "target": "es2015"
   }
 }
