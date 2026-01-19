@@ -384,34 +384,4 @@ class TypeScriptProcess {
   }
 }
 
-async function test() {
-  let proc = new TypeScriptProcess(
-    "node",
-    ["C:\\dev\\fluf\\desktop\\node_modules\\typescript\\lib\\tsserver.js"],
-    "C:\\dev\\fluf\\desktop",
-    "go",
-    () => {
-      return null;
-    },
-  );
-
-  proc.Start();
-
-  setTimeout(async () => {
-    try {
-      console.log("Sending Exit request...");
-      await proc.SendRequest(
-        server.protocol.CommandTypes.Exit,
-        {},
-        { expectResponse: false },
-      );
-      console.log("Exit request completed.");
-    } catch (err) {
-      console.log("Process closed (as expected during exit):", err.message);
-    }
-  }, 4000);
-}
-
-test();
-
 module.exports = { TypeScriptProcess };
