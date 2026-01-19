@@ -16,10 +16,12 @@ import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { fileNode, languageId, voidCallback } from '../../gen/type';
 import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
-import { getLanguageId } from '../lsp/utils';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { FlufDiagnostic } from '../diagnostic/type';
+import { getLanguageId } from '../lsp/utils';
+import { codeMirrorEditToJsonRpcEdits } from '../lsp/conversion';
+import { DocumentVersionsService } from '../lsp/document-versions.service';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -39,6 +41,7 @@ export class TextFileEditorComponent implements OnInit {
   private readonly workSpaceFolder = computed(() =>
     this.appContext.selectedDirectoryPath(),
   );
+  private readonly documentVersionsService = inject(DocumentVersionsService);
 
   constructor() {
     effect(async () => {
@@ -118,6 +121,8 @@ export class TextFileEditorComponent implements OnInit {
       return;
     }
 
+    this.documentVersionsService.docs.set(fileNode.path, 1);
+
     const isStartedAlready = await this.api.lspClient.isRunning(
       this.workSpaceFolder()!,
       this.languageId,
@@ -126,7 +131,7 @@ export class TextFileEditorComponent implements OnInit {
     this.serverUnSubs.push(
       this.api.lspClient.onReady((langId, wsf) => {
         console.log(`On ready called languageId ${langId} workspace: ${wsf}`);
-        this.openFileInLanguageServer(); // on ready open the current file in LSP
+        this.openFileInLanguageServer(); // called on first time starts
       }),
     );
 
@@ -190,14 +195,18 @@ export class TextFileEditorComponent implements OnInit {
     if (!node) return;
 
     if (this.languageId && update.docChanged) {
+      let currentVersion =
+        this.documentVersionsService.docs.get(node.path) ?? 1;
+      let newVersion = currentVersion + 1;
+      this.documentVersionsService.docs.set(node.path, newVersion);
+
       this.api.lspClient.didChangeTextDocument(
         this.workSpaceFolder()!,
         this.languageId,
         node.path,
-        1,
-        [],
+        newVersion,
+        codeMirrorEditToJsonRpcEdits(update),
       );
-      this.diagnosticsEvent();
     }
 
     if (update.docChanged) {
@@ -205,22 +214,6 @@ export class TextFileEditorComponent implements OnInit {
       this.onSaveEvent();
     }
   });
-
-  private diagTimeout: any;
-  /**
-   * Debounces the request to the Language Service for file errors (Geterr).
-   * Only sends the request after the user has stopped typing for a set delay.
-   */
-  private diagnosticsEvent() {
-    if (this.diagTimeout) {
-      clearTimeout(this.diagTimeout);
-    }
-
-    this.diagTimeout = setTimeout(() => {
-      // if (!this.openFileNode() || !this.languageServer) return;
-      // this.lspService.Error(this.openFileNode()!.path, this.languageServer);
-    }, 200);
-  }
 
   openFileNode = computed(() => this.appContext.currentOpenFileInEditor());
   error: string | null = null;
