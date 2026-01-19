@@ -1147,14 +1147,22 @@
 /**
  * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
  * @callback LanguageServerOnDataCallback
- * @param {any} response - The LSP response
+ * @param {import("vscode-languageserver-protocol").ResponseMessage | import("vscode-languageserver-protocol").NotificationMessage} response - The LSP response
  * @returns {void}
+ */
+
+/**
+ * Shape of data sent when a notification has been parsed and contains information about which language, workspace and content it is
+ * @typedef {Object} LanguageServerNotificationResponse
+ * @property {languageId} languageId - The specific language this is for
+ * @property {string} workSpaceFolder - The specific work space this is for
+ * @property {import("vscode-languageserver-protocol").NotificationMessage["params"]} params - The shape of params for the given method
  */
 
 /**
  * The callback to run when a notification has been parsed
  * @callback LanguageServerOnNotificationCallback
- * @param {any} result - The parsed notification data
+ * @param {LanguageServerNotificationResponse} result - The parsed notification data
  * @returns {void} Nothing
  */
 

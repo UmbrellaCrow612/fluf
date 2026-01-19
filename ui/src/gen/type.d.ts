@@ -1339,11 +1339,28 @@ export type ILanguageServerClientDidOpenTextDocument = (workSpaceFolder: string,
 /**
  * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
  */
-export type LanguageServerOnDataCallback = (response: any) => void;
+export type LanguageServerOnDataCallback = (response: import("vscode-languageserver-protocol").ResponseMessage | import("vscode-languageserver-protocol").NotificationMessage) => void;
+/**
+ * Shape of data sent when a notification has been parsed and contains information about which language, workspace and content it is
+ */
+export type LanguageServerNotificationResponse = {
+    /**
+     * - The specific language this is for
+     */
+    languageId: languageId;
+    /**
+     * - The specific work space this is for
+     */
+    workSpaceFolder: string;
+    /**
+     * - The shape of params for the given method
+     */
+    params: import("vscode-languageserver-protocol").NotificationMessage["params"];
+};
 /**
  * The callback to run when a notification has been parsed
  */
-export type LanguageServerOnNotificationCallback = (result: any) => void;
+export type LanguageServerOnNotificationCallback = (result: LanguageServerNotificationResponse) => void;
 /**
  * The callback to run when a response produces a error
  */

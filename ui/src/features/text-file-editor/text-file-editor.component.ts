@@ -1,4 +1,4 @@
-import { linter, lintGutter } from '@codemirror/lint';
+import { Diagnostic, linter, lintGutter } from '@codemirror/lint';
 import {
   Component,
   computed,
@@ -20,8 +20,12 @@ import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { FlufDiagnostic } from '../diagnostic/type';
 import { getLanguageId } from '../lsp/utils';
-import { codeMirrorEditToJsonRpcEdits } from '../lsp/conversion';
+import {
+  codeMirrorEditToJsonRpcEdits,
+  lspDiagnosticsToCodeMirror,
+} from '../lsp/conversion';
 import { DocumentVersionsService } from '../lsp/document-versions.service';
+import { PublishDiagnosticsParams } from 'vscode-languageserver-protocol';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -77,7 +81,7 @@ export class TextFileEditorComponent implements OnInit {
   private languageId: languageId | null = null;
 
   /** Holds the current diagnostics for the file */
-  private currentDiagnostics: FlufDiagnostic[] = [];
+  private currentDiagnostics: Diagnostic[] = [];
 
   /**
    * Sends the open file request to LSP
@@ -153,7 +157,12 @@ export class TextFileEditorComponent implements OnInit {
         'textDocument/publishDiagnostics',
         (data) => {
           console.log('diagnostics published');
-          console.log(data);
+
+          let params = data.params as any as PublishDiagnosticsParams;
+          this.currentDiagnostics = lspDiagnosticsToCodeMirror(
+            params,
+            this.codeMirrorView!,
+          );
         },
       ),
     );

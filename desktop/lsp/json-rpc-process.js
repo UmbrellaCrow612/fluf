@@ -527,6 +527,10 @@ class JsonRpcProcess {
       return;
     }
 
+    if (!this.#languageId) throw new Error("No language id cannot send events");
+    if (!this.#workSpaceFolder)
+      throw new Error("No workspace folder cannot send events");
+
     // Send all data
     this.#mainWindowRef?.webContents.send("lsp:data", {
       response: response,
@@ -547,14 +551,17 @@ class JsonRpcProcess {
         workSpaceFolder: this.#workSpaceFolder,
       });
 
+      /** @type {import("../type").LanguageServerNotificationResponse} */
+      let notificationData = {
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+        params: response?.params,
+      };
+
       // Send method-specific event for convenience
       this.#mainWindowRef?.webContents.send(
         `lsp:notification:${response.method}`,
-        {
-          languageId: this.#languageId,
-          workSpaceFolder: this.#workSpaceFolder,
-          params: response.params,
-        },
+        notificationData,
       );
     }
   }
