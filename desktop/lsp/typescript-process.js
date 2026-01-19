@@ -70,6 +70,21 @@ class TypeScriptProcess {
    */
   #stdoutBuffer = Buffer.alloc(0);
 
+  /** Holds the next request number */
+  #seqId = 0;
+
+  /** Get the next request number */
+  #getNextSeq = () => this.#seqId++;
+
+  /**
+   * Contains a map of specific request Id's and there promises that need to be resolved for there requests
+   *
+   * - `Key` - The specific request id
+   * - `Value` - Resolvers for the promise it is for
+   * @type {Map<number, {resolve: (value: any) => void, reject: (reason?: any) => void}>}
+   */
+  #pendingRequests = new Map();
+
   /**
    * Required to spawn and manage the typescript process
    * @param {string} command - Used to spawn the process can either be a path to a exe or somthing like a command
@@ -159,7 +174,45 @@ class TypeScriptProcess {
     }
   }
 
-  SendRequest() {}
+  /**
+   * Make a request and await typescript server response and recieve it.
+   * @param {import("typescript").server.protocol.CommandTypes} command - The specific command to make a request
+   * @param {any} params - any addtional params it needed
+   * @returns {Promise<any>} Promise that resolves to the parsed content of the command or rejects
+   */
+  SendRequest(command, params) {
+    try {
+      const requestId = this.#getNextSeq();
+      return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          if (this.#pendingRequests.has(requestId)) {
+            this.#pendingRequests
+              .get(requestId)
+              ?.reject(new Error(`Request id: ${requestId} timed out`));
+            this.#pendingRequests.delete(requestId);
+          }
+        }, 4500);
+
+        this.#pendingRequests.set(requestId, {
+          resolve: (value) => {
+            clearTimeout(timeoutId);
+            resolve(value);
+          },
+          reject: (reason) => {
+            clearTimeout(timeoutId);
+            reject(reason);
+          },
+        });
+      });
+    } catch (error) {
+      logError(
+        error,
+        `Failed to send typescript server request. Request command: ${command} request params: ${JSON.stringify(params)}`,
+      );
+
+      throw error;
+    }
+  }
 
   /**
    * Clears any pending requests to stop hanging
@@ -214,5 +267,33 @@ class TypeScriptProcess {
    */
   #handle(message) {
     console.log(message);
+  }
+
+  /**
+   * Attempt to write to the stdin of the spawned command
+   * @param {import("typescript").server.protocol.Request} message - The message to send
+   * @returns {void} Nothing
+   */
+  #writeToStdin(message) {
+    if (typeof message !== "object")
+      throw new TypeError("message must be a object");
+
+    if (!this.#spawnRef)
+      throw new Error("Cannot write to stdin as process not yet started");
+
+    if (!this.#spawnRef.stdin.writable)
+      throw new Error("Cannot write to stdin of process");
+
+    try {
+      const payload = JSON.stringify(message) + "\n";
+      this.#spawnRef.stdin.write(payload, "utf8");
+    } catch (error) {
+      logError(
+        error,
+        `Failed to write to stdin of process command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+      );
+      logger.error(`Raw body ${JSON.stringify(message)}`);
+      throw error;
+    }
   }
 }
