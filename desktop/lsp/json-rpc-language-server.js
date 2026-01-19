@@ -2,7 +2,6 @@ const { logger, logError } = require("../logger");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
 const { createUri } = require("./uri");
-const { rejectPromise } = require("../promises");
 
 /**
  * @typedef {import("../type").ILanguageServer} ILanguageServer
@@ -393,7 +392,7 @@ class JsonRpcLanguageServer {
       const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
-        return rejectPromise(
+        return Promise.reject(
           `No LSP process is running for ${_workSpaceFolder}`,
         );
       }
@@ -402,7 +401,7 @@ class JsonRpcLanguageServer {
         logger.error(
           `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
         );
-        return rejectPromise(
+        return Promise.reject(
           `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
         );
       }

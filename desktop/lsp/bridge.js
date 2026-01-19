@@ -1,5 +1,4 @@
 const { logger } = require("../logger");
-const { rejectPromise } = require("../promises");
 const { GoLanguageServer } = require("./impl/golsp");
 const { LanguageServerManager } = require("./manager");
 
@@ -137,7 +136,7 @@ const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.error(`No language server language: ${languageId}`);
-    return rejectPromise(
+    return Promise.reject(
       `No language server language: ${languageId} cannot provide hover information`,
     );
   }
