@@ -2,6 +2,7 @@ const { logger, logError } = require("../../logger");
 const { getTypescriptServerPath } = require("../../packing");
 const path = require("path");
 const { TypeScriptProcess } = require("../typescript-process");
+const cmds = require("typescript").server.protocol.CommandTypes;
 
 /**
  * @typedef {import("../../type").ILanguageServer} ILanguageServer
@@ -9,7 +10,6 @@ const { TypeScriptProcess } = require("../typescript-process");
 
 /**
  * The typescript language server implementation using following json RPC protocol design
- * @implements {ILanguageServer}
  */
 class TypeScriptLanguageServer {
   /**
@@ -113,6 +113,73 @@ class TypeScriptLanguageServer {
 
       throw error;
     }
+  }
+
+  /**
+   * @type {import("../../type").ILanguageServerStop}
+   */
+  async Stop(workSpaceFolder) {
+    if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
+      throw new Error("workSpaceFolder must be a non-empty string");
+
+    const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+    try {
+      if (!this.#workSpaceProcessMap.has(_workSpaceFolder)) {
+        logger.warn(
+          `Typescript server not running for workspace: ${_workSpaceFolder}`,
+        );
+        return true;
+      }
+
+      const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
+      if (!process) {
+        this.#workSpaceProcessMap.delete(_workSpaceFolder);
+        logger.warn(
+          `Typescript server process reference missing for workspace: ${_workSpaceFolder}`,
+        );
+        return true;
+      }
+
+      await process.SendRequest(cmds.Exit, {});
+
+      this.#workSpaceProcessMap.delete(_workSpaceFolder);
+
+      logger.info(`Stopped typescript lsp for workspace: ${_workSpaceFolder}`);
+
+      return true;
+    } catch (error) {
+      logError(
+        error,
+        `Failed to stop typescript lsp for workspace: ${_workSpaceFolder}`,
+      );
+
+      throw error;
+    }
+  }
+
+  Completion() {
+    throw new Error("Not implemented");
+  }
+
+  DidChangeTextDocument() {
+    throw new Error("Not implemented");
+  }
+
+  DidCloseTextDocument() {
+    throw new Error("Not implemented");
+  }
+
+  DidOpenTextDocument(){
+    throw new Error("Not implemented");
+  }
+
+  GetWorkspaceFolders(){
+    throw new Error("Not implemented");
+  }
+
+  Hover(){
+    throw new Error("Not implemented");
   }
 }
 
