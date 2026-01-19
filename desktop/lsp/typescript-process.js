@@ -5,7 +5,7 @@
 const { spawn } = require("child_process");
 const { logError, logger } = require("../logger");
 const path = require("path");
-const { server } = require("typescript");
+const fs = require("fs/promises");
 
 /**
  * @typedef {import("../type").getMainWindow} getMainWindow
@@ -122,9 +122,9 @@ class TypeScriptProcess {
 
   /**
    * Starts the process for the workspace folder provided and other options provided
-   * @returns {void} Nothing
+   * @returns {Promise<void>} Nothing
    */
-  Start() {
+  async Start() {
     try {
       if (this.#isStarted) {
         logger.warn(
@@ -144,6 +144,8 @@ class TypeScriptProcess {
         this.#workSpaceFolder.trim().length === 0
       )
         throw new TypeError("workSpaceFolder must be a non empty string");
+
+      await fs.access(this.#workSpaceFolder); // we just want to ensure the folder exists
 
       this.#spawnRef = spawn(this.#command, this.#args, {
         cwd: this.#workSpaceFolder,

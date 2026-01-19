@@ -96,7 +96,7 @@ class TypeScriptLanguageServer {
 
       this.#workSpaceProcessMap.set(_workSpaceFolder, rc);
 
-      rc.Start(); // we don't need to send a json rpc initialization here because the typescript server doesn't require it
+      await rc.Start(); // we don't need to send a json rpc initialization here because the typescript server doesn't require it
 
       logger.info(`Started typescript lsp for workspace: ${workSpaceFolder}`);
 
