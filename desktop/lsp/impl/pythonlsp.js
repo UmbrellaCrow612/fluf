@@ -1,5 +1,5 @@
 const { JsonRpcLanguageServer } = require("../json-rpc-language-server");
-const { binPath, getPythonServerPath } = require("../../packing");
+const { getPythonServerPath } = require("../../packing");
 
 /**
  * @typedef {import("../../type").ILanguageServer} ILanguageServer
