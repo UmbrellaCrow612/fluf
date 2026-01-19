@@ -19,21 +19,21 @@ const { server } = require("typescript");
 class TypeScriptProcess {
   /**
    * The specific command used to spawn the process such as either path to a exe or a command itself like `gopls`
-   * @type {string}
+   * @type {string | null}
    */
-  #command;
+  #command = null;
 
   /**
    * The folder this process was spawned for example `c:/dev/some/project`
-   * @type {string}
+   * @type {string | null}
    */
-  #workSpaceFolder;
+  #workSpaceFolder = null;
 
   /**
    * The specific language this is for example `go` or `typescript` etc
-   * @type {languageId}
+   * @type {languageId | null}
    */
-  #languageId;
+  #languageId = null;
 
   /**
    * Used to fetch the main window
@@ -132,6 +132,18 @@ class TypeScriptProcess {
         );
         return;
       }
+
+      if (
+        typeof this.#command !== "string" ||
+        this.#command.trim().length === 0
+      )
+        throw new TypeError("command must be a non empty string");
+
+      if (
+        typeof this.#workSpaceFolder !== "string" ||
+        this.#workSpaceFolder.trim().length === 0
+      )
+        throw new TypeError("workSpaceFolder must be a non empty string");
 
       this.#spawnRef = spawn(this.#command, this.#args, {
         cwd: this.#workSpaceFolder,
@@ -256,32 +268,55 @@ class TypeScriptProcess {
     while (true) {
       const bufferString = this.#stdoutBuffer.toString("utf-8");
 
-      // 1. Look for the "Content-Length: X" header
-      const headerMatch = bufferString.match(/Content-Length: (\d+)\r?\n\r?\n/);
+      const prefix = "Content-Length: ";
+      const prefixIndex = bufferString.indexOf(prefix);
 
-      if (!headerMatch) {
-        // No full header found yet, wait for more data
+      if (prefixIndex === -1) {
         break;
       }
 
-      const contentLength = parseInt(headerMatch[1], 10);
-      const headerLength = headerMatch[0].length;
-      const totalMessageLength = headerLength + contentLength;
+      const lineStart = prefixIndex + prefix.length;
+      const lineEnd = bufferString.indexOf("\n", lineStart);
 
-      // 2. Check if the buffer contains the full body
+      if (lineEnd === -1) {
+        break;
+      }
+
+      const lengthStr = bufferString.substring(lineStart, lineEnd).trim();
+      const contentLength = parseInt(lengthStr, 10);
+
+      if (isNaN(contentLength)) {
+        logError(
+          new Error(`Invalid Content-Length: ${lengthStr}`),
+          "Failed to parse Content-Length header",
+        );
+        this.#stdoutBuffer = this.#stdoutBuffer.subarray(lineEnd + 1);
+        continue;
+      }
+
+      let bodyStart = lineEnd + 1;
+      if (
+        bufferString[bodyStart] === "\r" ||
+        bufferString[bodyStart] === "\n"
+      ) {
+        bodyStart++;
+      }
+
+      const bodyStartBytes = Buffer.from(
+        bufferString.substring(0, bodyStart),
+      ).length;
+      const totalMessageLength = bodyStartBytes + contentLength;
+
       if (this.#stdoutBuffer.length < totalMessageLength) {
-        // Full body hasn't arrived yet
         break;
       }
 
-      // 3. Extract the JSON body based on the length
       const bodyBuffer = this.#stdoutBuffer.subarray(
-        headerLength,
+        bodyStartBytes,
         totalMessageLength,
       );
       const bodyString = bodyBuffer.toString("utf-8");
 
-      // 4. Update the buffer to remove the processed message
       this.#stdoutBuffer = this.#stdoutBuffer.subarray(totalMessageLength);
 
       try {
@@ -292,6 +327,7 @@ class TypeScriptProcess {
       }
     }
   }
+
   /**
    * Given a parsed stdout message to notify those intrested and pass the content along where needed
    * @param {any} message - MEssage parsed from typescript server
