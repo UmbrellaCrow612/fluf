@@ -486,7 +486,7 @@ class TypeScriptLanguageServer {
        */
       let content = {
         kind: "markdown",
-        value: responseBody.displayString, // TODO Fix for UI rendering
+        value: `${responseBody.displayString} \n ${responseBody.documentation}`, // TODO Fix for UI rendering
       };
 
       /**
