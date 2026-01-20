@@ -32,6 +32,12 @@ class TypeScriptLanguageServer {
   #mainWindowRef = null;
 
   /**
+   * Holds a map of workspace and it's process running for it
+   * @type {Map<string, import("../typescript-process").TypeScriptProcess>}
+   */
+  #workSpaceProcessMap = new Map();
+
+  /**
    * Required for typescript LSP to work
    * @param {import("../../type").getMainWindow} getMainWindow - Used to fetch the main window
    * @param {import("../../type").languageId} languageId - The specific language id for exmaple `typescript`
@@ -47,12 +53,6 @@ class TypeScriptLanguageServer {
     this.#languageId = languageId;
     this.#mainWindowRef = this.#getMainWindow(); // we do this because we don't know when the main window will be available
   }
-
-  /**
-   * Holds a map of workspace and it's process running for it
-   * @type {Map<string, import("../typescript-process").TypeScriptProcess>}
-   */
-  #workSpaceProcessMap = new Map();
 
   /**
    * @type {import("../../type").ILanguageServerStart}
@@ -98,6 +98,13 @@ class TypeScriptLanguageServer {
       this.#workSpaceProcessMap.set(_workSpaceFolder, process);
 
       await process.Start(); // we don't need to send a json rpc initialization here because the typescript server doesn't require it
+
+      // notify ui lsp ready for given lang and workspace
+      this.#mainWindowRef.webContents.send(
+        "lsp:on:ready",
+        this.#languageId,
+        workSpaceFolder,
+      );
 
       logger.info(`Started typescript lsp for workspace: ${workSpaceFolder}`);
 
@@ -277,8 +284,50 @@ class TypeScriptLanguageServer {
     }
   }
 
-  DidCloseTextDocument() {
-    throw new Error("Not implemented");
+  /**
+   * @type {import("../../type").ILanguageServerDidCloseTextDocument}
+   */
+  DidCloseTextDocument(workSpaceFolder, filePath) {
+    if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
+      throw new Error("workSpaceFolder must be a non-empty string");
+
+    if (typeof filePath !== "string" || filePath.trim() === "")
+      throw new Error("filePath must be a non-empty string");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      if (!this.#workSpaceProcessMap.has(_workSpaceFolder)) {
+        logger.warn(
+          `Typescript server not running for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
+      if (!process) {
+        logger.warn(
+          `Typescript server process reference missing for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      if (!process.IsRunning()) {
+        logger.warn(
+          `Typescript server process not running for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      process.DidCloseTextDocument(filePath);
+    } catch (error) {
+      logError(
+        error,
+        `Failed to send didCloseTextDocument for workspace: ${workSpaceFolder} file: ${filePath}`,
+      );
+
+      throw error;
+    }
   }
 
   DidOpenTextDocument() {

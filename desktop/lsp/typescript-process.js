@@ -316,6 +316,39 @@ class TypeScriptProcess {
   }
 
   /**
+   * Send a notification to the typescript server that a text document was closed
+   * @param {string} filePath - The file path that was closed
+   */
+  DidCloseTextDocument(filePath) {
+    if (typeof filePath !== "string" || filePath.trim().length === 0)
+      throw new TypeError("filePath must be a non empty string");
+
+    try {
+      /**
+       * Close request uses the FileRequestArgs type
+       * @type {import("typescript").server.protocol.FileRequestArgs}
+       */
+      let params = {
+        file: path.normalize(path.resolve(filePath)),
+      };
+
+      this.#writeToStdin({
+        command: protocol.CommandTypes.Close,
+        type: "request",
+        seq: this.#getNextSeq(),
+        arguments: params,
+      });
+    } catch (error) {
+      logError(
+        error,
+        `Failed to send DidCloseTextDocument notification for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+      );
+
+      throw error;
+    }
+  }
+
+  /**
    * Clears any pending requests to stop hanging and clean up process
    */
   #rejectPendingRequests() {
