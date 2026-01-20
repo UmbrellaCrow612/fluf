@@ -2,7 +2,6 @@ const { logger, logError } = require("../../logger");
 const { getTypescriptServerPath } = require("../../packing");
 const path = require("path");
 const { TypeScriptProcess } = require("../typescript-process");
-
 const { protocol } = require("typescript").server;
 
 /**
@@ -11,6 +10,8 @@ const { protocol } = require("typescript").server;
 
 /**
  * The typescript language server implementation using following json RPC protocol design
+ * 
+ * @implements {ILanguageServer}
  *
  */
 class TypeScriptLanguageServer {
@@ -516,12 +517,31 @@ class TypeScriptLanguageServer {
     }
   }
 
-  IsRunning() {
-    throw new Error("Not implemented");
+  /**
+   * @type {import("../../type").ILanguageServerIsRunning}
+   */
+  IsRunning(workSpaceFolder) {
+    const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+    const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
+    return process ? process.IsRunning() : false;
   }
 
-  StopAll() {
-    throw new Error("Not implemented");
+  /**
+   * @type {import("../../type").ILanguageServerStopAll}
+   */
+  async StopAll() {
+    let wsfs = Array.from(this.#workSpaceProcessMap.keys());
+    /** @type {import("../../type").ILanguageServerStopAllResult[]} */
+    let result = [];
+
+    for (const wsf of wsfs) {
+      result.push({
+        workSpaceFolder: wsf,
+        result: await this.Stop(wsf),
+      });
+    }
+
+    return result;
   }
 }
 
