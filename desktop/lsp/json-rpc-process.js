@@ -466,7 +466,7 @@ class JsonRpcProcess {
       }
 
       try {
-        this.#notify(response);
+        this.#handle(response);
       } catch (/** @type {any}*/ err) {
         logError(
           err,
@@ -478,11 +478,10 @@ class JsonRpcProcess {
   }
 
   /**
-   * Notifys any listener's that a message has been parsed fromn the lsp
-   * @param {any} response - Either a response message or notification
-   * @returns {void} Nothing
+   * Handles a response message from the LSP and notifies any listeners
+   * @param {import("vscode-languageserver-protocol").ResponseMessage} response
    */
-  #notify(response) {
+  #handle(response) {
     // We need to resolve pending requests first to stop hanging
     if (
       response.id !== null &&
@@ -507,8 +506,24 @@ class JsonRpcProcess {
       this.#pendingRequests.delete(Number(response.id));
     }
 
-    if (!response || typeof response !== "object")
-      throw new TypeError("response must be an object");
+    // Send all data
+    this.#mainWindowRef?.webContents.send("lsp:data", {
+      response: response,
+      languageId: this.#languageId,
+      workSpaceFolder: this.#workSpaceFolder,
+    });
+
+    this.#notify(response);
+  }
+
+  /**
+   * Notify interested parties of a notification message from the LSP
+   * @param {any} notification - The notification message
+   * @returns {void} Nothing
+   */
+  #notify(notification) {
+    if (!notification || typeof notification !== "object")
+      throw new TypeError("notification must be an object");
 
     if (!this.#getMainWindow)
       throw new Error("getMainWindow is null cannot get main window");
@@ -531,22 +546,13 @@ class JsonRpcProcess {
     if (!this.#workSpaceFolder)
       throw new Error("No workspace folder cannot send events");
 
-    // Send all data
-    this.#mainWindowRef?.webContents.send("lsp:data", {
-      response: response,
-      languageId: this.#languageId,
-      workSpaceFolder: this.#workSpaceFolder,
-    });
-
-    // Handle notifications (has method, no id)
     if (
-      response.method &&
-      (response.id === undefined || response.id === null)
+      notification.method &&
+      (notification.id === undefined || notification.id === null)
     ) {
-      // Send specific event for the notification method
       this.#mainWindowRef?.webContents.send("lsp:notification", {
-        method: response.method,
-        params: response.params,
+        method: notification.method,
+        params: notification.params,
         languageId: this.#languageId,
         workSpaceFolder: this.#workSpaceFolder,
       });
@@ -555,12 +561,11 @@ class JsonRpcProcess {
       let notificationData = {
         languageId: this.#languageId,
         workSpaceFolder: this.#workSpaceFolder,
-        params: response?.params,
+        params: notification?.params,
       };
 
-      // Send method-specific event for convenience
       this.#mainWindowRef?.webContents.send(
-        `lsp:notification:${response.method}`,
+        `lsp:notification:${notification.method}`,
         notificationData,
       );
     }
