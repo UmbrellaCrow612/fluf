@@ -490,8 +490,39 @@ class TypeScriptProcess {
       }
     }
 
-    // TODO: Send events to the main window like notifications tec mapped to LSPlike others
-    console.log(respose);
+    this.#notify(respose);
+  }
+
+  /**
+   * Send a response to UI if the response is a notification
+   * @param {import("typescript").server.protocol.Response} notification - Notification received
+   */
+  #notify(notification) {
+    if (typeof notification !== "object")
+      throw new TypeError("notification must be a object");
+
+    if (!this.#mainWindowRef) throw new Error("main window ref not set");
+
+    if (!this.#languageId) throw new Error("languageId not set");
+
+    if (!this.#workSpaceFolder) throw new Error("workSpaceFolder not set");
+
+    try {
+      if (notification.type !== "response" || !notification.success) {
+        return;
+      }
+
+      /** @type {import("../type").LanguageServerNotificationResponse} */
+      let notificationData = {
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+        params: notification.body,
+      };
+
+      // TODO; notify ui like json rpc by mapping tsserver to publish diagnostics 
+    } catch (error) {
+      logError(error, "Failed to notify main window of TSServer notification");
+    }
   }
 
   /**
