@@ -220,8 +220,56 @@ class TypeScriptLanguageServer {
     }
   }
 
-  DidChangeTextDocument() {
-    throw new Error("Not implemented");
+  /**
+   * @type {import("../../type").ILanguageServerDidChangeTextDocument}
+   */
+  DidChangeTextDocument(workSpaceFolder, filePath, version, changes) {
+    if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
+      throw new Error("workSpaceFolder must be a non-empty string");
+
+    if (typeof filePath !== "string" || filePath.trim() === "")
+      throw new Error("filePath must be a non-empty string");
+
+    if (typeof version !== "number" || version < 0)
+      throw new Error("version must be a non-negative number");
+
+    if (!Array.isArray(changes))
+      throw new Error("changes must be a valid array");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      if (!this.#workSpaceProcessMap.has(_workSpaceFolder)) {
+        logger.warn(
+          `Typescript server not running for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
+      if (!process) {
+        logger.warn(
+          `Typescript server process reference missing for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      if (!process.IsRunning()) {
+        logger.warn(
+          `Typescript server process not running for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      process.DidChangeTextDocument(filePath, version, changes);
+    } catch (error) {
+      logError(
+        error,
+        `Failed to send didChangeTextDocument for workspace: ${workSpaceFolder} file: ${filePath}`,
+      );
+
+      throw error;
+    }
   }
 
   DidCloseTextDocument() {

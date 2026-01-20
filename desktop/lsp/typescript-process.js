@@ -247,6 +247,34 @@ class TypeScriptProcess {
   }
 
   /**
+   * Send a notification to the typescript server that a text document changed
+   * @param {string} filePath - The file path that changed
+   * @param {number} version - The version of the file
+   * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - The changes made to the file
+   */
+  DidChangeTextDocument(filePath, version, changes) {
+    if (typeof filePath !== "string" || filePath.trim().length === 0)
+      throw new TypeError("filePath must be a non empty string");
+
+    if (typeof version !== "number" || version < 0)
+      throw new TypeError("version must be a non negative number");
+
+    if (!Array.isArray(changes))
+      throw new TypeError("changes must be an array");
+
+    try {
+      // TODO: handle sending the request from lsp type change to a typescript server change request
+    } catch (error) {
+      logError(
+        error,
+        `Failed to send DidChangeTextDocument notification for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+      );
+
+      throw error;
+    }
+  }
+
+  /**
    * Clears any pending requests to stop hanging and clean up process
    */
   #rejectPendingRequests() {
@@ -351,6 +379,7 @@ class TypeScriptProcess {
       }
     }
 
+    // TODO: Send events to the main window
     console.log(message);
   }
 
