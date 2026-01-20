@@ -225,9 +225,29 @@ class TypeScriptLanguageServer {
       /**
        * @type {import("typescript").server.protocol.CompletionInfoResponse["body"]}
        */
-      let responseBody = await process.SendRequest(protocol.CommandTypes.CompletionInfo, params);
+      let responseBody = await process.SendRequest(
+        protocol.CommandTypes.CompletionInfo,
+        params,
+      );
 
-      // TODO: map to LSP completions then return it
+      if (!responseBody) {
+        throw new Error("No response body from completionInfo request");
+      }
+
+      /**
+       * @type {import("vscode-languageserver-types").CompletionList}
+       */
+      let lspCompletionResponse = {
+        isIncomplete: true,
+        items: responseBody.entries.map((entry) => {
+          // TODO enhance mapping
+          return {
+            label: entry.name,
+          };
+        }),
+      };
+
+      return lspCompletionResponse;
     } catch (error) {
       logError(
         error,
@@ -451,9 +471,41 @@ class TypeScriptLanguageServer {
       /**
        * @type {import("typescript").server.protocol.QuickInfoResponse["body"]}
        */
-      let responseBody = await process.SendRequest(protocol.CommandTypes.Quickinfo, params);
+      let responseBody = await process.SendRequest(
+        protocol.CommandTypes.Quickinfo,
+        params,
+      );
 
-      // TODO: map to LSP hover then return it
+      if (!responseBody) {
+        throw new Error("No response body from quickinfo request");
+      }
+
+      /**
+       * @type {import("vscode-languageserver-types").MarkupContent}
+       */
+      let content = {
+        kind: "markdown",
+        value: responseBody.displayString, // TODO Fix for UI rendering
+      };
+
+      /**
+       * @type {import("vscode-languageserver-types").Hover}
+       */
+      let hoverLspResponse = {
+        contents: content,
+        range: {
+          start: {
+            character: responseBody.start.offset - 1,
+            line: responseBody.start.line - 1,
+          },
+          end: {
+            character: responseBody.end.offset - 1,
+            line: responseBody.end.line - 1,
+          },
+        },
+      };
+
+      return hoverLspResponse;
     } catch (error) {
       logError(
         error,
