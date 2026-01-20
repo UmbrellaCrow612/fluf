@@ -54,6 +54,14 @@ class TypeScriptProcess {
   #isStarted = false;
 
   /**
+   * Check if the process is running or not
+   * @returns {boolean} If the process is running or not=
+   */
+  IsRunning() {
+    return this.#isStarted;
+  }
+
+  /**
    * Ref to the process spawned using the command
    * @type {import("child_process").ChildProcessWithoutNullStreams  | null}
    */

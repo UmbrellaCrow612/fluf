@@ -86,7 +86,7 @@ class TypeScriptLanguageServer {
         return true;
       }
 
-      const rc = new TypeScriptProcess(
+      const process = new TypeScriptProcess(
         "node", // we use node to run the typescript server because it's a js file
         [exePath],
         _workSpaceFolder,
@@ -94,9 +94,9 @@ class TypeScriptLanguageServer {
         this.#getMainWindow,
       );
 
-      this.#workSpaceProcessMap.set(_workSpaceFolder, rc);
+      this.#workSpaceProcessMap.set(_workSpaceFolder, process);
 
-      await rc.Start(); // we don't need to send a json rpc initialization here because the typescript server doesn't require it
+      await process.Start(); // we don't need to send a json rpc initialization here because the typescript server doesn't require it
 
       logger.info(`Started typescript lsp for workspace: ${workSpaceFolder}`);
 
@@ -158,8 +158,66 @@ class TypeScriptLanguageServer {
     }
   }
 
-  Completion() {
-    throw new Error("Not implemented");
+  /**
+   * @type {import("../../type").ILanguageServerCompletion}
+   */
+  Completion(workSpaceFolder, filePath, position) {
+    if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
+      throw new Error("workSpaceFolder must be a non-empty string");
+
+    if (typeof filePath !== "string" || filePath.trim() === "")
+      throw new Error("filePath must be a non-empty string");
+
+    if (typeof position !== "object")
+      throw new Error("position must be a valid object");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      if (!this.#workSpaceProcessMap.has(_workSpaceFolder)) {
+        return Promise.reject(
+          new Error(
+            `Typescript server not running for workspace: ${_workSpaceFolder}`,
+          ),
+        );
+      }
+
+      const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
+      if (!process) {
+        this.#workSpaceProcessMap.delete(_workSpaceFolder);
+        return Promise.reject(
+          new Error(
+            `Typescript server process reference missing for workspace: ${_workSpaceFolder}`,
+          ),
+        );
+      }
+
+      if (!process.IsRunning()) {
+        return Promise.reject(
+          new Error(
+            `Typescript server process not running for workspace: ${_workSpaceFolder}`,
+          ),
+        );
+      }
+
+      /**
+       * @type {import("typescript").server.protocol.CompletionsRequestArgs}
+       */
+      let params = {
+        file: path.normalize(path.resolve(filePath)),
+        line: position.line + 1, // typescript server uses 1-based line numbers
+        offset: position.character + 1, // typescript server uses 1-based character numbers
+      };
+
+      return process.SendRequest(cmds.Completions, params);
+    } catch (error) {
+      logError(
+        error,
+        `Failed to get completion for workspace: ${workSpaceFolder} file: ${filePath}`,
+      );
+
+      throw error;
+    }
   }
 
   DidChangeTextDocument() {
