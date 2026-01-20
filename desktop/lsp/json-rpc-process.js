@@ -159,7 +159,7 @@ class JsonRpcProcess {
     if (!this.#getMainWindow)
       throw new Error("getMainWindow is null cannot fetch main window");
 
-    if (!this.#workSpaceFolder || this.#workSpaceFolder.length > 0)
+    if (!this.#workSpaceFolder || this.#workSpaceFolder.length === 0)
       throw new TypeError("workSpaceFolder must be a non empty string");
 
     try {
@@ -171,9 +171,7 @@ class JsonRpcProcess {
 
       await fs.access(this.#workSpaceFolder);
 
-      this.#spawnRef = spawn(this.#command, this.#args, {
-        cwd: this.#workSpaceFolder,
-      });
+      this.#spawnRef = spawn(this.#command, this.#args);
 
       this.#pid = this.#spawnRef.pid;
 
@@ -501,13 +499,15 @@ class JsonRpcProcess {
       if (response.error) {
         obj?.reject(response.error);
 
-        // Send error event with full context
-        this.#mainWindowRef?.webContents.send("lsp:error", {
-          error: response.error,
-          id: response.id,
-          languageId: this.#languageId,
-          workSpaceFolder: this.#workSpaceFolder,
-        });
+        // Check if window still exists before sending error event
+        if (this.#mainWindowRef && !this.#mainWindowRef.isDestroyed()) {
+          this.#mainWindowRef.webContents.send("lsp:error", {
+            error: response.error,
+            id: response.id,
+            languageId: this.#languageId,
+            workSpaceFolder: this.#workSpaceFolder,
+          });
+        }
       } else {
         obj?.resolve(response.result);
       }
@@ -515,12 +515,14 @@ class JsonRpcProcess {
       this.#pendingRequests.delete(Number(response.id));
     }
 
-    // Send all data
-    this.#mainWindowRef?.webContents.send("lsp:data", {
-      response: response,
-      languageId: this.#languageId,
-      workSpaceFolder: this.#workSpaceFolder,
-    });
+    // Check if window still exists before sending data event
+    if (this.#mainWindowRef && !this.#mainWindowRef.isDestroyed()) {
+      this.#mainWindowRef.webContents.send("lsp:data", {
+        response: response,
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+      });
+    }
 
     this.#notify(response);
   }
@@ -559,7 +561,7 @@ class JsonRpcProcess {
       notification.method &&
       (notification.id === undefined || notification.id === null)
     ) {
-      this.#mainWindowRef?.webContents.send("lsp:notification", {
+      this.#mainWindowRef.webContents.send("lsp:notification", {
         method: notification.method,
         params: notification.params,
         languageId: this.#languageId,
@@ -573,7 +575,7 @@ class JsonRpcProcess {
         params: notification?.params,
       };
 
-      this.#mainWindowRef?.webContents.send(
+      this.#mainWindowRef.webContents.send(
         `lsp:notification:${notification.method}`,
         notificationData,
       );

@@ -17,6 +17,12 @@ export function getLanguageId(extension: string): languageId | null {
     case '.py':
       return 'python';
 
+    case '.js':
+    case '.jsx':
+    case '.ts':
+    case '.tsx':
+      return 'typescript';
+
     default:
       console.log('Unsuported language server for file');
       return null;
