@@ -11,6 +11,7 @@ const { protocol } = require("typescript").server;
 
 /**
  * The typescript language server implementation using following json RPC protocol design
+ *
  */
 class TypeScriptLanguageServer {
   /**
@@ -384,61 +385,83 @@ class TypeScriptLanguageServer {
     }
   }
 
+  /**
+   * @type {import("../../type").ILanguageServerGetWorkspaceFolders}
+   */
   GetWorkspaceFolders() {
+    return Array.from(this.#workSpaceProcessMap.keys());
+  }
+
+  /**
+   * @type {import("../../type").ILanguageServerHover}
+   */
+  Hover(workSpaceFolder, filePath, position) {
+    if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
+      throw new Error("workSpaceFolder must be a non-empty string");
+
+    if (typeof filePath !== "string" || filePath.trim() === "")
+      throw new Error("filePath must be a non-empty string");
+
+    if (typeof position !== "object")
+      throw new Error("position must be a valid object");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      if (!this.#workSpaceProcessMap.has(_workSpaceFolder)) {
+        return Promise.reject(
+          new Error(
+            `Typescript server not running for workspace: ${_workSpaceFolder}`,
+          ),
+        );
+      }
+
+      const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
+      if (!process) {
+        this.#workSpaceProcessMap.delete(_workSpaceFolder);
+        return Promise.reject(
+          new Error(
+            `Typescript server process reference missing for workspace: ${_workSpaceFolder}`,
+          ),
+        );
+      }
+
+      if (!process.IsRunning()) {
+        return Promise.reject(
+          new Error(
+            `Typescript server process not running for workspace: ${_workSpaceFolder}`,
+          ),
+        );
+      }
+
+      /**
+       * @type {import("typescript").server.protocol.FileLocationRequestArgs}
+       */
+      let params = {
+        file: path.normalize(path.resolve(filePath)),
+        line: position.line + 1, // typescript server uses 1-based line numbers
+        offset: position.character + 1, // typescript server uses 1-based character numbers
+      };
+
+      return process.SendRequest(protocol.CommandTypes.Quickinfo, params);
+    } catch (error) {
+      logError(
+        error,
+        `Failed to get hover for workspace: ${workSpaceFolder} file: ${filePath}`,
+      );
+
+      throw error;
+    }
+  }
+
+  IsRunning() {
     throw new Error("Not implemented");
   }
 
-  Hover() {
+  StopAll() {
     throw new Error("Not implemented");
   }
 }
-
-/**
- * Simple test to start and stop the TypeScript Language Server
- */
-// async function testTypeScriptLanguageServer() {
-//   console.log("Starting TypeScript Language Server test...\n");
-
-//   // Mock main window getter
-//   const mockMainWindow = {
-//     webContents: {
-//       send: (channel, data) => {
-//         console.log(`[Mock Window] Sent to channel: ${channel}`, data);
-//       },
-//     },
-//   };
-
-//   const getMainWindow = () => mockMainWindow;
-//   const languageId = "typescript";
-//   const workspaceFolder = path.join("C:\\dev\\fluf\\desktop"); // Change this to your test workspace
-
-//   try {
-//     // Create the language server instance
-//     const lsp = new TypeScriptLanguageServer(getMainWindow, languageId);
-//     console.log("✓ TypeScript Language Server instance created\n");
-
-//     // Start the server
-//     console.log(`Starting server for workspace: ${workspaceFolder}`);
-//     const startResult = await lsp.Start(workspaceFolder);
-//     console.log(`✓ Server started successfully: ${startResult}\n`);
-
-//     // Wait for some time (5 seconds)
-//     console.log("Waiting 5 seconds before stopping...");
-//     await new Promise((resolve) => setTimeout(resolve, 5000));
-
-//     // Stop the server
-//     console.log(`\nStopping server for workspace: ${workspaceFolder}`);
-//     const stopResult = await lsp.Stop(workspaceFolder);
-//     console.log(`✓ Server stopped successfully: ${stopResult}\n`);
-
-//     console.log("Test completed successfully! ✓");
-//   } catch (error) {
-//     console.error("✗ Test failed with error:", error);
-//     process.exit(1);
-//   }
-// }
-
-// testTypeScriptLanguageServer();
 
 module.exports = {
   TypeScriptLanguageServer,
