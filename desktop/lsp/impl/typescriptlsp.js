@@ -330,8 +330,58 @@ class TypeScriptLanguageServer {
     }
   }
 
-  DidOpenTextDocument() {
-    throw new Error("Not implemented");
+  /**
+   * @type {import("../../type").ILanguageServerDidOpenTextDocument}
+   */
+  DidOpenTextDocument(workspaceFolder, filePath, languageId, version, text) {
+    if (typeof workspaceFolder !== "string" || workspaceFolder.trim() === "")
+      throw new Error("workspaceFolder must be a non-empty string");
+
+    if (typeof filePath !== "string" || filePath.trim() === "")
+      throw new Error("filePath must be a non-empty string");
+
+    if (typeof languageId !== "string" || languageId.trim() === "")
+      throw new Error("languageId must be a non-empty string");
+
+    if (typeof version !== "number" || version < 0)
+      throw new Error("version must be a non-negative number");
+
+    if (typeof text !== "string") throw new Error("text must be a string");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workspaceFolder));
+
+      if (!this.#workSpaceProcessMap.has(_workSpaceFolder)) {
+        logger.warn(
+          `Typescript server not running for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
+      if (!process) {
+        logger.warn(
+          `Typescript server process reference missing for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      if (!process.IsRunning()) {
+        logger.warn(
+          `Typescript server process not running for workspace: ${_workSpaceFolder}`,
+        );
+        return;
+      }
+
+      process.DidOpenTextDocument(filePath, text);
+    } catch (error) {
+      logError(
+        error,
+        `Failed to send didOpenTextDocument for workspace: ${workspaceFolder} file: ${filePath}`,
+      );
+
+      throw error;
+    }
   }
 
   GetWorkspaceFolders() {

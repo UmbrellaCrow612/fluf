@@ -349,6 +349,43 @@ class TypeScriptProcess {
   }
 
   /**
+   * Send a notification to the typescript server that a text document was opened
+   * @param {string} filePath - The file path that was opened
+   * @param {string} content - The content of the file
+   */
+  DidOpenTextDocument(filePath, content) {
+    if (typeof filePath !== "string" || filePath.trim().length === 0)
+      throw new TypeError("filePath must be a non empty string");
+
+    if (typeof content !== "string")
+      throw new TypeError("content must be a string");
+
+    try {
+      /**
+       * @type {import("typescript").server.protocol.OpenRequestArgs}
+       */
+      let params = {
+        file: path.normalize(path.resolve(filePath)),
+        fileContent: content,
+      };
+
+      this.#writeToStdin({
+        command: protocol.CommandTypes.Open,
+        type: "request",
+        seq: this.#getNextSeq(),
+        arguments: params,
+      });
+    } catch (error) {
+      logError(
+        error,
+        `Failed to send DidOpenTextDocument notification for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+      );
+
+      throw error;
+    }
+  }
+
+  /**
    * Clears any pending requests to stop hanging and clean up process
    */
   #rejectPendingRequests() {
