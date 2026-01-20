@@ -7,6 +7,8 @@ const { logError, logger } = require("../logger");
 const path = require("path");
 const fs = require("fs/promises");
 
+const { protocol } = require("typescript").server;
+
 /**
  * @typedef {import("../type").getMainWindow} getMainWindow
  */
@@ -263,7 +265,46 @@ class TypeScriptProcess {
       throw new TypeError("changes must be an array");
 
     try {
-      // TODO: handle sending the request from lsp type change to a typescript server change request
+      /**
+       * Holds list of changes mapped from vscode-languageserver-protocol to typescript server protocol
+       * this is done as we receive a list of changes from lsp protocol but typescript expects a different format
+       * @type {import("typescript").server.protocol.ChangeRequestArgs[]}
+       */
+      let typescriptChanges = [];
+
+      changes.forEach((change) => {
+        // Handle both full document changes and ranged changes
+        if ("range" in change) {
+          // Ranged change
+          typescriptChanges.push({
+            file: path.normalize(path.resolve(filePath)),
+            line: change.range.start.line + 1, // typescript is 1 based index
+            offset: change.range.start.character + 1, // typescript is 1 based index
+            endLine: change.range.end.line + 1, // typescript is 1 based index
+            endOffset: change.range.end.character + 1, // typescript is 1 based index
+            insertString: change.text,
+          });
+        } else {
+          // Full document change - replace entire file content
+          typescriptChanges.push({
+            file: path.normalize(path.resolve(filePath)),
+            line: 1,
+            offset: 1,
+            endLine: 1,
+            endOffset: 1,
+            insertString: change.text,
+          });
+        }
+      });
+
+      for (const changeArgs of typescriptChanges) {
+        this.#writeToStdin({
+          command: protocol.CommandTypes.Change,
+          type: "request",
+          seq: this.#getNextSeq(),
+          arguments: changeArgs,
+        });
+      }
     } catch (error) {
       logError(
         error,

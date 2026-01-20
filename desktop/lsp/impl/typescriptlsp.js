@@ -2,7 +2,8 @@ const { logger, logError } = require("../../logger");
 const { getTypescriptServerPath } = require("../../packing");
 const path = require("path");
 const { TypeScriptProcess } = require("../typescript-process");
-const cmds = require("typescript").server.protocol.CommandTypes;
+
+const { protocol } = require("typescript").server;
 
 /**
  * @typedef {import("../../type").ILanguageServer} ILanguageServer
@@ -141,7 +142,11 @@ class TypeScriptLanguageServer {
         return true;
       }
 
-      await process.SendRequest(cmds.Exit, {}, { expectResponse: false });
+      await process.SendRequest(
+        protocol.CommandTypes.Exit,
+        {},
+        { expectResponse: false },
+      );
 
       this.#workSpaceProcessMap.delete(_workSpaceFolder);
 
@@ -209,7 +214,7 @@ class TypeScriptLanguageServer {
         offset: position.character + 1, // typescript server uses 1-based character numbers
       };
 
-      return process.SendRequest(cmds.Completions, params);
+      return process.SendRequest(protocol.CommandTypes.CompletionInfo, params);
     } catch (error) {
       logError(
         error,
