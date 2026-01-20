@@ -92,7 +92,7 @@ class TypeScriptProcess {
    *
    * - `Key` - The specific request id
    * - `Value` - Resolvers for the promise it is for
-   * @type {Map<number, {resolve: (value: any) => void, reject: (reason?: any) => void}>}
+   * @type {Map<number, {resolve: (value: import("typescript").server.protocol.Response["body"]) => void, reject: (reason?: any) => void}>}
    */
   #pendingRequests = new Map();
 
@@ -192,11 +192,11 @@ class TypeScriptProcess {
   }
 
   /**
-   * Make a request and await typescript server response and receive it.
+   * Make a request and await typescript server response and receive it. Resolves to the response body parsed or fails.
    * @param {import("typescript").server.protocol.CommandTypes} command - The specific command to make a request
    * @param {any} params - any additional params it needed
    * @param {{ expectResponse?: boolean }} [options] - Options for the request
-   * @returns {Promise<any>} Promise that resolves to the parsed content or resolves immediately if expectResponse is false
+   * @returns {Promise<import("typescript").server.protocol.Response["body"] | null>} Promise that resolves to the parsed content or resolves immediately if expectResponse is false
    */
   SendRequest(command, params, options = { expectResponse: true }) {
     try {
@@ -211,7 +211,7 @@ class TypeScriptProcess {
 
       if (options.expectResponse === false) {
         this.#writeToStdin(payload);
-        return Promise.resolve();
+        return Promise.resolve(null);
       }
 
       return new Promise((resolve, reject) => {
@@ -471,27 +471,27 @@ class TypeScriptProcess {
 
   /**
    * Given a parsed stdout message to notify those intrested and pass the content along where needed
-   * @param {any} message - MEssage parsed from typescript server
+   * @param {import("typescript").server.protocol.Response} respose - Response parsed from typescript server
    */
-  #handle(message) {
-    if (message.type === "response") {
-      const seq = message.request_seq;
+  #handle(respose) {
+    if (respose.type === "response") {
+      const seq = respose.request_seq;
       const pending = this.#pendingRequests.get(seq);
 
       if (pending) {
-        if (message.success) {
-          pending.resolve(message.body);
+        if (respose.success) {
+          pending.resolve(respose.body);
         } else {
           pending.reject(
-            new Error(message.message || "TSServer request failed"),
+            new Error(respose.message || "TSServer request failed"),
           );
         }
         this.#pendingRequests.delete(seq);
       }
     }
 
-    // TODO: Send events to the main window
-    console.log(message);
+    // TODO: Send events to the main window like notifications tec mapped to LSPlike others
+    console.log(respose);
   }
 
   /**

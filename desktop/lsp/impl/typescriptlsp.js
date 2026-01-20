@@ -174,7 +174,7 @@ class TypeScriptLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerCompletion}
    */
-  Completion(workSpaceFolder, filePath, position) {
+  async Completion(workSpaceFolder, filePath, position) {
     if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
       throw new Error("workSpaceFolder must be a non-empty string");
 
@@ -222,7 +222,12 @@ class TypeScriptLanguageServer {
         offset: position.character + 1, // typescript server uses 1-based character numbers
       };
 
-      return process.SendRequest(protocol.CommandTypes.CompletionInfo, params);
+      /**
+       * @type {import("typescript").server.protocol.CompletionInfoResponse["body"]}
+       */
+      let responseBody = await process.SendRequest(protocol.CommandTypes.CompletionInfo, params);
+
+      // TODO: map to LSP completions then return it
     } catch (error) {
       logError(
         error,
@@ -395,7 +400,7 @@ class TypeScriptLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerHover}
    */
-  Hover(workSpaceFolder, filePath, position) {
+  async Hover(workSpaceFolder, filePath, position) {
     if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
       throw new Error("workSpaceFolder must be a non-empty string");
 
@@ -443,7 +448,12 @@ class TypeScriptLanguageServer {
         offset: position.character + 1, // typescript server uses 1-based character numbers
       };
 
-      return process.SendRequest(protocol.CommandTypes.Quickinfo, params);
+      /**
+       * @type {import("typescript").server.protocol.QuickInfoResponse["body"]}
+       */
+      let responseBody = await process.SendRequest(protocol.CommandTypes.Quickinfo, params);
+
+      // TODO: map to LSP hover then return it
     } catch (error) {
       logError(
         error,
