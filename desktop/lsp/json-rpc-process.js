@@ -1,6 +1,8 @@
 const { spawn } = require("child_process");
 const { logger, logError } = require("../logger");
 const { isUri } = require("./uri");
+const fs = require("fs/promises");
+const path = require("path");
 
 /**
  * @typedef {import("../type").LanguageServerProtocolMethod} LanguageServerProtocolMethod
@@ -145,18 +147,20 @@ class JsonRpcProcess {
     this.#command = command;
     this.#args = args;
     this.#getMainWindow = getMainWindow;
-    this.#workSpaceFolder = workSpaceFolder;
+    this.#workSpaceFolder = path.normalize(workSpaceFolder);
     this.#languageId = languageId;
     this.#mainWindowRef = this.#getMainWindow();
   }
 
   /**
    * Start the process
-   * @returns {void}
    */
-  Start() {
+  async Start() {
     if (!this.#getMainWindow)
       throw new Error("getMainWindow is null cannot fetch main window");
+
+    if (!this.#workSpaceFolder || this.#workSpaceFolder.length > 0)
+      throw new TypeError("workSpaceFolder must be a non empty string");
 
     try {
       if (this.#isStarted) {
@@ -164,7 +168,12 @@ class JsonRpcProcess {
         return;
       }
       if (!this.#command) throw new Error("Command not passed");
-      this.#spawnRef = spawn(this.#command, this.#args);
+
+      await fs.access(this.#workSpaceFolder);
+
+      this.#spawnRef = spawn(this.#command, this.#args, {
+        cwd: this.#workSpaceFolder,
+      });
 
       this.#pid = this.#spawnRef.pid;
 
