@@ -26,7 +26,7 @@ A simple text editor written in electron and angular
 
 - Markdown previews
 
-- JSON RPC LSP support for now python (pyright) and go (gopls)
+- Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones
 
 - Hover information and auto complete via LSP 
 

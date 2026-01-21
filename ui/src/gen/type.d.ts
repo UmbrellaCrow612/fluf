@@ -646,7 +646,7 @@ export type LanguageServerjsonrpc = "2.0";
  *
  * It is also a way of indicating which lsp have been impl
  */
-export type languageId = "go" | "python";
+export type languageId = "go" | "python" | "typescript";
 /**
  * Base interface for language server implementations.
  * All language servers should follow this structure.
@@ -706,7 +706,7 @@ export type ILanguageServerCompletion = (workSpaceFolder: string, filePath: stri
 /**
  * Get hover information
  */
-export type ILanguageServerHover = (workSpaceFolder: string, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover>;
+export type ILanguageServerHover = (workSpaceFolder: string, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover | null>;
 /**
  * Closes a file that was opened
  */
@@ -833,7 +833,7 @@ export type ILanguageServerClientOnNotification = (method: LanguageServerProtoco
 /**
  * Get hover information
  */
-export type ILanguageServerClientHover = (workSpaceFolder: string, languageId: languageId, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover>;
+export type ILanguageServerClientHover = (workSpaceFolder: string, languageId: languageId, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Hover | null>;
 /**
  * Check if the LSP is running for a given workspace and language
  */

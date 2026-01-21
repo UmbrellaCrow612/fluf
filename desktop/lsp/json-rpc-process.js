@@ -1,6 +1,8 @@
 const { spawn } = require("child_process");
 const { logger, logError } = require("../logger");
 const { isUri } = require("./uri");
+const fs = require("fs/promises");
+const path = require("path");
 
 /**
  * @typedef {import("../type").LanguageServerProtocolMethod} LanguageServerProtocolMethod
@@ -145,18 +147,20 @@ class JsonRpcProcess {
     this.#command = command;
     this.#args = args;
     this.#getMainWindow = getMainWindow;
-    this.#workSpaceFolder = workSpaceFolder;
+    this.#workSpaceFolder = path.normalize(workSpaceFolder);
     this.#languageId = languageId;
     this.#mainWindowRef = this.#getMainWindow();
   }
 
   /**
    * Start the process
-   * @returns {void}
    */
-  Start() {
+  async Start() {
     if (!this.#getMainWindow)
       throw new Error("getMainWindow is null cannot fetch main window");
+
+    if (!this.#workSpaceFolder || this.#workSpaceFolder.length === 0)
+      throw new TypeError("workSpaceFolder must be a non empty string");
 
     try {
       if (this.#isStarted) {
@@ -164,6 +168,9 @@ class JsonRpcProcess {
         return;
       }
       if (!this.#command) throw new Error("Command not passed");
+
+      await fs.access(this.#workSpaceFolder);
+
       this.#spawnRef = spawn(this.#command, this.#args);
 
       this.#pid = this.#spawnRef.pid;
@@ -466,7 +473,7 @@ class JsonRpcProcess {
       }
 
       try {
-        this.#notify(response);
+        this.#handle(response);
       } catch (/** @type {any}*/ err) {
         logError(
           err,
@@ -478,11 +485,10 @@ class JsonRpcProcess {
   }
 
   /**
-   * Notifys any listener's that a message has been parsed fromn the lsp
-   * @param {any} response - Either a response message or notification
-   * @returns {void} Nothing
+   * Handles a response message from the LSP and notifies any listeners
+   * @param {import("vscode-languageserver-protocol").ResponseMessage} response
    */
-  #notify(response) {
+  #handle(response) {
     // We need to resolve pending requests first to stop hanging
     if (
       response.id !== null &&
@@ -493,13 +499,15 @@ class JsonRpcProcess {
       if (response.error) {
         obj?.reject(response.error);
 
-        // Send error event with full context
-        this.#mainWindowRef?.webContents.send("lsp:error", {
-          error: response.error,
-          id: response.id,
-          languageId: this.#languageId,
-          workSpaceFolder: this.#workSpaceFolder,
-        });
+        // Check if window still exists before sending error event
+        if (this.#mainWindowRef && !this.#mainWindowRef.isDestroyed()) {
+          this.#mainWindowRef.webContents.send("lsp:error", {
+            error: response.error,
+            id: response.id,
+            languageId: this.#languageId,
+            workSpaceFolder: this.#workSpaceFolder,
+          });
+        }
       } else {
         obj?.resolve(response.result);
       }
@@ -507,8 +515,26 @@ class JsonRpcProcess {
       this.#pendingRequests.delete(Number(response.id));
     }
 
-    if (!response || typeof response !== "object")
-      throw new TypeError("response must be an object");
+    // Check if window still exists before sending data event
+    if (this.#mainWindowRef && !this.#mainWindowRef.isDestroyed()) {
+      this.#mainWindowRef.webContents.send("lsp:data", {
+        response: response,
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+      });
+    }
+
+    this.#notify(response);
+  }
+
+  /**
+   * Notify interested parties of a notification message from the LSP
+   * @param {any} notification - The notification message
+   * @returns {void} Nothing
+   */
+  #notify(notification) {
+    if (!notification || typeof notification !== "object")
+      throw new TypeError("notification must be an object");
 
     if (!this.#getMainWindow)
       throw new Error("getMainWindow is null cannot get main window");
@@ -531,22 +557,13 @@ class JsonRpcProcess {
     if (!this.#workSpaceFolder)
       throw new Error("No workspace folder cannot send events");
 
-    // Send all data
-    this.#mainWindowRef?.webContents.send("lsp:data", {
-      response: response,
-      languageId: this.#languageId,
-      workSpaceFolder: this.#workSpaceFolder,
-    });
-
-    // Handle notifications (has method, no id)
     if (
-      response.method &&
-      (response.id === undefined || response.id === null)
+      notification.method &&
+      (notification.id === undefined || notification.id === null)
     ) {
-      // Send specific event for the notification method
-      this.#mainWindowRef?.webContents.send("lsp:notification", {
-        method: response.method,
-        params: response.params,
+      this.#mainWindowRef.webContents.send("lsp:notification", {
+        method: notification.method,
+        params: notification.params,
         languageId: this.#languageId,
         workSpaceFolder: this.#workSpaceFolder,
       });
@@ -555,12 +572,11 @@ class JsonRpcProcess {
       let notificationData = {
         languageId: this.#languageId,
         workSpaceFolder: this.#workSpaceFolder,
-        params: response?.params,
+        params: notification?.params,
       };
 
-      // Send method-specific event for convenience
-      this.#mainWindowRef?.webContents.send(
-        `lsp:notification:${response.method}`,
+      this.#mainWindowRef.webContents.send(
+        `lsp:notification:${notification.method}`,
         notificationData,
       );
     }

@@ -1,5 +1,5 @@
 const { JsonRpcLanguageServer } = require("../json-rpc-language-server");
-const { binPath, getPythonServerPath } = require("../../packing");
+const { getPythonServerPath } = require("../../packing");
 
 /**
  * @typedef {import("../../type").ILanguageServer} ILanguageServer
@@ -16,7 +16,7 @@ class PythonLanguageServer extends JsonRpcLanguageServer {
   async Start(workSpaceFolder) {
     let exePath = getPythonServerPath();
     if (!exePath) {
-      throw new Error("No gopls exe path");
+      throw new Error("No python exe path");
     }
 
     return this._start("node", [exePath, "--stdio"], workSpaceFolder); // bit diff as cant spawn js file, use node to spawn it, the exe path is a js file

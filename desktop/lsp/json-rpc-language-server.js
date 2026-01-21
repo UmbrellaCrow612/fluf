@@ -109,7 +109,7 @@ class JsonRpcLanguageServer {
       }
       this.#workSpaceRpcMap.set(_workSpaceFolder, rc);
 
-      rc.Start();
+      await rc.Start();
 
       /** @type {import("vscode-languageserver-protocol").InitializeParams} */
       let params = {

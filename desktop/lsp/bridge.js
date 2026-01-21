@@ -1,6 +1,7 @@
 const { logger } = require("../logger");
 const { GoLanguageServer } = require("./impl/golsp");
 const { PythonLanguageServer } = require("./impl/pythonlsp");
+const { TypeScriptLanguageServer } = require("./impl/typescriptlsp");
 const { LanguageServerManager } = require("./manager");
 
 /**
@@ -22,6 +23,10 @@ languageServerManager.Register("go", new GoLanguageServer(getMainWindow, "go"));
 languageServerManager.Register(
   "python",
   new PythonLanguageServer(getMainWindow, "python"),
+);
+languageServerManager.Register(
+  "typescript",
+  new TypeScriptLanguageServer(getMainWindow, "typescript"),
 );
 
 /**
