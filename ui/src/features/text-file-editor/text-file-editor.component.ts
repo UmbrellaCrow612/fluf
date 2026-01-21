@@ -13,6 +13,11 @@ import {
 import { basicSetup } from 'codemirror';
 import { EditorView, hoverTooltip } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
+import {
+  autocompletion,
+  CompletionContext,
+  CompletionResult,
+} from '@codemirror/autocomplete';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { fileNode, languageId, voidCallback } from '../../gen/type';
@@ -28,6 +33,7 @@ import { DocumentVersionsService } from '../lsp/document-versions.service';
 import { PublishDiagnosticsParams } from 'vscode-languageserver-protocol';
 import { uriToFilePath } from '../lsp/uri';
 import { normalizeElectronPath } from '../path/utils';
+import { mapLspItemToCmOption } from './completions';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -65,6 +71,69 @@ export class TextFileEditorComponent implements OnInit {
 
   /** Holds the current diagnostics for the file */
   private currentDiagnostics: Diagnostic[] = [];
+
+  /**
+   * Async completion source
+   */
+  private completionSource = async (
+    context: CompletionContext,
+  ): Promise<CompletionResult> => {
+    const word = context.matchBefore(/\w*/);
+
+    let wsf = this.workSpaceFolder();
+    let fp = this.openFileNode()?.path;
+
+    if (
+      !word ||
+      !this.languageId ||
+      !wsf ||
+      !fp
+    ) {
+      return {
+        from: word?.from ?? 1,
+        options: [],
+      };
+    }
+
+    const pos = context.pos;
+    const line = context.state.doc.lineAt(pos);
+
+    const lspPosition = {
+      line: line.number - 1,
+      character: pos - line.from,
+    };
+
+    let lspResult: any = null;
+    try {
+      lspResult = await this.api.lspClient.completion(
+        wsf,
+        this.languageId,
+        fp,
+        lspPosition,
+      );
+    } catch (error) {
+      console.error(error);
+      return {
+        from: word?.from ?? 1,
+        options: [],
+      };
+    }
+
+    if (!lspResult) {
+      console.error('No lsp result');
+      return {
+        from: word?.from ?? 1,
+        options: [],
+      };
+    }
+
+    return {
+      from: word.from, 
+      options: lspResult.items.map((item: any) =>
+        mapLspItemToCmOption(item, context),
+      ),
+    };
+  };
 
   /**
    * Hover tooltip that uses LSP to get hover information
@@ -333,6 +402,7 @@ export class TextFileEditorComponent implements OnInit {
         linter(() => this.currentDiagnostics),
         lintGutter(),
         this.wordHoverExtension,
+        autocompletion({ override: [this.completionSource] }),
       ],
     });
 

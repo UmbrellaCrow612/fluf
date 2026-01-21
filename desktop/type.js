@@ -558,7 +558,7 @@
  * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
  * @param {string} filePath - The path to the file to get completions for
  * @param {import("vscode-languageserver-protocol").Position} position - Where to get the completion suggestions
- * @returns {Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>} The result of a completion request.
+ * @returns {Promise<import("vscode-languageserver-protocol").CompletionList | null>} The result of a completion request.
  */
 
 /**
@@ -673,7 +673,7 @@
  * @param {languageId} languageId - The language identifier
  * @param {string} filePath - The file path
  * @param {import("vscode-languageserver-protocol").Position} position - The position in the document
- * @returns {Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>} Completion items or list
+ * @returns {Promise<import("vscode-languageserver-protocol").CompletionList | null>} Completion items or list
  */
 
 /**

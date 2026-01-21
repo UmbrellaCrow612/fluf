@@ -702,7 +702,7 @@ export type ILanguageServer = {
 /**
  * Get completion suggestions
  */
-export type ILanguageServerCompletion = (workSpaceFolder: string, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>;
+export type ILanguageServerCompletion = (workSpaceFolder: string, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").CompletionList | null>;
 /**
  * Get hover information
  */
@@ -812,7 +812,7 @@ export type ILanguageServerClient = {
 /**
  * Get completion suggestions at a specific position
  */
-export type ILanguageServerClientCompletion = (workSpaceFolder: string, languageId: languageId, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>;
+export type ILanguageServerClientCompletion = (workSpaceFolder: string, languageId: languageId, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").CompletionList | null>;
 /**
  * Run logic for the first time when a server just becomes ready to recieve messages
  */
