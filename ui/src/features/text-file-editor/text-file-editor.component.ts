@@ -13,6 +13,11 @@ import {
 import { basicSetup } from 'codemirror';
 import { EditorView, hoverTooltip } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
+import {
+  autocompletion,
+  CompletionContext,
+  CompletionResult,
+} from '@codemirror/autocomplete';
 import { ContextService } from '../app-context/app-context.service';
 import { getElectronApi } from '../../utils';
 import { fileNode, languageId, voidCallback } from '../../gen/type';
@@ -65,6 +70,48 @@ export class TextFileEditorComponent implements OnInit {
 
   /** Holds the current diagnostics for the file */
   private currentDiagnostics: Diagnostic[] = [];
+
+  /**
+   * Async completion source
+   */
+  private completionSource = async (
+    context: CompletionContext,
+  ): Promise<CompletionResult> => {
+    // Get the word before cursor
+    const word = context.matchBefore(/\w*/);
+
+    if (!word || (word.from === word.to && !context.explicit)) {
+      return {
+        from: word?.from ?? 1,
+        options: [],
+      };
+    }
+
+    // Simulate async operation (replace with actual LSP completion call)
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    return {
+      from: word.from,
+      options: [
+        {
+          label: 'exampleFunction',
+          type: 'function',
+          detail: 'Example completion',
+          info: 'This is an example completion item',
+        },
+        {
+          label: 'exampleVariable',
+          type: 'variable',
+          detail: 'Example variable',
+        },
+        {
+          label: 'exampleClass',
+          type: 'class',
+          detail: 'Example class',
+        },
+      ],
+    };
+  };
 
   /**
    * Hover tooltip that uses LSP to get hover information
@@ -333,6 +380,7 @@ export class TextFileEditorComponent implements OnInit {
         linter(() => this.currentDiagnostics),
         lintGutter(),
         this.wordHoverExtension,
+        autocompletion({ override: [this.completionSource] }),
       ],
     });
 
