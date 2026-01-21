@@ -493,49 +493,78 @@ class TypeScriptProcess {
     this.#notify(respose);
   }
 
-  /**
-   * Send a response to UI if the response is a notification
-   * @param {import("typescript").server.protocol.Response} notification - Notification received
-   */
-  #notify(notification) {
-    if (typeof notification !== "object")
-      throw new TypeError("notification must be a object");
+/**
+ * Send a response to UI if the response is a notification
+ * @param {any} notification - Notification received
+ */
+#notify(notification) {
+  if (typeof notification !== "object")
+    throw new TypeError("notification must be a object");
 
-    if (typeof this.#getMainWindow !== "function")
-      throw new TypeError("getMainWindow must be a function");
+  if (typeof this.#getMainWindow !== "function")
+    throw new TypeError("getMainWindow must be a function");
 
-    if (!this.#mainWindowRef) {
-      this.#mainWindowRef = this.#getMainWindow(); // we try to get the main window ref here becuase we don't know when it becomes available
-    }
-
-    if (!this.#mainWindowRef) throw new Error("main window ref not set");
-
-    if (!this.#languageId) throw new Error("languageId not set");
-
-    if (!this.#workSpaceFolder) throw new Error("workSpaceFolder not set");
-
-    try {
-      if (notification.type !== "response" || !notification.success) {
-        return;
-      }
-
-      /** @type {import("../type").LanguageServerNotificationResponse} */
-      let notificationData = {
-        languageId: this.#languageId,
-        workSpaceFolder: this.#workSpaceFolder,
-        params: notification.body,
-      };
-
-      this.#mainWindowRef.webContents.send(
-        `lsp:notification:${notification.command}`,
-        notificationData,
-      );
-
-      console.log(notificationData);
-    } catch (error) {
-      logError(error, "Failed to notify main window of TSServer notification");
-    }
+  if (!this.#mainWindowRef) {
+    this.#mainWindowRef = this.#getMainWindow();
   }
+
+  if (!this.#mainWindowRef) throw new Error("main window ref not set");
+
+  if (!this.#languageId) throw new Error("languageId not set");
+
+  if (!this.#workSpaceFolder) throw new Error("workSpaceFolder not set");
+
+  try {
+    // Only process events (notifications), not responses to requests
+    if (notification.type !== "event") {
+      return;
+    }
+
+    // Optional: Filter for specific notification types
+    const notificationCommands = [
+      'syntaxDiag',
+      'semanticDiag',
+      'suggestionDiag',
+      'configFileDiag',
+      'projectLoadingStart',
+      'projectLoadingFinish',
+      'telemetry',
+      'typesInstallerInitializationFailed',
+      'surveyReady',
+      'projectsUpdatedInBackground',
+      'beginInstallTypes',
+      'endInstallTypes',
+      'typesRegistry'
+    ];
+
+    if (!notificationCommands.includes(notification.event)) {
+      return;
+    }
+
+    this.#mainWindowRef.webContents.send("lsp:notification", {
+      method: notification.event, 
+      params: notification.body,
+      languageId: this.#languageId,
+      workSpaceFolder: this.#workSpaceFolder,
+    });
+
+    /** @type {import("../type").LanguageServerNotificationResponse} */
+    let notificationData = {
+      languageId: this.#languageId,
+      workSpaceFolder: this.#workSpaceFolder,
+      params: notification.body,
+    };
+
+    this.#mainWindowRef.webContents.send(
+      `lsp:notification:${notification.event}`,
+      notificationData,
+    );
+
+    console.log(notificationData);
+  } catch (error) {
+    logError(error, "Failed to notify main window of TSServer notification");
+  }
+}
 
   /**
    * Attempt to write to the stdin of the spawned command
@@ -557,7 +586,6 @@ class TypeScriptProcess {
 
     try {
       const payload = JSON.stringify(message) + "\n";
-      console.log(payload)
       this.#spawnRef.stdin.write(payload, "utf8");
     } catch (error) {
       logError(
