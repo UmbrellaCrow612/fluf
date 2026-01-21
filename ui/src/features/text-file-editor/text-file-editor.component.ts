@@ -223,13 +223,6 @@ export class TextFileEditorComponent implements OnInit {
     );
 
     this.serverUnSubs.push(
-      this.api.lspClient.onNotifications((data) => {
-        console.log('Server responded notifcations');
-        console.log(data);
-      }),
-    );
-
-    this.serverUnSubs.push(
       this.api.lspClient.onNotification(
         'textDocument/publishDiagnostics',
         (data) => {
