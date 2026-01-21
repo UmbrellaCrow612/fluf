@@ -95,7 +95,7 @@ const watchImpl = async (_, fileOrFolderPath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFolder>}
  */
-const selectFolderImpl = async (_) => {
+const selectFolderImpl = async () => {
   return await dialog.showOpenDialog({
     properties: ["openDirectory"],
   });

@@ -273,7 +273,7 @@ function logError(error, context) {
   if (typeof error === "object") {
     try {
       logger.error(`Error Object: ${JSON.stringify(error, null, 2)}`);
-    } catch (stringifyError) {
+    } catch (_stringifyError) { // This is caught so we can log a fallback is stringify fails
       // Fallback if object has circular references
       logger.error(`Error Object (non-serializable): ${error.toString()}`);
     }

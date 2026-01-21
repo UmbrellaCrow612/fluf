@@ -24,6 +24,7 @@ npm run start
 - Validate params types and values if they do not match throw typeErrors
 - Re throw any errors after logging them
 - when catch error use `logError`
+- Use eslint 
 
 # Type checking
 
@@ -31,6 +32,14 @@ npm run start
 
 ```bash
 npx tsc -p tsconfig.check.json
+```
+
+# Eslint
+
+Run this to find problems / check your not doing any styles that cause problems 
+
+```bash
+npx eslint .
 ```
 
 # Info
