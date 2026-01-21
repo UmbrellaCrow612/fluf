@@ -6,6 +6,7 @@ const { spawn } = require("child_process");
 const { logError, logger } = require("../logger");
 const path = require("path");
 const fs = require("fs/promises");
+const { createUri } = require("./uri");
 
 const { protocol } = require("typescript").server;
 
@@ -163,8 +164,6 @@ class TypeScriptProcess {
 
       this.#spawnRef.stdout.on("data", (chunk) => {
         this.#stdoutBuffer = Buffer.concat([this.#stdoutBuffer, chunk]);
-        console.log("stdout response:")
-        console.log(chunk.toString())
         this.#parseStdout();
       });
 
@@ -403,7 +402,6 @@ class TypeScriptProcess {
     try {
       const normalizedPath = path.normalize(path.resolve(filePath));
 
-      // Small delay to let tsserver process the file first
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       /**
@@ -414,7 +412,6 @@ class TypeScriptProcess {
         delay: 0,
       };
 
-      // geterr command triggers syntaxDiag, semanticDiag, and suggestionDiag events
       this.#writeToStdin({
         command: protocol.CommandTypes.Geterr,
         type: "request",
@@ -565,7 +562,6 @@ class TypeScriptProcess {
         return;
       }
 
-      // Optional: Filter for specific notification types
       const notificationCommands = [
         "syntaxDiag",
         "semanticDiag",
@@ -593,21 +589,71 @@ class TypeScriptProcess {
         workSpaceFolder: this.#workSpaceFolder,
       });
 
-      /** @type {import("../type").LanguageServerNotificationResponse} */
-      let notificationData = {
-        languageId: this.#languageId,
-        workSpaceFolder: this.#workSpaceFolder,
-        params: notification.body,
-      };
+      // We convert it to LSP textDocument/publishDiagnostics
+      if (notification.event === "semanticDiag") {
+        /** @type {import("typescript").server.protocol.DiagnosticEventBody} */
+        let body = notification.body;
 
-      this.#mainWindowRef.webContents.send(
-        `lsp:notification:${notification.event}`,
-        notificationData,
-      );
+        /**
+         * This the type UI expects with common JSON rpc publish diag
+         * @type {import("vscode-languageserver-protocol").PublishDiagnosticsParams}
+         */
+        let lspResponse = {
+          uri: createUri(body.file),
+          diagnostics: body.diagnostics.map((diag) => {
+            return {
+              range: {
+                start: {
+                  line: diag.start.line - 1, // TS is 1-based, LSP is 0-based
+                  character: diag.start.offset - 1,
+                },
+                end: {
+                  line: diag.end.line - 1,
+                  character: diag.end.offset - 1,
+                },
+              },
+              severity: this.#convertSeverity(diag.category),
+              code: diag.code,
+              source: "typescript",
+              message: diag.text,
+            };
+          }),
+        };
 
-      console.log(notificationData);
+        /** @type {import("../type").LanguageServerNotificationResponse} */
+        let notificationData = {
+          languageId: this.#languageId,
+          workSpaceFolder: this.#workSpaceFolder,
+          params: lspResponse,
+        };
+
+        this.#mainWindowRef.webContents.send(
+          `lsp:notification:textDocument/publishDiagnostics`,
+          notificationData,
+        );
+      }
     } catch (error) {
       logError(error, "Failed to notify main window of TSServer notification");
+    }
+  }
+
+  /**
+   * Convert TS diagnostic category to LSP severity
+   * @param {string} category - TS category: "error", "warning", "suggestion", "message"
+   * @returns {import("vscode-languageserver-protocol").DiagnosticSeverity} LSP DiagnosticSeverity (1=Error, 2=Warning, 3=Information, 4=Hint)
+   */
+  #convertSeverity(category) {
+    switch (category) {
+      case "error":
+        return 1;
+      case "warning":
+        return 2;
+      case "suggestion":
+        return 4;
+      case "message":
+        return 3;
+      default:
+        return 3;
     }
   }
 
@@ -631,8 +677,6 @@ class TypeScriptProcess {
 
     try {
       const payload = JSON.stringify(message) + "\n";
-      console.log("Writing to stdin:")
-      console.log(message)
       this.#spawnRef.stdin.write(payload, "utf8");
     } catch (error) {
       logError(
