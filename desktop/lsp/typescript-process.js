@@ -501,6 +501,13 @@ class TypeScriptProcess {
     if (typeof notification !== "object")
       throw new TypeError("notification must be a object");
 
+    if (typeof this.#getMainWindow !== "function")
+      throw new TypeError("getMainWindow must be a function");
+
+    if (!this.#mainWindowRef) {
+      this.#mainWindowRef = this.#getMainWindow(); // we try to get the main window ref here becuase we don't know when it becomes available
+    }
+
     if (!this.#mainWindowRef) throw new Error("main window ref not set");
 
     if (!this.#languageId) throw new Error("languageId not set");
@@ -519,7 +526,12 @@ class TypeScriptProcess {
         params: notification.body,
       };
 
-      // TODO; notify ui like json rpc by mapping tsserver to publish diagnostics 
+      this.#mainWindowRef.webContents.send(
+        `lsp:notification:${notification.command}`,
+        notificationData,
+      );
+
+      console.log(notificationData);
     } catch (error) {
       logError(error, "Failed to notify main window of TSServer notification");
     }
@@ -545,6 +557,7 @@ class TypeScriptProcess {
 
     try {
       const payload = JSON.stringify(message) + "\n";
+      console.log(payload)
       this.#spawnRef.stdin.write(payload, "utf8");
     } catch (error) {
       logError(

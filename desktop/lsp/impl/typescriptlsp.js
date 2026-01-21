@@ -10,7 +10,7 @@ const { protocol } = require("typescript").server;
 
 /**
  * The typescript language server implementation using following json RPC protocol design
- * 
+ *
  * @implements {ILanguageServer}
  *
  */
@@ -508,6 +508,11 @@ class TypeScriptLanguageServer {
 
       return hoverLspResponse;
     } catch (error) {
+      // Check if this is the "No content available" error, this is thrown when hovering over empty space or if there is no info
+      if (error instanceof Error && error.message === "No content available.") {
+        return null;
+      }
+
       logError(
         error,
         `Failed to get hover for workspace: ${workSpaceFolder} file: ${filePath}`,

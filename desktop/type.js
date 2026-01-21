@@ -567,7 +567,7 @@
  * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
  * @param {string} filePath - The path to the file to get hover information for
  * @param {import("vscode-languageserver-protocol").Position} position - Where to get the hover information
- * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The result of a hover request.
+ * @returns {Promise<import("vscode-languageserver-protocol").Hover | null>} The result of a hover request or nothing if you hover over whitespace / it doesnt have hover information.
  */
 
 /**
@@ -719,7 +719,7 @@
  * @param {languageId} languageId - The language
  * @param {string} filePath - The path to the file to get hover information for
  * @param {import("vscode-languageserver-protocol").Position} position - Where to get the hover information
- * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The result of a hover request.
+ * @returns {Promise<import("vscode-languageserver-protocol").Hover | null>} The result of a hover request or nothing it you hovered over whitesapce / it has no content.
  */
 
 /**
