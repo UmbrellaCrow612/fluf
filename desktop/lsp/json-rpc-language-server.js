@@ -430,7 +430,7 @@ class JsonRpcLanguageServer {
    * @param {string} workSpaceFolder - The workspace where the file lives
    * @param {string} filePath - The path to the file
    * @param {import("vscode-languageserver-protocol").Position} position - The position at which to get completions
-   * @returns {Promise<import("vscode-languageserver-protocol").CompletionItem[] | import("vscode-languageserver-protocol").CompletionList | null>} The completion items or list
+   * @returns {Promise<import("vscode-languageserver-protocol").CompletionList | null>} The completion items or list
    */
   _completion(workSpaceFolder, filePath, position) {
     if (typeof workSpaceFolder !== "string")
