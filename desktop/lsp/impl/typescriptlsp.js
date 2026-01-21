@@ -301,6 +301,7 @@ class TypeScriptLanguageServer {
       }
 
       process.DidChangeTextDocument(filePath, version, changes);
+      process.RequestDiagnostics(filePath); // for typescript we need to manually request errors
     } catch (error) {
       logError(
         error,
@@ -401,6 +402,7 @@ class TypeScriptLanguageServer {
       }
 
       process.DidOpenTextDocument(filePath, text);
+      process.RequestDiagnostics(filePath); // for typescript we need to manually request errors
     } catch (error) {
       logError(
         error,

@@ -163,6 +163,8 @@ class TypeScriptProcess {
 
       this.#spawnRef.stdout.on("data", (chunk) => {
         this.#stdoutBuffer = Buffer.concat([this.#stdoutBuffer, chunk]);
+        console.log("stdout response:")
+        console.log(chunk.toString())
         this.#parseStdout();
       });
 
@@ -386,6 +388,49 @@ class TypeScriptProcess {
   }
 
   /**
+   * Request diagnostics (errors, warnings) for a specific file
+   * @param {string} filePath - The file path to get diagnostics for
+   * @param {number} [delay=100] - Delay in milliseconds before requesting diagnostics
+   * @returns {Promise<void>}
+   */
+  async RequestDiagnostics(filePath, delay = 100) {
+    if (typeof filePath !== "string" || filePath.trim().length === 0)
+      throw new TypeError("filePath must be a non empty string");
+
+    if (typeof delay !== "number" || delay < 0)
+      throw new TypeError("delay must be a non-negative number");
+
+    try {
+      const normalizedPath = path.normalize(path.resolve(filePath));
+
+      // Small delay to let tsserver process the file first
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      /**
+       * @type {import("typescript").server.protocol.GeterrRequestArgs}
+       */
+      const params = {
+        files: [normalizedPath],
+        delay: 0,
+      };
+
+      // geterr command triggers syntaxDiag, semanticDiag, and suggestionDiag events
+      this.#writeToStdin({
+        command: protocol.CommandTypes.Geterr,
+        type: "request",
+        seq: this.#getNextSeq(),
+        arguments: params,
+      });
+    } catch (error) {
+      logError(
+        error,
+        `Failed to request diagnostics for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * Clears any pending requests to stop hanging and clean up process
    */
   #rejectPendingRequests() {
@@ -493,78 +538,78 @@ class TypeScriptProcess {
     this.#notify(respose);
   }
 
-/**
- * Send a response to UI if the response is a notification
- * @param {any} notification - Notification received
- */
-#notify(notification) {
-  if (typeof notification !== "object")
-    throw new TypeError("notification must be a object");
+  /**
+   * Send a response to UI if the response is a notification
+   * @param {any} notification - Notification received
+   */
+  #notify(notification) {
+    if (typeof notification !== "object")
+      throw new TypeError("notification must be a object");
 
-  if (typeof this.#getMainWindow !== "function")
-    throw new TypeError("getMainWindow must be a function");
+    if (typeof this.#getMainWindow !== "function")
+      throw new TypeError("getMainWindow must be a function");
 
-  if (!this.#mainWindowRef) {
-    this.#mainWindowRef = this.#getMainWindow();
-  }
-
-  if (!this.#mainWindowRef) throw new Error("main window ref not set");
-
-  if (!this.#languageId) throw new Error("languageId not set");
-
-  if (!this.#workSpaceFolder) throw new Error("workSpaceFolder not set");
-
-  try {
-    // Only process events (notifications), not responses to requests
-    if (notification.type !== "event") {
-      return;
+    if (!this.#mainWindowRef) {
+      this.#mainWindowRef = this.#getMainWindow();
     }
 
-    // Optional: Filter for specific notification types
-    const notificationCommands = [
-      'syntaxDiag',
-      'semanticDiag',
-      'suggestionDiag',
-      'configFileDiag',
-      'projectLoadingStart',
-      'projectLoadingFinish',
-      'telemetry',
-      'typesInstallerInitializationFailed',
-      'surveyReady',
-      'projectsUpdatedInBackground',
-      'beginInstallTypes',
-      'endInstallTypes',
-      'typesRegistry'
-    ];
+    if (!this.#mainWindowRef) throw new Error("main window ref not set");
 
-    if (!notificationCommands.includes(notification.event)) {
-      return;
+    if (!this.#languageId) throw new Error("languageId not set");
+
+    if (!this.#workSpaceFolder) throw new Error("workSpaceFolder not set");
+
+    try {
+      // Only process events (notifications), not responses to requests
+      if (notification.type !== "event") {
+        return;
+      }
+
+      // Optional: Filter for specific notification types
+      const notificationCommands = [
+        "syntaxDiag",
+        "semanticDiag",
+        "suggestionDiag",
+        "configFileDiag",
+        "projectLoadingStart",
+        "projectLoadingFinish",
+        "telemetry",
+        "typesInstallerInitializationFailed",
+        "surveyReady",
+        "projectsUpdatedInBackground",
+        "beginInstallTypes",
+        "endInstallTypes",
+        "typesRegistry",
+      ];
+
+      if (!notificationCommands.includes(notification.event)) {
+        return;
+      }
+
+      this.#mainWindowRef.webContents.send("lsp:notification", {
+        method: notification.event,
+        params: notification.body,
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+      });
+
+      /** @type {import("../type").LanguageServerNotificationResponse} */
+      let notificationData = {
+        languageId: this.#languageId,
+        workSpaceFolder: this.#workSpaceFolder,
+        params: notification.body,
+      };
+
+      this.#mainWindowRef.webContents.send(
+        `lsp:notification:${notification.event}`,
+        notificationData,
+      );
+
+      console.log(notificationData);
+    } catch (error) {
+      logError(error, "Failed to notify main window of TSServer notification");
     }
-
-    this.#mainWindowRef.webContents.send("lsp:notification", {
-      method: notification.event, 
-      params: notification.body,
-      languageId: this.#languageId,
-      workSpaceFolder: this.#workSpaceFolder,
-    });
-
-    /** @type {import("../type").LanguageServerNotificationResponse} */
-    let notificationData = {
-      languageId: this.#languageId,
-      workSpaceFolder: this.#workSpaceFolder,
-      params: notification.body,
-    };
-
-    this.#mainWindowRef.webContents.send(
-      `lsp:notification:${notification.event}`,
-      notificationData,
-    );
-
-    console.log(notificationData);
-  } catch (error) {
-    logError(error, "Failed to notify main window of TSServer notification");
   }
-}
 
   /**
    * Attempt to write to the stdin of the spawned command
@@ -586,6 +631,8 @@ class TypeScriptProcess {
 
     try {
       const payload = JSON.stringify(message) + "\n";
+      console.log("Writing to stdin:")
+      console.log(message)
       this.#spawnRef.stdin.write(payload, "utf8");
     } catch (error) {
       logError(
