@@ -112,14 +112,7 @@ export function lspDiagnosticsToCodeMirror(
 
       // Add actions if codeDescription is available
       if (diagnostic.codeDescription?.href) {
-        cmDiagnostic.actions = [
-          {
-            name: 'View documentation',
-            apply: () => {
-              window.open(diagnostic.codeDescription!.href, '_blank');
-            },
-          },
-        ];
+       
       }
 
       cmDiagnostics.push(cmDiagnostic);

@@ -19,14 +19,14 @@ export function uriToFilePath(uri: string): string {
   // Remove the 'file://' protocol
   let path = uri.replace(/^file:\/\//, '');
   
+  // Decode URI components FIRST (handles %20 for spaces, %3A for colons, etc.)
+  path = decodeURIComponent(path);
+  
   // On Windows, URIs have an extra leading slash before the drive letter
   // e.g., "file:///C:/..." becomes "/C:/..." and we need "C:/..."
   if (/^\/[a-zA-Z]:/.test(path)) {
     path = path.substring(1);
   }
-  
-  // Decode URI components (handles %20 for spaces, etc.)
-  path = decodeURIComponent(path);
   
   return path;
 }
