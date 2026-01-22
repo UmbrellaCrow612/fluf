@@ -223,6 +223,115 @@ export class TextFileEditorComponent implements OnInit {
   });
 
   /**
+   * Go to definition extension - handles Ctrl+Click
+   */
+  private goToDefinitionExtension = EditorView.domEventHandlers({
+    mousedown: (event, view) => {
+      // Check for Ctrl (or Cmd on Mac) + Click
+      if (!(event.ctrlKey || event.metaKey)) {
+        return false;
+      }
+
+      const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+      if (!pos) return false;
+
+      const { from, to, text } = view.state.doc.lineAt(pos);
+      let start = pos;
+      let end = pos;
+
+      // Find word boundaries
+      while (start > from && /\w/.test(text[start - from - 1])) start--;
+      while (end < to && /\w/.test(text[end - from])) end++;
+
+      // Check if click is on a word
+      if (start === end) return false;
+
+      const word = text.slice(start - from, end - from);
+      console.log('Ctrl+Click on word:', word);
+
+      // Get workspace folder, language ID, and file path
+      const wsf = this.workSpaceFolder();
+      const filePath = this.openFileNode()?.path;
+
+      if (!wsf || !filePath || !this.languageId) {
+        console.warn('Missing required context for go to definition');
+        return false;
+      }
+
+      // Convert CodeMirror position to LSP position
+      const line = view.state.doc.lineAt(pos);
+      const lspPosition = {
+        line: line.number - 1,
+        character: pos - line.from,
+      };
+
+      // Call LSP definition
+      this.handleGoToDefinition(wsf, filePath, lspPosition);
+
+      event.preventDefault();
+      return true;
+    },
+    mousemove: (event, view) => {
+      // Add visual feedback when Ctrl is held
+      if (event.ctrlKey || event.metaKey) {
+        view.dom.style.cursor = 'pointer';
+      } else {
+        view.dom.style.cursor = '';
+      }
+      return false;
+    },
+  });
+
+  /**
+   * Handle go to definition LSP call
+   */
+  private async handleGoToDefinition(
+    workSpaceFolder: string,
+    filePath: string,
+    lspPosition: { line: number; character: number },
+  ) {
+    if (!this.languageId) {
+      console.warn('No language ID set');
+      return;
+    }
+
+    try {
+      const definition = await this.api.lspClient.definition(
+        workSpaceFolder,
+        this.languageId,
+        filePath,
+        lspPosition,
+      );
+
+      console.log('Go to Definition result:', definition);
+
+      if (!definition) {
+        console.log('No definition found');
+        return;
+      }
+
+      // TODO: Navigate to the definition location
+      // For now, just logging the response
+      if (Array.isArray(definition)) {
+        console.log(`Found ${definition.length} definition(s):`);
+        definition.forEach((def, index) => {
+          console.log(`Definition ${index + 1}:`, {
+            uri: def.uri,
+            range: def.range,
+          });
+        });
+      } else {
+        console.log('Definition location:', {
+          uri: definition.uri,
+          range: definition.range,
+        });
+      }
+    } catch (error) {
+      console.error('Error getting definition:', error);
+    }
+  }
+
+  /**
    * Sends the open file request to LSP
    */
   private openFileInLanguageServer() {
@@ -402,6 +511,7 @@ export class TextFileEditorComponent implements OnInit {
         linter(() => this.currentDiagnostics),
         lintGutter(),
         this.wordHoverExtension,
+        this.goToDefinitionExtension,
         autocompletion({ override: [this.completionSource] }),
       ],
     });

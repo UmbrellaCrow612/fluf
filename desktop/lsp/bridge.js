@@ -1,4 +1,4 @@
-const { logger } = require("../logger");
+const { logger, logError } = require("../logger");
 const { GoLanguageServer } = require("./impl/golsp");
 const { PythonLanguageServer } = require("./impl/pythonlsp");
 const { TypeScriptLanguageServer } = require("./impl/typescriptlsp");

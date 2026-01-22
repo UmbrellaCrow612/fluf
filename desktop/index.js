@@ -24,11 +24,6 @@ const {
  */
 let mainWindow = null;
 
-/**
- * Holds state of quiting the app
- */
-let isQuitting = false;
-
 loadEnv();
 registerProtocols();
 
@@ -87,16 +82,9 @@ app.whenReady().then(() => {
   registerLanguageServerListener(ipcMain, mainWindow);
 });
 
-app.on("before-quit", async (event) => {
-  if (!isQuitting) {
-    event.preventDefault();
+app.on("before-quit", async () => {
+  cleanUpWatchers();
+  cleanUpShells();
 
-    await stopAllLanguageServers();
-
-    cleanUpWatchers();
-    cleanUpShells();
-
-    isQuitting = true;
-    app.quit();
-  }
+  await stopAllLanguageServers();
 });
