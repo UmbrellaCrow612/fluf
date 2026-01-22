@@ -12,7 +12,6 @@ const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
 const { registerRipgrepListeners } = require("./ripgrep");
 const { logger } = require("./logger");
-const { registerUrlListeners } = require("./url");
 const { registerPathListeners } = require("./path");
 const {
   registerLanguageServerListener,
@@ -24,11 +23,6 @@ const {
  * @type {import("electron").BrowserWindow | null}
  */
 let mainWindow = null;
-
-/**
- * Holds state of quiting the app
- */
-let isQuitting = false;
 
 loadEnv();
 registerProtocols();
@@ -83,22 +77,14 @@ app.whenReady().then(() => {
   registerShellListeners(ipcMain, mainWindow);
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
-  registerUrlListeners(ipcMain);
   registerPathListeners(ipcMain);
 
   registerLanguageServerListener(ipcMain, mainWindow);
 });
 
-app.on("before-quit", async (event) => {
-  if (!isQuitting) {
-    event.preventDefault();
+app.on("before-quit", async () => {
+  cleanUpWatchers();
+  cleanUpShells();
 
-    await stopAllLanguageServers();
-
-    cleanUpWatchers();
-    cleanUpShells();
-
-    isQuitting = true;
-    app.quit();
-  }
+  await stopAllLanguageServers();
 });

@@ -4,7 +4,7 @@
 
 const path = require("path");
 const fs = require("fs/promises");
-const { logger } = require("./logger");
+const { logger, logError } = require("./logger");
 const { dialog } = require("electron");
 
 /**
@@ -36,7 +36,7 @@ const saveToImpl = async (_, content, options) => {
 
     return true;
   } catch (error) {
-    logger.error("Failed to save file " + JSON.stringify(error));
+    logError("Failed to save file");
     return false;
   }
 };
@@ -56,7 +56,9 @@ const unwatchImpl = (_, pp) => {
 
     abort.abort();
   } catch (error) {
-    console.error("Failed to un watch directory " + JSON.stringify(error));
+    logError(error, "Failed to un watch directory");
+
+    throw error;
   }
 };
 
@@ -88,7 +90,10 @@ const watchImpl = async (_, fileOrFolderPath) => {
     }
   } catch (/** @type {any}*/ error) {
     if (error.name === "AbortError") return;
-    console.error("Failed to watch directory " + JSON.stringify(error));
+
+    logError(error, "Failed to watch directory");
+
+    throw error;
   }
 };
 
@@ -112,7 +117,7 @@ const createDirImpl = async (_, dirPath) => {
 
     return true;
   } catch (error) {
-    logger.error("Failed to create folder " + JSON.stringify(error));
+    logError("Failed to create folder");
     return false;
   }
 };
@@ -151,7 +156,7 @@ const readDirImpl = async (_, dirPath) => {
 
     return filenodes;
   } catch (error) {
-    logger.error("Failed to read directory " + JSON.stringify(error));
+    logError("Failed to read directory");
     return [];
   }
 };
@@ -169,7 +174,7 @@ const removeImpl = async (_, fileOrFolderPath) => {
 
     return true;
   } catch (error) {
-    logger.error("Failed to remove path " + JSON.stringify(error));
+    logError("Failed to remove path");
     return false;
   }
 };
@@ -187,7 +192,7 @@ const existsImpl = async (_, fileOrFolderPath) => {
   } catch (/** @type {any}*/ error) {
     if (error?.code === "ENOENT") return false; // just didn't exit not true error
 
-    logger.error("Failed to check if a file exists " + JSON.stringify(error));
+    logError("Failed to check if a file exists");
     return false;
   }
 };
@@ -205,7 +210,7 @@ const createFileImpl = async (_, filePath) => {
 
     return true;
   } catch (error) {
-    logger.error("Failed to create file " + JSON.stringify(error));
+    logError("Failed to create file");
     return false;
   }
 };
@@ -225,7 +230,7 @@ const writeToFileImpl = async (_, filePath, fileContent) => {
 
     return true;
   } catch (error) {
-    logger.error("Failed to write to file " + JSON.stringify(error));
+    logError("Failed to write to file");
     return false;
   }
 };
@@ -243,26 +248,64 @@ const readFileImpl = async (_, filePath) => {
 
     return await fs.readFile(p, { encoding: "utf-8" });
   } catch (error) {
-    logger.error("Failed to read file " + JSON.stringify(error));
-    return "";
+    logError("Failed to read file");
+
+    throw error;
   }
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFile>}
  */
-const selectFileImpl = async () => {
+const selectFileImpl = () => {
   try {
-    if (!mainWindowRef) return null;
+    if (!mainWindowRef) throw new Error("Main window ref null");
 
-    return await dialog.showOpenDialog(mainWindowRef, {
+    return dialog.showOpenDialog(mainWindowRef, {
       properties: ["openFile"],
     });
   } catch (error) {
-    logger.error("Failed to select file " + JSON.stringify(error));
-    return null;
+    logError("Failed to select file");
+
+    throw error;
   }
 };
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsGetNode>}
+ */
+const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
+  try {
+    const _path = path.normalize(fileOrFolderPath)
+
+    await fs.access(_path)
+
+    const stats = await fs.stat(_path)
+    const isDirectory = stats.isDirectory()
+
+    const name = path.basename(_path)
+
+    const parentPath = path.dirname(_path)
+
+    const extension = isDirectory ? '' : path.extname(name)
+
+    return {
+      name,
+      path: _path,
+      parentPath,
+      isDirectory,
+      children: [],
+      expanded: false,
+      mode: 'default',
+      extension
+    }
+
+  } catch (error) {
+    logError(error, `Failed to get node for path: ${fileOrFolderPath}`)
+
+    throw error
+  }
+}
 
 /**
  * Registers all fs related listeners
@@ -284,6 +327,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
   ipcMain.on("fs:unwatch", unwatchImpl);
   ipcMain.handle("file:save:to", saveToImpl);
   ipcMain.handle("file:select", selectFileImpl);
+  ipcMain.handle("path:node", getPathAsNodeImpl)
 };
 
 /**

@@ -115,18 +115,6 @@ const logQueue = [];
 let isFlushing = false;
 
 /**
- * Enqueues a formatted log entry for asynchronous file writing.
- *
- * @param {string} entry Formatted log line
- * @returns {void}
- */
-function enqueueLog(entry) {
-  logQueue.push(entry);
-  trimOldLogs();
-  flushQueueAsync();
-}
-
-/**
  * Flushes queued log entries to disk asynchronously in batches.
  * Preserves ordering and avoids concurrent writes.
  *
@@ -148,6 +136,18 @@ async function flushQueueAsync() {
   } finally {
     isFlushing = false;
   }
+}
+
+/**
+ * Enqueues a formatted log entry for asynchronous file writing.
+ *
+ * @param {string} entry Formatted log line
+ * @returns {void}
+ */
+function enqueueLog(entry) {
+  logQueue.push(entry);
+  trimOldLogs();
+  flushQueueAsync();
 }
 
 /**
@@ -273,7 +273,8 @@ function logError(error, context) {
   if (typeof error === "object") {
     try {
       logger.error(`Error Object: ${JSON.stringify(error, null, 2)}`);
-    } catch (_stringifyError) { // This is caught so we can log a fallback is stringify fails
+    } catch (_stringifyError) {
+      // This is caught so we can log a fallback is stringify fails
       // Fallback if object has circular references
       logger.error(`Error Object (non-serializable): ${error.toString()}`);
     }

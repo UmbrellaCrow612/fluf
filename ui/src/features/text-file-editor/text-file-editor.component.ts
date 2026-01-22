@@ -34,6 +34,7 @@ import { PublishDiagnosticsParams } from 'vscode-languageserver-protocol';
 import { uriToFilePath } from '../lsp/uri';
 import { normalizeElectronPath } from '../path/utils';
 import { mapLspItemToCmOption } from './completions';
+import { OpenNodeInEditor } from '../file-explorer/helper';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -83,12 +84,7 @@ export class TextFileEditorComponent implements OnInit {
     let wsf = this.workSpaceFolder();
     let fp = this.openFileNode()?.path;
 
-    if (
-      !word ||
-      !this.languageId ||
-      !wsf ||
-      !fp
-    ) {
+    if (!word || !this.languageId || !wsf || !fp) {
       return {
         from: word?.from ?? 1,
         options: [],
@@ -128,7 +124,7 @@ export class TextFileEditorComponent implements OnInit {
     }
 
     return {
-      from: word.from, 
+      from: word.from,
       options: lspResult.items.map((item: any) =>
         mapLspItemToCmOption(item, context),
       ),
@@ -221,6 +217,169 @@ export class TextFileEditorComponent implements OnInit {
       return null;
     }
   });
+
+  /**
+   * Go to definition extension - handles Ctrl+Click
+   */
+  private goToDefinitionExtension = EditorView.domEventHandlers({
+    mousedown: (event, view) => {
+      // Check for Ctrl (or Cmd on Mac) + Click
+      if (!(event.ctrlKey || event.metaKey)) {
+        return false;
+      }
+
+      const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+      if (!pos) return false;
+
+      const { from, to, text } = view.state.doc.lineAt(pos);
+      let start = pos;
+      let end = pos;
+
+      // Find word boundaries
+      while (start > from && /\w/.test(text[start - from - 1])) start--;
+      while (end < to && /\w/.test(text[end - from])) end++;
+
+      // Check if click is on a word
+      if (start === end) return false;
+
+      const word = text.slice(start - from, end - from);
+      console.log('Ctrl+Click on word:', word);
+
+      // Get workspace folder, language ID, and file path
+      const wsf = this.workSpaceFolder();
+      const filePath = this.openFileNode()?.path;
+
+      if (!wsf || !filePath || !this.languageId) {
+        console.warn('Missing required context for go to definition');
+        return false;
+      }
+
+      // Convert CodeMirror position to LSP position
+      const line = view.state.doc.lineAt(pos);
+      const lspPosition = {
+        line: line.number - 1,
+        character: pos - line.from,
+      };
+
+      // Call LSP definition
+      this.handleGoToDefinition(wsf, filePath, lspPosition);
+
+      event.preventDefault();
+      return true;
+    },
+    mousemove: (event, view) => {
+      // Add visual feedback when Ctrl is held
+      if (event.ctrlKey || event.metaKey) {
+        view.dom.style.cursor = 'pointer';
+      } else {
+        view.dom.style.cursor = '';
+      }
+      return false;
+    },
+  });
+
+  /**
+   * Handle go to definition LSP call
+   */
+  private async handleGoToDefinition(
+    workSpaceFolder: string,
+    filePath: string,
+    lspPosition: { line: number; character: number },
+  ) {
+    if (!this.languageId) {
+      console.warn('No language ID set');
+      return;
+    }
+
+    try {
+      const definition = await this.api.lspClient.definition(
+        workSpaceFolder,
+        this.languageId,
+        filePath,
+        lspPosition,
+      );
+
+      console.log('Go to Definition result:', definition);
+
+      if (!definition) {
+        console.log('No definition found');
+        return;
+      }
+
+      // Handle both single definition and array of definitions
+      const definitions = Array.isArray(definition) ? definition : [definition];
+
+      if (definitions.length === 0) {
+        console.log('No definitions found');
+        return;
+      }
+
+      // Use the first definition
+      const targetDef = definitions[0];
+      const targetFilePath = normalizeElectronPath(
+        uriToFilePath(targetDef.uri),
+      );
+      const currentFilePath = normalizeElectronPath(filePath);
+
+      console.log('Navigating to definition:', {
+        targetFile: targetFilePath,
+        currentFile: currentFilePath,
+        range: targetDef.range,
+      });
+
+      // Check if definition is in the same file
+      if (targetFilePath === currentFilePath) {
+        // Navigate within the current editor
+        this.navigateToPosition(
+          targetDef.range.start.line,
+          targetDef.range.start.character,
+        );
+      } else {
+        // TODO: Open the other file and navigate to position
+        console.log('Definition is in a different file:', targetFilePath);
+        console.log('Opening other files not yet implemented');
+
+        let node = await this.api.fsApi.getNode(targetFilePath);
+        OpenNodeInEditor(node, this.appContext);
+      }
+    } catch (error) {
+      console.error('Error getting definition:', error);
+    }
+  }
+
+  /**
+   * Navigate to a specific position in the current CodeMirror editor
+   */
+  private navigateToPosition(line: number, character: number) {
+    if (!this.codeMirrorView) {
+      console.warn('No CodeMirror view available');
+      return;
+    }
+
+    try {
+      // LSP uses 0-based line numbers, CodeMirror uses 1-based
+      const cmLine = line + 1;
+
+      // Get the line in the document
+      const docLine = this.codeMirrorView.state.doc.line(cmLine);
+
+      // Calculate the absolute position (line start + character offset)
+      const pos = docLine.from + character;
+
+      // Select the range and scroll to it
+      this.codeMirrorView.dispatch({
+        selection: { anchor: pos, head: pos },
+        scrollIntoView: true,
+      });
+
+      // Focus the editor
+      this.codeMirrorView.focus();
+
+      console.log(`Navigated to line ${cmLine}, character ${character}`);
+    } catch (error) {
+      console.error('Error navigating to position:', error);
+    }
+  }
 
   /**
    * Sends the open file request to LSP
@@ -402,6 +561,7 @@ export class TextFileEditorComponent implements OnInit {
         linter(() => this.currentDiagnostics),
         lintGutter(),
         this.wordHoverExtension,
+        this.goToDefinitionExtension,
         autocompletion({ override: [this.completionSource] }),
       ],
     });

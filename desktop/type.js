@@ -49,6 +49,14 @@
  * @property {fsStopWatching} stopWatching - Stops watching a given path
  * @property {saveTo} saveTo - Save a files content to a given location
  * @property {selectFile} selectFile - Allow a user to select a file from the explorer
+ * @property {fsGetNode} getNode - Used to fetch a path as a file node
+ */
+
+/**
+ * Use a path to a file or folder and get it's fileNode information - used when you have a file path but it is not yet a node and you need it as a node format.
+ * @callback fsGetNode
+ * @param {string} path - The path to the file or folder
+ * @returns {Promise<fileNode>} The path as a proper file node item
  */
 
 /**
@@ -207,19 +215,6 @@
  * Restores the browsers window back to beofre it was maximized
  * @callback chromeWindowRestore
  * @returns {void} Nothing
- */
-
-/**
- * Exposes node url utils
- * @typedef {Object} urlApi
- * @property {fileUriToAbsolutePath} fileUriToAbsolutePath - Convert a file uri to a file path abs
- */
-
-/**
- * Converts a `file:///c:/dev` to a abs path like `c:\dev\some`
- * @callback fileUriToAbsolutePath
- * @param {string} fileUri
- * @returns {Promise<string>} The resolved abs path
  */
 
 /**
@@ -514,7 +509,7 @@
  *          | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen"
  *          | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil"
  *          | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration"
- *          | "textDocument/publishDiagnostics" | "textDocument/completion" | "textDocument/hover"
+ *          | "textDocument/publishDiagnostics" | "textDocument/completion" | "textDocument/hover" | "textDocument/definition"
  * } LanguageServerProtocolMethod
  */
 
@@ -550,6 +545,16 @@
  *  Language Features (Requests - expect responses)
  * @property {ILanguageServerHover} Hover - Get hover information
  * @property {ILanguageServerCompletion} Completion - Get completion information
+ * @property {ILanguageServerDefinition} Definition - Get a symbol definition locations
+ */
+
+/**
+ * Get the go to definition of a symbol represented as one or many locations
+ * @callback ILanguageServerDefinition
+ * @param {string} workSpaceFolder - The path to the work space folder i.e the folder open in root
+ * @param {string} filePath - The path to the file to get completions for
+ * @param {import("vscode-languageserver-protocol").Position} position - The position of the symbol to get the definition for
+ * @returns {Promise<import("vscode-languageserver-protocol").Definition | null>} The definition location / locations or null if the symbol is whitespace / not there
  */
 
 /**
@@ -659,11 +664,22 @@
  *
  * @property {ILanguageServerClientHover} hover - Get hover information
  * @property {ILanguageServerClientCompletion} completion - Get completion information at a given position
+ * @property {ILanguageServerClientDefinition} definition - Get definition for a given symbol
  *
  * @property {ILanguageServerClientOnData} onData - Listen to when the LSP responds and run logic
  * @property {ILanguageServerClientOnNotifications} onNotifications - Listen to when the server responds with any notification and run logic
  * @property {ILanguageServerClientOnNotification} onNotification - Listen to when a specific notification is sent out and run logic
  * @property {ILanguageServerClientOnReady} onReady - Listen to when the server just becomes ready and run logic
+ */
+
+/**
+ * Get definition for a given symbol
+ * @callback ILanguageServerClientDefinition
+ * @param {string} workSpaceFolder - The workspace folder path
+ * @param {languageId} languageId - The language identifier
+ * @param {string} filePath - The path to the file for the definition
+ * @param {import("vscode-languageserver-protocol").Position} position - The position of the symbol to get the definition for
+ * @returns {Promise<import("vscode-languageserver-protocol").Definition | null>} - The definition for the given symbol or null if the symbol is empty space
  */
 
 /**
@@ -827,8 +843,6 @@
  * @property {fsApi} fsApi - Contains all file fs utils
  *
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
- *
- * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
  *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
  *

@@ -254,6 +254,7 @@ class TypeScriptProcess {
    * @param {string} filePath - The file path that changed
    * @param {number} version - The version of the file
    * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - The changes made to the file
+   * @returns {void}
    */
   DidChangeTextDocument(filePath, version, changes) {
     if (typeof filePath !== "string" || filePath.trim().length === 0)
@@ -390,9 +391,9 @@ class TypeScriptProcess {
    * Request diagnostics (errors, warnings) for a specific file
    * @param {string} filePath - The file path to get diagnostics for
    * @param {number} [delay=100] - Delay in milliseconds before requesting diagnostics
-   * @returns {Promise<void>}
+   * @returns {void}
    */
-  async RequestDiagnostics(filePath, delay = 100) {
+   RequestDiagnostics(filePath, delay = 100) {
     if (typeof filePath !== "string" || filePath.trim().length === 0)
       throw new TypeError("filePath must be a non empty string");
 
@@ -401,8 +402,6 @@ class TypeScriptProcess {
 
     try {
       const normalizedPath = path.normalize(path.resolve(filePath));
-
-      await new Promise((resolve) => setTimeout(resolve, delay));
 
       /**
        * @type {import("typescript").server.protocol.GeterrRequestArgs}

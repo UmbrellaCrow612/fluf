@@ -44,11 +44,11 @@ const stopAllLanguageServers = async () => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStart>}
  */
-const startImpl = async (_, wsf, langId) => {
+const startImpl = (_, wsf, langId) => {
   let lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.warn(`No language server registered for language: ${langId}`);
-    return false;
+    return Promise.resolve(true);
   }
 
   return lsp.Start(wsf);
@@ -57,11 +57,11 @@ const startImpl = async (_, wsf, langId) => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStop>}
  */
-const stopLspImpl = async (_, wsf, langId) => {
+const stopLspImpl = (_, wsf, langId) => {
   let lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.warn(`No language server language: ${langId}`);
-    return true;
+    return Promise.resolve(true);
   }
 
   return lsp.Stop(wsf);
@@ -116,14 +116,14 @@ const openDocImpl = (
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientIsRunning>}
  */
-const isRunningImpl = async (_, workSpaceFolder, languageId) => {
+const isRunningImpl = (_, workSpaceFolder, languageId) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
-    return false;
+    return Promise.resolve(true);
   }
 
-  return lsp.IsRunning(workSpaceFolder);
+  return Promise.resolve(lsp.IsRunning(workSpaceFolder));
 };
 
 /**
@@ -147,7 +147,9 @@ const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
   if (!lsp) {
     logger.error(`No language server language: ${languageId}`);
     return Promise.reject(
-      `No language server language: ${languageId} cannot provide hover information`,
+      new Error(
+        `No language server language: ${languageId} cannot provide hover information`,
+      ),
     );
   }
 
@@ -164,11 +166,32 @@ const completionImpl = (_, workSpaceFolder, languageId, filePath, position) => {
       `No language server language: ${languageId} cannot offer completions`,
     );
     return Promise.reject(
-      `No language server language: ${languageId} cannot provide completion information`,
+      new Error(
+        `No language server language: ${languageId} cannot provide completion information`,
+      ),
     );
   }
 
   return lsp.Completion(workSpaceFolder, filePath, position);
+};
+
+/**
+ * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientDefinition>}
+ */
+const definitionImpl = (_, wsf, langId, fp, pos) => {
+  let lsp = languageServerManager.Get(langId);
+  if (!lsp) {
+    logger.error(
+      `No language server language: ${langId} cannot offer definitions`,
+    );
+    return Promise.reject(
+      new Error(
+        `No language server language: ${langId} cannot offer definitions`,
+      ),
+    );
+  }
+
+  return lsp.Definition(wsf, fp, pos);
 };
 
 /**
@@ -185,6 +208,7 @@ const registerLanguageServerListener = (ipcMain, mainWindow) => {
 
   ipcMain.handle("lsp:document:hover", hoverDocImpl);
   ipcMain.handle("lsp:document:completion", completionImpl);
+  ipcMain.handle("lsp:document:definition", definitionImpl);
 
   ipcMain.on("lsp:document:open", openDocImpl);
   ipcMain.on("lsp:document:change", docChangedImpl);

@@ -81,14 +81,8 @@ const lspClient = {
   hover: (...args) => ipcRenderer.invoke("lsp:document:hover", ...args),
   completion: (...args) =>
     ipcRenderer.invoke("lsp:document:completion", ...args),
-};
-
-/**
- * @type {import("./type").urlApi}
- */
-const urlApi = {
-  fileUriToAbsolutePath: (...args) =>
-    ipcRenderer.invoke("uri:to:path", ...args),
+  definition: (...args) =>
+    ipcRenderer.invoke("lsp:document:definition", ...args),
 };
 
 /**
@@ -121,6 +115,7 @@ const fsApi = {
   readDir: (...args) => ipcRenderer.invoke("dir:read", ...args),
   createDirectory: (...args) => ipcRenderer.invoke("dir:create", ...args),
   selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
+  getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
 
   onChange: (path, callback) => {
     /**
@@ -233,7 +228,6 @@ const api = {
   pathApi,
   fsApi,
   chromeWindowApi,
-  urlApi,
   lspClient,
 };
 

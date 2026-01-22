@@ -100,13 +100,13 @@ const createImpl = async (_, directory) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").killShell>}
  */
-const killImpl = async (_, pid) => {
+const killImpl = (_, pid) => {
   try {
     let shell = shells.get(pid);
-    if (!shell) return false;
+    if (!shell) return Promise.resolve(false);
 
     let disposes = shellDisposes.get(pid);
-    if (!disposes) return false;
+    if (!disposes) return Promise.resolve(false);
 
     shell.write("exit" + "\n");
 
@@ -116,34 +116,34 @@ const killImpl = async (_, pid) => {
 
     shells.delete(pid);
     shellDisposes.delete(pid);
-    return true;
+    return Promise.resolve(true)
   } catch (error) {
     logger.error("Failed to kill shell " + JSON.stringify(error));
-    return false;
+    return Promise.resolve(false)
   }
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").resizeShell>}
  */
-const resizeImpl = async (_, pid, col, row) => {
+const resizeImpl = (_, pid, col, row) => {
   try {
     let shell = shells.get(pid);
-    if (!shell) return false;
+    if (!shell) return Promise.resolve(false);
 
     shell.resize(col, row);
 
-    return true;
+    return Promise.resolve(true);
   } catch (error) {
     logger.error("Failed to resize shell " + JSON.stringify(error));
-    return false;
+   return Promise.resolve(false);
   }
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").writeToShell>}
  */
-const writeImpl = async (_, pid, content) => {
+const writeImpl = (_, pid, content) => {
   let shell = shells.get(pid);
   if (!shell) return;
 
