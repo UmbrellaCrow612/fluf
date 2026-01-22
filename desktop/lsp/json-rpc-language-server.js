@@ -393,7 +393,7 @@ class JsonRpcLanguageServer {
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return Promise.reject(
-          `No LSP process is running for ${_workSpaceFolder}`,
+          new Error(`No LSP process is running for ${_workSpaceFolder}`),
         );
       }
 
@@ -402,7 +402,9 @@ class JsonRpcLanguageServer {
           `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
         );
         return Promise.reject(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          new Error(
+            `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          ),
         );
       }
 
@@ -447,7 +449,7 @@ class JsonRpcLanguageServer {
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return Promise.reject(
-          `No LSP process is running for ${_workSpaceFolder}`,
+          new Error(`No LSP process is running for ${_workSpaceFolder}`),
         );
       }
 
@@ -456,7 +458,9 @@ class JsonRpcLanguageServer {
           `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
         );
         return Promise.reject(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          new Error(
+            `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          ),
         );
       }
 
@@ -506,7 +510,7 @@ class JsonRpcLanguageServer {
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return Promise.reject(
-          `No LSP process is running for ${_workSpaceFolder}`,
+          new Error(`No LSP process is running for ${_workSpaceFolder}`),
         );
       }
 
@@ -515,7 +519,9 @@ class JsonRpcLanguageServer {
           `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
         );
         return Promise.reject(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          new Error(
+            `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          ),
         );
       }
 

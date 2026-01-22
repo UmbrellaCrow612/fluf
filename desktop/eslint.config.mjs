@@ -20,6 +20,9 @@ export default defineConfig([
         },
       ],
       "require-await": "error",
+      "prefer-promise-reject-errors": "error",
+      "no-async-promise-executor": "error",
+      "no-promise-executor-return": "error"
     },
   },
 

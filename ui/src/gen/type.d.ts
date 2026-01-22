@@ -219,19 +219,6 @@ export type chromeWindowClose = () => void;
  */
 export type chromeWindowRestore = () => void;
 /**
- * Exposes node url utils
- */
-export type urlApi = {
-    /**
-     * - Convert a file uri to a file path abs
-     */
-    fileUriToAbsolutePath: fileUriToAbsolutePath;
-};
-/**
- * Converts a `file:///c:/dev` to a abs path like `c:\dev\some`
- */
-export type fileUriToAbsolutePath = (fileUri: string) => Promise<string>;
-/**
  * Contains all helpers todo with path
  */
 export type pathApi = {
@@ -636,7 +623,7 @@ export type shellApi = {
  * List of all methods that can be in the method of a request / message / Notification
  * based on the action you want to perform read the link below and send that method
  */
-export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics" | "textDocument/completion" | "textDocument/hover";
+export type LanguageServerProtocolMethod = "initialize" | "initialized" | "client/registerCapability" | "client/unregisterCapability" | "$/setTrac" | "$/logTrace" | "shutdown" | "exit" | "textDocument/didOpen" | "textDocument/didChange" | "textDocument/willSave" | "textDocument/willSaveWaitUntil" | "textDocument/didSave" | "textDocument/didClose" | "textDocument/declaration" | "textDocument/publishDiagnostics" | "textDocument/completion" | "textDocument/hover" | "textDocument/definition";
 /**
  * Version of jsonrpc's
  */
@@ -698,7 +685,15 @@ export type ILanguageServer = {
      * - Get completion information
      */
     Completion: ILanguageServerCompletion;
+    /**
+     * - Get a symbol definition locations
+     */
+    Definition: ILanguageServerDefinition;
 };
+/**
+ * Get the go to definition of a symbol represented as one or many locations
+ */
+export type ILanguageServerDefinition = (workSpaceFolder: string, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Definition | null>;
 /**
  * Get completion suggestions
  */
@@ -793,6 +788,10 @@ export type ILanguageServerClient = {
      */
     completion: ILanguageServerClientCompletion;
     /**
+     * - Get definition for a given symbol
+     */
+    definition: ILanguageServerClientDefinition;
+    /**
      * - Listen to when the LSP responds and run logic
      */
     onData: ILanguageServerClientOnData;
@@ -809,6 +808,10 @@ export type ILanguageServerClient = {
      */
     onReady: ILanguageServerClientOnReady;
 };
+/**
+ * Get definition for a given symbol
+ */
+export type ILanguageServerClientDefinition = (workSpaceFolder: string, languageId: languageId, filePath: string, position: import("vscode-languageserver-protocol").Position) => Promise<import("vscode-languageserver-protocol").Definition | null>;
 /**
  * Get completion suggestions at a specific position
  */
@@ -923,10 +926,6 @@ export type ElectronApi = {
      * - Contains all utils for chroium window itself
      */
     chromeWindowApi: chromeWindowApi;
-    /**
-     * - Contains helpers todo with URL / URI's
-     */
-    urlApi: urlApi;
     /**
      * - Contains all the UI api's to interact with LSP
      */

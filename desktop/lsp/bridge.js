@@ -147,7 +147,9 @@ const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
   if (!lsp) {
     logger.error(`No language server language: ${languageId}`);
     return Promise.reject(
-      `No language server language: ${languageId} cannot provide hover information`,
+      new Error(
+        `No language server language: ${languageId} cannot provide hover information`,
+      ),
     );
   }
 
@@ -164,7 +166,9 @@ const completionImpl = (_, workSpaceFolder, languageId, filePath, position) => {
       `No language server language: ${languageId} cannot offer completions`,
     );
     return Promise.reject(
-      `No language server language: ${languageId} cannot provide completion information`,
+      new Error(
+        `No language server language: ${languageId} cannot provide completion information`,
+      ),
     );
   }
 
@@ -181,7 +185,9 @@ const definitionImpl = (_, wsf, langId, fp, pos) => {
       `No language server language: ${langId} cannot offer definitions`,
     );
     return Promise.reject(
-      `No language server language: ${langId} cannot offer definitions`,
+      new Error(
+        `No language server language: ${langId} cannot offer definitions`,
+      ),
     );
   }
 
