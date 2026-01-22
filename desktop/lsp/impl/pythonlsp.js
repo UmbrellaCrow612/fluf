@@ -13,7 +13,7 @@ class PythonLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerStart}
    */
-  async Start(workSpaceFolder) {
+  Start(workSpaceFolder) {
     let exePath = getPythonServerPath();
     if (!exePath) {
       throw new Error("No python exe path");
@@ -83,6 +83,13 @@ class PythonLanguageServer extends JsonRpcLanguageServer {
    */
   Completion(workSpaceFolder, filePath, position) {
     return this._completion(workSpaceFolder, filePath, position);
+  }
+
+  /**
+   * @type {import("../../type").ILanguageServerDefinition}
+   */
+  Definition(workSpaceFolder, filePath, position) {
+    return this._definition(workSpaceFolder, filePath, position);
   }
 }
 

@@ -81,6 +81,8 @@ const lspClient = {
   hover: (...args) => ipcRenderer.invoke("lsp:document:hover", ...args),
   completion: (...args) =>
     ipcRenderer.invoke("lsp:document:completion", ...args),
+  definition: (...args) =>
+    ipcRenderer.invoke("lsp:document:definition", ...args),
 };
 
 /**

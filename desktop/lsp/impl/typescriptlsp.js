@@ -550,6 +550,13 @@ class TypeScriptLanguageServer {
 
     return result;
   }
+
+  /**
+   * @type {import("../../type").ILanguageServerDefinition}
+   */
+  Definition(workSpaceFolder, filePath, position) {
+    throw new Error("Not impl");
+  }
 }
 
 module.exports = {

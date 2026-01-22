@@ -19,6 +19,7 @@ export default defineConfig([
           destructuredArrayIgnorePattern: "^_",
         },
       ],
+      "require-await": "error",
     },
   },
 

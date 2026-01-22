@@ -85,6 +85,13 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   Completion(workSpaceFolder, filePath, position) {
     return this._completion(workSpaceFolder, filePath, position);
   }
+
+  /**
+   * @type {import("../../type").ILanguageServerDefinition}
+   */
+  Definition(workSpaceFolder, filePath, position) {
+    return this._definition(workSpaceFolder, filePath, position);
+  }
 }
 
 module.exports = {

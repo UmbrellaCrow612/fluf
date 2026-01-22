@@ -7,29 +7,31 @@ const { logger } = require("./logger");
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").normalizePath>}
  */
-const normImpl = async (_, fp) => {
+const normImpl = (_, fp) => {
   try {
-    if (!fp) return "";
+    if (!fp) return Promise.resolve("");
 
-    return path.normalize(path.resolve(fp));
+    return Promise.resolve(path.normalize(fp));
   } catch (error) {
     logger.error("Failed to normalise path " + JSON.stringify(error));
-    return "";
+    return Promise.resolve("");
   }
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").relativePath>}
  */
-const relImpl = async (_, from, to) => {
+const relImpl = (_, from, to) => {
   try {
-    return path.relative(
-      path.normalize(path.resolve(from)),
-      path.normalize(path.resolve(to)),
+    return Promise.resolve(
+      path.relative(
+        path.normalize(path.resolve(from)),
+        path.normalize(path.resolve(to)),
+      ),
     );
   } catch (error) {
     logger.error("Failed to get relative path " + JSON.stringify(error));
-    return "";
+    return Promise.resolve("");
   }
 };
 

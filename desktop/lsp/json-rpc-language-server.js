@@ -478,6 +478,69 @@ class JsonRpcLanguageServer {
       throw error;
     }
   }
+
+  /**
+   * Get definition information
+   * @param {string} workSpaceFolder The folder opened in the UI root
+   * @param {string} filePath - The specific file to get the definition for
+   * @param {import("vscode-languageserver-protocol").Position} position - The position of the symbol to get the definition for
+   * @returns {Promise<import("vscode-languageserver-protocol").Definition | null>} - The definition location / locations or null if the position of the symbol is empty whitesapce
+   */
+  _definition(workSpaceFolder, filePath, position) {
+    if (
+      typeof workSpaceFolder !== "string" ||
+      workSpaceFolder.trim().length === 0
+    )
+      throw new TypeError("workSpaceFolder must be a non empty string");
+
+    if (typeof filePath !== "string" || filePath.trim().length === 0)
+      throw new TypeError("filePath must be a non empty string");
+
+    if (typeof position !== "object")
+      throw new TypeError("position must be a object");
+
+    try {
+      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+
+      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      if (!rc) {
+        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+        return Promise.reject(
+          `No LSP process is running for ${_workSpaceFolder}`,
+        );
+      }
+
+      if (!rc.IsStarted()) {
+        logger.error(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+        return Promise.reject(
+          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+        );
+      }
+
+      /**
+       * @type {import("vscode-languageserver-protocol").DefinitionParams}
+       */
+      let params = {
+        position: position,
+        textDocument: {
+          uri: createUri(filePath),
+        },
+      };
+
+      return rc.SendRequest("textDocument/definition", params);
+    } catch (error) {
+      // TODO: cathc error for empty symbol
+
+      logError(
+        error,
+        `Failed to get completion for workspace folder: ${workSpaceFolder} file: ${filePath} position: ${position.character} ${position.line}`,
+      );
+
+      throw error;
+    }
+  }
 }
 
 module.exports = { JsonRpcLanguageServer };
