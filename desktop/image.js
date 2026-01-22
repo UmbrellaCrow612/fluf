@@ -24,6 +24,28 @@ function registerImageProtocol(protocol) {
 }
 
 /**
+ * @param {string} ext
+ * @returns {string}
+ */
+function getMimeType(ext) {
+  switch (ext) {
+    case ".png":
+      return "image/png";
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".gif":
+      return "image/gif";
+    case ".bmp":
+      return "image/bmp";
+    case ".webp":
+      return "image/webp";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+/**
  * Register all ipcmain image listeners and custom protocols for image related actions
  * @param {import("electron").Protocol} protocol
  */
@@ -65,25 +87,4 @@ function registerImageListeners(protocol) {
   });
 }
 
-/**
- * @param {string} ext
- * @returns {string}
- */
-function getMimeType(ext) {
-  switch (ext) {
-    case ".png":
-      return "image/png";
-    case ".jpg":
-    case ".jpeg":
-      return "image/jpeg";
-    case ".gif":
-      return "image/gif";
-    case ".bmp":
-      return "image/bmp";
-    case ".webp":
-      return "image/webp";
-    default:
-      return "application/octet-stream";
-  }
-}
 module.exports = { registerImageProtocol, registerImageListeners };

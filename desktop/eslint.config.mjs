@@ -22,7 +22,15 @@ export default defineConfig([
       "require-await": "error",
       "prefer-promise-reject-errors": "error",
       "no-async-promise-executor": "error",
-      "no-promise-executor-return": "error"
+      "no-promise-executor-return": "error",
+      "no-constructor-return": "error",
+      "no-duplicate-imports": "error",
+      "no-inner-declarations": "error",
+      "no-self-compare": "error",
+      "no-unassigned-vars": "error",
+      "no-unmodified-loop-condition": "error",
+      "no-use-before-define": "error",
+      "require-atomic-updates": "error",
     },
   },
 
