@@ -30,6 +30,8 @@ A simple text editor written in electron and angular
 
 - Hover information and auto complete via LSP 
 
+- Go to definition done
+
 ---
 
 ## **Project Overview**
