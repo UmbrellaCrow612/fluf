@@ -36,7 +36,7 @@ const saveToImpl = async (_, content, options) => {
 
     return true;
   } catch (error) {
-    logError("Failed to save file");
+    logError(error, "Failed to save file");
     return false;
   }
 };
@@ -117,7 +117,7 @@ const createDirImpl = async (_, dirPath) => {
 
     return true;
   } catch (error) {
-    logError("Failed to create folder");
+    logError(error, "Failed to create folder");
     return false;
   }
 };
@@ -156,7 +156,7 @@ const readDirImpl = async (_, dirPath) => {
 
     return filenodes;
   } catch (error) {
-    logError("Failed to read directory");
+    logError(error, "Failed to read directory");
     return [];
   }
 };
@@ -174,7 +174,7 @@ const removeImpl = async (_, fileOrFolderPath) => {
 
     return true;
   } catch (error) {
-    logError("Failed to remove path");
+    logError(error, "Failed to remove path");
     return false;
   }
 };
@@ -210,7 +210,7 @@ const createFileImpl = async (_, filePath) => {
 
     return true;
   } catch (error) {
-    logError("Failed to create file");
+    logError(error, "Failed to create file");
     return false;
   }
 };
@@ -230,7 +230,7 @@ const writeToFileImpl = async (_, filePath, fileContent) => {
 
     return true;
   } catch (error) {
-    logError("Failed to write to file");
+    logError(error, "Failed to write to file");
     return false;
   }
 };
