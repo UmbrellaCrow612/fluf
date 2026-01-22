@@ -86,14 +86,6 @@ const lspClient = {
 };
 
 /**
- * @type {import("./type").urlApi}
- */
-const urlApi = {
-  fileUriToAbsolutePath: (...args) =>
-    ipcRenderer.invoke("uri:to:path", ...args),
-};
-
-/**
  * @type {import("./type").ripgrepApi}
  */
 const ripgrepApi = {
@@ -235,7 +227,6 @@ const api = {
   pathApi,
   fsApi,
   chromeWindowApi,
-  urlApi,
   lspClient,
 };
 

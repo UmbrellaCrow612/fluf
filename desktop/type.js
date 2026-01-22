@@ -210,19 +210,6 @@
  */
 
 /**
- * Exposes node url utils
- * @typedef {Object} urlApi
- * @property {fileUriToAbsolutePath} fileUriToAbsolutePath - Convert a file uri to a file path abs
- */
-
-/**
- * Converts a `file:///c:/dev` to a abs path like `c:\dev\some`
- * @callback fileUriToAbsolutePath
- * @param {string} fileUri
- * @returns {Promise<string>} The resolved abs path
- */
-
-/**
  * Contains all helpers todo with path
  * @typedef {Object} pathApi
  * @property {normalizePath} normalize - Calls path normalize
@@ -848,8 +835,6 @@
  * @property {fsApi} fsApi - Contains all file fs utils
  *
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
- *
- * @property {urlApi} urlApi - Contains helpers todo with URL / URI's
  *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
  *

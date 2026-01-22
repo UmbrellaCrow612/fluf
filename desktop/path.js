@@ -38,22 +38,22 @@ const relImpl = (_, from, to) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathSep>}
  */
-const sepImpl = async () => {
-  return path.sep;
+const sepImpl = () => {
+  return Promise.resolve(path.sep);
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathJoin>}
  */
-const joinImpl = async (_, ...args) => {
-  return path.join(...args);
+const joinImpl = (_, ...args) => {
+  return Promise.resolve(path.join(...args));
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathIsabsolute>}
  */
-const isAbs = async (_, p) => {
-  return path.isAbsolute(p);
+const isAbs = (_, p) => {
+  return Promise.resolve(path.isAbsolute(p));
 };
 
 /**

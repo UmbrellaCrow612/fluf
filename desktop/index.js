@@ -12,7 +12,6 @@ const { registerFsListeners, cleanUpWatchers } = require("./fs");
 const { registerWindowListener } = require("./window");
 const { registerRipgrepListeners } = require("./ripgrep");
 const { logger } = require("./logger");
-const { registerUrlListeners } = require("./url");
 const { registerPathListeners } = require("./path");
 const {
   registerLanguageServerListener,
@@ -83,7 +82,6 @@ app.whenReady().then(() => {
   registerShellListeners(ipcMain, mainWindow);
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
-  registerUrlListeners(ipcMain);
   registerPathListeners(ipcMain);
 
   registerLanguageServerListener(ipcMain, mainWindow);
