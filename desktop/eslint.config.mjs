@@ -2,18 +2,8 @@ import js from "@eslint/js";
 import globals from "globals";
 import json from "@eslint/json";
 import { defineConfig, globalIgnores } from "eslint/config";
-import tseslint from "typescript-eslint";
 
 export default defineConfig([
-  js.configs.recommended,
-  tseslint.configs.recommendedTypeChecked,
-  {
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-      },
-    },
-  },
   {
     files: ["**/*.{js,mjs,cjs}"],
     plugins: { js },
@@ -32,7 +22,7 @@ export default defineConfig([
       "require-await": "error",
       "prefer-promise-reject-errors": "error",
       "no-async-promise-executor": "error",
-      "no-promise-executor-return": "error",
+      "no-promise-executor-return": "error"
     },
   },
 
