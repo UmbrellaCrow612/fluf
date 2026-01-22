@@ -49,6 +49,14 @@
  * @property {fsStopWatching} stopWatching - Stops watching a given path
  * @property {saveTo} saveTo - Save a files content to a given location
  * @property {selectFile} selectFile - Allow a user to select a file from the explorer
+ * @property {fsGetNode} getNode - Used to fetch a path as a file node
+ */
+
+/**
+ * Use a path to a file or folder and get it's fileNode information - used when you have a file path but it is not yet a node and you need it as a node format.
+ * @callback fsGetNode
+ * @param {string} path - The path to the file or folder
+ * @returns {Promise<fileNode>} The path as a proper file node item
  */
 
 /**

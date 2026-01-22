@@ -34,6 +34,7 @@ import { PublishDiagnosticsParams } from 'vscode-languageserver-protocol';
 import { uriToFilePath } from '../lsp/uri';
 import { normalizeElectronPath } from '../path/utils';
 import { mapLspItemToCmOption } from './completions';
+import { OpenNodeInEditor } from '../file-explorer/helper';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -83,12 +84,7 @@ export class TextFileEditorComponent implements OnInit {
     let wsf = this.workSpaceFolder();
     let fp = this.openFileNode()?.path;
 
-    if (
-      !word ||
-      !this.languageId ||
-      !wsf ||
-      !fp
-    ) {
+    if (!word || !this.languageId || !wsf || !fp) {
       return {
         from: word?.from ?? 1,
         options: [],
@@ -128,7 +124,7 @@ export class TextFileEditorComponent implements OnInit {
     }
 
     return {
-      from: word.from, 
+      from: word.from,
       options: lspResult.items.map((item: any) =>
         mapLspItemToCmOption(item, context),
       ),
@@ -310,24 +306,78 @@ export class TextFileEditorComponent implements OnInit {
         return;
       }
 
-      // TODO: Navigate to the definition location
-      // For now, just logging the response
-      if (Array.isArray(definition)) {
-        console.log(`Found ${definition.length} definition(s):`);
-        definition.forEach((def, index) => {
-          console.log(`Definition ${index + 1}:`, {
-            uri: def.uri,
-            range: def.range,
-          });
-        });
+      // Handle both single definition and array of definitions
+      const definitions = Array.isArray(definition) ? definition : [definition];
+
+      if (definitions.length === 0) {
+        console.log('No definitions found');
+        return;
+      }
+
+      // Use the first definition
+      const targetDef = definitions[0];
+      const targetFilePath = normalizeElectronPath(
+        uriToFilePath(targetDef.uri),
+      );
+      const currentFilePath = normalizeElectronPath(filePath);
+
+      console.log('Navigating to definition:', {
+        targetFile: targetFilePath,
+        currentFile: currentFilePath,
+        range: targetDef.range,
+      });
+
+      // Check if definition is in the same file
+      if (targetFilePath === currentFilePath) {
+        // Navigate within the current editor
+        this.navigateToPosition(
+          targetDef.range.start.line,
+          targetDef.range.start.character,
+        );
       } else {
-        console.log('Definition location:', {
-          uri: definition.uri,
-          range: definition.range,
-        });
+        // TODO: Open the other file and navigate to position
+        console.log('Definition is in a different file:', targetFilePath);
+        console.log('Opening other files not yet implemented');
+
+        let node = await this.api.fsApi.getNode(targetFilePath);
+        OpenNodeInEditor(node, this.appContext);
       }
     } catch (error) {
       console.error('Error getting definition:', error);
+    }
+  }
+
+  /**
+   * Navigate to a specific position in the current CodeMirror editor
+   */
+  private navigateToPosition(line: number, character: number) {
+    if (!this.codeMirrorView) {
+      console.warn('No CodeMirror view available');
+      return;
+    }
+
+    try {
+      // LSP uses 0-based line numbers, CodeMirror uses 1-based
+      const cmLine = line + 1;
+
+      // Get the line in the document
+      const docLine = this.codeMirrorView.state.doc.line(cmLine);
+
+      // Calculate the absolute position (line start + character offset)
+      const pos = docLine.from + character;
+
+      // Select the range and scroll to it
+      this.codeMirrorView.dispatch({
+        selection: { anchor: pos, head: pos },
+        scrollIntoView: true,
+      });
+
+      // Focus the editor
+      this.codeMirrorView.focus();
+
+      console.log(`Navigated to line ${cmLine}, character ${character}`);
+    } catch (error) {
+      console.error('Error navigating to position:', error);
     }
   }
 

@@ -74,7 +74,15 @@ export type fsApi = {
      * - Allow a user to select a file from the explorer
      */
     selectFile: selectFile;
+    /**
+     * - Used to fetch a path as a file node
+     */
+    getNode: fsGetNode;
 };
+/**
+ * Use a path to a file or folder and get it's fileNode information - used when you have a file path but it is not yet a node and you need it as a node format.
+ */
+export type fsGetNode = (path: string) => Promise<fileNode>;
 /**
  * Allow a user to select a file from explorer
  */

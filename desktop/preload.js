@@ -115,6 +115,7 @@ const fsApi = {
   readDir: (...args) => ipcRenderer.invoke("dir:read", ...args),
   createDirectory: (...args) => ipcRenderer.invoke("dir:create", ...args),
   selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
+  getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
 
   onChange: (path, callback) => {
     /**
