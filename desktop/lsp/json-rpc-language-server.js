@@ -1,4 +1,4 @@
-const { logger, logError } = require("../logger");
+const { logger } = require("../logger");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
 const { createUri } = require("./uri");
@@ -143,7 +143,7 @@ class JsonRpcLanguageServer {
       );
       return true;
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to start language server. command: ${command} workspace folder ${wsf}`,
       );
@@ -175,7 +175,7 @@ class JsonRpcLanguageServer {
       try {
         await rc.SendRequest("shutdown", {});
       } catch (/** @type {any}*/ error) {
-        logError(error, `Shutdown requested hanged`);
+        logger.error(error, `Shutdown requested hanged`);
       }
 
       rc.Exit();
@@ -188,7 +188,7 @@ class JsonRpcLanguageServer {
       );
       return true;
     } catch (/** @type {any}*/ error) {
-      logError(
+      logger.error(
         error,
         `Failed to stop language server for work space folder ${workSpaceFolder}`,
       );
@@ -277,7 +277,7 @@ class JsonRpcLanguageServer {
 
       rc.DidOpenTextDocument(createUri(filePath), languageId, version, text);
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to open document for workspace folder ${workSpaceFolder} filePath: ${filePath} languageId: ${languageId} version:${version} content-length: ${text.length}`,
       );
@@ -325,7 +325,7 @@ class JsonRpcLanguageServer {
 
       rc.DidChangeTextDocument(createUri(filePath), version, changes);
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to sync document changes for workspace folder: ${workSpaceFolder} file: ${filePath} version: ${version} changes count: ${changes.length}`,
       );
@@ -363,7 +363,7 @@ class JsonRpcLanguageServer {
 
       rc.DidCloseTextDocument(createUri(filePath));
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to close document work workspace folder: ${workSpaceFolder} file: ${filePath}`,
       );
@@ -418,7 +418,7 @@ class JsonRpcLanguageServer {
 
       return rc.SendRequest("textDocument/hover", params);
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to get hover information for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
       );
@@ -474,7 +474,7 @@ class JsonRpcLanguageServer {
 
       return rc.SendRequest("textDocument/completion", params);
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to get completions for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
       );
@@ -539,7 +539,7 @@ class JsonRpcLanguageServer {
     } catch (error) {
       // TODO: cathc error for empty symbol
 
-      logError(
+      logger.error(
         error,
         `Failed to get completion for workspace folder: ${workSpaceFolder} file: ${filePath} position: ${position.character} ${position.line}`,
       );

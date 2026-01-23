@@ -1,4 +1,4 @@
-const { logger, logError } = require("../../logger");
+const { logger } = require("../../logger");
 const { getTypescriptServerPath } = require("../../packing");
 const path = require("path");
 const { TypeScriptProcess } = require("../typescript-process");
@@ -112,7 +112,7 @@ class TypeScriptLanguageServer {
 
       return true;
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to start typescript lsp for workspace: ${workSpaceFolder}`,
       );
@@ -163,7 +163,7 @@ class TypeScriptLanguageServer {
 
       return true;
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to stop typescript lsp for workspace: ${_workSpaceFolder}`,
       );
@@ -250,7 +250,7 @@ class TypeScriptLanguageServer {
 
       return lspCompletionResponse;
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to get completion for workspace: ${workSpaceFolder} file: ${filePath}`,
       );
@@ -303,7 +303,7 @@ class TypeScriptLanguageServer {
       process.DidChangeTextDocument(filePath, version, changes);
       process.RequestDiagnostics(filePath); // for typescript we need to manually request errors
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to send didChangeTextDocument for workspace: ${workSpaceFolder} file: ${filePath}`,
       );
@@ -349,7 +349,7 @@ class TypeScriptLanguageServer {
 
       process.DidCloseTextDocument(filePath);
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to send didCloseTextDocument for workspace: ${workSpaceFolder} file: ${filePath}`,
       );
@@ -404,7 +404,7 @@ class TypeScriptLanguageServer {
       process.DidOpenTextDocument(filePath, text);
       process.RequestDiagnostics(filePath); // for typescript we need to manually request errors
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to send didOpenTextDocument for workspace: ${workspaceFolder} file: ${filePath}`,
       );
@@ -515,7 +515,7 @@ class TypeScriptLanguageServer {
         return null;
       }
 
-      logError(
+      logger.error(
         error,
         `Failed to get hover for workspace: ${workSpaceFolder} file: ${filePath}`,
       );

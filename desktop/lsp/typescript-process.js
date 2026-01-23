@@ -3,7 +3,7 @@
  */
 
 const { spawn } = require("child_process");
-const { logError, logger } = require("../logger");
+const { logger } = require("../logger");
 const path = require("path");
 const fs = require("fs/promises");
 const { createUri } = require("./uri");
@@ -184,7 +184,7 @@ class TypeScriptProcess {
 
       this.#isStarted = true;
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to start typescript process for command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
       );
@@ -241,7 +241,7 @@ class TypeScriptProcess {
         this.#writeToStdin(payload);
       });
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to send typescript server request. Request command: ${command} request params: ${JSON.stringify(params)}`,
       );
@@ -308,7 +308,7 @@ class TypeScriptProcess {
         });
       }
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to send DidChangeTextDocument notification for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
       );
@@ -341,7 +341,7 @@ class TypeScriptProcess {
         arguments: params,
       });
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to send DidCloseTextDocument notification for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
       );
@@ -378,7 +378,7 @@ class TypeScriptProcess {
         arguments: params,
       });
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to send DidOpenTextDocument notification for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
       );
@@ -393,7 +393,7 @@ class TypeScriptProcess {
    * @param {number} [delay=100] - Delay in milliseconds before requesting diagnostics
    * @returns {void}
    */
-   RequestDiagnostics(filePath, delay = 100) {
+  RequestDiagnostics(filePath, delay = 100) {
     if (typeof filePath !== "string" || filePath.trim().length === 0)
       throw new TypeError("filePath must be a non empty string");
 
@@ -418,7 +418,7 @@ class TypeScriptProcess {
         arguments: params,
       });
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to request diagnostics for file: ${filePath} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
       );
@@ -468,7 +468,7 @@ class TypeScriptProcess {
       const contentLength = parseInt(lengthStr, 10);
 
       if (isNaN(contentLength)) {
-        logError(
+        logger.error(
           new Error(`Invalid Content-Length: ${lengthStr}`),
           "Failed to parse Content-Length header",
         );
@@ -505,7 +505,7 @@ class TypeScriptProcess {
         const message = JSON.parse(bodyString);
         this.#handle(message);
       } catch (error) {
-        logError(error, "Failed to parse TSServer JSON body");
+        logger.error(error, "Failed to parse TSServer JSON body");
       }
     }
   }
@@ -632,7 +632,7 @@ class TypeScriptProcess {
         );
       }
     } catch (error) {
-      logError(error, "Failed to notify main window of TSServer notification");
+      logger.error(error, "Failed to notify main window of TSServer notification");
     }
   }
 
@@ -678,7 +678,7 @@ class TypeScriptProcess {
       const payload = JSON.stringify(message) + "\n";
       this.#spawnRef.stdin.write(payload, "utf8");
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to write to stdin of process command: ${this.#command} workspace folder: ${this.#workSpaceFolder} language: ${this.#languageId}`,
       );
