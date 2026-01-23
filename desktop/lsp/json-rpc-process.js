@@ -1,5 +1,5 @@
 const { spawn } = require("child_process");
-const { logger, logError } = require("../logger");
+const { logger } = require("../logger");
 const { isUri } = require("./uri");
 const fs = require("fs/promises");
 const path = require("path");
@@ -208,9 +208,9 @@ class JsonRpcProcess {
     } catch (error) {
       this.#isStarted = false;
 
-      logError(
+      logger.error(
         error,
-        `Failed to start JSON RPC process with command ${this.#command} error: ${JSON.stringify(error)}`,
+        `Failed to start JSON RPC process with command ${this.#command}`,
       );
 
       throw error;
@@ -314,9 +314,9 @@ class JsonRpcProcess {
         });
       });
     } catch (error) {
-      logError(
+      logger.error(
         error,
-        `Failed to send request for command: ${this.#command} ${JSON.stringify(error)}`,
+        `Failed to send request for command: ${this.#command}`,
       );
 
       throw error;
@@ -467,15 +467,15 @@ class JsonRpcProcess {
       try {
         response = JSON.parse(messageBody);
       } catch (/** @type {any}*/ err) {
-        logError(err, `Failed to parse JSON for command: ${this.#command}`);
-        logger.error("Raw body: " + messageBody);
+        logger.error(err, `Failed to parse JSON for command: ${this.#command}`);
+        logger.error("Raw body: ", messageBody);
         continue;
       }
 
       try {
         this.#handle(response);
       } catch (/** @type {any}*/ err) {
-        logError(
+        logger.error(
           err,
           `Failed to notify response for command: ${this.#command}`,
         );
@@ -615,7 +615,7 @@ class JsonRpcProcess {
       const writeContent = `Content-Length: ${contentLength}\r\n\r\n${json}`;
       this.#spawnRef.stdin.write(writeContent);
     } catch (error) {
-      logError(
+      logger.error(
         error,
         `Failed to write to stdin stream of command: ${this.#command} error: ${JSON.stringify(error)}`,
       );

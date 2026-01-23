@@ -5,7 +5,7 @@
 const { spawn } = require("child_process");
 const fs = require("fs/promises");
 const path = require("path");
-const { logger, logError } = require("./logger");
+const { logger } = require("./logger");
 
 /**
  * Parses the stdout from `git status` and returns a structured JSON object.
@@ -191,7 +191,7 @@ const igGitInit = async (_, dir) => {
     return true;
   } catch (error) {
 
-    logError(error, `Failed to check if git is init in directory ${dir}`)
+    logger.error(error, `Failed to check if git is init in directory ${dir}`)
     return false;
   }
 };

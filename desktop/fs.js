@@ -4,7 +4,7 @@
 
 const path = require("path");
 const fs = require("fs/promises");
-const { logger, logError } = require("./logger");
+const { logger } = require("./logger");
 const { dialog } = require("electron");
 
 /**
@@ -36,7 +36,7 @@ const saveToImpl = async (_, content, options) => {
 
     return true;
   } catch (error) {
-    logError("Failed to save file");
+    logger.error(error, "Failed to save file");
     return false;
   }
 };
@@ -56,7 +56,7 @@ const unwatchImpl = (_, pp) => {
 
     abort.abort();
   } catch (error) {
-    logError(error, "Failed to un watch directory");
+    logger.error(error, "Failed to un watch directory");
 
     throw error;
   }
@@ -91,7 +91,7 @@ const watchImpl = async (_, fileOrFolderPath) => {
   } catch (/** @type {any}*/ error) {
     if (error.name === "AbortError") return;
 
-    logError(error, "Failed to watch directory");
+    logger.error(error, "Failed to watch directory");
 
     throw error;
   }
@@ -117,7 +117,7 @@ const createDirImpl = async (_, dirPath) => {
 
     return true;
   } catch (error) {
-    logError("Failed to create folder");
+    logger.error(error, "Failed to create folder");
     return false;
   }
 };
@@ -156,7 +156,7 @@ const readDirImpl = async (_, dirPath) => {
 
     return filenodes;
   } catch (error) {
-    logError("Failed to read directory");
+    logger.error(error, "Failed to read directory");
     return [];
   }
 };
@@ -174,7 +174,7 @@ const removeImpl = async (_, fileOrFolderPath) => {
 
     return true;
   } catch (error) {
-    logError("Failed to remove path");
+    logger.error(error, "Failed to remove path");
     return false;
   }
 };
@@ -192,7 +192,7 @@ const existsImpl = async (_, fileOrFolderPath) => {
   } catch (/** @type {any}*/ error) {
     if (error?.code === "ENOENT") return false; // just didn't exit not true error
 
-    logError("Failed to check if a file exists");
+    logger.error("Failed to check if a file exists");
     return false;
   }
 };
@@ -210,7 +210,7 @@ const createFileImpl = async (_, filePath) => {
 
     return true;
   } catch (error) {
-    logError("Failed to create file");
+    logger.error(error, "Failed to create file");
     return false;
   }
 };
@@ -230,7 +230,7 @@ const writeToFileImpl = async (_, filePath, fileContent) => {
 
     return true;
   } catch (error) {
-    logError("Failed to write to file");
+    logger.error(error, "Failed to write to file");
     return false;
   }
 };
@@ -248,7 +248,7 @@ const readFileImpl = async (_, filePath) => {
 
     return await fs.readFile(p, { encoding: "utf-8" });
   } catch (error) {
-    logError("Failed to read file");
+    logger.error("Failed to read file");
 
     throw error;
   }
@@ -265,7 +265,7 @@ const selectFileImpl = () => {
       properties: ["openFile"],
     });
   } catch (error) {
-    logError("Failed to select file");
+    logger.error("Failed to select file");
 
     throw error;
   }
@@ -301,7 +301,7 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
     }
 
   } catch (error) {
-    logError(error, `Failed to get node for path: ${fileOrFolderPath}`)
+    logger.error(error, `Failed to get node for path: ${fileOrFolderPath}`)
 
     throw error
   }

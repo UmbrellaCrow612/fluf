@@ -29,6 +29,7 @@
     "vscode-languageserver-protocol": "^3.17.5"
   },
   "dependencies": {
-    "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1"
+    "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
+    "node-logy": "^0.0.1"
   }
 }
