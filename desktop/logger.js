@@ -5,8 +5,4 @@ const { NodeLogger } = require("node-logy");
  */
 const logger = new NodeLogger();
 
-process.on("exit", () => {
-  logger.flushLogsSync();
-});
-
 module.exports = { logger };
