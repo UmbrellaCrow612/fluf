@@ -1,0 +1,6 @@
+.file_x_tabs_container {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  gap: 5px;
+}
