@@ -44,6 +44,7 @@ const createFileXWindow = () => {
   fileXWindow.on("closed", () => {
     if (fileXWindow?.isDestroyed()) {
       fileXWindow = null;
+      logger.info("File x window closed")
     }
   });
 
