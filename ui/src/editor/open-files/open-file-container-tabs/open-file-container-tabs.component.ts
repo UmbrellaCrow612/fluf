@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { FileTabItemComponent } from './file-tab-item/file-tab-item.component';
-import { ContextService } from '../../app-context/app-context.service';
+import { EditorContextService } from '../../app-context/editor-context.service';
 
 @Component({
   selector: 'app-open-file-container-tabs',
@@ -9,7 +9,7 @@ import { ContextService } from '../../app-context/app-context.service';
   styleUrl: './open-file-container-tabs.component.css',
 })
 export class OpenFileContainerTabsComponent {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
 
   tabs = computed(() => this.appContext.openFiles());
 }

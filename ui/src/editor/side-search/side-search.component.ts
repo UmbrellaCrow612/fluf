@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SideSearchItemComponent } from './side-search-item/side-search-item.component';
 import { getElectronApi } from '../../utils';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import {
   FormControl,
   FormsModule,
@@ -28,7 +28,7 @@ import { ripGrepResult } from '../../gen/type';
 })
 export class SideSearchComponent {
   private readonly api = getElectronApi();
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private searchDir = computed(() => this.appContext.selectedDirectoryPath());
 
   showExtraSearchOptions = false;

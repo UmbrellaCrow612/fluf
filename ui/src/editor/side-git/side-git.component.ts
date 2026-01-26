@@ -7,7 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { getElectronApi } from '../../utils';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { MatButtonModule } from '@angular/material/button';
 import { gitStatusResult, voidCallback } from '../../gen/type';
 import { FileChangeInfo } from 'fs/promises';
@@ -20,7 +20,7 @@ import { FileChangeInfo } from 'fs/promises';
 })
 export class SideGitComponent implements OnInit, OnDestroy {
   private readonly api = getElectronApi();
-  private readonly contextService = inject(ContextService);
+  private readonly contextService = inject(EditorContextService);
   private readonly ngZone = inject(NgZone);
 
   selectedDir = computed(() => this.contextService.selectedDirectoryPath());

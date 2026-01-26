@@ -1,5 +1,5 @@
 import { Component, computed, inject, Signal, Type } from '@angular/core';
-import { ContextService } from '../../app-context/app-context.service';
+import { EditorContextService } from '../../app-context/editor-context.service';
 import { fileEditorBottomActiveElement } from '../../app-context/type';
 import { TerminalComponent } from '../../terminal/terminal.component';
 import { NgComponentOutlet } from '@angular/common';
@@ -18,7 +18,7 @@ type btn = {
   styleUrl: './open-file-container-bottom.component.css',
 })
 export class OpenFileContainerBottomComponent {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
 
   activeEl = computed(() => this.appContext.fileEditorBottomActiveElement());
 

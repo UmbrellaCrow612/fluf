@@ -1,5 +1,5 @@
 import { Component, inject, computed } from '@angular/core';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ProblemItemComponent } from './problem-item/problem-item.component';
 import { Diagnostic } from '@codemirror/lint';
 

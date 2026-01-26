@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { InMemoryAppContext } from './type';
+import { EditorInMemoryAppContext } from './type';
 
 /**
  * Represents information that dosent need to be persisted between sessions but within the lifecycle of the app, i.e until a refresh
@@ -17,55 +17,55 @@ export class InMemoryContextService {
    * Exposes the signal for currentActiveContextMenu field in ctx - used to react to / compute the value for this field throughout the app
    */
   readonly currentActiveContextMenu =
-    signal<InMemoryAppContext['currentActiveContextMenu']>(null);
+    signal<EditorInMemoryAppContext['currentActiveContextMenu']>(null);
 
   /**
    * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
    */
-  readonly refreshDirectory = signal<InMemoryAppContext['refreshDirectory']>(0);
+  readonly refreshDirectory = signal<EditorInMemoryAppContext['refreshDirectory']>(0);
 
   /**
    * Exposes problems signal
    */
-  readonly problems = signal<InMemoryAppContext['problems']>(new Map());
+  readonly problems = signal<EditorInMemoryAppContext['problems']>(new Map());
 
   /**
    * Exposes signal for isCreateFileOrFolderActive
    */
   readonly isCreateFileOrFolderActive =
-    signal<InMemoryAppContext['isCreateFileOrFolderActive']>(null);
+    signal<EditorInMemoryAppContext['isCreateFileOrFolderActive']>(null);
 
   /**
    * Exposes signal editorResize
    */
-  readonly editorResize = signal<InMemoryAppContext['editorResize']>(0);
+  readonly editorResize = signal<EditorInMemoryAppContext['editorResize']>(0);
 
   /**
    * Exposes shells signal
    */
-  readonly shells = signal<InMemoryAppContext['shells']>(null);
+  readonly shells = signal<EditorInMemoryAppContext['shells']>(null);
 
   /**
    * Exposes currentActiveShellId signal
    */
   readonly currentActiveShellId =
-    signal<InMemoryAppContext['currentActiveShellId']>(null);
+    signal<EditorInMemoryAppContext['currentActiveShellId']>(null);
 
   /**
    * Exposes terminalBuffers signal
    */
-  readonly terminalBuffers = signal<InMemoryAppContext['terminalBuffers']>(
+  readonly terminalBuffers = signal<EditorInMemoryAppContext['terminalBuffers']>(
     new Map(),
   );
 
   /**
    * Exposes createTerminal signal
    */
-  readonly createTerminal = signal<InMemoryAppContext['createTerminal']>(0);
+  readonly createTerminal = signal<EditorInMemoryAppContext['createTerminal']>(0);
 
   /**
    * Exposes showCommandPalette signal
    */
   readonly showCommandPalette =
-    signal<InMemoryAppContext['showCommandPalette']>(false);
+    signal<EditorInMemoryAppContext['showCommandPalette']>(false);
 }

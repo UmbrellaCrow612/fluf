@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { TerminalTabsComponent } from './terminal-tabs/terminal-tabs.component';
 import { TerminalEditorComponent } from './terminal-editor/terminal-editor.component';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
 
 @Component({
   selector: 'app-terminal',

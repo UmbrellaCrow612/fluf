@@ -8,10 +8,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { getElectronApi } from '../../../utils';
-import { ContextService } from '../../app-context/app-context.service';
+import { EditorContextService } from '../../app-context/editor-context.service';
 import { fsearchResult } from '../../../gen/type';
 import { OpenFileOrFolderInExplorer } from '../../file-explorer/helper';
-import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 
 @Component({
   selector: 'app-search-file-command',
@@ -21,7 +21,7 @@ import { InMemoryContextService } from '../../app-context/app-in-memory-context.
 })
 export class SearchFileCommandComponent implements AfterViewInit {
   private readonly api = getElectronApi();
-  private readonly contextService = inject(ContextService);
+  private readonly contextService = inject(EditorContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
 
   private readonly selectedDir = computed(() =>

@@ -8,9 +8,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { ContextService } from '../../app-context/app-context.service';
+import { EditorContextService } from '../../app-context/editor-context.service';
 import { getElectronApi } from '../../../utils';
-import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 import { fileNode } from '../../../gen/type';
 import {
   addNodeIfNotExists,
@@ -28,7 +28,7 @@ import { OpenNodeInEditor } from '../helper';
   styleUrl: './file-explorer-item.component.css',
 })
 export class FileExplorerItemComponent implements AfterViewInit {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly api = getElectronApi();
   private readonly inMemoryContextService = inject(InMemoryContextService);
 

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { getElectronApi } from '../../../utils';
-import { ContextService } from '../../app-context/app-context.service';
+import { EditorContextService } from '../../app-context/editor-context.service';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
@@ -10,7 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrl: './select-directory.component.css',
 })
 export class SelectDirectoryComponent {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly api = getElectronApi();
 
   async openFolder() {

@@ -6,9 +6,9 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { hasImageExtension } from './utils';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ImageService } from './image.service';
 
 @Component({
@@ -18,7 +18,7 @@ import { ImageService } from './image.service';
   styleUrl: './image-editor.component.css',
 })
 export class ImageEditorComponent implements OnInit {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly imageService = inject(ImageService);

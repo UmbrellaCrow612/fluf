@@ -6,7 +6,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { applyMarkdownClasses, isMarkdownFile, markdownToHtml } from './helper';
 import { getElectronApi } from '../../utils';
 
@@ -20,7 +20,7 @@ import { getElectronApi } from '../../utils';
   styleUrl: './markdown-editor.component.css',
 })
 export class MarkdownEditorComponent implements OnInit {
-  private readonly contextService = inject(ContextService);
+  private readonly contextService = inject(EditorContextService);
   private readonly api = getElectronApi();
 
   private readonly container =

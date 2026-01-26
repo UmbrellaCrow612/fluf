@@ -2,7 +2,7 @@ import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { sideBarActiveElement } from '../app-context/type';
 
 type sideBarElement = {
@@ -18,7 +18,7 @@ type sideBarElement = {
   styleUrl: './side-bar.component.css',
 })
 export class SideBarComponent {
-  private readonly _appCtx = inject(ContextService);
+  private readonly _appCtx = inject(EditorContextService);
 
   sideBarElements: sideBarElement[] = [
     {

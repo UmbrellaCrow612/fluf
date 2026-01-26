@@ -1,7 +1,7 @@
 import { effect, Injectable, signal } from '@angular/core';
-import { AppContext } from './type';
+import { EditorAppContext } from './type';
 
-const LOCAL_STORAGE_KEY = 'app-context';
+const LOCAL_STORAGE_KEY = 'editor-app-context';
 
 /**
  * Service that provides access to application context, persists it.
@@ -13,7 +13,7 @@ const LOCAL_STORAGE_KEY = 'app-context';
 @Injectable({
   providedIn: 'root',
 })
-export class ContextService {
+export class EditorContextService {
   constructor() {
     effect(() => {
       this.persist();
@@ -32,7 +32,7 @@ export class ContextService {
     }
   }
 
-  getSnapShot(): AppContext {
+  getSnapShot(): EditorAppContext {
     return {
       sideBarActiveElement: this.sideBarActiveElement(),
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
@@ -53,15 +53,15 @@ export class ContextService {
    * @param fallback A fallback value if it's invalid
    * @returns Value
    */
-  private restoreField<K extends keyof AppContext>(
+  private restoreField<K extends keyof EditorAppContext>(
     key: K,
-    fallback: AppContext[K],
-  ): AppContext[K] {
+    fallback: EditorAppContext[K],
+  ): EditorAppContext[K] {
     try {
       const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (!raw) return fallback;
 
-      const saved = JSON.parse(raw) as Partial<AppContext>;
+      const saved = JSON.parse(raw) as Partial<EditorAppContext>;
       return saved[key] ?? fallback;
     } catch {
       return fallback;
@@ -71,21 +71,21 @@ export class ContextService {
   /**
    * Exposes sideBarActiveElement signal
    */
-  readonly sideBarActiveElement = signal<AppContext['sideBarActiveElement']>(
+  readonly sideBarActiveElement = signal<EditorAppContext['sideBarActiveElement']>(
     this.restoreField('sideBarActiveElement', null),
   );
 
   /**
    * Exposes directoryFileNodes signal
    */
-  readonly directoryFileNodes = signal<AppContext['directoryFileNodes']>(
+  readonly directoryFileNodes = signal<EditorAppContext['directoryFileNodes']>(
     this.restoreField('directoryFileNodes', null),
   );
 
   /**
    * Exposes selectedDirectoryPath signal
    */
-  readonly selectedDirectoryPath = signal<AppContext['selectedDirectoryPath']>(
+  readonly selectedDirectoryPath = signal<EditorAppContext['selectedDirectoryPath']>(
     this.restoreField('selectedDirectoryPath', null),
   );
 
@@ -93,13 +93,13 @@ export class ContextService {
    * Exposes fileExplorerActiveFileOrFolder signal
    */
   readonly fileExplorerActiveFileOrFolder = signal<
-    AppContext['fileExplorerActiveFileOrFolder']
+    EditorAppContext['fileExplorerActiveFileOrFolder']
   >(this.restoreField('fileExplorerActiveFileOrFolder', null));
 
   /**
    * Exposes openFiles signal
    */
-  readonly openFiles = signal<AppContext['openFiles']>(
+  readonly openFiles = signal<EditorAppContext['openFiles']>(
     this.restoreField('openFiles', null),
   );
 
@@ -107,34 +107,34 @@ export class ContextService {
    * Exposes currentOpenFileInEditor signal
    */
   readonly currentOpenFileInEditor = signal<
-    AppContext['currentOpenFileInEditor']
+    EditorAppContext['currentOpenFileInEditor']
   >(this.restoreField('currentOpenFileInEditor', null));
 
   /**
    * Exposes displayFileEditorBottom signal
    */
   readonly displayFileEditorBottom = signal<
-    AppContext['displayFileEditorBottom']
+    EditorAppContext['displayFileEditorBottom']
   >(this.restoreField('displayFileEditorBottom', null));
 
   /**
    * Exposes fileEditorBottomActiveElement signal
    */
   readonly fileEditorBottomActiveElement = signal<
-    AppContext['fileEditorBottomActiveElement']
+    EditorAppContext['fileEditorBottomActiveElement']
   >(this.restoreField('fileEditorBottomActiveElement', null));
 
   /**
    * Exposes the editorMainActiveElement signal
    */
   readonly editorMainActiveElement = signal<
-    AppContext['editorMainActiveElement']
+    EditorAppContext['editorMainActiveElement']
   >(this.restoreField('editorMainActiveElement', null));
 
   /**
    * Exposes editorTheme signal
    */
-  readonly editorTheme = signal<AppContext['editorTheme']>(
+  readonly editorTheme = signal<EditorAppContext['editorTheme']>(
     this.restoreField('editorTheme', null),
   );
 }

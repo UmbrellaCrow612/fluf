@@ -6,7 +6,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { getElectronApi } from '../../utils';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -27,7 +27,7 @@ import { fsearchOptions, fsearchResult } from '../../gen/type';
 })
 export class SideFolderSearchComponent {
   private readonly api = getElectronApi();
-  private readonly contextService = inject(ContextService);
+  private readonly contextService = inject(EditorContextService);
   private readonly selectedDir = computed(() =>
     this.contextService.selectedDirectoryPath(),
   );

@@ -7,7 +7,7 @@ import {
   Signal,
   Type,
 } from '@angular/core';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { DocumentNotSupportedComponent } from './document-not-supported/document-not-supported.component';
 import { NgComponentOutlet } from '@angular/common';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
@@ -23,7 +23,7 @@ import { Renderable } from '../ngComponentOutlet/type';
   styleUrl: './document-editor.component.css',
 })
 export class DocumentEditorComponent {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
 
   private currentNode = computed(() =>
     this.appContext.currentOpenFileInEditor(),

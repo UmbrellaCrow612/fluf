@@ -1,5 +1,5 @@
 import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
-import { ContextService } from '../../app-context/app-context.service';
+import { EditorContextService } from '../../app-context/editor-context.service';
 import { PdfService } from './pdf.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
@@ -11,7 +11,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   styleUrl: './pdf-viewer.component.css',
 })
 export class PdfViewerComponent implements OnInit {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly pdfService = inject(PdfService);
 
   private readonly sanitizer = inject(DomSanitizer);

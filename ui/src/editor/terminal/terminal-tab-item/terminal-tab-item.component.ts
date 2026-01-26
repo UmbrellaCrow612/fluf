@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../../utils';
-import { InMemoryContextService } from '../../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 
 @Component({
   selector: 'app-terminal-tab-item',

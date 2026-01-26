@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { cssVar } from './type';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 
 /**
  * Used to change, create or edit the applications theme throughg chaning it's css vars defined globally
@@ -9,7 +9,7 @@ import { ContextService } from '../app-context/app-context.service';
   providedIn: 'root',
 })
 export class ThemeService {
-  private readonly contextService = inject(ContextService);
+  private readonly contextService = inject(EditorContextService);
 
   /**
    * Globally set css var values and then persist it between sessions

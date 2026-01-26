@@ -45,9 +45,9 @@ export type contextMenuActiveElement =
   | 'text-file-editor-context-menu';
 
 /**
- * Represents application wide context that persists between sessions
+ * Represents application wide context that persists between sessions for the editor
  */
-export type AppContext = {
+export type EditorAppContext = {
   /**
    * Current active sidebar element
    */
@@ -110,7 +110,7 @@ export type ActiveLanguageServer = {
 /**
  * Represents application context that stays in memeory until a refresh or app close
  */
-export type InMemoryAppContext = {
+export type EditorInMemoryAppContext = {
   /**
    * The current context menu that is showing, if there is a value then said context menu will apppear else the context menu will be closed
    */

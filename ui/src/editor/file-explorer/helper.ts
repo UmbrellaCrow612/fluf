@@ -4,7 +4,7 @@
 
 import { fileNode } from '../../gen/type';
 import { getElectronApi } from '../../utils';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { hasDocumentExtension } from '../document-editor/utils';
 import { hasImageExtension } from '../img-editor/utils';
 import {
@@ -27,7 +27,7 @@ const electronApi = getElectronApi();
  */
 export async function OpenFileOrFolderInExplorer(
   filePath: string,
-  ctx: ContextService,
+  ctx: EditorContextService,
 ) {
   let nodes = ctx.directoryFileNodes() ?? [];
   let selectedDir = ctx.selectedDirectoryPath();
@@ -177,7 +177,7 @@ async function getFirstFolderAfterBase(
  * @param fileNode The file node clicked
  * @param ctx The app ctx
  */
-export function OpenNodeInEditor(fileNode: fileNode, ctx: ContextService) {
+export function OpenNodeInEditor(fileNode: fileNode, ctx: EditorContextService) {
   ctx.currentOpenFileInEditor.set(fileNode);
   ctx.fileExplorerActiveFileOrFolder.set(fileNode);
 

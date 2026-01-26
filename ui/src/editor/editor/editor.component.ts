@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
 import { getElectronApi } from '../../utils';
 import { SideSearchComponent } from '../side-search/side-search.component';
@@ -21,7 +21,7 @@ import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ResizerTwo } from 'umbr-resizer-two';
 import { HotKeyService } from '../hotkeys/hot-key.service';
 import { EditorHomePageComponent } from './editor-home-page/editor-home-page.component';
@@ -55,7 +55,7 @@ import { MarkdownEditorComponent } from '../markdown/markdown-editor.component';
   styleUrl: './editor.component.css',
 })
 export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly api = getElectronApi();
   private readonly keyService = inject(HotKeyService);

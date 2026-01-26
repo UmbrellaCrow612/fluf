@@ -18,10 +18,10 @@ import {
   CompletionContext,
   CompletionResult,
 } from '@codemirror/autocomplete';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import { getElectronApi } from '../../utils';
 import { fileNode, languageId, voidCallback } from '../../gen/type';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { getLanguageId } from '../lsp/utils';
@@ -43,7 +43,7 @@ import { OpenNodeInEditor } from '../file-explorer/helper';
   styleUrl: './text-file-editor.component.css',
 })
 export class TextFileEditorComponent implements OnInit {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly api = getElectronApi();
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(

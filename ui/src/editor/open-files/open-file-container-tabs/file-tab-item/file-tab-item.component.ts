@@ -3,10 +3,10 @@ import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ContextService } from '../../../app-context/app-context.service';
+import { EditorContextService } from '../../../app-context/editor-context.service';
 import { fileNode } from '../../../../gen/type';
 import { removeNodeIfExists } from '../../../file-explorer/fileNode';
-import { InMemoryContextService } from '../../../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../../../app-context/editor-in-memory-context.service';
 import { OpenNodeInEditor } from '../../../file-explorer/helper';
 import { normalizeElectronPath } from '../../../path/utils';
 import { getElectronApi } from '../../../../utils';
@@ -19,7 +19,7 @@ import { getLanguageId } from '../../../lsp/utils';
   styleUrl: './file-tab-item.component.css',
 })
 export class FileTabItemComponent {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
   private readonly api = getElectronApi();
 

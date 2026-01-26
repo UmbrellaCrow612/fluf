@@ -5,8 +5,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../utils';
 import { debounceTime, fromEvent, Subscription } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { ContextService } from '../app-context/app-context.service';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
+import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
 
 /** Represents a top bar item such as file -> then click open folder or file */
 type topBarItem = {
@@ -34,7 +34,7 @@ type topBarItem = {
 })
 export class TopBarComponent implements OnInit, OnDestroy {
   private readonly _api = getElectronApi();
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
 
   /**

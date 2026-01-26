@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { ContextService } from '../app-context/app-context.service';
+import { EditorContextService } from '../app-context/editor-context.service';
 import {
   FormControl,
   FormGroup,
@@ -16,7 +16,7 @@ import { fsearchOptions, fsearchResult } from '../../gen/type';
   styleUrl: './side-file-search.component.css',
 })
 export class SideFileSearchComponent {
-  private readonly appContext = inject(ContextService);
+  private readonly appContext = inject(EditorContextService);
   private readonly selectedDir = computed(() =>
     this.appContext.selectedDirectoryPath(),
   );

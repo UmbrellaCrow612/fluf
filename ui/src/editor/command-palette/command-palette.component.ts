@@ -9,7 +9,7 @@ import {
   Type,
   viewChild,
 } from '@angular/core';
-import { InMemoryContextService } from '../app-context/app-in-memory-context.service';
+import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
 
 import { form, Field } from '@angular/forms/signals';
 import { NgComponentOutlet } from '@angular/common';
