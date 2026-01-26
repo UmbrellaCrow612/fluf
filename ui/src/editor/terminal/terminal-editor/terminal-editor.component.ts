@@ -1,4 +1,4 @@
-import { voidCallback } from './../../../gen/type.d';
+import { voidCallback } from '../../../gen/type';
 import {
   Component,
   computed,

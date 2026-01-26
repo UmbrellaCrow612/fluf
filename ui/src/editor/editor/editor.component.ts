@@ -37,6 +37,9 @@ import { ThemeService } from '../theme/theme.service';
 import { cssVar } from '../theme/type';
 import { MarkdownEditorComponent } from '../markdown/markdown-editor.component';
 
+/**
+ * Represents the editor the view in which code edits and other editor functionality is rendered
+ */
 @Component({
   selector: 'app-editor',
   imports: [

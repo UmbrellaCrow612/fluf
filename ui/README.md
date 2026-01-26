@@ -42,3 +42,11 @@ Sometimes types generated from `desktop` change and `npm run start` does not cat
   The `:host` wrapper acts as an HTML element itself, so these properties help ensure proper flex behavior.
 
 - When creating terminals make sure to not `ctrl c ` the electron processes but quit with the x button to kill all procsses\
+
+
+# Structure 
+
+Ui refers to all UI related code for noew it is split up into 
+
+- `editor` - The editor UI code for code edits etc - Which can be a window 
+- `FileX` - A custom file explroer etc - which can be a window 
