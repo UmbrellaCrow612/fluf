@@ -21,7 +21,7 @@ const createFileXWindow = () => {
     height: 700,
     minWidth: 600,
     minHeight: 600,
-    frame: false,
+    frame: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       plugins: true,
@@ -49,18 +49,27 @@ const createFileXWindow = () => {
 };
 
 /**
- * Creates Fa file x window if one is not already created
+ * Creates a file x window if one is not already created
+ *
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fileXOpen>}
  */
 const openFileXWindowImpl = () => {
-    createFileXWindow()
-}
+  if (fileXWindow) {
+    logger.warn("A file x window is already open cannot open another");
+    return Promise.resolve(false);
+  } else {
+    logger.info("Opened file x window");
+    createFileXWindow();
+    return Promise.resolve(true);
+  }
+};
 
 /**
  * Register all file x related listeners
  * @param {import("electron").IpcMain} ipcMain
  */
 const registerFileXListeners = (ipcMain) => {
-    ipcMain.handle("filex:open", openFileXWindowImpl)
+  ipcMain.handle("filex:open", openFileXWindowImpl);
 };
 
 module.exports = { registerFileXListeners };

@@ -36,4 +36,9 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
 
     this.inMemoryContextService.currentActiveContextMenu.set(null);
   }
+
+  async openFileX() {
+    await this.api.fileXApi.open();
+    this.inMemoryContextService.currentActiveContextMenu.set(null);
+  }
 }

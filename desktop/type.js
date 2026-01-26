@@ -824,6 +824,19 @@
  */
 
 /**
+ * Contains all methods and functions for file x
+ * @typedef {Object} fileXApi
+ * @property {fileXOpen} open - Open the file x window
+ * 
+ */
+
+/**
+ * Open the file x window
+ * @callback fileXOpen
+ * @returns {Promise<boolean>} If it did or did not
+ */
+
+/**
  * APIs exposed to the renderer process for using Electron functions.
  *
  * @typedef {Object} ElectronApi
@@ -845,6 +858,8 @@
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
+ * 
+ * @property {fileXApi} fileXApi - Contains all the api's for file x
  *
  */
 

@@ -899,6 +899,19 @@ export type LanguageServerOnNotificationCallback = (result: LanguageServerNotifi
  */
 export type LanguageServerOnError = (error: any) => void;
 /**
+ * Contains all methods and functions for file x
+ */
+export type fileXApi = {
+    /**
+     * - Open the file x window
+     */
+    open: fileXOpen;
+};
+/**
+ * Open the file x window
+ */
+export type fileXOpen = () => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 export type ElectronApi = {
@@ -938,6 +951,10 @@ export type ElectronApi = {
      * - Contains all the UI api's to interact with LSP
      */
     lspClient: ILanguageServerClient;
+    /**
+     * - Contains all the api's for file x
+     */
+    fileXApi: fileXApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

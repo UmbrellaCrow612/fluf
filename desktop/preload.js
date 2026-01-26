@@ -1,6 +1,13 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * @type {import("./type").fileXApi}
+ */
+const fileXApi = {
+  open: (...args) => ipcRenderer.invoke("filex:open", ...args),
+};
+
+/**
  * @type {import("./type").ILanguageServerClient}
  */
 const lspClient = {
@@ -229,6 +236,7 @@ const api = {
   fsApi,
   chromeWindowApi,
   lspClient,
+  fileXApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
