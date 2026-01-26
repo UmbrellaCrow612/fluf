@@ -17,6 +17,7 @@ const {
   registerLanguageServerListener,
   stopAllLanguageServers,
 } = require("./lsp/bridge");
+const { registerFileXListeners } = require("./file-x");
 
 /**
  * Global ref to main window used for sending events without being coupled to incoming events
@@ -27,6 +28,9 @@ let mainWindow = null;
 loadEnv();
 registerProtocols();
 
+/**
+ * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
+ */
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 800,
@@ -78,6 +82,7 @@ app.whenReady().then(() => {
   registerFsListeners(ipcMain, mainWindow);
   registerWindowListener(ipcMain);
   registerPathListeners(ipcMain);
+  registerFileXListeners(ipcMain)
 
   registerLanguageServerListener(ipcMain, mainWindow);
 });
