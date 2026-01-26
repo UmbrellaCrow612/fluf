@@ -9,6 +9,8 @@ import { removeNodeIfExists } from '../../../file-explorer/fileNode';
 import { InMemoryContextService } from '../../../app-context/app-in-memory-context.service';
 import { OpenNodeInEditor } from '../../../file-explorer/helper';
 import { normalizeElectronPath } from '../../../path/utils';
+import { getElectronApi } from '../../../../utils';
+import { getLanguageId } from '../../../lsp/utils';
 
 @Component({
   selector: 'app-file-tab-item',
@@ -19,8 +21,13 @@ import { normalizeElectronPath } from '../../../path/utils';
 export class FileTabItemComponent {
   private readonly appContext = inject(ContextService);
   private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly api = getElectronApi();
 
   fileNode = input.required<fileNode>();
+
+  private readonly workSpaceFolder = computed(() =>
+    this.appContext.selectedDirectoryPath(),
+  );
 
   isActive = computed(() => {
     let current = this.appContext.currentOpenFileInEditor();
@@ -48,6 +55,14 @@ export class FileTabItemComponent {
 
   removeTabItem(event: MouseEvent) {
     event.stopPropagation();
+
+    let langId = getLanguageId(this.fileNode().extension);
+    let wsf = this.workSpaceFolder();
+    let fp = this.fileNode().path;
+
+    if (langId && wsf && fp) {
+      this.api.lspClient.didCloseTextDocument(wsf, langId, fp);
+    }
 
     const currentActiveNode = this.appContext.currentOpenFileInEditor();
     const files = this.appContext.openFiles() ?? [];

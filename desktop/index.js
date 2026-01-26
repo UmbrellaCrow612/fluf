@@ -84,7 +84,8 @@ app.whenReady().then(() => {
 
 app.on("before-quit", async () => {
   await stopAllLanguageServers();
-  await logger.flush();
   cleanUpWatchers();
   cleanUpShells();
+
+  await logger.flush();
 });
