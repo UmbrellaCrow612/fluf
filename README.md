@@ -10,8 +10,6 @@ A simple text editor written in electron and angular
 
 ## Features
 
-- TypeScript server LSP support / UI errors
-
 - Search file, folder contents with Ripgrep and fsearch
 
 - Basic Git view to show working tree information
@@ -26,11 +24,13 @@ A simple text editor written in electron and angular
 
 - Markdown previews
 
-- Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones
+- Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones and custom TypeScript impl (UI errors etc)
 
 - Hover information and auto complete via LSP 
 
-- Go to definition done
+- Go to definition
+
+- Open a custom file explorer `Filex` which has all file explorer functionality
 
 ---
 
