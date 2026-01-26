@@ -13,7 +13,7 @@ import { EditorContextService } from '../app-context/editor-context.service';
 import { getElectronApi } from '../../utils';
 
 import { FileExplorerItemComponent } from './file-explorer-item/file-explorer-item.component';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { fileNode, fileNodeMode } from '../../gen/type';
 import { collapseNodes, getNodeParent, pushNodeIntoChildren } from './fileNode';
 
@@ -30,7 +30,7 @@ import { collapseNodes, getNodeParent, pushNodeIntoChildren } from './fileNode';
 })
 export class FileExplorerComponent {
   private readonly appContext = inject(EditorContextService);
-  private readonly inMemoryAppContext = inject(InMemoryContextService);
+  private readonly inMemoryAppContext = inject(EditorInMemoryContextService);
   private readonly api = getElectronApi();
 
   /**

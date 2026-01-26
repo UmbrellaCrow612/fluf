@@ -1,5 +1,5 @@
 import { Component, inject, computed } from '@angular/core';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ProblemItemComponent } from './problem-item/problem-item.component';
 import { Diagnostic } from '@codemirror/lint';
 
@@ -10,7 +10,7 @@ import { Diagnostic } from '@codemirror/lint';
   styleUrl: './problems.component.css',
 })
 export class ProblemsComponent {
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
 
   files = computed(() =>
     Array.from(this.inMemoryContextService.problems().keys()),

@@ -11,7 +11,7 @@ import { getElectronApi } from '../../../utils';
 import { EditorContextService } from '../../app-context/editor-context.service';
 import { fsearchResult } from '../../../gen/type';
 import { OpenFileOrFolderInExplorer } from '../../file-explorer/helper';
-import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 
 @Component({
   selector: 'app-search-file-command',
@@ -22,7 +22,7 @@ import { InMemoryContextService } from '../../app-context/editor-in-memory-conte
 export class SearchFileCommandComponent implements AfterViewInit {
   private readonly api = getElectronApi();
   private readonly contextService = inject(EditorContextService);
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
 
   private readonly selectedDir = computed(() =>
     this.contextService.selectedDirectoryPath(),

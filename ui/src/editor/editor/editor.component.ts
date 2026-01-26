@@ -21,7 +21,7 @@ import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ResizerTwo } from 'umbr-resizer-two';
 import { HotKeyService } from '../hotkeys/hot-key.service';
 import { EditorHomePageComponent } from './editor-home-page/editor-home-page.component';
@@ -56,7 +56,7 @@ import { MarkdownEditorComponent } from '../markdown/markdown-editor.component';
 })
 export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly appContext = inject(EditorContextService);
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
   private readonly api = getElectronApi();
   private readonly keyService = inject(HotKeyService);
   private readonly themeService = inject(ThemeService);

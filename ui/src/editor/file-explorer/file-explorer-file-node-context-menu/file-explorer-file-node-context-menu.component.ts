@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
-import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
 
@@ -10,7 +10,7 @@ import { getElectronApi } from '../../../utils';
   styleUrl: './file-explorer-file-node-context-menu.component.css',
 })
 export class FileExplorerFileNodeContextMenuComponent implements OnInit {
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
   private readonly contextMenuFileNode = computed(
     () => this.inMemoryContextService.currentActiveContextMenu()?.data,
   );

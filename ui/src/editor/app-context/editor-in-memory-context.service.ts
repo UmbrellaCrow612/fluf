@@ -12,7 +12,7 @@ import { EditorInMemoryAppContext } from './type';
 @Injectable({
   providedIn: 'root',
 })
-export class InMemoryContextService {
+export class EditorInMemoryContextService {
   /**
    * Exposes the signal for currentActiveContextMenu field in ctx - used to react to / compute the value for this field throughout the app
    */

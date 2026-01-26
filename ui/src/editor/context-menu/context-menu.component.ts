@@ -8,7 +8,7 @@ import {
   Type,
   viewChild,
 } from '@angular/core';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { NgComponentOutlet } from '@angular/common';
 import { contextMenuItems } from './items';
 
@@ -19,7 +19,7 @@ import { contextMenuItems } from './items';
   styleUrl: './context-menu.component.css',
 })
 export class ContextMenuComponent implements OnInit, AfterViewInit {
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
 
   /**
    * Ref to the dialog html element

@@ -9,7 +9,7 @@ import {
   Type,
   viewChild,
 } from '@angular/core';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 
 import { form, Field } from '@angular/forms/signals';
 import { NgComponentOutlet } from '@angular/common';
@@ -27,7 +27,7 @@ import { CommandPaletteCommandList } from './commands';
   styleUrl: './command-palette.component.css',
 })
 export class CommandPaletteComponent implements OnInit {
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
 
   /** Local ref to  CommandPaletteCommandList*/
   commandList = CommandPaletteCommandList;

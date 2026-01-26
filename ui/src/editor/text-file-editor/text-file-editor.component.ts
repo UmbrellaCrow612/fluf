@@ -21,7 +21,7 @@ import {
 import { EditorContextService } from '../app-context/editor-context.service';
 import { getElectronApi } from '../../utils';
 import { fileNode, languageId, voidCallback } from '../../gen/type';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { getLanguageId } from '../lsp/utils';
@@ -49,7 +49,7 @@ export class TextFileEditorComponent implements OnInit {
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(
     'code_mirror_container',
   );
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
 
   private readonly workSpaceFolder = computed(() =>
     this.appContext.selectedDirectoryPath(),

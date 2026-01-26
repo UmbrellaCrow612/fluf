@@ -11,7 +11,7 @@ import { getElectronApi } from '../../../utils';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IDisposable, Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
-import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 import { SerializeAddon } from '@xterm/addon-serialize';
 
 @Component({
@@ -21,7 +21,7 @@ import { SerializeAddon } from '@xterm/addon-serialize';
   styleUrl: './terminal-editor.component.css',
 })
 export class TerminalEditorComponent implements OnDestroy {
-  private readonly inMemoryAppContext = inject(InMemoryContextService);
+  private readonly inMemoryAppContext = inject(EditorInMemoryContextService);
   private readonly api = getElectronApi();
 
   constructor() {

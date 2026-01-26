@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../../utils';
-import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 
 @Component({
   selector: 'app-terminal-tab-item',
@@ -12,7 +12,7 @@ import { InMemoryContextService } from '../../app-context/editor-in-memory-conte
   styleUrl: './terminal-tab-item.component.css',
 })
 export class TerminalTabItemComponent {
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
   private readonly api = getElectronApi();
 
   /**

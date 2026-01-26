@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, Signal } from '@angular/core';
-import { InMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 import { fileNode, voidCallback } from '../../../gen/type';
 import { isMarkdownFile } from '../../markdown/helper';
 import { EditorContextService } from '../../app-context/editor-context.service';
@@ -34,7 +34,7 @@ type item = {
   styleUrl: './text-file-editor-context-menu.component.css',
 })
 export class TextFileEditorContextMenuComponent implements OnInit {
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
   private readonly contextService = inject(EditorContextService);
 
   loading = false;

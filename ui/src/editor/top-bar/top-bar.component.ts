@@ -6,7 +6,7 @@ import { getElectronApi } from '../../utils';
 import { debounceTime, fromEvent, Subscription } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
 import { EditorContextService } from '../app-context/editor-context.service';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 
 /** Represents a top bar item such as file -> then click open folder or file */
 type topBarItem = {
@@ -35,7 +35,7 @@ type topBarItem = {
 export class TopBarComponent implements OnInit, OnDestroy {
   private readonly _api = getElectronApi();
   private readonly appContext = inject(EditorContextService);
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
 
   /**
    * Holds window maximized state

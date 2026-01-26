@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { EditorContextService } from '../app-context/editor-context.service';
 import { hasImageExtension } from './utils';
-import { InMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ImageService } from './image.service';
 
 @Component({
@@ -20,7 +20,7 @@ import { ImageService } from './image.service';
 export class ImageEditorComponent implements OnInit {
   private readonly appContext = inject(EditorContextService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
   private readonly imageService = inject(ImageService);
 
   currentActiveFileNode = computed(() =>

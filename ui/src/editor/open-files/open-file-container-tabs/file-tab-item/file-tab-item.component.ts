@@ -6,7 +6,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorContextService } from '../../../app-context/editor-context.service';
 import { fileNode } from '../../../../gen/type';
 import { removeNodeIfExists } from '../../../file-explorer/fileNode';
-import { InMemoryContextService } from '../../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../../app-context/editor-in-memory-context.service';
 import { OpenNodeInEditor } from '../../../file-explorer/helper';
 import { normalizeElectronPath } from '../../../path/utils';
 import { getElectronApi } from '../../../../utils';
@@ -20,7 +20,7 @@ import { getLanguageId } from '../../../lsp/utils';
 })
 export class FileTabItemComponent {
   private readonly appContext = inject(EditorContextService);
-  private readonly inMemoryContextService = inject(InMemoryContextService);
+  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
   private readonly api = getElectronApi();
 
   fileNode = input.required<fileNode>();
