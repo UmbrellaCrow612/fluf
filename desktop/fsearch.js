@@ -155,46 +155,32 @@ const searchWithFSearch = async (options) => {
 
     let stdout = "";
     let stderr = "";
-    let settled = false;
-
-    function safeResolve(/** @type {any}*/ val) {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeoutId);
-        resolve(val);
-      }
-    }
-
-    function safeReject(/** @type {any}*/ err) {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeoutId);
-        reject(err);
-      }
-    }
 
     const timeoutId = setTimeout(() => {
       child.kill("SIGKILL");
-      safeReject(new Error("fsearch timeout exceeded (5s)"));
+      reject(
+        new Error(
+          "fsearch process timed out / could not resolve within the limit of 5 seconds",
+        ),
+      );
     }, 5000);
 
     child.stdout.on("data", (data) => (stdout += data.toString()));
     child.stderr.on("data", (data) => (stderr += data.toString()));
 
-    child.on("error", (err) =>
-      safeReject(new Error(`Failed to spawn fsearch: ${err.message}`)),
-    );
-
     child.on("close", (code) => {
       if (code === 0) {
-        try {
+        try { // try to parse the stdout
           const results = parseStdout(stdout);
-          safeResolve(results);
+          clearTimeout(timeoutId);
+          resolve(results);
         } catch (err) {
-          safeReject(err);
+          clearTimeout(timeoutId);
+          reject(err);
         }
-      } else {
-        safeReject(
+      } else { // other error code failed
+        clearTimeout(timeoutId);
+        reject(
           new Error(
             `fsearch exited with code ${code}: ${stderr || "No stderr"}`,
           ),

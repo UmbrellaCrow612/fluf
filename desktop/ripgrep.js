@@ -141,40 +141,23 @@ async function searchWithRipGrep(options) {
 
     let stdout = "";
     let stderr = "";
-    let settled = false;
-
-    function safeResolve(/** @type {any}*/ val) {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeoutId);
-        resolve(val);
-      }
-    }
-
-    function safeReject(/** @type {any}*/ err) {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeoutId);
-        reject(err);
-      }
-    }
 
     const timeoutId = setTimeout(() => {
       ripGrep.kill();
-      safeReject(new Error("Ripgrep timeout exceeded"));
-    }, 30000);
+      reject(new Error("Ripgrep took to longer than 12 seconds to complete"));
+    }, 12000);
 
     ripGrep.stdout.on("data", (data) => (stdout += data.toString()));
     ripGrep.stderr.on("data", (data) => (stderr += data.toString()));
 
-    ripGrep.on("error", () => safeReject(new Error("Failed to spawn ripgrep")));
-
     ripGrep.on("close", (code) => {
       if (code === 0 || code === 1) {
+        clearTimeout(timeoutId)
         const data = parseRipgrepOutput(stdout, options.searchTerm);
-        safeResolve(data);
+        resolve(data);
       } else {
-        safeReject(new Error(`Ripgrep exited with code ${code}: ${stderr}`));
+        clearTimeout(timeoutId)
+        reject(new Error(`Ripgrep exited with code ${code}: ${stderr}`));
       }
     });
   });
