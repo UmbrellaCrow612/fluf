@@ -21,7 +21,7 @@ const createFileXWindow = () => {
     height: 700,
     minWidth: 600,
     minHeight: 600,
-    frame: true,
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       plugins: true,
@@ -40,6 +40,12 @@ const createFileXWindow = () => {
     logger.error(".env does not contain .env value DEV_UI_PORT");
     throw new Error(".env");
   }
+
+  fileXWindow.on("closed", () => {
+    if (fileXWindow?.isDestroyed()) {
+      fileXWindow = null;
+    }
+  });
 
   if (mode === "dev") {
     fileXWindow.loadURL(`${devUIPort}#/file-x`);

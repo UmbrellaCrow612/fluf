@@ -1,0 +1,6 @@
+.file_x_top_bar_container {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

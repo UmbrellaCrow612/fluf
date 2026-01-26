@@ -1,6 +1,11 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 /**
+ * This script is attached to the UI source code window object on load.
+ * Hence you should not directly expose any Node specific packages or binarys here as it will fail to load them.
+ */
+
+/**
  * @type {import("./type").fileXApi}
  */
 const fileXApi = {

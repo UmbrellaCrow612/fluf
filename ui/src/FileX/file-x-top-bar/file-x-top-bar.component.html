@@ -1,1 +1,15 @@
-<p>file-x-top-bar works!</p>
+<div class="file_x_top_bar_container">
+  <span>FileX</span>
+
+  <div>
+    <button mat-icon-button matTooltip="Minimize" (click)="minimize()">
+      <mat-icon>minimize</mat-icon>
+    </button>
+       <button mat-icon-button matTooltip="Minimize" (click)="restoreOrMaximize()">
+      <mat-icon>crop_square</mat-icon>
+    </button>
+     <button mat-icon-button matTooltip="Close" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>
