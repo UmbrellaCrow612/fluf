@@ -5,12 +5,6 @@ const { TypeScriptLanguageServer } = require("./impl/typescriptlsp");
 const { LanguageServerManager } = require("./manager");
 
 /**
- * Refrence to main window to send events without needed a ipc event
- * @type {import("electron").BrowserWindow | null}
- */
-let mainWindowRef = null;
-
-/**
  * Used to fetch the ref to the main window
  * @type {import("../type").getMainWindow}
  */
@@ -197,7 +191,6 @@ const definitionImpl = (_, wsf, langId, fp, pos) => {
 /**
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
- * @param {import("electron").BrowserWindow | null} mainWindow
  */
 const registerLanguageServerListener = (ipcMain, mainWindow) => {
   mainWindowRef = mainWindow;
