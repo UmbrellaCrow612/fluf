@@ -3,10 +3,11 @@
     <div
       class="file_x_tab_item"
       [class.file_x_tab_item_active]="tab.baseDirectoryPath === activeDir()"
+      (click)="changeActiveDirectory(tab)"
     >
       <span class="file_x_tab_name">{{ tab.name }}</span>
 
-      <span class="file_x_tab_close"> × </span>
+      <span class="file_x_tab_close" (click)="removeDirectoryTabItem($event, tab)"> × </span>
     </div>
   }
 </div>
