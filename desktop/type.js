@@ -164,6 +164,7 @@
  * @property {string} name - The name of the file or folder
  * @property {string} path - The file path to the file or folder
  * @property {string} parentPath - The path to the parent folder contaning said file or folder
+ * @property {string} parentName - The name of the folder containg this file or folder
  * @property {boolean} isDirectory - If the given node is a directory
  * @property {Array<fileNode>} children - Children of the node by default is empty
  * @property {boolean} expanded - Indicates if the node has been expanded
@@ -829,13 +830,66 @@
  * Contains all methods and functions for file x
  * @typedef {Object} fileXApi
  * @property {fileXOpen} open - Open the file x window
- * 
+ *
  */
 
 /**
  * Open the file x window
  * @callback fileXOpen
  * @returns {Promise<boolean>} If it did or did not
+ */
+
+/**
+ * Represents store api, a way to store data to restore between sessions using a standard API format
+ * @typedef {Object} storeApi
+ * @property {storeSet} set - Creates a new store for the given key or overrides the old one
+ * @property {storeRemove} remove - Remove a key if it exists
+ * @property {storeClean} clean - Remove all keys
+ * @property {storeGet} get - Get the value for a specific key
+ * @property {storeChange} onChange - Listen to changes for a specific key and run logic
+ */
+
+/**
+ * Listen to changes for a specific key and run logic
+ * @callback storeChange
+ * @param {string} key - The key to identify it for example `user_settings`
+ * @param {storeChangeCallback} callback - The logic to run when the key changes
+ * @returns {voidCallback} Unsubscribe method
+ */
+
+/**
+ * The shape of the callback to run when a specific key changes
+ * @callback storeChangeCallback
+ * @param {string} newContent - The new content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Creates a new key file with the content or overrrides one that has the same key
+ * @callback storeSet
+ * @param {string} key - The key to identify it for example `user_settings`
+ * @param {string} jsonObject - The JSON object representing what should be stored for the given key stringified by `JSON.stringify`
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Remove a key if it exists
+ * @callback storeRemove
+ * @param {string} key - The key to identify it for example `user_settings`
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Remove all keys defined
+ * @callback storeClean
+ * @returns {Promise<boolean>} If it could or could not
+ */
+
+/**
+ * Get the value for a key
+ * @callback storeGet
+ * @param {string} key - The key to identify it for example `user_settings`
+ * @returns {Promise<string | undefined>} The content as a string or nothing if it could not find it
  */
 
 /**
@@ -860,8 +914,10 @@
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
- * 
+ *
  * @property {fileXApi} fileXApi - Contains all the api's for file x
+ *
+ * @property {storeApi} storeApi - Contains all the API to save and persist data between browser sessions
  *
  */
 

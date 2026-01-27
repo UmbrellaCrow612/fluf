@@ -159,7 +159,8 @@ const readDirImpl = async (_, dirPath) => {
         mode: "default",
         extension: item.isDirectory() ? "" : path.extname(item.name),
         size: stats.size,
-        lastModified: JSON.stringify(stats.mtime)
+        lastModified: JSON.stringify(stats.mtime),
+        parentName: path.basename(p),
       });
     }
 
@@ -308,7 +309,8 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
       mode: "default",
       extension,
       lastModified: JSON.stringify(stats.mtime),
-      size: stats.size
+      size: stats.size,
+      parentName: path.basename(_path)
     };
   } catch (error) {
     logger.error(error, `Failed to get node for path: ${fileOrFolderPath}`);

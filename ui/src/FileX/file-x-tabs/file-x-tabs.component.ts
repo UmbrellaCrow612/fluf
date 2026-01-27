@@ -46,7 +46,9 @@ export class FileXTabsComponent {
       this.ctx.tabs.set([]);
       this.ctx.currentActiveDirectory.set(null);
 
-      this.api.chromeWindowApi.close();
+      setTimeout(() => {
+        this.api.chromeWindowApi.close();
+      }, 10);
     }
   }
 }

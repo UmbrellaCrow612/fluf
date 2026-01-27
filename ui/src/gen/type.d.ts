@@ -156,6 +156,10 @@ export type fileNode = {
      */
     parentPath: string;
     /**
+     * - The name of the folder containg this file or folder
+     */
+    parentName: string;
+    /**
      * - If the given node is a directory
      */
     isDirectory: boolean;
