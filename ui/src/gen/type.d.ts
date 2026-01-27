@@ -175,6 +175,14 @@ export type fileNode = {
      * - The file extension of the node, if it doesn't have one it will be empty
      */
     extension: string;
+    /**
+     * - The size of the node
+     */
+    size: number;
+    /**
+     * - A string of last modified date
+     */
+    lastModified: string;
 };
 /**
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
@@ -899,6 +907,19 @@ export type LanguageServerOnNotificationCallback = (result: LanguageServerNotifi
  */
 export type LanguageServerOnError = (error: any) => void;
 /**
+ * Contains all methods and functions for file x
+ */
+export type fileXApi = {
+    /**
+     * - Open the file x window
+     */
+    open: fileXOpen;
+};
+/**
+ * Open the file x window
+ */
+export type fileXOpen = () => Promise<boolean>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 export type ElectronApi = {
@@ -938,6 +959,10 @@ export type ElectronApi = {
      * - Contains all the UI api's to interact with LSP
      */
     lspClient: ILanguageServerClient;
+    /**
+     * - Contains all the api's for file x
+     */
+    fileXApi: fileXApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

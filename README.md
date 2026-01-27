@@ -10,8 +10,6 @@ A simple text editor written in electron and angular
 
 ## Features
 
-- TypeScript server LSP support / UI errors
-
 - Search file, folder contents with Ripgrep and fsearch
 
 - Basic Git view to show working tree information
@@ -26,11 +24,13 @@ A simple text editor written in electron and angular
 
 - Markdown previews
 
-- Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones
+- Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones and custom TypeScript impl (UI errors etc)
 
 - Hover information and auto complete via LSP 
 
-- Go to definition done
+- Go to definition
+
+- Open a custom file explorer `Filex` which has all file explorer functionality
 
 ---
 
@@ -94,12 +94,3 @@ Libarys that i wrote to use in flufy and are generic
 - `umbr-zip` - Simple npm package wraps a go binary to zip and unzip folders really fast.
 - `umbr-key-master` Vanilla JS lib to listen to keyboard dom events combos and run logic with w3 spec
 - `node-logy` - Logger libary for node and adds logs to log files using async queue system
-
-
-# Formating 
-
-Format your code with
-
-```bash
-npx prettier . --write
-```

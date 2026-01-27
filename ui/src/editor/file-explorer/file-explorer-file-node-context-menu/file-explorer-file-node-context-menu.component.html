@@ -1,0 +1,20 @@
+@if (error) {
+  <div>Error: {{ error }}</div>
+}
+
+<!---->
+
+@if (!error) {
+  <button
+    class="fluf_btn_primary fluf_btn_sm fluf_btn_full"
+    (click)="deleteFile()"
+  >
+    Delete
+  </button>
+    <button
+    class="fluf_btn_primary fluf_btn_sm fluf_btn_full"
+    (click)="openFileX()"
+  >
+    Open with FileX
+  </button>
+}

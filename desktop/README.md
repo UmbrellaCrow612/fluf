@@ -1,6 +1,6 @@
 # Desktop
 
-Contains all our desktop specific code built with electron and esbuild
+Contains all our desktop specific code such as acessing files etc, built with electron and esbuild.
 
 # Running / re run steps
 

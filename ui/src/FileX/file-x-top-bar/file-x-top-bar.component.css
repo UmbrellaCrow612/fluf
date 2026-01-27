@@ -1,0 +1,18 @@
+.file_x_top_bar_container {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  -webkit-app-region: drag; /*Allows drag */
+  user-select: none; /* optional: prevent text selection while dragging */
+}
+
+
+button,
+mat-icon,
+mat-tooltip {
+  -webkit-app-region: no-drag;
+
+  color: var(--text-primary);
+}

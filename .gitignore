@@ -1,7 +1,0 @@
-# Final desktop build desktop code + UI code bundle
-dist
-
-# Env files
-.env
-
-node_modules
