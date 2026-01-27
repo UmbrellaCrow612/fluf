@@ -1,3 +1,22 @@
-<div class="file_x_directory_content_container">
-    {{items | json}}
+<div class="file_x_directory_content_container scroll_bar">
+  @for (item of items(); track $index) {
+    <div>
+      {{ item.path }}
+    </div>
+  }
+  @for (item of items(); track $index) {
+    <div>
+      {{ item.path }}
+    </div>
+  }
+  @for (item of items(); track $index) {
+    <div>
+      {{ item.path }}
+    </div>
+  }
+  @for (item of items(); track $index) {
+    <div>
+      {{ item.path }}
+    </div>
+  }
 </div>

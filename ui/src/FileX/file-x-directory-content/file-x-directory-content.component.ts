@@ -1,18 +1,17 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { fileNode } from '../../gen/type';
 import { getElectronApi } from '../../utils';
-import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-file-x-directory-content',
-  imports: [JsonPipe],
+  imports: [],
   templateUrl: './file-x-directory-content.component.html',
   styleUrl: './file-x-directory-content.component.css',
 })
 export class FileXDirectoryContentComponent {
   private readonly fileXCtx = inject(FileXContextService);
-  private readonly api = getElectronApi()
+  private readonly api = getElectronApi();
 
   constructor() {
     effect(async () => {
@@ -23,7 +22,7 @@ export class FileXDirectoryContentComponent {
   isLoading = false;
   error: string | null = null;
 
-  items:fileNode[] = [];
+  items = signal<fileNode[]>([]);
 
   private async displayDirectoryContent() {
     try {
@@ -35,7 +34,8 @@ export class FileXDirectoryContentComponent {
         return;
       }
 
-      this.items = await this.api.fsApi.readDir(path)
+      let res = await this.api.fsApi.readDir(path);
+      this.items.set(res);
     } catch (error) {
       console.error(error);
       this.error = 'Failed to load';
