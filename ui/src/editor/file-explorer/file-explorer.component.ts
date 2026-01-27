@@ -46,6 +46,8 @@ export class FileExplorerComponent {
       name: 'Root node',
       parentPath: this.selectedDirectorPath()!,
       path: this.selectedDirectorPath()!,
+      lastModified: '',
+      size: 0,
     };
     return node;
   });
@@ -167,6 +169,8 @@ export class FileExplorerComponent {
       parentPath: activeNode.parentPath,
       mode: mode,
       extension: '',
+      lastModified: '',
+      size: 0,
     };
 
     if (isRootActive) {

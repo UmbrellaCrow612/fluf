@@ -8,7 +8,8 @@ import { FileXContextService } from '../file-x-context/file-x-context.service';
   styleUrl: './file-x-tabs.component.css',
 })
 export class FileXTabsComponent {
-  private readonly ctx = inject(FileXContextService)
+  private readonly ctx = inject(FileXContextService);
 
-  tabs = computed(() => this.ctx.tabs())
+  tabs = computed(() => this.ctx.tabs());
+  activeDir = computed(() => this.ctx.currentActiveDirectoryTab());
 }

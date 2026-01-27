@@ -169,6 +169,8 @@
  * @property {boolean} expanded - Indicates if the node has been expanded
  * @property {fileNodeMode} mode - Indicates the mode of the editor to either create a file or folder
  * @property {string} extension - The file extension of the node, if it doesn't have one it will be empty
+ * @property {number} size - The size of the node
+ * @property {string} lastModified - A string of last modified date
  */
 
 /**

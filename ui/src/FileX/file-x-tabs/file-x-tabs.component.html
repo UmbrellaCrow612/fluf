@@ -1,6 +1,6 @@
 <div class="file_x_tabs_container">
   @for (tab of tabs(); track $index) {
-    <div>
+    <div [class.file_x_tab_item_active]="tab.baseDirectoryPath == activeDir()">
       {{ tab.name }}
     </div>
   }

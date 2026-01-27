@@ -49,16 +49,18 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
     }
 
     let tabs = this.fileXCtx.tabs();
-    if (tabs.length == 0) {
-      let dirPath = node.isDirectory ? node.path : node.parentPath;
+    let dirPath = node.isDirectory ? node.path : node.parentPath;
+
+    if (!tabs.find((x) => x.baseDirectoryPath == dirPath)) {
       tabs.push({
         baseDirectoryPath: dirPath,
         name: 'Folder',
       });
       this.fileXCtx.tabs.set(structuredClone(tabs));
-
-      this.fileXCtx.currentActiveDirectoryTab.set(dirPath);
     }
+
+    this.fileXCtx.currentActiveDirectoryTab.set(dirPath);
+
     await this.api.fileXApi.open();
     this.inMemoryContextService.currentActiveContextMenu.set(null);
   }

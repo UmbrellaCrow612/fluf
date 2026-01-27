@@ -143,16 +143,25 @@ const readDirImpl = async (_, dirPath) => {
     });
 
     /** @type {import("./type").fileNode[]} */
-    const filenodes = res.map((item) => ({
-      name: item.name,
-      path: path.resolve(p, item.name),
-      parentPath: p,
-      isDirectory: item.isDirectory(),
-      children: [],
-      expanded: false,
-      mode: "default",
-      extension: item.isDirectory() ? "" : path.extname(item.name),
-    }));
+    const filenodes = [];
+
+    for (const item of res) {
+      let itempath = path.resolve(p, item.name);
+      let stats = await fs.stat(itempath);
+
+      filenodes.push({
+        name: item.name,
+        path: itempath,
+        parentPath: item.parentPath,
+        isDirectory: item.isDirectory(),
+        children: [],
+        expanded: false,
+        mode: "default",
+        extension: item.isDirectory() ? "" : path.extname(item.name),
+        size: stats.size,
+        lastModified: JSON.stringify(stats.mtime)
+      });
+    }
 
     return filenodes;
   } catch (error) {
@@ -276,18 +285,18 @@ const selectFileImpl = () => {
  */
 const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
   try {
-    const _path = path.normalize(fileOrFolderPath)
+    const _path = path.normalize(fileOrFolderPath);
 
-    await fs.access(_path)
+    await fs.access(_path);
 
-    const stats = await fs.stat(_path)
-    const isDirectory = stats.isDirectory()
+    const stats = await fs.stat(_path);
+    const isDirectory = stats.isDirectory();
 
-    const name = path.basename(_path)
+    const name = path.basename(_path);
 
-    const parentPath = path.dirname(_path)
+    const parentPath = path.dirname(_path);
 
-    const extension = isDirectory ? '' : path.extname(name)
+    const extension = isDirectory ? "" : path.extname(name);
 
     return {
       name,
@@ -296,16 +305,17 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
       isDirectory,
       children: [],
       expanded: false,
-      mode: 'default',
-      extension
-    }
-
+      mode: "default",
+      extension,
+      lastModified: JSON.stringify(stats.mtime),
+      size: stats.size
+    };
   } catch (error) {
-    logger.error(error, `Failed to get node for path: ${fileOrFolderPath}`)
+    logger.error(error, `Failed to get node for path: ${fileOrFolderPath}`);
 
-    throw error
+    throw error;
   }
-}
+};
 
 /**
  * Registers all fs related listeners
@@ -327,7 +337,7 @@ const registerFsListeners = (ipcMain, mainWindow) => {
   ipcMain.on("fs:unwatch", unwatchImpl);
   ipcMain.handle("file:save:to", saveToImpl);
   ipcMain.handle("file:select", selectFileImpl);
-  ipcMain.handle("path:node", getPathAsNodeImpl)
+  ipcMain.handle("path:node", getPathAsNodeImpl);
 };
 
 /**

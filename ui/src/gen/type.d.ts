@@ -175,6 +175,14 @@ export type fileNode = {
      * - The file extension of the node, if it doesn't have one it will be empty
      */
     extension: string;
+    /**
+     * - The size of the node
+     */
+    size: number;
+    /**
+     * - A string of last modified date
+     */
+    lastModified: string;
 };
 /**
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
