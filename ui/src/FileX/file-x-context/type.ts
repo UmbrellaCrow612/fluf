@@ -6,6 +6,11 @@ export type FileXAppContext = {
    * List of tab sessions opened
    */
   tabs: FileXTab[];
+
+  /**
+   * The current tab path that is active
+   */
+  currentActiveDirectory: string | null;
 };
 
 /**
@@ -21,34 +26,6 @@ export type FileXTab = {
    * The base path of the current open folder opened in the UI for the tab
    */
   baseDirectoryPath: string;
-
-  /**
-   * List of items
-   */
-  items: FileXTabItem[];
-};
-
-/**
- * Represents a item inside a tab that can be clicked such as a directory, file, image etc
- */
-export type FileXTabItem = {
-  /**
-   * The items name such as `example.gif`
-   */
-  name: string;
-
-  /**
-   * Last time it was edited
-   */
-  dateModified: Date;
-
-  /**
-   * What type of item it is
-   */
-  type: FileXTabItemType;
-
-  /** Size of the item such as `44K` etc */
-  size: string;
 };
 
 /** What type of item it is usch as `GIF` etc */

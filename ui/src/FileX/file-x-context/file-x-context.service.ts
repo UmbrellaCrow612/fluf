@@ -33,11 +33,40 @@ export class FileXContextService {
   getSnapShot(): FileXAppContext {
     return {
       tabs: this.tabs(),
+      currentActiveDirectory: this.currentActiveDirectoryTab(),
     };
+  }
+
+  /**
+   * Restore the state of a given field
+   * @param key The specific field to restore
+   * @param fallback A fallback value if it's invalid
+   * @returns Value
+   */
+  private restoreField<K extends keyof FileXAppContext>(
+    key: K,
+    fallback: FileXAppContext[K],
+  ): FileXAppContext[K] {
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!raw) return fallback;
+
+      const saved = JSON.parse(raw) as Partial<FileXAppContext>;
+      return saved[key] ?? fallback;
+    } catch {
+      return fallback;
+    }
   }
 
   /**
    * Exposes FileXTabItem array signals
    */
-  readonly tabs = signal<FileXTab[]>([]);
+  readonly tabs = signal<FileXTab[]>(this.restoreField('tabs', []));
+
+  /**
+   * Exposes currentActiveDirectory signal
+   */
+  readonly currentActiveDirectoryTab = signal<string | null>(
+    this.restoreField('currentActiveDirectory', null),
+  );
 }

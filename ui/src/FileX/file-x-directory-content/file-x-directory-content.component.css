@@ -1,0 +1,8 @@
+:host {
+  flex: 1;
+  display: flex;
+}
+
+.file_x_directory_content_container {
+  flex: 1;
+}
