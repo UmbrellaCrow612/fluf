@@ -4,3 +4,13 @@
 
 const { logger } = require("./logger");
 
+const registerStoreLi = (ipcMain) => {};
+
+
+// function broadcast(channel, payload) {
+//   BrowserWindow.getAllWindows().forEach(win => {
+//     win.webContents.send(channel, payload);
+//   });
+// }
+
+module.exports = { registerStoreLi };
