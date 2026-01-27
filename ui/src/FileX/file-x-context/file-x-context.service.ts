@@ -33,7 +33,7 @@ export class FileXContextService {
   getSnapShot(): FileXAppContext {
     return {
       tabs: this.tabs(),
-      currentActiveDirectory: this.currentActiveDirectoryTab(),
+      currentActiveDirectory: this.currentActiveDirectory(),
     };
   }
 
@@ -66,7 +66,7 @@ export class FileXContextService {
   /**
    * Exposes currentActiveDirectory signal
    */
-  readonly currentActiveDirectoryTab = signal<string | null>(
+  readonly currentActiveDirectory = signal<string | null>(
     this.restoreField('currentActiveDirectory', null),
   );
 }

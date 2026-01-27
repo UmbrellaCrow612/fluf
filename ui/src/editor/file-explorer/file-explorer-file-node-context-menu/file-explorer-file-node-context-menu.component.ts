@@ -59,7 +59,7 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
       this.fileXCtx.tabs.set(structuredClone(tabs));
     }
 
-    this.fileXCtx.currentActiveDirectoryTab.set(dirPath);
+    this.fileXCtx.currentActiveDirectory.set(dirPath);
 
     await this.api.fileXApi.open();
     this.inMemoryContextService.currentActiveContextMenu.set(null);

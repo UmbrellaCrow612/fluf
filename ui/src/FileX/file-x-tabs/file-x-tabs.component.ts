@@ -14,14 +14,14 @@ export class FileXTabsComponent {
   private readonly api = getElectronApi();
 
   tabs = computed(() => this.ctx.tabs());
-  activeDir = computed(() => this.ctx.currentActiveDirectoryTab());
+  activeDir = computed(() => this.ctx.currentActiveDirectory());
 
   /**
    * Change the active directory when a tab item is clicked
    * @param item The item clicked
    */
   changeActiveDirectory(item: FileXTab) {
-    this.ctx.currentActiveDirectoryTab.set(item.baseDirectoryPath);
+    this.ctx.currentActiveDirectory.set(item.baseDirectoryPath);
   }
 
   /**
@@ -41,10 +41,10 @@ export class FileXTabsComponent {
       this.ctx.tabs.set(structuredClone(filetredTabs));
 
       let next = filetredTabs[0];
-      this.ctx.currentActiveDirectoryTab.set(next.baseDirectoryPath);
+      this.ctx.currentActiveDirectory.set(next.baseDirectoryPath);
     } else {
       this.ctx.tabs.set([]);
-      this.ctx.currentActiveDirectoryTab.set(null);
+      this.ctx.currentActiveDirectory.set(null);
 
       this.api.chromeWindowApi.close();
     }

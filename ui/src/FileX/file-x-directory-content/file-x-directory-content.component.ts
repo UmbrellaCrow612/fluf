@@ -28,7 +28,7 @@ export class FileXDirectoryContentComponent {
     try {
       this.isLoading = true;
       this.error = null;
-      let path = this.fileXCtx.currentActiveDirectoryTab();
+      let path = this.fileXCtx.currentActiveDirectory();
       if (!path) {
         this.error = 'No selected directory';
         return;
