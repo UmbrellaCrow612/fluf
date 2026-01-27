@@ -840,56 +840,59 @@
  */
 
 /**
- * Represents store api, a way to store data to restore between sessions using a standard API format
+ * Represents a Store API — a way to persist data between sessions
+ * using a standard API format.
  * @typedef {Object} storeApi
- * @property {storeSet} set - Creates a new store for the given key or overrides the old one
- * @property {storeRemove} remove - Remove a key if it exists
- * @property {storeClean} clean - Remove all keys
- * @property {storeGet} get - Get the value for a specific key
- * @property {storeChange} onChange - Listen to changes for a specific key and run logic
+ * @property {storeSet} set - Creates a new store for the given key or overrides an existing one
+ * @property {storeRemove} remove - Removes a key if it exists
+ * @property {storeClean} clean - Removes all keys
+ * @property {storeGet} get - Gets the value for a specific key
+ * @property {storeChange} onChange - Listens for changes to a specific key and runs logic
  */
 
 /**
- * Listen to changes for a specific key and run logic
+ * Listen for changes to a specific key and run logic
  * @callback storeChange
- * @param {string} key - The key to identify it for example `user_settings`
+ * @param {string} key - The key identifier, for example `user_settings`
  * @param {storeChangeCallback} callback - The logic to run when the key changes
  * @returns {voidCallback} Unsubscribe method
  */
 
 /**
- * The shape of the callback to run when a specific key changes
+ * The shape of the callback that runs when a specific key changes
  * @callback storeChangeCallback
- * @param {string} newContent - The new content
+ * @param {string} newContent - The updated content
  * @returns {void} Nothing
  */
 
 /**
- * Creates a new key file with the content or overrrides one that has the same key
+ * Creates a new key with content or overrides an existing one with the same key
  * @callback storeSet
- * @param {string} key - The key to identify it for example `user_settings`
- * @param {string} jsonObject - The JSON object representing what should be stored for the given key stringified by `JSON.stringify`
- * @returns {Promise<boolean>} If it could or could not
+ * @param {string} key - The key identifier, for example `user_settings`
+ * @param {string} jsonObject - The JSON object representing the value to store,
+ * stringified using `JSON.stringify`
+ * @returns {Promise<boolean>} Whether the operation succeeded
  */
 
 /**
- * Remove a key if it exists
+ * Removes a key if it exists
  * @callback storeRemove
- * @param {string} key - The key to identify it for example `user_settings`
- * @returns {Promise<boolean>} If it could or could not
+ * @param {string} key - The key identifier, for example `user_settings`
+ * @returns {Promise<boolean>} Whether the operation succeeded
  */
 
 /**
- * Remove all keys defined
+ * Removes all defined keys
  * @callback storeClean
- * @returns {Promise<boolean>} If it could or could not
+ * @returns {Promise<boolean>} Whether the operation succeeded
  */
 
 /**
- * Get the value for a key
+ * Gets the value for a key
  * @callback storeGet
- * @param {string} key - The key to identify it for example `user_settings`
- * @returns {Promise<string | undefined>} The content as a string or nothing if it could not find it
+ * @param {string} key - The key identifier, for example `user_settings`
+ * @returns {Promise<string | undefined>} The stored content as a string,
+ * or `undefined` if the key was not found
  */
 
 /**
