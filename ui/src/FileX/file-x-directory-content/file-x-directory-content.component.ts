@@ -19,18 +19,17 @@ export class FileXDirectoryContentComponent {
     });
   }
 
-  isLoading = false;
-  error: string | null = null;
-
+  isLoading = signal(false);
+  error = signal<string | null>(null);
   items = signal<fileNode[]>([]);
 
   private async displayDirectoryContent() {
     try {
-      this.isLoading = true;
-      this.error = null;
+      this.isLoading.set(true);
+      this.error.set(null);
       let path = this.fileXCtx.currentActiveDirectory();
       if (!path) {
-        this.error = 'No selected directory';
+        this.error.set('No selected directory');
         return;
       }
 
@@ -38,9 +37,9 @@ export class FileXDirectoryContentComponent {
       this.items.set(res);
     } catch (error) {
       console.error(error);
-      this.error = 'Failed to load';
+      this.error.set('Failed to load');
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 }

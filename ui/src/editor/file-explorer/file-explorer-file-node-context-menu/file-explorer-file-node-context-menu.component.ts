@@ -54,7 +54,7 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
     if (!tabs.find((x) => x.baseDirectoryPath == dirPath)) {
       tabs.push({
         baseDirectoryPath: dirPath,
-        name: 'Folder',
+        name: node.name,
       });
       this.fileXCtx.tabs.set(structuredClone(tabs));
     }
