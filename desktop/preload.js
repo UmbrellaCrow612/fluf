@@ -245,6 +245,9 @@ const storeApi = {
       ipcRenderer.removeListener(`store:key:${key}:changed`, list);
     };
   },
+  clean: () => ipcRenderer.send("store:clean"),
+  get: (...args) => ipcRenderer.invoke("store:get", ...args),
+  remove: (...args) => ipcRenderer.send("store:remove", ...args)
 };
 
 /**

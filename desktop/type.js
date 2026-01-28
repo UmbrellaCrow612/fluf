@@ -872,13 +872,13 @@
  * Removes a key if it exists
  * @callback storeRemove
  * @param {string} key - The key identifier, for example `user_settings`
- * @returns {Promise<boolean>} Whether the operation succeeded
+ * @returns {void} Nothing
  */
 
 /**
  * Removes all defined keys
  * @callback storeClean
- * @returns {Promise<boolean>} Whether the operation succeeded
+ * @returns {void} Nothing
  */
 
 /**

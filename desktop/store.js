@@ -42,11 +42,67 @@ const setStoreItemImpl = async (_, key, content) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").storeClean>}
+ */
+const cleanStoreImpl = async () => {
+  try {
+    let files = await fs.readdir(storeBaseDirectory);
+
+    for (const file of files) {
+      let filePath = path.join(storeBaseDirectory, file);
+      await fs.unlink(filePath);
+    }
+  } catch (error) {
+    logger.error("Failed to clean store ", error);
+
+    throw error;
+  }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeGet>}
+ */
+const getStoreItemImpl = async (_, key) => {
+  if (typeof key !== "string" || key.trim().length == 0)
+    throw new TypeError("key must be a non empty string");
+
+  try {
+    let filePath = path.join(storeBaseDirectory, key);
+
+    return await fs.readFile(filePath, { encoding: "utf-8" });
+  } catch (error) {
+    logger.error("Failed to get content for key: ", key, error);
+
+    throw error;
+  }
+};
+
+/**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeRemove>}
+ */
+const removeItemByKeyImpl = async (_, key) => {
+  if (typeof key !== "string" || key.trim().length == 0)
+    throw new TypeError("key must be a non empty string");
+
+  try {
+    let filePath = path.join(storeBaseDirectory, key);
+    await fs.unlink(filePath);
+  } catch (error) {
+    logger.error("Failed to remove key: ", key, error);
+
+    throw error;
+  }
+};
+
+/**
  * Register all store listeners
  * @param {import("electron").IpcMain} ipcMain
  */
 const registerStoreListeners = (ipcMain) => {
   ipcMain.handle("store:set", setStoreItemImpl);
+  ipcMain.handle("store:get", getStoreItemImpl);
+  ipcMain.on("store:clean", cleanStoreImpl);
+  ipcMain.on("store:remove", removeItemByKeyImpl);
 };
 
 module.exports = { registerStoreListeners };
