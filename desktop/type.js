@@ -865,7 +865,7 @@
  * @param {string} key - The key identifier, for example `user_settings`
  * @param {string} jsonObject - The JSON object representing the value to store,
  * stringified using `JSON.stringify`
- * @returns {Promise<boolean>} Whether the operation succeeded
+ * @returns {void} Nothing
  */
 
 /**
@@ -914,7 +914,7 @@
  *
  * @property {fileXApi} fileXApi - Contains all the api's for file x
  *
- * TODO add store api back
+ * @property {storeApi} storeApi - Contains all the api to save and restore data between browser sessions
  */
 
 /**

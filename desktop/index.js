@@ -18,6 +18,7 @@ const {
   stopAllLanguageServers,
 } = require("./lsp/bridge");
 const { registerFileXListeners } = require("./file-x");
+const { registerStoreListeners } = require("./store");
 
 loadEnv();
 registerProtocols();
@@ -78,6 +79,7 @@ app.whenReady().then(() => {
   registerPathListeners(ipcMain);
   registerFileXListeners(ipcMain)
   registerLanguageServerListener(ipcMain);
+  registerStoreListeners(ipcMain)
 });
 
 app.on("before-quit", async () => {
