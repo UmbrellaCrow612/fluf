@@ -13,13 +13,9 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
   try {
     const raw = await electronApi.storeApi.get(FILE_X_STORE_DATA);
 
-    const dirPath = fileNode.isDirectory
-      ? fileNode.path
-      : fileNode.parentPath;
+    const dirPath = fileNode.isDirectory ? fileNode.path : fileNode.parentPath;
 
-    const name = fileNode.isDirectory
-      ? fileNode.name
-      : fileNode.parentName;
+    const name = fileNode.isDirectory ? fileNode.name : fileNode.parentName;
 
     if (typeof raw !== 'string' || raw.length === 0) {
       const sessionData: FileXStoreData = {

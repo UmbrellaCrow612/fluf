@@ -1,5 +1,13 @@
-import { Component, computed, inject } from '@angular/core';
-import { getElectronApi } from '../../utils';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+  Signal,
+} from '@angular/core';
+import { FileXTab } from '../types';
+import { FileXContextService } from '../file-x-context/file-x-context.service';
 
 @Component({
   selector: 'app-file-x-tabs',
@@ -8,14 +16,17 @@ import { getElectronApi } from '../../utils';
   styleUrl: './file-x-tabs.component.css',
 })
 export class FileXTabsComponent {
-  private readonly api = getElectronApi();
+  private readonly ctx = inject(FileXContextService);
+  /**
+   * Holds the tabs from file x
+   */
+  tabs: Signal<FileXTab[]> = computed(() => this.ctx.tabs());
 
   /**
    * Change the active directory when a tab item is clicked
    * @param item The item clicked
    */
-  changeActiveDirectory() {
-  }
+  changeActiveDirectory() {}
 
   /**
    * Removes the given tab item from the list of active tabs and moves it to the next one
@@ -24,6 +35,5 @@ export class FileXTabsComponent {
    */
   removeDirectoryTabItem(event: Event) {
     event.stopPropagation();
-
   }
 }
