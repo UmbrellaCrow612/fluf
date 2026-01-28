@@ -61,8 +61,16 @@ const createFileXWindow = () => {
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fileXOpen>}
  */
 const openFileXWindowImpl = () => {
-  if (fileXWindow) {
-    logger.warn("A file x window is already open cannot open another");
+  if (fileXWindow && !fileXWindow.isDestroyed()) {
+    logger.info("Bringing existing file x window to front");
+    
+    if (fileXWindow.isMinimized()) {
+      fileXWindow.restore();
+    }
+    
+    fileXWindow.focus();
+    fileXWindow.show();
+    
     return Promise.resolve(false);
   } else {
     logger.info("Opened file x window");
