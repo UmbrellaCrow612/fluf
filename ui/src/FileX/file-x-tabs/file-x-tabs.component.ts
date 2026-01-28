@@ -2,8 +2,6 @@ import {
   Component,
   computed,
   inject,
-  OnInit,
-  signal,
   Signal,
 } from '@angular/core';
 import { FileXTab } from '../types';

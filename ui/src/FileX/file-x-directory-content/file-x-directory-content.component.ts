@@ -17,7 +17,6 @@ export class FileXDirectoryContentComponent {
     effect(async () => {
       let dir = this.ctx.activeDirectory();
       await this.displayDirectoryContent(dir);
-      console.log("FileXDirectoryContentComponent effect ran")
     });
   }
 
