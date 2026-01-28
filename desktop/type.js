@@ -77,7 +77,7 @@
  * @callback saveTo
  * @param {string} content - The content of the file
  * @param {import("electron").SaveDialogOptions} [options] - Used to change how a file can be saved
- * @returns {Promise<boolean>} If it could or could not
+ * @returns {Promise<boolean>} If it could or could not save it
  */
 
 /**
@@ -164,6 +164,7 @@
  * @property {string} name - The name of the file or folder
  * @property {string} path - The file path to the file or folder
  * @property {string} parentPath - The path to the parent folder contaning said file or folder
+ * @property {string} parentName - The name of the folder containg this file or folder
  * @property {boolean} isDirectory - If the given node is a directory
  * @property {Array<fileNode>} children - Children of the node by default is empty
  * @property {boolean} expanded - Indicates if the node has been expanded
@@ -647,12 +648,6 @@
  */
 
 /**
- * Used try and get the main window
- * @callback getMainWindow
- * @returns {import("electron").BrowserWindow | null} The window object ref
- */
-
-/**
  * Represents the client which sends and recives LSP messages via UI side
  * @typedef {Object} ILanguageServerClient
  *
@@ -829,13 +824,69 @@
  * Contains all methods and functions for file x
  * @typedef {Object} fileXApi
  * @property {fileXOpen} open - Open the file x window
- * 
+ *
  */
 
 /**
  * Open the file x window
  * @callback fileXOpen
  * @returns {Promise<boolean>} If it did or did not
+ */
+
+/**
+ * Represents a Store API — a way to persist data between sessions
+ * using a standard API format.
+ * @typedef {Object} storeApi
+ * @property {storeSet} set - Creates a new store for the given key or overrides an existing one
+ * @property {storeRemove} remove - Removes a key if it exists
+ * @property {storeClean} clean - Removes all keys
+ * @property {storeGet} get - Gets the value for a specific key
+ * @property {storeChange} onChange - Listens for changes to a specific key and runs logic
+ */
+
+/**
+ * Listen for changes to a specific key and run logic
+ * @callback storeChange
+ * @param {string} key - The key identifier, for example `user_settings`
+ * @param {storeChangeCallback} callback - The logic to run when the key changes
+ * @returns {voidCallback} Unsubscribe method
+ */
+
+/**
+ * The shape of the callback that runs when a specific key changes
+ * @callback storeChangeCallback
+ * @param {string} newContent - The updated content
+ * @returns {void} Nothing
+ */
+
+/**
+ * Creates a new key with content or overrides an existing one with the same key
+ * @callback storeSet
+ * @param {string} key - The key identifier, for example `user_settings`
+ * @param {string} jsonObject - The JSON object representing the value to store,
+ * stringified using `JSON.stringify`
+ * @returns {Promise<void>} Nothing
+ */
+
+/**
+ * Removes a key if it exists
+ * @callback storeRemove
+ * @param {string} key - The key identifier, for example `user_settings`
+ * @returns {Promise<void>} Nothing
+ */
+
+/**
+ * Removes all defined keys
+ * @callback storeClean
+ * @returns {Promise<void>} Nothing
+ */
+
+/**
+ * Gets the value for a key
+ * @callback storeGet
+ * @param {string} key - The key identifier, for example `user_settings`
+ * @returns {Promise<string | undefined>} The stored content as a string,
+ * or `undefined` if the key was not found
  */
 
 /**
@@ -860,9 +911,10 @@
  * @property {chromeWindowApi} chromeWindowApi - Contains all utils for chroium window itself
  *
  * @property {ILanguageServerClient} lspClient - Contains all the UI api's to interact with LSP
- * 
+ *
  * @property {fileXApi} fileXApi - Contains all the api's for file x
  *
+ * @property {storeApi} storeApi - Contains all the api to save and restore data between browser sessions
  */
 
 /**

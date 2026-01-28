@@ -1,30 +1,23 @@
 const fs = require("fs");
 const path = require("path");
+const { logger } = require("./logger");
 
 /**
  * Helper util to load .env values into node process
  * @param {string} envFilePath Optional path for dev override
  */
 function loadEnv(envFilePath = ".env") {
-  let fullPath;
+  let resolvedPath = path.resolve(envFilePath)
 
-  // Detect if running inside ASAR
-  const isProd = __dirname.includes("app.asar");
-
-  if (isProd) {
-    // In production, load from ASAR root
-    fullPath = path.join(__dirname, ".env");
-  } else {
-    // In dev, use provided path relative to project root
-    fullPath = path.resolve(process.cwd(), envFilePath);
+  if (!fs.existsSync(resolvedPath)) {
+    logger.error("Failed to load env file for path " + resolvedPath)
+    
+    throw new Error("Failed to load .env file")
   }
 
-  if (!fs.existsSync(fullPath)) {
-    console.warn(`⚠️  No .env file found at ${fullPath}`);
-    return;
-  }
+  logger.info("Loaded .env file from " + resolvedPath)
 
-  const envContent = fs.readFileSync(fullPath, "utf-8");
+  const envContent = fs.readFileSync(resolvedPath, "utf-8");
 
   envContent.split("\n").forEach((line) => {
     const trimmed = line.trim();

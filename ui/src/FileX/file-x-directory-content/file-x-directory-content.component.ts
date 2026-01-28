@@ -1,18 +1,15 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
-import { FileXContextService } from '../file-x-context/file-x-context.service';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { fileNode } from '../../gen/type';
 import { getElectronApi } from '../../utils';
-import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-file-x-directory-content',
-  imports: [JsonPipe],
+  imports: [],
   templateUrl: './file-x-directory-content.component.html',
   styleUrl: './file-x-directory-content.component.css',
 })
 export class FileXDirectoryContentComponent {
-  private readonly fileXCtx = inject(FileXContextService);
-  private readonly api = getElectronApi()
+  private readonly api = getElectronApi();
 
   constructor() {
     effect(async () => {
@@ -20,27 +17,9 @@ export class FileXDirectoryContentComponent {
     });
   }
 
-  isLoading = false;
-  error: string | null = null;
+  isLoading = signal(false);
+  error = signal<string | null>(null);
+  items = signal<fileNode[]>([]);
 
-  items:fileNode[] = [];
-
-  private async displayDirectoryContent() {
-    try {
-      this.isLoading = true;
-      this.error = null;
-      let path = this.fileXCtx.currentActiveDirectoryTab();
-      if (!path) {
-        this.error = 'No selected directory';
-        return;
-      }
-
-      this.items = await this.api.fsApi.readDir(path)
-    } catch (error) {
-      console.error(error);
-      this.error = 'Failed to load';
-    } finally {
-      this.isLoading = false;
-    }
-  }
+  private async displayDirectoryContent() {}
 }

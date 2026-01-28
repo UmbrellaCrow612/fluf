@@ -18,12 +18,7 @@ const {
   stopAllLanguageServers,
 } = require("./lsp/bridge");
 const { registerFileXListeners } = require("./file-x");
-
-/**
- * Global ref to main window used for sending events without being coupled to incoming events
- * @type {import("electron").BrowserWindow | null}
- */
-let mainWindow = null;
+const { registerStoreListeners } = require("./store");
 
 loadEnv();
 registerProtocols();
@@ -32,7 +27,7 @@ registerProtocols();
  * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
  */
 const createWindow = () => {
-  mainWindow = new BrowserWindow({
+  const window = new BrowserWindow({
     width: 800,
     minWidth: 800,
     height: 600,
@@ -62,10 +57,10 @@ const createWindow = () => {
       "Running dev mode loading website from " + process.env.DEV_UI_PORT,
     );
 
-    mainWindow.loadURL(devUIPort);
+    window.loadURL(devUIPort);
   } else {
     logger.info("Running application from build index.html");
-    mainWindow.loadFile("index.html");
+    window.loadFile("index.html");
   }
 };
 
@@ -78,13 +73,13 @@ app.whenReady().then(() => {
   registerClipboardListeners(ipcMain);
   registerPdfListeners(protocol);
   registerImageListeners(protocol);
-  registerShellListeners(ipcMain, mainWindow);
-  registerFsListeners(ipcMain, mainWindow);
+  registerShellListeners(ipcMain);
+  registerFsListeners(ipcMain);
   registerWindowListener(ipcMain);
   registerPathListeners(ipcMain);
   registerFileXListeners(ipcMain)
-
-  registerLanguageServerListener(ipcMain, mainWindow);
+  registerLanguageServerListener(ipcMain);
+  registerStoreListeners(ipcMain)
 });
 
 app.on("before-quit", async () => {

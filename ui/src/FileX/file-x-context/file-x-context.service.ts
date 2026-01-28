@@ -1,72 +1,103 @@
 import { effect, Injectable, signal } from '@angular/core';
-import { FileXAppContext, FileXTab } from './type';
-
-const LOCAL_STORAGE_KEY = 'file-x-context';
+import { FileXStoreData, FileXTab } from '../types';
+import { getElectronApi } from '../../utils';
+import { FILE_X_STORE_DATA } from '../store-key-constants';
 
 /**
- * Base service that holds all persistant data between session for file x
- *
- * SHOULD NOT use any other service as it's a base service
+ * Stores the file x context in a central place and offers a signal based API
  */
 @Injectable({
   providedIn: 'root',
 })
 export class FileXContextService {
+  private readonly api = getElectronApi();
+  private settingStateFromOnChange = false;
+  private isInitialized = false;
+
   constructor() {
+    this.init();
+
     effect(() => {
-      this.persist();
+      console.log('effect ran');
+      const snapshot = this.getSnapShot();
+      
+      // Skip if not initialized yet or setting from onChange
+      if (!this.isInitialized || this.settingStateFromOnChange) {
+        console.log('Skipping save - not initialized or setting from onChange');
+        return;
+      }
+
+      // Save to store
+      console.log('Saving to store', snapshot);
+      this.api.storeApi.set(FILE_X_STORE_DATA, JSON.stringify(snapshot));
+    });
+
+    this.api.storeApi.onChange(FILE_X_STORE_DATA, (newData) => {
+      console.log('on change ran');
+
+      try {
+        if (!newData) {
+          console.warn('Received empty data in onChange');
+          return;
+        }
+
+        const parsed: FileXStoreData = JSON.parse(newData);
+        
+        // Set flag before updating state
+        this.settingStateFromOnChange = true;
+        this.setState(parsed);
+      } catch (error) {
+        console.error('Failed to parse store data on change', error);
+      } finally {
+        // Reset flag after state update completes
+        setTimeout(() => {
+          this.settingStateFromOnChange = false;
+        }, 0);
+      }
     });
   }
 
-  /**
-   * Reads the signals and then saves them
-   */
-  private persist() {
-    const snapshot = this.getSnapShot();
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
-    } catch (err) {
-      console.error('[FileXContextService] Failed to persist context', err);
-    }
-  }
-
-  getSnapShot(): FileXAppContext {
+  /** Get the current state of the store in memory */
+  private getSnapShot(): FileXStoreData {
     return {
       tabs: this.tabs(),
-      currentActiveDirectory: this.currentActiveDirectoryTab(),
+      activeDirectory: this.activeDirectory(),
     };
   }
 
-  /**
-   * Restore the state of a given field
-   * @param key The specific field to restore
-   * @param fallback A fallback value if it's invalid
-   * @returns Value
-   */
-  private restoreField<K extends keyof FileXAppContext>(
-    key: K,
-    fallback: FileXAppContext[K],
-  ): FileXAppContext[K] {
+  private async init() {
+    console.log('File x hydration ran');
     try {
-      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (!raw) return fallback;
+      const data = await this.api.storeApi.get(FILE_X_STORE_DATA);
+      if (!data) {
+        console.error('No data exists for service to hydrate');
+        this.isInitialized = true;
+        return;
+      }
 
-      const saved = JSON.parse(raw) as Partial<FileXAppContext>;
-      return saved[key] ?? fallback;
-    } catch {
-      return fallback;
+      const parsed: FileXStoreData = JSON.parse(data);
+      
+      // Set flag during initial hydration
+      this.settingStateFromOnChange = true;
+      this.setState(parsed);
+      
+      // Mark as initialized and reset flag
+      setTimeout(() => {
+        this.settingStateFromOnChange = false;
+        this.isInitialized = true;
+      }, 0);
+    } catch (error) {
+      console.error('Failed to load file x session data', error);
+      this.isInitialized = true; // Set even on error to prevent saves
+      throw error;
     }
   }
 
-  /**
-   * Exposes FileXTabItem array signals
-   */
-  readonly tabs = signal<FileXTab[]>(this.restoreField('tabs', []));
+  private setState(data: FileXStoreData) {
+    this.tabs.set(data.tabs);
+    this.activeDirectory.set(data.activeDirectory);
+  }
 
-  /**
-   * Exposes currentActiveDirectory signal
-   */
-  readonly currentActiveDirectoryTab = signal<string | null>(
-    this.restoreField('currentActiveDirectory', null),
-  );
+  readonly tabs = signal<FileXTab[]>([]);
+  readonly activeDirectory = signal('');
 }

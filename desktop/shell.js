@@ -6,6 +6,7 @@ const fs = require("fs/promises");
 const { spawn } = require("@homebridge/node-pty-prebuilt-multiarch");
 const path = require("path");
 const { logger } = require("./logger");
+const { broadcastToAll } = require("./broadcast");
 
 /**
  * Contains a map of shell PID and then the proccess
@@ -18,12 +19,6 @@ const shells = new Map();
  * @type {Map<number, import("@homebridge/node-pty-prebuilt-multiarch").IDisposable[]>}
  */
 const shellDisposes = new Map();
-
-/**
- * Ref to main window to send events
- * @type {import("electron").BrowserWindow | null}
- */
-let windowRef = null;
 
 /** Spawn specific shell based on platform  */
 const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
@@ -61,25 +56,20 @@ const createImpl = async (_, directory) => {
 
     disposes.push(
       pty.onData((chunk) => {
-        if (windowRef) {
-          windowRef.webContents.send("shell:change", pty.pid, chunk);
-        }
+        broadcastToAll("shell:change", pty.pid, chunk);
       }),
     );
 
     disposes.push(
       pty.onExit((exit) => {
-        if (windowRef) {
-          windowRef.webContents.send("shell:exit", pty.pid, exit);
+        broadcastToAll("shell:exit", pty.pid, exit);
 
-          let shell = shells.get(pty.pid);
+        let shell = shells.get(pty.pid);
+        shellDisposes.get(pty.pid)?.forEach((x) => x.dispose());
+        shellDisposes.delete(pty.pid);
 
-          shellDisposes.get(pty.pid)?.forEach((x) => x.dispose());
-          shellDisposes.delete(pty.pid);
-
-          shell?.kill();
-          shells.delete(pty.pid);
-        }
+        shell?.kill();
+        shells.delete(pty.pid);
       }),
     );
 
@@ -116,10 +106,10 @@ const killImpl = (_, pid) => {
 
     shells.delete(pid);
     shellDisposes.delete(pid);
-    return Promise.resolve(true)
+    return Promise.resolve(true);
   } catch (error) {
     logger.error("Failed to kill shell " + JSON.stringify(error));
-    return Promise.resolve(false)
+    return Promise.resolve(false);
   }
 };
 
@@ -136,7 +126,7 @@ const resizeImpl = (_, pid, col, row) => {
     return Promise.resolve(true);
   } catch (error) {
     logger.error("Failed to resize shell " + JSON.stringify(error));
-   return Promise.resolve(false);
+    return Promise.resolve(false);
   }
 };
 
@@ -153,11 +143,8 @@ const writeImpl = (_, pid, content) => {
 /**
  * Add all event listener
  * @param {import("electron").IpcMain} ipcMain\
- * @param {import("electron").BrowserWindow | null} win
  */
-const registerShellListeners = (ipcMain, win) => {
-  windowRef = win;
-
+const registerShellListeners = (ipcMain) => {
   ipcMain.handle("shell:create", createImpl);
   ipcMain.handle("shell:kill", killImpl);
   ipcMain.handle("shell:resize", resizeImpl);

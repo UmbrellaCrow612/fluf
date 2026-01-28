@@ -228,6 +228,28 @@ const clipboardApi = {
   writeImage: (...args) => ipcRenderer.invoke("clipboard:write:image", ...args),
 };
 
+/** @type {import("./type").storeApi} */
+const storeApi = {
+  set: (...args) => ipcRenderer.invoke("store:set", ...args),
+  onChange: (key, callback) => {
+    /**
+     * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").storeChangeCallback>}
+     */
+    let list = (_, newContent) => {
+      callback(newContent);
+    };
+
+    ipcRenderer.on(`store:key:${key}:changed`, list);
+
+    return () => {
+      ipcRenderer.removeListener(`store:key:${key}:changed`, list);
+    };
+  },
+  clean: () => ipcRenderer.send("store:clean"),
+  get: (...args) => ipcRenderer.invoke("store:get", ...args),
+  remove: (...args) => ipcRenderer.send("store:remove", ...args)
+};
+
 /**
  * @type {import("./type").ElectronApi}
  */
@@ -242,6 +264,7 @@ const api = {
   chromeWindowApi,
   lspClient,
   fileXApi,
+  storeApi,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);

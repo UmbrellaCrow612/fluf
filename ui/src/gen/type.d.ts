@@ -156,6 +156,10 @@ export type fileNode = {
      */
     parentPath: string;
     /**
+     * - The name of the folder containg this file or folder
+     */
+    parentName: string;
+    /**
      * - If the given node is a directory
      */
     isDirectory: boolean;
@@ -764,10 +768,6 @@ export type ILanguageServerGetWorkspaceFolders = () => string[];
  */
 export type ILanguageServerDidOpenTextDocument = (workspaceFolder: string, filePath: string, languageId: languageId, version: number, text: string) => void;
 /**
- * Used try and get the main window
- */
-export type getMainWindow = () => import("electron").BrowserWindow | null;
-/**
  * Represents the client which sends and recives LSP messages via UI side
  */
 export type ILanguageServerClient = {
@@ -920,6 +920,56 @@ export type fileXApi = {
  */
 export type fileXOpen = () => Promise<boolean>;
 /**
+ * Represents a Store API — a way to persist data between sessions
+ * using a standard API format.
+ */
+export type storeApi = {
+    /**
+     * - Creates a new store for the given key or overrides an existing one
+     */
+    set: storeSet;
+    /**
+     * - Removes a key if it exists
+     */
+    remove: storeRemove;
+    /**
+     * - Removes all keys
+     */
+    clean: storeClean;
+    /**
+     * - Gets the value for a specific key
+     */
+    get: storeGet;
+    /**
+     * - Listens for changes to a specific key and runs logic
+     */
+    onChange: storeChange;
+};
+/**
+ * Listen for changes to a specific key and run logic
+ */
+export type storeChange = (key: string, callback: storeChangeCallback) => voidCallback;
+/**
+ * The shape of the callback that runs when a specific key changes
+ */
+export type storeChangeCallback = (newContent: string) => void;
+/**
+ * Creates a new key with content or overrides an existing one with the same key
+ */
+export type storeSet = (key: string, jsonObject: string) => Promise<void>;
+/**
+ * Removes a key if it exists
+ */
+export type storeRemove = (key: string) => Promise<void>;
+/**
+ * Removes all defined keys
+ */
+export type storeClean = () => Promise<void>;
+/**
+ * Gets the value for a key
+ */
+export type storeGet = (key: string) => Promise<string | undefined>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 export type ElectronApi = {
@@ -963,6 +1013,10 @@ export type ElectronApi = {
      * - Contains all the api's for file x
      */
     fileXApi: fileXApi;
+    /**
+     * - Contains all the api to save and restore data between browser sessions
+     */
+    storeApi: storeApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

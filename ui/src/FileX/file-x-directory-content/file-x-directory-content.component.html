@@ -1,3 +1,23 @@
-<div class="file_x_directory_content_container">
-    {{items | json}}
+<div class="file_x_directory_content_container scroll_bar">
+  @if (isLoading()) {
+    <div>Loading</div>
+  }
+
+  <!---->
+
+  @if (error() && !isLoading()) {
+    <div>
+      {{ error() }}
+    </div>
+  }
+
+  <!---->
+
+  @if (!error() && !isLoading()) {
+    @for (item of items(); track $index) {
+      <div>
+        {{ item.path }}
+      </div>
+    }
+  }
 </div>

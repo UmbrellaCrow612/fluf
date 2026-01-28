@@ -2,6 +2,7 @@ const { logger } = require("../logger");
 const { JsonRpcProcess } = require("./json-rpc-process");
 const path = require("path");
 const { createUri } = require("./uri");
+const { broadcastToAll } = require("../broadcast");
 
 /**
  * @typedef {import("../type").ILanguageServer} ILanguageServer
@@ -23,19 +24,13 @@ const { createUri } = require("./uri");
 class JsonRpcLanguageServer {
   /**
    * Required for LSP to work
-   * @param {import("../type").getMainWindow} getMainWindow - Used to fetch the main window ref
    * @param {import("../type").languageId} languageId - The specific language this is for
    */
-  constructor(getMainWindow, languageId) {
-    if (typeof getMainWindow !== "function")
-      throw new TypeError("getMainWindow is not a function");
-
+  constructor(languageId) {
     if (typeof languageId !== "string")
       throw new TypeError("languageId must be a non empty string");
 
-    this.#getMainWindow = getMainWindow;
     this.#languageId = languageId;
-    this.#mainWindowRef = this.#getMainWindow();
   }
 
   /**
@@ -45,22 +40,10 @@ class JsonRpcLanguageServer {
   #workSpaceRpcMap = new Map();
 
   /**
-   * Used to fetch the main widow - this is becuase on init it's null
-   * @type {import("../type").getMainWindow | null}
-   */
-  #getMainWindow = null;
-
-  /**
    * Holds the language this LSP is for exmaple `go` or `js` etc
    * @type {import("../type").languageId | null}
    */
   #languageId = null;
-
-  /**
-   * Refrence to the main window to allow sending messages without a event
-   * @type {import("electron").BrowserWindow | null}
-   */
-  #mainWindowRef = null;
 
   /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
@@ -79,25 +62,9 @@ class JsonRpcLanguageServer {
     if (!wsf || typeof wsf !== "string")
       throw new TypeError("workSpaceFolder must be a non-empty string");
 
-    if (!this.#getMainWindow)
-      throw new Error("getMainWindow is null cannot get the main window");
-
-    if (!this.#mainWindowRef) {
-      this.#mainWindowRef = this.#getMainWindow(); // we do this becuase we dont know when main widow becomes available
-    }
-
-    if (!this.#mainWindowRef)
-      throw new Error("mainWindowRef is null cannot sent events");
-
     if (!this.#languageId) throw new Error("languageId is null");
 
-    let rc = new JsonRpcProcess(
-      command,
-      args,
-      this.#getMainWindow,
-      wsf,
-      this.#languageId,
-    );
+    let rc = new JsonRpcProcess(command, args, wsf, this.#languageId);
     const _workSpaceFolder = path.normalize(path.resolve(wsf));
 
     try {
@@ -132,11 +99,7 @@ class JsonRpcLanguageServer {
       rc.Initialized();
 
       // notify ui lsp ready for given lang and workspace
-      this.#mainWindowRef.webContents.send(
-        "lsp:on:ready",
-        this.#languageId,
-        wsf,
-      );
+      broadcastToAll("lsp:on:ready", this.#languageId, wsf);
 
       logger.info(
         `Language server started for command: ${command} at workspace folder: ${wsf}`,

@@ -5,13 +5,8 @@
 const path = require("path");
 const fs = require("fs/promises");
 const { logger } = require("./logger");
-const { dialog } = require("electron");
-
-/**
- * Ref to the main window
- * @type {import("electron").BrowserWindow | null}
- */
-let mainWindowRef = null;
+const { dialog, BrowserWindow } = require("electron");
+const { broadcastToAll } = require("./broadcast");
 
 /**
  * Contains a map of specific path and it's abort controller to stop the watcher for it
@@ -22,11 +17,15 @@ const watcherAbortsMap = new Map();
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
  */
-const saveToImpl = async (_, content, options) => {
+const saveToImpl = async (event, content, options) => {
   try {
-    if (!mainWindowRef) return false;
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) {
+      logger.error("Failed to get browser window for save to event");
+      return false;
+    }
 
-    let result = await dialog.showSaveDialog(mainWindowRef, {
+    let result = await dialog.showSaveDialog(win, {
       ...options,
     });
     if (result.canceled || result.filePath.trim() == "") return false;
@@ -84,9 +83,7 @@ const watchImpl = async (_, fileOrFolderPath) => {
     });
 
     for await (const event of watcher) {
-      if (mainWindowRef) {
-        mainWindowRef.webContents.send("fs:change", fileOrFolderPath, event);
-      }
+      broadcastToAll("fs:change", fileOrFolderPath, event);
     }
   } catch (/** @type {any}*/ error) {
     if (error.name === "AbortError") return;
@@ -159,7 +156,8 @@ const readDirImpl = async (_, dirPath) => {
         mode: "default",
         extension: item.isDirectory() ? "" : path.extname(item.name),
         size: stats.size,
-        lastModified: JSON.stringify(stats.mtime)
+        lastModified: JSON.stringify(stats.mtime),
+        parentName: path.basename(p),
       });
     }
 
@@ -266,11 +264,15 @@ const readFileImpl = async (_, filePath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFile>}
  */
-const selectFileImpl = () => {
+const selectFileImpl = (event) => {
   try {
-    if (!mainWindowRef) throw new Error("Main window ref null");
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) {
+      logger.error("Failed to get browser window from event for select file");
+      return Promise.resolve(null);
+    }
 
-    return dialog.showOpenDialog(mainWindowRef, {
+    return dialog.showOpenDialog(win, {
       properties: ["openFile"],
     });
   } catch (error) {
@@ -308,7 +310,8 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
       mode: "default",
       extension,
       lastModified: JSON.stringify(stats.mtime),
-      size: stats.size
+      size: stats.size,
+      parentName: path.basename(_path),
     };
   } catch (error) {
     logger.error(error, `Failed to get node for path: ${fileOrFolderPath}`);
@@ -320,11 +323,8 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
 /**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
- * @param {import("electron").BrowserWindow | null} mainWindow
  */
-const registerFsListeners = (ipcMain, mainWindow) => {
-  mainWindowRef = mainWindow;
-
+const registerFsListeners = (ipcMain) => {
   ipcMain.handle("file:read", readFileImpl);
   ipcMain.handle("file:write", writeToFileImpl);
   ipcMain.handle("file:create", createFileImpl);
