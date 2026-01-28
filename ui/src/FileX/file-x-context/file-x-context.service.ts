@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 import { FileXStoreData, FileXTab } from '../types';
 import { getElectronApi } from '../../utils';
 import { FILE_X_STORE_DATA } from '../store-key-constants';
@@ -11,23 +11,58 @@ import { FILE_X_STORE_DATA } from '../store-key-constants';
 })
 export class FileXContextService {
   private readonly api = getElectronApi();
+  private settingStateFromOnChange = false;
+  private isInitialized = false;
 
   constructor() {
     this.init();
 
+    effect(() => {
+      console.log('effect ran');
+      const snapshot = this.getSnapShot();
+      
+      // Skip if not initialized yet or setting from onChange
+      if (!this.isInitialized || this.settingStateFromOnChange) {
+        console.log('Skipping save - not initialized or setting from onChange');
+        return;
+      }
+
+      // Save to store
+      console.log('Saving to store', snapshot);
+      this.api.storeApi.set(FILE_X_STORE_DATA, JSON.stringify(snapshot));
+    });
+
     this.api.storeApi.onChange(FILE_X_STORE_DATA, (newData) => {
+      console.log('on change ran');
+
       try {
         if (!newData) {
           console.warn('Received empty data in onChange');
           return;
         }
-        
+
         const parsed: FileXStoreData = JSON.parse(newData);
+        
+        // Set flag before updating state
+        this.settingStateFromOnChange = true;
         this.setState(parsed);
       } catch (error) {
         console.error('Failed to parse store data on change', error);
+      } finally {
+        // Reset flag after state update completes
+        setTimeout(() => {
+          this.settingStateFromOnChange = false;
+        }, 0);
       }
     });
+  }
+
+  /** Get the current state of the store in memory */
+  private getSnapShot(): FileXStoreData {
+    return {
+      tabs: this.tabs(),
+      activeDirectory: this.activeDirectory(),
+    };
   }
 
   private async init() {
@@ -36,13 +71,24 @@ export class FileXContextService {
       const data = await this.api.storeApi.get(FILE_X_STORE_DATA);
       if (!data) {
         console.error('No data exists for service to hydrate');
+        this.isInitialized = true;
         return;
       }
 
       const parsed: FileXStoreData = JSON.parse(data);
+      
+      // Set flag during initial hydration
+      this.settingStateFromOnChange = true;
       this.setState(parsed);
+      
+      // Mark as initialized and reset flag
+      setTimeout(() => {
+        this.settingStateFromOnChange = false;
+        this.isInitialized = true;
+      }, 0);
     } catch (error) {
       console.error('Failed to load file x session data', error);
+      this.isInitialized = true; // Set even on error to prevent saves
       throw error;
     }
   }
