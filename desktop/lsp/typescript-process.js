@@ -7,12 +7,9 @@ const { logger } = require("../logger");
 const path = require("path");
 const fs = require("fs/promises");
 const { createUri } = require("./uri");
+const { broadcastToAll } = require("../broadcast");
 
 const { protocol } = require("typescript").server;
-
-/**
- * @typedef {import("../type").getMainWindow} getMainWindow
- */
 
 /**
  * Used to spawn and manage the typescript process offering the LSP protocol to interact with it as typescript has a custom protocol.
@@ -37,18 +34,6 @@ class TypeScriptProcess {
    * @type {languageId | null}
    */
   #languageId = null;
-
-  /**
-   * Used to fetch the main window
-   * @type {getMainWindow}
-   */
-  #getMainWindow;
-
-  /**
-   * Refrence to the main window - used to send events
-   * @type {import("electron").BrowserWindow | null}
-   */
-  #mainWindowRef = null;
 
   /**
    * Indicates if the process is running - stops it spawing multiple
@@ -103,9 +88,8 @@ class TypeScriptProcess {
    * @param {string[]} args - Arguments to pass on spawn such as ["--stdio"] etc
    * @param {string} workSpaceFolder - Path to the folder this is for for example `c:/dev/some/project`
    * @param {languageId} languageId - The specific language ID to identify it between layers such as `typescript`
-   * @param {getMainWindow} getMainWindow
    */
-  constructor(command, args, workSpaceFolder, languageId, getMainWindow) {
+  constructor(command, args, workSpaceFolder, languageId) {
     if (typeof command !== "string" || command.trim().length === 0)
       throw new TypeError("command must be a non empty string");
 
@@ -121,13 +105,9 @@ class TypeScriptProcess {
     if (typeof languageId !== "string" || languageId.trim().length === 0)
       throw new TypeError("languageId must be a non empty string");
 
-    if (typeof getMainWindow !== "function")
-      throw new TypeError("getMainWindow must be a function");
-
     this.#command = command;
     this.#workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
     this.#languageId = languageId;
-    this.#getMainWindow = getMainWindow;
     this.#args = args;
   }
 
@@ -542,15 +522,6 @@ class TypeScriptProcess {
     if (typeof notification !== "object")
       throw new TypeError("notification must be a object");
 
-    if (typeof this.#getMainWindow !== "function")
-      throw new TypeError("getMainWindow must be a function");
-
-    if (!this.#mainWindowRef) {
-      this.#mainWindowRef = this.#getMainWindow();
-    }
-
-    if (!this.#mainWindowRef) throw new Error("main window ref not set");
-
     if (!this.#languageId) throw new Error("languageId not set");
 
     if (!this.#workSpaceFolder) throw new Error("workSpaceFolder not set");
@@ -581,7 +552,7 @@ class TypeScriptProcess {
         return;
       }
 
-      this.#mainWindowRef.webContents.send("lsp:notification", {
+      broadcastToAll("lsp:notification", {
         method: notification.event,
         params: notification.body,
         languageId: this.#languageId,
@@ -626,13 +597,16 @@ class TypeScriptProcess {
           params: lspResponse,
         };
 
-        this.#mainWindowRef.webContents.send(
+        broadcastToAll(
           `lsp:notification:textDocument/publishDiagnostics`,
           notificationData,
         );
       }
     } catch (error) {
-      logger.error(error, "Failed to notify main window of TSServer notification");
+      logger.error(
+        error,
+        "Failed to notify main window of TSServer notification",
+      );
     }
   }
 

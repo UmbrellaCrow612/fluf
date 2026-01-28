@@ -2,6 +2,7 @@ const { logger } = require("../../logger");
 const { getTypescriptServerPath } = require("../../packing");
 const path = require("path");
 const { TypeScriptProcess } = require("../typescript-process");
+const { broadcastToAll } = require("../../broadcast");
 const { protocol } = require("typescript").server;
 
 /**
@@ -16,22 +17,10 @@ const { protocol } = require("typescript").server;
  */
 class TypeScriptLanguageServer {
   /**
-   * Fetches the main window
-   * @type {import("../../type").getMainWindow | null}
-   */
-  #getMainWindow = null;
-
-  /**
    * The specific language id for exmaple `typescript`
    * @type {import("../../type").languageId | null}
    */
   #languageId = null;
-
-  /**
-   * Reference to the main window
-   * @type {import("electron").BrowserWindow | null}
-   */
-  #mainWindowRef = null;
 
   /**
    * Holds a map of workspace and it's process running for it
@@ -41,19 +30,13 @@ class TypeScriptLanguageServer {
 
   /**
    * Required for typescript LSP to work
-   * @param {import("../../type").getMainWindow} getMainWindow - Used to fetch the main window
    * @param {import("../../type").languageId} languageId - The specific language id for exmaple `typescript`
    */
-  constructor(getMainWindow, languageId) {
-    if (typeof getMainWindow !== "function")
-      throw new Error("getMainWindow must be a function");
-
+  constructor(languageId) {
     if (typeof languageId !== "string" || languageId.trim() === "")
       throw new Error("languageId must be a non-empty string");
 
-    this.#getMainWindow = getMainWindow;
     this.#languageId = languageId;
-    this.#mainWindowRef = this.#getMainWindow(); // we do this because we don't know when the main window will be available
   }
 
   /**
@@ -63,16 +46,8 @@ class TypeScriptLanguageServer {
     if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
       throw new Error("workSpaceFolder must be a non-empty string");
 
-    if (typeof this.#getMainWindow !== "function")
-      throw new Error("getMainWindow must be a function");
-
     if (typeof this.#languageId !== "string" || this.#languageId.trim() === "")
       throw new Error("languageId must be a non-empty string");
-
-    this.#mainWindowRef = this.#getMainWindow();
-
-    if (typeof this.#mainWindowRef !== "object" || this.#mainWindowRef === null)
-      throw new Error("mainWindowRef must be a valid BrowserWindow");
 
     try {
       let exePath = getTypescriptServerPath();
@@ -94,7 +69,6 @@ class TypeScriptLanguageServer {
         [exePath],
         _workSpaceFolder,
         this.#languageId,
-        this.#getMainWindow,
       );
 
       this.#workSpaceProcessMap.set(_workSpaceFolder, process);
@@ -102,11 +76,7 @@ class TypeScriptLanguageServer {
       await process.Start(); // we don't need to send a json rpc initialization here because the typescript server doesn't require it
 
       // notify ui lsp ready for given lang and workspace
-      this.#mainWindowRef.webContents.send(
-        "lsp:on:ready",
-        this.#languageId,
-        workSpaceFolder,
-      );
+      broadcastToAll("lsp:on:ready", this.#languageId, workSpaceFolder);
 
       logger.info(`Started typescript lsp for workspace: ${workSpaceFolder}`);
 

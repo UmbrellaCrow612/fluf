@@ -77,7 +77,7 @@
  * @callback saveTo
  * @param {string} content - The content of the file
  * @param {import("electron").SaveDialogOptions} [options] - Used to change how a file can be saved
- * @returns {Promise<boolean>} If it could or could not
+ * @returns {Promise<boolean>} If it could or could not save it
  */
 
 /**
@@ -648,12 +648,6 @@
  */
 
 /**
- * Used try and get the main window
- * @callback getMainWindow
- * @returns {import("electron").BrowserWindow | null} The window object ref
- */
-
-/**
  * Represents the client which sends and recives LSP messages via UI side
  * @typedef {Object} ILanguageServerClient
  *
@@ -920,8 +914,7 @@
  *
  * @property {fileXApi} fileXApi - Contains all the api's for file x
  *
- * @property {storeApi} storeApi - Contains all the API to save and persist data between browser sessions
- *
+ * TODO add store api back
  */
 
 /**

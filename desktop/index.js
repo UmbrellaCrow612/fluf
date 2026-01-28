@@ -73,12 +73,11 @@ app.whenReady().then(() => {
   registerPdfListeners(protocol);
   registerImageListeners(protocol);
   registerShellListeners(ipcMain);
-  registerFsListeners(ipcMain, mainWindow); // todo needs refactiong
+  registerFsListeners(ipcMain);
   registerWindowListener(ipcMain);
   registerPathListeners(ipcMain);
   registerFileXListeners(ipcMain)
-
-  registerLanguageServerListener(ipcMain, mainWindow); // todo can be refactored to just use broadcast all
+  registerLanguageServerListener(ipcMain);
 });
 
 app.on("before-quit", async () => {

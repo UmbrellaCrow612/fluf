@@ -3,6 +3,7 @@ const { logger } = require("../logger");
 const { isUri } = require("./uri");
 const fs = require("fs/promises");
 const path = require("path");
+const { broadcastToAll } = require("../broadcast");
 
 /**
  * @typedef {import("../type").LanguageServerProtocolMethod} LanguageServerProtocolMethod
@@ -95,18 +96,6 @@ class JsonRpcProcess {
   }
 
   /**
-   * Used to get the main window
-   * @type {import("../type").getMainWindow | null}
-   */
-  #getMainWindow = null;
-
-  /**
-   * Refrence to the main window to send events
-   * @type {import("electron").BrowserWindow | null}
-   */
-  #mainWindowRef = null;
-
-  /**
    * Holds the workspace folder this was spawned for for exmaple `c:/dev/some/project`
    * @type {string | null}
    */
@@ -122,11 +111,10 @@ class JsonRpcProcess {
    * Required for spawn of the process to work and properly spawn and communicate as needed
    * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
    * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
-   * @param {import("../type").getMainWindow | null} getMainWindow - Used to get the main window ref
    * @param {string} workSpaceFolder - The workspace this is for exmaple `c:/dev/some/project/`
    * @param {import("../type").languageId | null} languageId - The specific language this is for exmaple `go` or `js` etc
    */
-  constructor(command, args, getMainWindow, workSpaceFolder, languageId) {
+  constructor(command, args, workSpaceFolder, languageId) {
     if (!command || typeof command !== "string")
       throw new TypeError("command must be a non-empty string");
 
@@ -134,9 +122,6 @@ class JsonRpcProcess {
 
     if (!args.every((arg) => typeof arg === "string"))
       throw new TypeError("all elements in args must be strings");
-
-    if (typeof getMainWindow !== "function")
-      throw new TypeError("getMainWindow is not a function");
 
     if (typeof workSpaceFolder !== "string")
       throw new TypeError("workSpaceFolder must be a non empty string");
@@ -146,19 +131,14 @@ class JsonRpcProcess {
 
     this.#command = command;
     this.#args = args;
-    this.#getMainWindow = getMainWindow;
     this.#workSpaceFolder = path.normalize(workSpaceFolder);
     this.#languageId = languageId;
-    this.#mainWindowRef = this.#getMainWindow();
   }
 
   /**
    * Start the process
    */
   async Start() {
-    if (!this.#getMainWindow)
-      throw new Error("getMainWindow is null cannot fetch main window");
-
     if (!this.#workSpaceFolder || this.#workSpaceFolder.length === 0)
       throw new TypeError("workSpaceFolder must be a non empty string");
 
@@ -240,7 +220,6 @@ class JsonRpcProcess {
 
     this.#pendingRequests.clear();
     this.#spawnRef = null;
-    this.#mainWindowRef = null;
   }
 
   /**
@@ -499,15 +478,12 @@ class JsonRpcProcess {
       if (response.error) {
         obj?.reject(response.error);
 
-        // Check if window still exists before sending error event
-        if (this.#mainWindowRef && !this.#mainWindowRef.isDestroyed()) {
-          this.#mainWindowRef.webContents.send("lsp:error", {
-            error: response.error,
-            id: response.id,
-            languageId: this.#languageId,
-            workSpaceFolder: this.#workSpaceFolder,
-          });
-        }
+        broadcastToAll("lsp:error", {
+          error: response.error,
+          id: response.id,
+          languageId: this.#languageId,
+          workSpaceFolder: this.#workSpaceFolder,
+        });
       } else {
         obj?.resolve(response.result);
       }
@@ -516,13 +492,11 @@ class JsonRpcProcess {
     }
 
     // Check if window still exists before sending data event
-    if (this.#mainWindowRef && !this.#mainWindowRef.isDestroyed()) {
-      this.#mainWindowRef.webContents.send("lsp:data", {
-        response: response,
-        languageId: this.#languageId,
-        workSpaceFolder: this.#workSpaceFolder,
-      });
-    }
+    broadcastToAll("lsp:data", {
+      response: response,
+      languageId: this.#languageId,
+      workSpaceFolder: this.#workSpaceFolder,
+    });
 
     this.#notify(response);
   }
@@ -536,23 +510,6 @@ class JsonRpcProcess {
     if (!notification || typeof notification !== "object")
       throw new TypeError("notification must be an object");
 
-    if (!this.#getMainWindow)
-      throw new Error("getMainWindow is null cannot get main window");
-
-    if (!this.#mainWindowRef) {
-      this.#mainWindowRef = this.#getMainWindow();
-    }
-
-    if (!this.#mainWindowRef)
-      throw new Error("main window is null cannot send events");
-
-    if (this.#mainWindowRef.isDestroyed()) {
-      logger.warn(
-        `Main window destroyed, cannot send LSP events for command: ${this.#command}`,
-      );
-      return;
-    }
-
     if (!this.#languageId) throw new Error("No language id cannot send events");
     if (!this.#workSpaceFolder)
       throw new Error("No workspace folder cannot send events");
@@ -561,7 +518,7 @@ class JsonRpcProcess {
       notification.method &&
       (notification.id === undefined || notification.id === null)
     ) {
-      this.#mainWindowRef.webContents.send("lsp:notification", {
+      broadcastToAll("lsp:notification", {
         method: notification.method,
         params: notification.params,
         languageId: this.#languageId,
@@ -575,7 +532,7 @@ class JsonRpcProcess {
         params: notification?.params,
       };
 
-      this.#mainWindowRef.webContents.send(
+      broadcastToAll(
         `lsp:notification:${notification.method}`,
         notificationData,
       );

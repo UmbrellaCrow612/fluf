@@ -4,23 +4,15 @@ const { PythonLanguageServer } = require("./impl/pythonlsp");
 const { TypeScriptLanguageServer } = require("./impl/typescriptlsp");
 const { LanguageServerManager } = require("./manager");
 
-/**
- * Used to fetch the ref to the main window
- * @type {import("../type").getMainWindow}
- */
-const getMainWindow = () => {
-  return mainWindowRef;
-};
-
 var languageServerManager = new LanguageServerManager();
-languageServerManager.Register("go", new GoLanguageServer(getMainWindow, "go"));
+languageServerManager.Register("go", new GoLanguageServer("go"));
 languageServerManager.Register(
   "python",
-  new PythonLanguageServer(getMainWindow, "python"),
+  new PythonLanguageServer("python"),
 );
 languageServerManager.Register(
   "typescript",
-  new TypeScriptLanguageServer(getMainWindow, "typescript"),
+  new TypeScriptLanguageServer("typescript"),
 );
 
 /**
@@ -192,9 +184,7 @@ const definitionImpl = (_, wsf, langId, fp, pos) => {
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerLanguageServerListener = (ipcMain, mainWindow) => {
-  mainWindowRef = mainWindow;
-
+const registerLanguageServerListener = (ipcMain) => {
   ipcMain.handle("lsp:start", startImpl);
   ipcMain.handle("lsp:stop", stopLspImpl);
   ipcMain.handle("lsp:is:running", isRunningImpl);

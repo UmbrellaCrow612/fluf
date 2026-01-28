@@ -1,13 +1,11 @@
 <div class="file_x_tabs_container">
-  @for (tab of tabs(); track $index) {
     <div
       class="file_x_tab_item"
-      [class.file_x_tab_item_active]="tab.baseDirectoryPath === activeDir()"
-      (click)="changeActiveDirectory(tab)"
+      [class.file_x_tab_item_active]=""
+      (click)="changeActiveDirectory()"
     >
-      <span class="file_x_tab_name">{{ tab.name }}</span>
+      <span class="file_x_tab_name">Hello</span>
 
-      <span class="file_x_tab_close" (click)="removeDirectoryTabItem($event, tab)"> × </span>
+      <span class="file_x_tab_close" (click)="removeDirectoryTabItem($event)"> × </span>
     </div>
-  }
 </div>

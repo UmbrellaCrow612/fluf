@@ -3,6 +3,7 @@
  */
 
 const { webContents } = require("electron");
+const { logger } = require("./logger");
 
 /**
  * Broadcast/send an event to all browser windows. This is necessary because if we have multiple windows,
@@ -15,7 +16,11 @@ const { webContents } = require("electron");
 function broadcastToAll(channel, ...args) {
   const allWebContents = webContents.getAllWebContents();
   allWebContents.forEach((wc) => {
-    wc.send(channel, ...args);
+    if(!wc.isDestroyed()){
+      wc.send(channel, ...args);
+    } else {
+      logger.warn(`trying to send ipc message for channel ${channel} but the given window is destroyed`)
+    }
   });
 }
 
