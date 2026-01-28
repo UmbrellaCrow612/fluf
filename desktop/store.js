@@ -43,7 +43,7 @@ const setStoreItemImpl = async (_, key, content) => {
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").storeClean>}
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeClean>}
  */
 const cleanStoreImpl = async () => {
   try {
@@ -100,8 +100,8 @@ const removeItemByKeyImpl = async (_, key) => {
 const registerStoreListeners = (ipcMain) => {
   ipcMain.handle("store:set", setStoreItemImpl);
   ipcMain.handle("store:get", getStoreItemImpl);
-  ipcMain.on("store:clean", cleanStoreImpl);
-  ipcMain.on("store:remove", removeItemByKeyImpl);
+  ipcMain.handle("store:clean", cleanStoreImpl);
+  ipcMain.handle("store:remove", removeItemByKeyImpl);
 };
 
 module.exports = { registerStoreListeners };
