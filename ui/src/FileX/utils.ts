@@ -20,6 +20,7 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
     if (typeof raw !== 'string' || raw.length === 0) {
       const sessionData: FileXStoreData = {
         tabs: [{ name, directory: dirPath }],
+        activeDirectory: dirPath
       };
 
       await electronApi.storeApi.set(

@@ -15,4 +15,9 @@ export type FileXTab = {
 export type FileXStoreData = {
   /** List of tabs opened */
   tabs: FileXTab[];
+
+  /**
+   * The current active that was clicked or lastt clicked - if empty it means no active directory
+   */
+  activeDirectory: string;
 };
