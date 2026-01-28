@@ -6,13 +6,12 @@ const { logger } = require("./logger");
 const path = require("path");
 const fs = require("fs/promises");
 const { broadcastToAll } = require("./broadcast");
+const { app } = require("electron");
 
 /**
  * Represents the base directory we save store files to
  */
-const storeBaseDirectory = process.resourcesPath
-  ? path.join(process.resourcesPath, "store")
-  : path.join(__dirname, "dev_store_data");
+const storeBaseDirectory = path.join(app.getPath("userData"), "store"); // on windows it saves to C:\Users\<you>\AppData\Roaming\<YourApp>\store
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeSet>}
@@ -33,6 +32,8 @@ const setStoreItemImpl = async (_, key, content) => {
 
     await fs.writeFile(filePath, content, "utf8");
 
+    logger.info("Set store item at path: ", filePath);
+
     broadcastToAll(`store:key:${key}:changed`, content);
   } catch (error) {
     logger.error("Failed to set store key: ", key, error);
@@ -46,15 +47,10 @@ const setStoreItemImpl = async (_, key, content) => {
  */
 const cleanStoreImpl = async () => {
   try {
-    let files = await fs.readdir(storeBaseDirectory);
-
-    for (const file of files) {
-      let filePath = path.join(storeBaseDirectory, file);
-      await fs.unlink(filePath);
-    }
+    await fs.rm(storeBaseDirectory, { recursive: true, force: true });
+    await fs.mkdir(storeBaseDirectory, { recursive: true });
   } catch (error) {
-    logger.error("Failed to clean store ", error);
-
+    logger.error("Failed to clean store", error);
     throw error;
   }
 };
@@ -63,16 +59,19 @@ const cleanStoreImpl = async () => {
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeGet>}
  */
 const getStoreItemImpl = async (_, key) => {
-  if (typeof key !== "string" || key.trim().length == 0)
+  if (typeof key !== "string" || key.trim().length === 0) {
     throw new TypeError("key must be a non empty string");
+  }
 
   try {
-    let filePath = path.join(storeBaseDirectory, key);
+    const filePath = path.join(storeBaseDirectory, key);
+    return await fs.readFile(filePath, "utf8");
+  } catch (/** @type {any}*/ error) {
+    if (error.code === "ENOENT") {
+      return undefined;
+    }
 
-    return await fs.readFile(filePath, { encoding: "utf-8" });
-  } catch (error) {
-    logger.error("Failed to get content for key: ", key, error);
-
+    logger.error("Failed to get content for key:", key, error);
     throw error;
   }
 };

@@ -865,20 +865,20 @@
  * @param {string} key - The key identifier, for example `user_settings`
  * @param {string} jsonObject - The JSON object representing the value to store,
  * stringified using `JSON.stringify`
- * @returns {void} Nothing
+ * @returns {Promise<void>} Nothing
  */
 
 /**
  * Removes a key if it exists
  * @callback storeRemove
  * @param {string} key - The key identifier, for example `user_settings`
- * @returns {void} Nothing
+ * @returns {Promise<void>} Nothing
  */
 
 /**
  * Removes all defined keys
  * @callback storeClean
- * @returns {void} Nothing
+ * @returns {Promise<void>} Nothing
  */
 
 /**

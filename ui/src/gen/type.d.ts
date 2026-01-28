@@ -956,15 +956,15 @@ export type storeChangeCallback = (newContent: string) => void;
 /**
  * Creates a new key with content or overrides an existing one with the same key
  */
-export type storeSet = (key: string, jsonObject: string) => Promise<boolean>;
+export type storeSet = (key: string, jsonObject: string) => Promise<void>;
 /**
  * Removes a key if it exists
  */
-export type storeRemove = (key: string) => Promise<boolean>;
+export type storeRemove = (key: string) => Promise<void>;
 /**
  * Removes all defined keys
  */
-export type storeClean = () => Promise<boolean>;
+export type storeClean = () => Promise<void>;
 /**
  * Gets the value for a key
  */
@@ -1011,10 +1011,12 @@ export type ElectronApi = {
     lspClient: ILanguageServerClient;
     /**
      * - Contains all the api's for file x
-     *
-     * TODO add store api back
      */
     fileXApi: fileXApi;
+    /**
+     * - Contains all the api to save and restore data between browser sessions
+     */
+    storeApi: storeApi;
 };
 /**
  * Extends the global `window` object to include the Electron API.

@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit } from '@angular/core';
 import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
+import { OpenFileInFileX } from '../../../FileX/utils';
 
 @Component({
   selector: 'app-file-explorer-file-node-context-menu',
@@ -40,6 +41,13 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
   }
 
   async openFileX() {
-   
+    let node = this.contextMenuFileNode() as fileNode;
+    if (!node) {
+      this.error = 'Invaliud data passed';
+      return;
+    }
+
+    await OpenFileInFileX(node);
+    this.inMemoryContextService.currentActiveContextMenu.set(null);
   }
 }
