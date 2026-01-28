@@ -14,13 +14,12 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
     const raw = await electronApi.storeApi.get(FILE_X_STORE_DATA);
 
     const dirPath = fileNode.isDirectory ? fileNode.path : fileNode.parentPath;
-
     const name = fileNode.isDirectory ? fileNode.name : fileNode.parentName;
 
     if (typeof raw !== 'string' || raw.length === 0) {
       const sessionData: FileXStoreData = {
-        tabs: [{ name, directory: dirPath }],
-        activeDirectory: dirPath
+        tabs: [{ name: name, directory: dirPath }],
+        activeDirectory: dirPath,
       };
 
       await electronApi.storeApi.set(
@@ -32,12 +31,11 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
 
     const previousData: FileXStoreData = JSON.parse(raw);
 
-    const alreadyOpen = previousData.tabs.some(
-      (x) => x.directory === dirPath && x.name === name,
-    );
+    const alreadyOpen = previousData.tabs.some((x) => x.directory === dirPath);
 
     if (!alreadyOpen) {
       previousData.tabs.push({ name, directory: dirPath });
+      previousData.activeDirectory = dirPath;
     }
 
     await electronApi.storeApi.set(
