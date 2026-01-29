@@ -2,8 +2,6 @@ import {
   Component,
   computed,
   inject,
-  OnInit,
-  signal,
   Signal,
 } from '@angular/core';
 import { FileXTab } from '../types';
@@ -19,17 +17,21 @@ import { getElectronApi } from '../../utils';
 export class FileXTabsComponent {
   private readonly ctx = inject(FileXContextService);
   private readonly api = getElectronApi();
-  
+
   /**
    * Holds the tabs from file x
    */
   tabs: Signal<FileXTab[]> = computed(() => this.ctx.tabs());
+  /** Holds the directory clicked from tabs */
+  activeDir: Signal<string> = computed(() => this.ctx.activeDirectory());
 
   /**
    * Change the active directory when a tab item is clicked
    * @param item The item clicked
    */
-  changeActiveDirectory() {}
+  changeActiveDirectory(item: FileXTab) {
+    this.ctx.activeDirectory.set(item.directory);
+  }
 
   /**
    * Removes the given tab item from the list of active tabs and moves it to the next one
@@ -42,7 +44,7 @@ export class FileXTabsComponent {
     let filteredTabs = this.tabs().filter(
       (x) => x.directory !== item.directory,
     );
-    
+
     if (filteredTabs.length > 0) {
       let next = filteredTabs[0];
       this.ctx.activeDirectory.set(next.directory);

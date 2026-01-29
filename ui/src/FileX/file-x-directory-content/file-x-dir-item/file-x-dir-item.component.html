@@ -1,0 +1,24 @@
+<div class="file_x_dir_item">
+  <mat-icon class="file_icon">
+    @if (fileNode().isDirectory) {
+      folder
+    } @else {
+      insert_drive_file
+    }
+  </mat-icon>
+
+  <div class="file_main">
+    <span class="file_name">{{ fileNode().name }}</span>
+    <span class="file_path">{{ fileNode().path }}</span>
+  </div>
+
+  @if (!fileNode().isDirectory) {
+    <span class="file_size">
+      {{ formatFileSizeToReadableString(fileNode().size) }}
+    </span>
+
+    <span class="file_extension">
+      {{ fileNode().extension }}
+    </span>
+  }
+</div>

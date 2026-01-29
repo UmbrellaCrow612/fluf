@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { getElectronApi } from '../../utils';
@@ -10,11 +10,15 @@ import { MatTooltip } from '@angular/material/tooltip';
   templateUrl: './file-x-top-bar.component.html',
   styleUrl: './file-x-top-bar.component.css',
 })
-export class FileXTopBarComponent implements OnInit {
+export class FileXTopBarComponent implements OnInit, OnDestroy {
   private readonly electronApi = getElectronApi();
 
   ngOnInit(): void {
     window.addEventListener('resize', this.onResize);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('resize', this.onResize);
   }
 
   /** Rusn when `window` is resized */

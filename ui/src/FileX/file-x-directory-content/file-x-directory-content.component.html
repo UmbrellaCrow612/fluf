@@ -15,9 +15,7 @@
 
   @if (!error() && !isLoading()) {
     @for (item of items(); track $index) {
-      <div>
-        {{ item.path }}
-      </div>
+      <app-file-x-dir-item [fileNode]="item" />
     }
   }
 </div>
