@@ -30,7 +30,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 0; 
+  min-width: 0;
 }
 
 /* File / folder name */
@@ -65,4 +65,19 @@
 .file_extension {
   text-transform: uppercase;
   color: var(--text-tertiary);
+}
+
+.file_modified {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  margin-left: 12px;
+
+  min-width: 0; 
+  max-width: 120px; 
+  flex-shrink: 1; 
 }

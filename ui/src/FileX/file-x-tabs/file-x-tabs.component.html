@@ -6,12 +6,12 @@
       (click)="changeActiveDirectory(tab)"
     >
       <span>{{ tab.name }}</span>
-      <button
+      <span
         class="file_x_tab_close"
         (click)="removeDirectoryTabItem($event, tab)"
       >
         x
-      </button>
+      </span>
     </div>
   }
 </div>

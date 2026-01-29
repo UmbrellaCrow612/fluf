@@ -1,13 +1,14 @@
 import { Component, input } from '@angular/core';
 import { fileNode } from '../../../gen/type';
 import { MatIcon } from '@angular/material/icon';
+import { DatePipe } from '@angular/common';
 
 /**
  * Used to render a item read from a directory
  */
 @Component({
   selector: 'app-file-x-dir-item',
-  imports: [MatIcon],
+  imports: [MatIcon, DatePipe],
   templateUrl: './file-x-dir-item.component.html',
   styleUrl: './file-x-dir-item.component.css',
 })
