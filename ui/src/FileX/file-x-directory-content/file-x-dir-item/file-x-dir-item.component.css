@@ -1,0 +1,7 @@
+.file_x_dir_item {
+  width: 100%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}

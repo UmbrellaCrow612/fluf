@@ -11,7 +11,13 @@ import { FILE_X_STORE_DATA } from '../store-key-constants';
 })
 export class FileXContextService {
   private readonly api = getElectronApi();
+
+  /** Whenever the store changes it eits a event which on changes listens to - whenever this happens wer retrigger / update out local state which causes a
+   * write back - doing so would cause a infite loop, so whenevr a change to local state is happening from on change we ignore it
+   */
   private settingStateFromOnChange = false;
+
+  /** Used to stop the first run of the ffect running which causes the current default values of the signals to be written to the saved state */
   private isInitialized = false;
 
   constructor() {
@@ -20,7 +26,7 @@ export class FileXContextService {
     effect(() => {
       console.log('effect ran');
       const snapshot = this.getSnapShot();
-      
+
       // Skip if not initialized yet or setting from onChange
       if (!this.isInitialized || this.settingStateFromOnChange) {
         console.log('Skipping save - not initialized or setting from onChange');
@@ -42,7 +48,7 @@ export class FileXContextService {
         }
 
         const parsed: FileXStoreData = JSON.parse(newData);
-        
+
         // Set flag before updating state
         this.settingStateFromOnChange = true;
         this.setState(parsed);
@@ -65,9 +71,12 @@ export class FileXContextService {
     };
   }
 
+  /** Trys to hydrate local signals with stored values */
   private async init() {
     console.log('File x hydration ran');
     try {
+      this.isInitialized = false;
+
       const data = await this.api.storeApi.get(FILE_X_STORE_DATA);
       if (!data) {
         console.error('No data exists for service to hydrate');
@@ -76,11 +85,11 @@ export class FileXContextService {
       }
 
       const parsed: FileXStoreData = JSON.parse(data);
-      
+
       // Set flag during initial hydration
       this.settingStateFromOnChange = true;
       this.setState(parsed);
-      
+
       // Mark as initialized and reset flag
       setTimeout(() => {
         this.settingStateFromOnChange = false;
@@ -93,6 +102,7 @@ export class FileXContextService {
     }
   }
 
+  /** Sets local values of signals to those parsed from the store */
   private setState(data: FileXStoreData) {
     this.tabs.set(data.tabs);
     this.activeDirectory.set(data.activeDirectory);

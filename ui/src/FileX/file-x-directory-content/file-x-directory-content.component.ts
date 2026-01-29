@@ -2,10 +2,11 @@ import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { fileNode } from '../../gen/type';
 import { getElectronApi } from '../../utils';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
+import { FileXDirItemComponent } from "./file-x-dir-item/file-x-dir-item.component";
 
 @Component({
   selector: 'app-file-x-directory-content',
-  imports: [],
+  imports: [FileXDirItemComponent],
   templateUrl: './file-x-directory-content.component.html',
   styleUrl: './file-x-directory-content.component.css',
 })
