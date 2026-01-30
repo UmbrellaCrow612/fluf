@@ -1,0 +1,7 @@
+<div class="file_x_actions scroll_bar">
+  @for (item of defaultActions(); track $index) {
+    <button mat-icon-button [aria-label]="item.label" [matTooltip]="item.label">
+      <mat-icon>{{ item.iconName }}</mat-icon>
+    </button>
+  }
+</div>

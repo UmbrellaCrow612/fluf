@@ -17,10 +17,10 @@ let fileXWindow = null;
  */
 const createFileXWindow = () => {
   fileXWindow = new BrowserWindow({
-    width: 1000,
-    height: 700,
-    minWidth: 600,
-    minHeight: 600,
+    width: 750,
+    height: 550,
+    minWidth: 450,
+    minHeight: 400,
     frame: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -44,7 +44,7 @@ const createFileXWindow = () => {
   fileXWindow.on("closed", () => {
     if (fileXWindow?.isDestroyed()) {
       fileXWindow = null;
-      logger.info("File x window closed")
+      logger.info("File x window closed");
     }
   });
 
@@ -63,14 +63,14 @@ const createFileXWindow = () => {
 const openFileXWindowImpl = () => {
   if (fileXWindow && !fileXWindow.isDestroyed()) {
     logger.info("Bringing existing file x window to front");
-    
+
     if (fileXWindow.isMinimized()) {
       fileXWindow.restore();
     }
-    
+
     fileXWindow.focus();
     fileXWindow.show();
-    
+
     return Promise.resolve(false);
   } else {
     logger.info("Opened file x window");

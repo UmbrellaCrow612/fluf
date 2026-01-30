@@ -1,17 +1,18 @@
-<div class="file_x_tabs_container">
-  @for (tab of tabs(); track $index) {
-    <div
-      class="file_x_tab_item"
-      [class.file_x_tab_item_active]="activeDir() === tab.directory"
-      (click)="changeActiveDirectory(tab)"
-    >
-      <span>{{ tab.name }}</span>
-      <button
-        class="file_x_tab_close"
-        (click)="removeDirectoryTabItem($event, tab)"
-      >
-        x
-      </button>
-    </div>
-  }
+<div class="file_x_tabs scroll_bar">
+  <div class="tab_item selected">
+    <span class="tab_label">folder name frfrfrfrfrfdede</span>
+    <mat-icon class="icon">close</mat-icon>
+  </div>
+  <div class="tab_item">
+    <span class="tab_label">folder name</span>
+    <mat-icon class="icon">close</mat-icon>
+  </div>
+   <div class="tab_item">
+    <span class="tab_label">folder name</span>
+    <mat-icon class="icon">close</mat-icon>
+  </div>
+   <div class="tab_item">
+    <span class="tab_label">folder name</span>
+    <mat-icon class="icon">close</mat-icon>
+  </div>
 </div>

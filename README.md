@@ -32,6 +32,8 @@ A simple text editor written in electron and angular
 
 - Open a custom file explorer `Filex` which has all file explorer functionality
 
+- Command palette - search files, change themes
+
 ---
 
 ## **Project Overview**

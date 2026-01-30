@@ -1,21 +1,3 @@
-<div class="file_x_directory_content_container scroll_bar">
-  @if (isLoading()) {
-    <div>Loading</div>
-  }
-
-  <!---->
-
-  @if (error() && !isLoading()) {
-    <div>
-      {{ error() }}
-    </div>
-  }
-
-  <!---->
-
-  @if (!error() && !isLoading()) {
-    @for (item of items(); track $index) {
-      <app-file-x-dir-item [fileNode]="item" />
-    }
-  }
+<div class="file_x_directory_content scroll_bar">
+    lorem1000
 </div>

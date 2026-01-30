@@ -156,7 +156,7 @@ const readDirImpl = async (_, dirPath) => {
         mode: "default",
         extension: item.isDirectory() ? "" : path.extname(item.name),
         size: stats.size,
-        lastModified: JSON.stringify(stats.mtime),
+        lastModified: stats.mtime.toString(),
         parentName: path.basename(p),
       });
     }
@@ -309,7 +309,7 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
       expanded: false,
       mode: "default",
       extension,
-      lastModified: JSON.stringify(stats.mtime),
+      lastModified: stats.mtime.toString(),
       size: stats.size,
       parentName: path.basename(_path),
     };
