@@ -1,4 +1,6 @@
-.parent {
-  height: 100vh;
+:host {
+  display: flex;
+  flex: 1;
   min-height: 0;
+  min-width: 0;
 }
