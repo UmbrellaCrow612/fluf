@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.file_x_actions {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: hidden;
+  overflow-x: auto;
+  white-space: nowrap;
+  display: flex;
+  gap: 5px;
+
+  padding: 4px;
+}
