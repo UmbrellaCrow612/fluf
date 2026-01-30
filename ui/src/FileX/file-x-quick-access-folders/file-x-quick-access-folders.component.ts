@@ -1,11 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, signal, Signal } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 
+/**
+ * Renders on the left and shows folders like home, places, downloads etc
+ */
 @Component({
   selector: 'app-file-x-quick-access-folders',
-  imports: [],
+  imports: [MatIcon],
   templateUrl: './file-x-quick-access-folders.component.html',
   styleUrl: './file-x-quick-access-folders.component.css',
 })
 export class FileXQuickAccessFoldersComponent {
-
+  /**
+   * The default places to show
+   */
+  defaultPlaces: Signal<{ label: string; iconName: string }[]> = signal([
+    { label: 'Home', iconName: 'home' },
+    { label: 'Desktop', iconName: 'desktop_windows' },
+    { label: 'Documents', iconName: 'description' },
+    { label: 'Downloads', iconName: 'download' },
+    { label: 'Pictures', iconName: 'image' },
+    { label: 'Music', iconName: 'music_note' },
+    { label: 'Videos', iconName: 'video_library' },
+    { label: 'Trash', iconName: 'delete' },
+  ]);
 }
