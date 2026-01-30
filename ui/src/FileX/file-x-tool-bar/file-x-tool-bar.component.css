@@ -1,0 +1,8 @@
+.file_x_tool_bar {
+  width: 100%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  min-width: 0;
+}

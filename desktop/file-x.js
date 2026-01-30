@@ -17,9 +17,9 @@ let fileXWindow = null;
  */
 const createFileXWindow = () => {
   fileXWindow = new BrowserWindow({
-    width: 450,
-    height: 500,
-    minWidth: 400,
+    width: 750,
+    height: 550,
+    minWidth: 450,
     minHeight: 400,
     frame: false,
     webPreferences: {
