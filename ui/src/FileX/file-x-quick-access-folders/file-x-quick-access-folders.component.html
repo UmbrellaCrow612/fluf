@@ -1,10 +1,30 @@
 <div class="file_x_quick_access scroll_bar">
-  <div class="places">
-    <span> Places </span>
+  <div class="button_group">
+    <span class="quick_access_heading"> Places </span>
     @for (place of defaultPlaces(); track $index) {
-      <button class="place_btn">
+      <button class="quick_access_btn">
         <mat-icon>{{ place.iconName }}</mat-icon>
         {{ place.label }}
+      </button>
+    }
+  </div>
+
+  <div class="button_group">
+    <span class="quick_access_heading">Remote</span>
+    @for (remote of defaultRemotes(); track $index) {
+      <button class="quick_access_btn">
+        <mat-icon>{{ remote.iconName }}</mat-icon>
+        {{ remote.label }}
+      </button>
+    }
+  </div>
+
+  <div class="button_group">
+    <span class="quick_access_heading">Recent</span>
+    @for (remote of defaultRecents(); track $index) {
+      <button class="quick_access_btn">
+        <mat-icon>{{ remote.iconName }}</mat-icon>
+        {{ remote.label }}
       </button>
     }
   </div>
