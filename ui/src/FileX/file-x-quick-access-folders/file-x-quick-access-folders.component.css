@@ -1,21 +1,15 @@
 :host {
   display: flex;
-  flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
-.file_x_main_page_container {
+.file_x_quick_access {
   display: flex;
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
   flex-direction: column;
-}
-
-.file_x_main_content {
-  display: flex;
-  flex: 1;
+  gap: 10px;
   min-height: 0;
   min-width: 0;
+  width: 200px;
+  overflow-y: auto;
 }
