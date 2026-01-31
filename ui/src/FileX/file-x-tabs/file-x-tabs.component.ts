@@ -5,6 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXTab } from '../types';
 import { getElectronApi } from '../../utils';
+import { filexResetState, filexSetTabItemAsActive } from '../utils';
 
 @Component({
   selector: 'app-file-x-tabs',
@@ -19,26 +20,24 @@ export class FileXTabsComponent {
   /** Keeps local ref to the tabs - */
   tabs: Signal<FileXTab[]> = computed(() => this.fileXContextService.tabs());
 
-  /** Keeps track of the active directory */
-  selectedDirectoryPath: Signal<string> = computed(() =>
-    this.fileXContextService.activeDirectory(),
+  /** Keeps track of the active tab by it's ID */
+  selectedTabId: Signal<string> = computed(() =>
+    this.fileXContextService.activeTabId(),
   );
 
   /** Removes a tab item  */
   removeTab(event: Event, item: FileXTab) {
     event.stopPropagation();
 
-    let tabs = this.tabs();
-    let filteredTabs = tabs.filter((x) => x.id !== item.id);
+    let filteredTabs = this.tabs().filter((x) => x.id !== item.id);
 
     if (filteredTabs.length > 0) {
       let next = filteredTabs[0];
 
-      this.fileXContextService.activeDirectory.set(next.directory);
-      this.fileXContextService.tabs.set(filteredTabs);
+      filexSetTabItemAsActive(next, this.fileXContextService);
+      this.fileXContextService.tabs.set(structuredClone(filteredTabs)); // need a diff ref
     } else {
-      this.fileXContextService.activeDirectory.set('');
-      this.fileXContextService.tabs.set([]);
+      filexResetState(this.fileXContextService);
 
       setTimeout(() => {
         this.api.chromeWindowApi.close();
@@ -48,7 +47,7 @@ export class FileXTabsComponent {
 
   /** Changes the active tab and directory to the given item  */
   selectedTab(item: FileXTab) {
-    this.fileXContextService.activeDirectory.set(item.directory);
+    filexSetTabItemAsActive(item, this.fileXContextService);
   }
 
   /** Adds a new tab item - defaults to home directory and makes it active */
@@ -64,6 +63,7 @@ export class FileXTabsComponent {
     tabs.push(newTabItem);
 
     this.fileXContextService.tabs.set(structuredClone(tabs)); // need diff ref
-    this.fileXContextService.activeDirectory.set(newTabItem.directory);
+
+    filexSetTabItemAsActive(newTabItem, this.fileXContextService);
   }
 }

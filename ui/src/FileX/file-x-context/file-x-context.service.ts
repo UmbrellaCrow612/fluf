@@ -68,6 +68,7 @@ export class FileXContextService {
     return {
       tabs: this.tabs(),
       activeDirectory: this.activeDirectory(),
+      activeId: this.activeTabId()
     };
   }
 
@@ -106,8 +107,10 @@ export class FileXContextService {
   private setState(data: FileXStoreData) {
     this.tabs.set(data.tabs);
     this.activeDirectory.set(data.activeDirectory);
+    this.activeTabId.set(data.activeId)
   }
 
   readonly tabs = signal<FileXTab[]>([]);
   readonly activeDirectory = signal('');
+  readonly activeTabId = signal("")
 }

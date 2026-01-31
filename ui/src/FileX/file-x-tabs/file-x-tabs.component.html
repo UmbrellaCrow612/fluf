@@ -3,7 +3,7 @@
     @for (tab of tabs(); track tab.name) {
       <div
         class="tab_item"
-        [class.selected]="selectedDirectoryPath() === tab.directory"
+        [class.selected]="selectedTabId() === tab.id"
         (click)="selectedTab(tab)"
       >
         <span class="tab_label">{{ tab.name }}</span>
