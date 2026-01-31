@@ -1,7 +1,7 @@
 import { fileNode } from '../gen/type';
 import { getElectronApi } from '../utils';
 import { FILE_X_STORE_DATA } from './store-key-constants';
-import { FileXStoreData } from './types';
+import { FileXStoreData, FileXTab } from './types';
 
 const electronApi = getElectronApi();
 
@@ -16,9 +16,15 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
     const dirPath = fileNode.isDirectory ? fileNode.path : fileNode.parentPath;
     const name = fileNode.isDirectory ? fileNode.name : fileNode.parentName;
 
+    const tabItemToAdd: FileXTab = {
+      name: name,
+      directory: dirPath,
+      id: crypto.randomUUID(),
+    };
+
     if (typeof raw !== 'string' || raw.length === 0) {
       const sessionData: FileXStoreData = {
-        tabs: [{ name: name, directory: dirPath }],
+        tabs: [tabItemToAdd],
         activeDirectory: dirPath,
       };
 
@@ -34,7 +40,7 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
     const alreadyOpen = previousData.tabs.some((x) => x.directory === dirPath);
 
     if (!alreadyOpen) {
-      previousData.tabs.push({ name, directory: dirPath });
+      previousData.tabs.push(tabItemToAdd);
       previousData.activeDirectory = dirPath;
     }
 

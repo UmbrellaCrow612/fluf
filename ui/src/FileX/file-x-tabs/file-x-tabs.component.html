@@ -1,12 +1,23 @@
 <div class="file_x_tabs_container">
   <div class="file_x_tabs scroll_bar">
-    <div class="tab_item selected">
-      <span class="tab_label">folder name frfrfrfrfrfdede</span>
-      <mat-icon class="icon" matTooltip="Close">close</mat-icon>
-    </div>
+    @for (tab of tabs(); track tab.name) {
+      <div
+        class="tab_item"
+        [class.selected]="selectedDirectoryPath() === tab.directory"
+        (click)="selectedTab(tab)"
+      >
+        <span class="tab_label">{{ tab.name }}</span>
+        <mat-icon
+          class="icon"
+          matTooltip="Close"
+          (click)="removeTab($event, tab)"
+          >close</mat-icon
+        >
+      </div>
+    }
   </div>
 
-  <button mat-icon-button aria-label="Add a new tab" matTooltip="Add a new tab">
+  <button mat-icon-button aria-label="Add a new tab" matTooltip="Add a new tab" (click)="addNewTab()">
     <mat-icon>add</mat-icon>
   </button>
 </div>

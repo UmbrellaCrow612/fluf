@@ -7,6 +7,9 @@ export type FileXTab = {
 
   /** The path to the directory this points to */
   directory: string;
+
+  /** A unique ID  */
+  id: string;
 };
 
 /**
