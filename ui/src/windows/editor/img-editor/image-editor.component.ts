@@ -10,6 +10,8 @@ import { EditorContextService } from '../app-context/editor-context.service';
 import { hasImageExtension } from './utils';
 import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ImageService } from './image.service';
+import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
+import { ImageEditorContextMenuComponent } from './image-editor-context-menu/image-editor-context-menu.component';
 
 @Component({
   selector: 'app-image-editor',
@@ -20,8 +22,10 @@ import { ImageService } from './image.service';
 export class ImageEditorComponent implements OnInit {
   private readonly appContext = inject(EditorContextService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
   private readonly imageService = inject(ImageService);
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
+  );
 
   currentActiveFileNode = computed(() =>
     this.appContext.currentOpenFileInEditor(),
@@ -97,13 +101,13 @@ export class ImageEditorComponent implements OnInit {
   onRightClick(event: MouseEvent) {
     event.preventDefault();
 
-    this.inMemoryContextService.currentActiveContextMenu.set({
-      data: this.currentActiveFileNode(),
-      key: 'image-editor-img-context-menu',
-      pos: {
+    this.applicationContextMenuService.open(
+      ImageEditorContextMenuComponent,
+      {
         mouseX: event.clientX,
         mouseY: event.clientY,
       },
-    });
+      this.currentActiveFileNode(),
+    );
   }
 }

@@ -35,6 +35,8 @@ import { mapLspItemToCmOption } from './completions';
 import { OpenNodeInEditor } from '../file-explorer/helper';
 import { getElectronApi } from '../../../utils';
 import { fileNode, languageId, voidCallback } from '../../../gen/type';
+import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
+import { TextFileEditorContextMenuComponent } from './text-file-editor-context-menu/text-file-editor-context-menu.component';
 
 @Component({
   selector: 'app-text-file-editor',
@@ -49,12 +51,17 @@ export class TextFileEditorComponent implements OnInit {
   private readonly codeMirrorContainer = viewChild<ElementRef<HTMLDivElement>>(
     'code_mirror_container',
   );
-  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
+  private readonly inMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
 
   private readonly workSpaceFolder = computed(() =>
     this.appContext.selectedDirectoryPath(),
   );
   private readonly documentVersionsService = inject(DocumentVersionsService);
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
+  );
 
   constructor() {
     effect(async () => {
@@ -603,13 +610,13 @@ export class TextFileEditorComponent implements OnInit {
   onRightClick(event: MouseEvent) {
     event.preventDefault();
 
-    this.inMemoryContextService.currentActiveContextMenu.set({
-      data: this.appContext.currentOpenFileInEditor(),
-      key: 'text-file-editor-context-menu',
-      pos: {
+    this.applicationContextMenuService.open(
+      TextFileEditorContextMenuComponent,
+      {
         mouseX: event.clientX,
         mouseY: event.clientY,
       },
-    });
+      this.appContext.currentOpenFileInEditor(),
+    );
   }
 }

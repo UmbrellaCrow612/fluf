@@ -3,6 +3,7 @@ import { EditorInMemoryContextService } from '../../app-context/editor-in-memory
 import { OpenFileInFileX } from '../../../FileX/utils';
 import { getElectronApi } from '../../../../utils';
 import { fileNode } from '../../../../gen/type';
+import { ApplicationContextMenuService } from '../../../../app/context-menu/application-context-menu.service';
 
 @Component({
   selector: 'app-file-explorer-file-node-context-menu',
@@ -14,22 +15,25 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
   private readonly inMemoryContextService = inject(
     EditorInMemoryContextService,
   );
-  private readonly contextMenuFileNode = computed(
-    () => this.inMemoryContextService.currentActiveContextMenu()?.data,
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
   );
   private readonly api = getElectronApi();
+
+  private readonly contextMenuFileNode =
+    this.applicationContextMenuService.getContextMenuData() as fileNode;
 
   error: string | null = null;
 
   ngOnInit(): void {
-    let node = this.contextMenuFileNode() as fileNode;
+    let node = this.contextMenuFileNode as fileNode;
     if (!node || !node?.path) {
       this.error = 'Invaliud data passed';
     }
   }
 
   async deleteFile() {
-    let node = this.contextMenuFileNode() as fileNode;
+    let node = this.contextMenuFileNode;
 
     let suc = await this.api.fsApi.remove(node.path);
     if (!suc) {
@@ -37,18 +41,18 @@ export class FileExplorerFileNodeContextMenuComponent implements OnInit {
       return;
     }
 
-    this.inMemoryContextService.currentActiveContextMenu.set(null);
+    this.applicationContextMenuService.close();
   }
 
   async openFileX() {
-    let node = this.contextMenuFileNode() as fileNode;
+    let node = this.contextMenuFileNode;
     if (!node) {
       this.error = 'Invaliud data passed';
       return;
     }
 
     await OpenFileInFileX(node);
-    await this.api.fileXApi.open()
-    this.inMemoryContextService.currentActiveContextMenu.set(null);
+    await this.api.fileXApi.open();
+    this.applicationContextMenuService.close();
   }
 }

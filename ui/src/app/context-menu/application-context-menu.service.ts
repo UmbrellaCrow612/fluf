@@ -57,4 +57,11 @@ export class ApplicationContextMenuService {
     this.position = position;
     this.data = data;
   }
+
+  /**
+   * The the context menu if it is open
+   */
+  close() {
+    this.applicationContextService.showContextMenu.set(false);
+  }
 }

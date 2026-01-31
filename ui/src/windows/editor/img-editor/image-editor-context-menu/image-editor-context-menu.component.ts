@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
 import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
 import { getElectronApi } from '../../../../utils';
+import { ApplicationContextMenuService } from '../../../../app/context-menu/application-context-menu.service';
 import { fileNode } from '../../../../gen/type';
 
 @Component({
@@ -10,13 +11,16 @@ import { fileNode } from '../../../../gen/type';
   styleUrl: './image-editor-context-menu.component.css',
 })
 export class ImageEditorContextMenuComponent implements OnInit {
-  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
-  private readonly api = getElectronApi();
-
-  private data = computed(
-    () =>
-      this.inMemoryContextService.currentActiveContextMenu()?.data as fileNode,
+  private readonly inMemoryContextService = inject(
+    EditorInMemoryContextService,
   );
+  private readonly api = getElectronApi();
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
+  );
+
+  private data =
+    this.applicationContextMenuService.getContextMenuData() as fileNode;
 
   error: string | null = null;
 
@@ -28,7 +32,7 @@ export class ImageEditorContextMenuComponent implements OnInit {
       return;
     }
 
-    if (!this.data()?.path) {
+    if (!this.data?.path) {
       this.error = 'Data invalid';
       return;
     }
@@ -40,11 +44,10 @@ export class ImageEditorContextMenuComponent implements OnInit {
       return;
     }
 
-    let suc = await this.api.clipboardApi.writeImage(this.data().path);
+    let suc = await this.api.clipboardApi.writeImage(this.data.path);
     if (!suc) {
       this.error = 'Failed to copy image';
     } else {
-      this.inMemoryContextService.currentActiveContextMenu.set(null);
-    }
+      this.applicationContextMenuService.close()    }
   }
 }

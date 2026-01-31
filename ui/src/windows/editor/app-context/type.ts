@@ -112,22 +112,6 @@ export type ActiveLanguageServer = {
  */
 export type EditorInMemoryAppContext = {
   /**
-   * The current context menu that is showing, if there is a value then said context menu will apppear else the context menu will be closed
-   */
-  currentActiveContextMenu: {
-    /** The specific context menu to show */
-    key: contextMenuActiveElement;
-
-    /**
-     * The position of where to render the the menu
-     */
-    pos: { mouseX: number; mouseY: number };
-
-    /** Any data to be passed to it */
-    data: any;
-  } | null;
-
-  /**
    * When it's value changes it means the editor has been resized i.e when it increments it's value
    */
   editorResize: number;

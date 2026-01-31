@@ -20,6 +20,8 @@ import {
 import { OpenNodeInEditor } from '../helper';
 import { getElectronApi } from '../../../../utils';
 import { fileNode } from '../../../../gen/type';
+import { ApplicationContextMenuService } from '../../../../app/context-menu/application-context-menu.service';
+import { FileExplorerFileNodeContextMenuComponent } from '../file-explorer-file-node-context-menu/file-explorer-file-node-context-menu.component';
 
 @Component({
   selector: 'app-file-explorer-item',
@@ -30,7 +32,12 @@ import { fileNode } from '../../../../gen/type';
 export class FileExplorerItemComponent implements AfterViewInit {
   private readonly appContext = inject(EditorContextService);
   private readonly api = getElectronApi();
-  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
+  private readonly inMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
+  );
 
   /**
    * The specific file to render as a file tree item
@@ -131,14 +138,14 @@ export class FileExplorerItemComponent implements AfterViewInit {
   onRightClick(event: MouseEvent) {
     event.preventDefault();
 
-    this.inMemoryContextService.currentActiveContextMenu.set({
-      data: this.fileNode(),
-      key: 'file-explorer-file-node-context-menu',
-      pos: {
+    this.applicationContextMenuService.open(
+      FileExplorerFileNodeContextMenuComponent,
+      {
         mouseX: event.clientX,
         mouseY: event.clientY,
       },
-    });
+      this.fileNode(),
+    );
   }
 
   async createFileOrFolder(e: Event) {

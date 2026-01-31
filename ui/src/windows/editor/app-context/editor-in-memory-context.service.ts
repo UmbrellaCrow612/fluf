@@ -14,12 +14,6 @@ import { EditorInMemoryAppContext } from './type';
 })
 export class EditorInMemoryContextService {
   /**
-   * Exposes the signal for currentActiveContextMenu field in ctx - used to react to / compute the value for this field throughout the app
-   */
-  readonly currentActiveContextMenu =
-    signal<EditorInMemoryAppContext['currentActiveContextMenu']>(null);
-
-  /**
    * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
    */
   readonly refreshDirectory = signal<EditorInMemoryAppContext['refreshDirectory']>(0);

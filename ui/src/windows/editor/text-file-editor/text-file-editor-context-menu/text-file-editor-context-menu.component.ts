@@ -3,6 +3,7 @@ import { EditorInMemoryContextService } from '../../app-context/editor-in-memory
 import { isMarkdownFile } from '../../markdown/helper';
 import { EditorContextService } from '../../app-context/editor-context.service';
 import { fileNode, voidCallback } from '../../../../gen/type';
+import { ApplicationContextMenuService } from '../../../../app/context-menu/application-context-menu.service';
 
 /**
  * Local type for this component used to render the list of items in the context menu
@@ -34,20 +35,24 @@ type item = {
   styleUrl: './text-file-editor-context-menu.component.css',
 })
 export class TextFileEditorContextMenuComponent implements OnInit {
-  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
+  private readonly inMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
   private readonly contextService = inject(EditorContextService);
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
+  );
 
   loading = false;
   error: string | null = null;
   data: fileNode | null =
-    this.inMemoryContextService.currentActiveContextMenu()?.data ?? null;
+    this.applicationContextMenuService.getContextMenuData() ?? null;
 
   items: item[] = [
     {
       label: 'Open markdown preview',
       condition: computed(() => {
-        let menu = this.inMemoryContextService.currentActiveContextMenu();
-        let node = menu?.data as fileNode;
+        let node = this.data as fileNode;
         if ('path' in node && isMarkdownFile(node.path)) {
           return true;
         }
@@ -56,7 +61,7 @@ export class TextFileEditorContextMenuComponent implements OnInit {
       }),
       action: () => {
         this.contextService.editorMainActiveElement.set('markdown-editor');
-        this.inMemoryContextService.currentActiveContextMenu.set(null);
+        this.applicationContextMenuService.close();
       },
     },
   ];

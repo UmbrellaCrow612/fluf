@@ -19,7 +19,6 @@ import { SideGitComponent } from '../side-git/side-git.component';
 import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
-import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ResizerTwo } from 'umbr-resizer-two';
 import { HotKeyService } from '../hotkeys/hot-key.service';
@@ -46,7 +45,6 @@ import { voidCallback } from '../../../gen/type';
     TopBarComponent,
     SideBarComponent,
     NgComponentOutlet,
-    ContextMenuComponent,
     OpenFileContainerTabsComponent,
     OpenFileContainerBottomComponent,
     CommandPaletteComponent,
@@ -92,11 +90,6 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
    */
   isCommandPaletteActive = computed(() =>
     this.inMemoryContextService.showCommandPalette(),
-  );
-
-  /** Checks if it should show ctx */
-  isContextMenuActive = computed(
-    () => this.inMemoryContextService.currentActiveContextMenu() != null,
   );
 
   /**
