@@ -22,7 +22,5 @@ export class FileXActionsComponent {
     { label: 'Paste item', iconName: 'content_paste' },
     { label: 'Delete item', iconName: 'delete' },
     { label: 'Rename item', iconName: 'edit' },
-    { label: 'Select all', iconName: 'select_all' },
-    { label: 'Refresh', iconName: 'refresh' },
   ]);
 }

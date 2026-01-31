@@ -5,6 +5,7 @@ import { FileXQuickAccessFoldersComponent } from './file-x-quick-access-folders/
 import { FileXDirectoryContentComponent } from './file-x-directory-content/file-x-directory-content.component';
 import { FileXTabsComponent } from './file-x-tabs/file-x-tabs.component';
 import { FileXActionsComponent } from './file-x-actions/file-x-actions.component';
+import { FileXBottomComponent } from "./file-x-bottom/file-x-bottom.component";
 
 /**
  * Our custom built file explorer application similar to windows file explorer built inside the IDE to offer fast file exploration.
@@ -18,7 +19,8 @@ import { FileXActionsComponent } from './file-x-actions/file-x-actions.component
     FileXDirectoryContentComponent,
     FileXTabsComponent,
     FileXActionsComponent,
-  ],
+    FileXBottomComponent
+],
   templateUrl: './file-x.component.html',
   styleUrl: './file-x.component.css',
 })

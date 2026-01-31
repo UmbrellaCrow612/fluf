@@ -16,11 +16,6 @@ export class FileXSearchComponent {
   /** Indicates if the user has clicked search and the input should be visible */
   isSearchInputActive = signal(false);
 
-  /** Runs when the user loses focus in the search input*/
-  onSearchInputBlur = () => {
-    this.hideSearchInput();
-  };
-
   /** Displays the search input */
   activeSearchInput = () => {
     this.isSearchInputActive.set(true);
