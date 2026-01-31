@@ -1,10 +1,23 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ApplicationContextService } from './context/application-context.service';
+import { ContextMenuComponent } from "./context-menu/context-menu.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ContextMenuComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
-export class AppComponent {}
+export class AppComponent {
+  private readonly applicationContextService = inject(
+    ApplicationContextService,
+  );
+
+  /**
+   * Keeps track if it should show the generic context menu
+   */
+  shouldShowContextMenu = computed(() =>
+    this.applicationContextService.showContextMenu(),
+  );
+}

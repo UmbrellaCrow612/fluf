@@ -1,0 +1,37 @@
+<div class="parent">
+  <app-top-bar />
+  <div class="bottom">
+    <app-side-bar />
+
+    <div class="side" id="editor_resize_container">
+      @if (isLeftActive()) {
+        <div class="left">
+          <!---->
+          @if (activeSideBarComponent()) {
+            <ng-container *ngComponentOutlet="activeSideBarComponent()" />
+          }
+          <!---->
+        </div>
+      }
+      <div class="right">
+        @if (showOpenFileTabs()) {
+          <app-open-file-container-tabs />
+        }
+        <div class="main_wrappper" id="main_resize_container">
+          <div class="ng_container_wrapper">
+            <ng-container *ngComponentOutlet="mainCompToRender()" />
+          </div>
+          <!---->
+          @if (showBottom()) {
+            <app-open-file-container-bottom />
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!---->
+@if (isCommandPaletteActive()) {
+  <app-command-palette />
+}

@@ -9,7 +9,7 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 - `npm ci`
 - `npm run start`
 
-Type checking:
+#**Type checking**:
 
 Sometimes types generated from `desktop` change and `npm run start` does not catch them run `tsc --noEmit` for these.
 
@@ -48,5 +48,9 @@ Sometimes types generated from `desktop` change and `npm run start` does not cat
 
 Ui refers to all UI related code for noew it is split up into 
 
-- `editor` - The editor UI code for code edits etc - Which can be a window 
-- `FileX` - A custom file explroer etc - which can be a window 
+## Windows 
+
+Represents a application or part of fluffy that is rendered as part of a whole chrome window - self contained app
+
+- `editor` - The code editor
+- `filex` - The file explorer

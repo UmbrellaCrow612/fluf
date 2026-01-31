@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { EditorComponent } from '../editor/editor/editor.component';
-import { FileXComponent } from '../FileX/file-x.component';
+import { EditorComponent } from '../windows/editor/editor/editor.component';
+import { FileXComponent } from '../windows/FileX/file-x.component';
 
 export const routes: Routes = [
   {

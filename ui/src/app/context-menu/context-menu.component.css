@@ -1,0 +1,20 @@
+.context_menu_dialog::backdrop {
+  background: var(--bg-overlay);
+  backdrop-filter: blur(2px);
+}
+
+.context_menu_dialog {
+  border: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+
+  padding: 0;
+  margin: auto;
+
+  width: 200px;
+  max-height: 400px;
+  overflow: auto;
+
+  border-radius: 12px;
+}

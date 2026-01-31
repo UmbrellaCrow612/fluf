@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.file_x_bottom {
+  flex: 1;
+  padding: 6px 10px; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary); 
+  border-top: 1px solid var(--border-default); 
+  box-shadow: var(--shadow-sm); 
+}
+
+.file_x_bottom .item_count {
+  color: var(--text-primary); 
+}
+
+.file_x_bottom .items_selected {
+  color: var(--text-info);
+  font-weight: 500;
+}
