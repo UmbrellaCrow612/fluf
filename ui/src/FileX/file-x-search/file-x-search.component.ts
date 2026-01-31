@@ -1,13 +1,7 @@
-import {
-  Component,
-  ElementRef,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, ElementRef, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { KeyMaster } from 'umbr-key-master';
 
 @Component({
   selector: 'app-file-x-search',
@@ -22,29 +16,14 @@ export class FileXSearchComponent {
   /** Indicates if the user has clicked search and the input should be visible */
   isSearchInputActive = signal(false);
 
-  /** Some logic logic to bind to key board events */
-  keyMaster = new KeyMaster();
-
-  /** If the user has focus in the search input and they press escape we want to unrender the search input as they no longer want it */
-  onSearchInputEscpae = () => {
-    console.log('ran escpae search input');
-    let input = this.searchInput()?.nativeElement;
-    if (!input) {
-      // not in search mode
-      return;
-    }
-
-    if (document.activeElement === input) {
-      this.hideSearchInput();
-    }
+  /** Runs when the user loses focus in the search input*/
+  onSearchInputBlur = () => {
+    this.hideSearchInput();
   };
 
   /** Displays the search input */
   activeSearchInput = () => {
     this.isSearchInputActive.set(true);
-
-    // we only want to bind key event when the search input is active
-    this.keyMaster.add(['Escape'], this.onSearchInputEscpae);
 
     setTimeout(() => {
       let input = this.searchInput()?.nativeElement;
@@ -62,6 +41,5 @@ export class FileXSearchComponent {
   /** hides the search input if displayed */
   hideSearchInput = () => {
     this.isSearchInputActive.set(false);
-    this.keyMaster.remove(this.onSearchInputEscpae);
   };
 }

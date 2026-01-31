@@ -1,5 +1,5 @@
 @if (isSearchInputActive()) {
-  <input type="text" #searchInput class="search_input" placeholder="search"/>
+  <input type="text" #searchInput class="search_input" placeholder="search" (blur)="onSearchInputBlur()"/>
 }
 
 @if (isSearchInputActive()) {
