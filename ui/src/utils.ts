@@ -1,3 +1,7 @@
+/**
+ * Contains global utils
+ */
+
 import { ElectronApi, EWindow } from './gen/type';
 
 /**
