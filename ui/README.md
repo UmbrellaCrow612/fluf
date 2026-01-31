@@ -50,7 +50,7 @@ Ui refers to all UI related code for noew it is split up into
 
 ## Windows 
 
-Represents a application or part of fluffy that is rendered as part of a whole chrome window 
+Represents a application or part of fluffy that is rendered as part of a whole chrome window - self contained app
 
 - `editor` - The code editor
 - `filex` - The file explorer
