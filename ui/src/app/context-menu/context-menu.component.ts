@@ -48,13 +48,14 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
 
     this.setupEventListeners(dialog);
 
-    // Open dialog after component is set
-    setTimeout(() => {
-      const dialogEl = this.dialog();
-      if (dialogEl) {
-        dialogEl.nativeElement.showModal();
-        this.positionDialog(dialogEl.nativeElement);
-      }
+    // Open dialog and position it after render
+    dialog.showModal();
+
+    // Wait for next frame to ensure content is rendered and we get accurate dimensions
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.positionDialog(dialog);
+      });
     });
   }
 
@@ -107,7 +108,7 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
       console.log('Clicked on backdrop');
       dialog.close();
 
-      this.applicationContextService.showContextMenu.set(false)
+      this.applicationContextService.showContextMenu.set(false);
     }
   };
 
@@ -120,7 +121,12 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
     if (!position) return;
 
     const { mouseX, mouseY } = position;
+
+    // Get the actual dimensions of the dialog content
     const rect = dialog.getBoundingClientRect();
+    const dialogWidth = rect.width;
+    const dialogHeight = rect.height;
+
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
@@ -128,32 +134,30 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
     let top = mouseY;
 
     // Check if dialog goes off screen horizontally
-    if (left + rect.width > viewportWidth) {
-      left = viewportWidth - rect.width - 10; // 10px padding
+    if (left + dialogWidth > viewportWidth) {
+      left = Math.max(10, viewportWidth - dialogWidth - 10); // 10px padding
     }
 
     // Ensure it doesn't go off the left edge
-    if (left < 0) {
-      left = 10;
-    }
+    left = Math.max(10, left);
 
     // Check if dialog goes off screen vertically
-    if (top + rect.height > viewportHeight) {
-      top = viewportHeight - rect.height - 10; // 10px padding
+    if (top + dialogHeight > viewportHeight) {
+      top = Math.max(10, viewportHeight - dialogHeight - 10); // 10px padding
     }
 
     // Ensure it doesn't go off the top edge
-    if (top < 0) {
-      top = 10;
-    }
+    top = Math.max(10, top);
 
-    // Apply positioning
+    // Apply positioning with transform to avoid subpixel issues
     dialog.style.left = `${left}px`;
     dialog.style.top = `${top}px`;
+    dialog.style.margin = '0';
+    dialog.style.transform = 'none';
 
     // Handle overflow if dialog is too big for viewport
-    const maxHeight = viewportHeight - top - 20; // 20px padding
-    if (rect.height > maxHeight) {
+    const maxHeight = viewportHeight - top - 20; // 20px padding from bottom
+    if (dialogHeight > maxHeight) {
       dialog.style.maxHeight = `${maxHeight}px`;
       dialog.style.overflowY = 'auto';
     }
