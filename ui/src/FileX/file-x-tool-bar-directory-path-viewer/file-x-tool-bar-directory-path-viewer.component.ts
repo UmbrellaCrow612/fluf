@@ -1,4 +1,13 @@
-import { Component, ElementRef, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  Signal,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { FileXContextService } from '../file-x-context/file-x-context.service';
 
 /**
  * Displays the current active directory as a clickable input and enter new path or see how nested you've gone
@@ -10,7 +19,14 @@ import { Component, ElementRef, signal, viewChild } from '@angular/core';
   styleUrl: './file-x-tool-bar-directory-path-viewer.component.css',
 })
 export class FileXToolBarDirectoryPathViewerComponent {
-  exampleSelectedDirectory = 'c:/dev/some/other/12/re/r4inn4ifn4ifn4infi4nfnfi4n/rrrr';
+  private readonly fileXContext = inject(FileXContextService);
+
+  /**
+   * Tracks the current actiev directory
+   */
+  activeDirectory: Signal<string> = computed(() =>
+    this.fileXContext.activeDirectory(),
+  );
 
   /** Indicates it it should show the input to edit the directory path */
   showDirectoryPathEditor = signal(false);
@@ -27,7 +43,7 @@ export class FileXToolBarDirectoryPathViewerComponent {
     setTimeout(() => {
       let input = this.directoryPathEditorInput()?.nativeElement;
       if (input) {
-        input.value = this.exampleSelectedDirectory;
+        input.value = this.activeDirectory();
         input.focus();
       }
     }, 10); // delay for angular to render it

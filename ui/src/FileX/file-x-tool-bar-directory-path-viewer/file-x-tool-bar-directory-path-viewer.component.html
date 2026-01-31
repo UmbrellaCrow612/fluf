@@ -1,7 +1,14 @@
 <div class="file_x_dir_viewer">
   @if (showDirectoryPathEditor()) {
-    <input type="text" #input (blur)="switchEditor()" class="directory_input_editor"/>
+    <input
+      type="text"
+      #input
+      (blur)="switchEditor()"
+      class="directory_input_editor"
+    />
   } @else {
-    <span (click)="switchEditor()" class="directory_display">{{ exampleSelectedDirectory }}</span>
+    <span (click)="switchEditor()" class="directory_display">{{
+      activeDirectory()
+    }}</span>
   }
 </div>
