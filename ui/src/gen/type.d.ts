@@ -184,7 +184,7 @@ export type fileNode = {
      */
     size: number;
     /**
-     * - A string of last modified date
+     * - A string of last modified date - uses `.toString`
      */
     lastModified: string;
 };
