@@ -12,8 +12,8 @@ import { FILE_X_STORE_DATA } from '../store-key-constants';
 export class FileXContextService {
   private readonly api = getElectronApi();
 
-  /** Whenever the store changes it eits a event which on changes listens to - whenever this happens wer retrigger / update out local state which causes a
-   * write back - doing so would cause a infite loop, so whenevr a change to local state is happening from on change we ignore it
+  /** Whenever the store changes it emits a event which on changes listens to - whenever this happens wer retrigger / update out local state which causes a
+   * write back - doing so would cause a infite loop, so whenever a change to local state is happening from on change we ignore it
    */
   private settingStateFromOnChange = false;
 
@@ -33,7 +33,6 @@ export class FileXContextService {
         return;
       }
 
-      // Save to store
       console.log('Saving to store', snapshot);
       this.api.storeApi.set(FILE_X_STORE_DATA, JSON.stringify(snapshot));
     });
@@ -49,7 +48,6 @@ export class FileXContextService {
 
         const parsed: FileXStoreData = JSON.parse(newData);
 
-        // Set flag before updating state
         this.settingStateFromOnChange = true;
         this.setState(parsed);
       } catch (error) {
@@ -68,37 +66,32 @@ export class FileXContextService {
     return {
       tabs: this.tabs(),
       activeDirectory: this.activeDirectory(),
-      activeId: this.activeTabId()
+      activeId: this.activeTabId(),
     };
   }
 
   /** Trys to hydrate local signals with stored values */
   private async init() {
-    console.log('File x hydration ran');
     try {
       this.isInitialized = false;
+      this.settingStateFromOnChange = true;
 
       const data = await this.api.storeApi.get(FILE_X_STORE_DATA);
       if (!data) {
         console.error('No data exists for service to hydrate');
-        this.isInitialized = true;
         return;
       }
 
       const parsed: FileXStoreData = JSON.parse(data);
 
-      // Set flag during initial hydration
-      this.settingStateFromOnChange = true;
       this.setState(parsed);
 
-      // Mark as initialized and reset flag
       setTimeout(() => {
         this.settingStateFromOnChange = false;
         this.isInitialized = true;
       }, 0);
     } catch (error) {
       console.error('Failed to load file x session data', error);
-      this.isInitialized = true; // Set even on error to prevent saves
       throw error;
     }
   }
@@ -107,10 +100,10 @@ export class FileXContextService {
   private setState(data: FileXStoreData) {
     this.tabs.set(data.tabs);
     this.activeDirectory.set(data.activeDirectory);
-    this.activeTabId.set(data.activeId)
+    this.activeTabId.set(data.activeId);
   }
 
   readonly tabs = signal<FileXTab[]>([]);
   readonly activeDirectory = signal('');
-  readonly activeTabId = signal("")
+  readonly activeTabId = signal('');
 }
