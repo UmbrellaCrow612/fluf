@@ -1,6 +1,10 @@
 import { inject, Injectable, Type } from '@angular/core';
 import { ApplicationContextService } from '../context/application-context.service';
 
+
+/**
+ * Cords to where the mouse clicked happend - used as a way to position the base context menu under it
+ */
 type Position = {
   mouseX: number;
   mouseY: number;

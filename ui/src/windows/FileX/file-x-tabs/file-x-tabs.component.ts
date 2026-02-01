@@ -6,6 +6,8 @@ import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXTab } from '../types';
 import { filexResetState, filexSetTabItemAsActive } from '../utils';
 import { getElectronApi } from '../../../utils';
+import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
+import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-menu/file-x-tab-item-context-menu.component';
 
 @Component({
   selector: 'app-file-x-tabs',
@@ -16,6 +18,9 @@ import { getElectronApi } from '../../../utils';
 export class FileXTabsComponent {
   private readonly fileXContextService = inject(FileXContextService);
   private readonly api = getElectronApi();
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
+  );
 
   /** Keeps local ref to the tabs - */
   tabs: Signal<FileXTab[]> = computed(() => this.fileXContextService.tabs());
@@ -65,5 +70,21 @@ export class FileXTabsComponent {
     this.fileXContextService.tabs.set(structuredClone(tabs)); // need diff ref
 
     filexSetTabItemAsActive(newTabItem, this.fileXContextService);
+  }
+
+  /**
+   * Display a context menu for a given tab item
+   * @param event The event
+   * @param item The tab item clicked
+   */
+  displayContextMenuForTabItem(event: MouseEvent, item: FileXTab) {
+    this.applicationContextMenuService.open(
+      FileXTabItemContextMenuComponent,
+      {
+        mouseX: event.clientX,
+        mouseY: event.clientY,
+      },
+      item,
+    );
   }
 }

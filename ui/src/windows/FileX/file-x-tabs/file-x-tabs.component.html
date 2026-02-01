@@ -5,6 +5,7 @@
         class="tab_item"
         [class.selected]="selectedTabId() === tab.id"
         (click)="selectedTab(tab)"
+        (contextmenu)="displayContextMenuForTabItem($event, tab)"
       >
         <span class="tab_label">{{ tab.name }}</span>
         <mat-icon

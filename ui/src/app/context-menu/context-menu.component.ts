@@ -9,7 +9,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { ApplicationContextMenuService } from './application-context-menu.service';
-import { ApplicationContextService } from '../context/application-context.service';
 import { NgComponentOutlet } from '@angular/common';
 
 /**
@@ -24,9 +23,6 @@ import { NgComponentOutlet } from '@angular/common';
 export class ContextMenuComponent implements OnInit, OnDestroy {
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
-  );
-  private readonly applicationContextService = inject(
-    ApplicationContextService,
   );
 
   /** Ref to the dialog */
@@ -93,7 +89,7 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
    * Handles when the dialog closes either through backdrop click or esc etc
    */
   private handleDialogClose = () => {
-    this.applicationContextService.showContextMenu.set(false);
+    this.applicationContextMenuService.close();
   };
 
   /**
@@ -113,7 +109,7 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
       console.log('Clicked on backdrop');
       dialog.close();
 
-      this.applicationContextService.showContextMenu.set(false);
+      this.applicationContextMenuService.close();
     }
   };
 
