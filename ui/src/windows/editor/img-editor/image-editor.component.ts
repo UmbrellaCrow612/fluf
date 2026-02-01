@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { EditorContextService } from '../app-context/editor-context.service';
 import { hasImageExtension } from './utils';
-import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
 import { ImageService } from './image.service';
 import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
 import { ImageEditorContextMenuComponent } from './image-editor-context-menu/image-editor-context-menu.component';

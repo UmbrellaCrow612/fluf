@@ -48,15 +48,20 @@ export class ContextMenuComponent implements OnInit, OnDestroy {
 
     this.setupEventListeners(dialog);
 
-    // Open dialog and position it after render
+    // Hide dialog initially
+    dialog.style.opacity = '0';
+    dialog.style.visibility = 'hidden';
+
+    // Open dialog
     dialog.showModal();
 
-    // Wait for next frame to ensure content is rendered and we get accurate dimensions
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        this.positionDialog(dialog);
-      });
-    });
+    setTimeout(() => {
+      this.positionDialog(dialog);
+
+      // Show dialog after positioning
+      dialog.style.opacity = '1';
+      dialog.style.visibility = 'visible';
+    }, 10);
   }
 
   ngOnDestroy(): void {
