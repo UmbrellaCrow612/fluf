@@ -7,8 +7,10 @@
       class="directory_input_editor"
     />
   } @else {
-    <span (click)="switchEditor()" class="directory_display">{{
-      activeDirectory()
-    }}</span>
+    <span (click)="switchEditor()" class="directory_display">
+      @for (child of children(); track $index) {
+        <app-file-x-tool-bar-directory-path-viewer-child [child]="child" />
+      }
+    </span>
   }
 </div>
