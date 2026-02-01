@@ -1,0 +1,47 @@
+.context_menu_item {
+  padding: 8px 12px;
+  font-size: 14px;
+
+  /* Button-specific resets */
+  background: transparent;
+  border: none;
+  outline: none;
+
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+
+  transition: background 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+
+  color: var(--text-primary);
+  border-radius: 4px; 
+}
+
+.context_menu_item:hover:not(.disabled):not(.selected) {
+  background: var(--bg-hover);
+}
+
+.context_menu_item:active:not(.disabled):not(.selected) {
+  background: var(--bg-active);
+}
+
+.context_menu_item.selected {
+  background: var(--bg-selected);
+  color: var(--text-inverse);
+  font-weight: 600;
+}
+
+.context_menu_item.disabled {
+  color: var(--text-tertiary);
+  background: var(--bg-disabled);
+  cursor: not-allowed;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: var(--border-default);
+  margin: 4px 0;
+  opacity: 0.6;
+}
