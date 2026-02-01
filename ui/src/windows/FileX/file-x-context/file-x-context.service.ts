@@ -4,7 +4,8 @@ import { FILE_X_STORE_DATA } from '../store-key-constants';
 import { getElectronApi } from '../../../utils';
 
 /**
- * Stores the file x context in a central place and offers a signal based API
+ * Stores the file x context in a central place and offers a signal based API, this is becuase the given data is stored in a file and read from it then 
+ * hydrates the given exposed signals, changing the given signals will update the local file store.
  */
 @Injectable({
   providedIn: 'root',

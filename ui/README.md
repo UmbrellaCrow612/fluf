@@ -43,6 +43,19 @@ Sometimes types generated from `desktop` change and `npm run start` does not cat
 
 - When creating terminals make sure to not `ctrl c ` the electron processes but quit with the x button to kill all procsses\
 
+- Use `signals` as much as possible for fields as they cause less render cycles for example:
+
+```js
+/** Holds loading state */
+  isLoading = signal(false);
+
+  /** Holds error state  */
+  errorMessage = signal<string | null>(null);
+
+  /** Holds the list of children read from the directory */
+  directoryFileNodes = signal<fileNode[]>([]);
+```
+
 
 # Structure 
 
