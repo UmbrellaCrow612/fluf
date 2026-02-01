@@ -1,0 +1,24 @@
+<div class="file_x_tabs_container">
+  <div class="file_x_tabs scroll_bar">
+    @for (tab of tabs(); track tab.id) {
+      <div
+        class="tab_item"
+        [class.selected]="selectedTabId() === tab.id"
+        (click)="selectedTab(tab)"
+        (contextmenu)="displayContextMenuForTabItem($event, tab)"
+      >
+        <span class="tab_label">{{ tab.name }}</span>
+        <mat-icon
+          class="icon"
+          matTooltip="Close"
+          (click)="removeTab($event, tab)"
+          >close</mat-icon
+        >
+      </div>
+    }
+  </div>
+
+  <button mat-icon-button aria-label="Add a new tab" matTooltip="Add a new tab" (click)="addNewTab()">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

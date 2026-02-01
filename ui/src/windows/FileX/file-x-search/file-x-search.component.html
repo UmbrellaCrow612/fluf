@@ -1,0 +1,23 @@
+@if (isSearchInputActive()) {
+  <input type="text" #searchInput class="search_input" placeholder="search" />
+}
+
+@if (isSearchInputActive()) {
+  <button
+    mat-icon-button
+    aria-label="Close"
+    matTooltip="Close"
+    (click)="hideSearchInput()"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+} @else {
+  <button
+    mat-icon-button
+    aria-label="Search"
+    matTooltip="Search"
+    (click)="activeSearchInput()"
+  >
+    <mat-icon>search</mat-icon>
+  </button>
+}
