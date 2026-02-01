@@ -30,3 +30,18 @@ export type FileXStoreData = {
    * */
   activeId: string;
 };
+
+/**
+ * Represents a a child split from a base path for example `c:/dev/some/other` into a child which is the given path split into sub children
+ * 
+ * ```bash
+ * child one -> c:/dev/
+ * child two -> c:/dev/some/
+ * child three -> c:/dev/some/other
+ * ```
+ */
+export type FileXDirectoryViewChild = {
+  name: string;
+
+  path: string;
+};
