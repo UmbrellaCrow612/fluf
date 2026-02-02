@@ -4,8 +4,10 @@ import { FILE_X_STORE_DATA } from '../store-key-constants';
 import { getElectronApi } from '../../../utils';
 
 /**
- * Stores the file x context in a central place and offers a signal based API, this is becuase the given data is stored in a file and read from it then 
+ * Stores the file x context in a central place and offers a signal based API, this is becuase the given data is stored in a file and read from it then
  * hydrates the given exposed signals, changing the given signals will update the local file store.
+ * 
+ * PERSISTED BETWEEN SESSIONS
  */
 @Injectable({
   providedIn: 'root',
@@ -104,7 +106,18 @@ export class FileXContextService {
     this.activeTabId.set(data.activeId);
   }
 
+  /**
+   * Exposes tabs as a signal - updates to this will be persisted.
+   */
   readonly tabs = signal<FileXTab[]>([]);
+
+  /**
+   * Exposes active dir as a signal - updates to this will be persisted.
+   */
   readonly activeDirectory = signal('');
+
+  /**
+   * Exposes active tab id a signal - updates to this will be persisted.
+   */
   readonly activeTabId = signal('');
 }
