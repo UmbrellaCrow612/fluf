@@ -1,3 +1,8 @@
-<div class="directory_item">
-  {{ fileNode().name }}
+<div class="directory-item" [class.is-directory]="fileNode().isDirectory">
+  <div class="directory-item__icon-wrapper">
+    <mat-icon class="directory-item__icon">
+      {{ fileNode().isDirectory ? "folder" : "insert_drive_file" }}
+    </mat-icon>
+  </div>
+  <span class="directory-item__name">{{ fileNode().name }}</span>
 </div>

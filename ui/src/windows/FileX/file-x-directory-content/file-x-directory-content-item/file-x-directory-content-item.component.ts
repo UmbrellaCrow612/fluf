@@ -1,9 +1,10 @@
 import { Component, input } from '@angular/core';
 import { fileNode } from '../../../../gen/type';
+import { MatIcon } from "@angular/material/icon";
 
 @Component({
   selector: 'app-file-x-directory-content-item',
-  imports: [],
+  imports: [MatIcon],
   templateUrl: './file-x-directory-content-item.component.html',
   styleUrl: './file-x-directory-content-item.component.css',
 })
