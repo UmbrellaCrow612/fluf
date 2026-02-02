@@ -28,6 +28,13 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
         tabs: [tabItemToAdd],
         activeDirectory: dirPath,
         activeId: tabItemToAdd.id,
+        directoryContentViewMode: 'details',
+        groupBy: 'NONE',
+        orderBy: 'ascending',
+        quickAccesses: [],
+        selectedItems: [],
+        showPreviews: false,
+        sortBy: 'name',
       };
 
       await electronApi.storeApi.set(
