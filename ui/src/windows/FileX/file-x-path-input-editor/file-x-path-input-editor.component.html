@@ -1,0 +1,10 @@
+<input
+  type="text"
+  class="path_input_editor"
+  #pathEditorInput
+  (focus)="searchCurrentActiveDirectory()"
+  (input)="searchCurrentActiveDirectory()"
+  (blur)="userFocusLostEvent.emit()"
+/>
+
+<!-- <div>abs pos</div> -->
