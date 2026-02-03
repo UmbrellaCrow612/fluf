@@ -149,36 +149,62 @@ const watchImpl = async (_, fileOrFolderPath) => {
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fuzzyReadDir>}
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fuzzyFindDirectorys>}
  */
-const fuzzyReadDirImpl = async (_, pathLike) => {
+const fuzzyFindDirectorysImpl = async (_, pathLike) => {
   try {
-    const normPath = path.normalize(path.resolve(pathLike));
+    if (!pathLike) pathLike = "."; // default to current dir if empty
 
-    const exists = await pathExists(normPath);
-    if (!exists) {
-      return [];
+    const norm = path.normalize(pathLike);
+    const resolved = path.resolve(norm);
+
+    // Determine the directory to search in and the term to match
+    let baseDir;
+    let searchTerm;
+
+    try {
+      const stats = await fs.stat(resolved);
+      if (stats.isDirectory()) {
+        // If resolved path is an existing directory, search inside it
+        baseDir = resolved;
+        searchTerm = "";
+      } else {
+        // If it's a file or non-existent path, search in its parent dir
+        baseDir = path.dirname(resolved);
+        searchTerm = path.basename(resolved).toLowerCase();
+      }
+    } catch {
+      // If path doesn't exist yet, still try to autocomplete in parent directory
+      baseDir = path.dirname(resolved);
+      searchTerm = path.basename(resolved).toLowerCase();
     }
 
-    const stats = await fs.stat(normPath);
+    let suggestions = [];
 
-    if (!stats.isDirectory()) {
-      logger.warn("fuzzy read cannot be performed for a file path: ", normPath);
-      return [];
+    try {
+      const entries = await fs.readdir(baseDir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const entryName = entry.name.toLowerCase();
+          if (entryName.startsWith(searchTerm)) {
+            suggestions.push(path.join(baseDir, entry.name));
+          }
+        }
+      }
+    } catch (fsError) {
+      logger.error(
+        "Failed to read directory for suggestions: ",
+        baseDir,
+        searchTerm,
+        fsError,
+      );
+      throw fsError;
     }
 
-    const items = await fs.readdir(normPath, {
-      encoding: "utf-8",
-      recursive: false,
-      withFileTypes: true,
-    });
-
-    const fileNodes = await mapDirItemsToFileNodes(normPath, items);
-
-    return fileNodes;
+    return suggestions;
   } catch (error) {
-    logger.error("Failed to fuzzy read path: ", pathLike, error);
-
+    logger.error("Failed to fuzzy read path:", pathLike, error);
     throw error;
   }
 };
@@ -398,6 +424,7 @@ const registerFsListeners = (ipcMain) => {
   ipcMain.handle("fs:exists", existsImpl);
   ipcMain.handle("fs:remove", removeImpl);
   ipcMain.handle("dir:read", readDirImpl);
+  ipcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
   ipcMain.handle("dir:create", createDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
   ipcMain.on("fs:watch", watchImpl);

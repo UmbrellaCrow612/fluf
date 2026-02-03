@@ -10,7 +10,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
-import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
@@ -62,9 +61,9 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
 
   /**
-   * Holds list of items fetched for the given active dir
+   * Holds list of items fetched for the given active dir - which are paths to directorys match the search term
    */
-  items = signal<fileNode[]>([]);
+  items = signal<string[]>([]);
 
   /**
    * Event is emitted from user blurs / un focus the input - means it should unrender this component
@@ -95,7 +94,7 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
 
     this.searchTimeout = setTimeout(() => {
       this.search();
-    }, 100);
+    }, 500);
   }
 
   /**
@@ -121,17 +120,15 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
         return;
       }
 
-      const dirItems = await this.api.fsApi.readDir(activeDir); // we need to make a fuzzy file path finder that doesnt error
-      const directoryOnlyItems = dirItems.filter((x) => x.isDirectory);
+      const dirItems = await this.api.fsApi.fuzzyFindDirectorys(searchTerm);
 
-      // add another filter based on inpout value fuzzy search paths av
-
-      this.items.set(directoryOnlyItems);
+      this.items.set(dirItems);
     } catch (error) {
       console.error('Failed to searhc: ', error);
       this.errorMessage.set('Failed to search');
     } finally {
       this.isLoading.set(false);
+      this.stopSearchTimeout()
     }
   }
 }

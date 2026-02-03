@@ -10,7 +10,24 @@
 <!-- We need to use this becuase we use flex layout for the app and min h and width with overflows auto or scroll and causes clips, angular auto complete append to end 
  of body so bypasses clipping rules -->
 <mat-autocomplete #auto="matAutocomplete">
-  @for (street of items(); track street.path) {
-    <mat-option [value]="street">{{ street.name }}</mat-option>
+  @if (isLoading()) {
+    <mat-option [disabled]="true">Loading</mat-option>
+  }
+
+  <!---->
+
+  @if (!isLoading() && errorMessage()) {
+    <mat-option [disabled]="true">{{ errorMessage() }}</mat-option>
+  }
+
+  <!---->
+  @if (!isLoading() && !errorMessage()) {
+    @for (path of items(); track path) {
+      <mat-option [value]="path" [disabled]="isLoading()">{{
+        path
+      }}</mat-option>
+    } @empty {
+      <mat-option [disabled]="true">No match found</mat-option>
+    }
   }
 </mat-autocomplete>
