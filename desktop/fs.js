@@ -380,7 +380,7 @@ const selectFileImpl = (event) => {
  */
 const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
   try {
-    const _path = path.normalize(fileOrFolderPath);
+    const _path = path.normalize(path.resolve(fileOrFolderPath));
 
     await fs.access(_path);
 

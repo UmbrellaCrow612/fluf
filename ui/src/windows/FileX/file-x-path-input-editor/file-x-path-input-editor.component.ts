@@ -12,6 +12,7 @@ import {
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { getElectronApi } from '../../../utils';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { FileXTab } from '../types';
 
 /**
  * Input that displays the current active directory and when editing it displays possible other directorys that it can be changed to
@@ -128,5 +129,34 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       this.isLoading.set(false);
       this.stopSearchTimeout();
     }
+  }
+
+  /**
+   * Changes the active directory for the given tab thats active and jhaving it's path edityed via the input changed to the new value selected
+   */
+  async changeActiveDirectory() {
+    const newDir = this.pathEditorInput()?.nativeElement.value;
+    if (!newDir) {
+      this.errorMessage.set('Failed to set new active directory');
+      return;
+    }
+
+    const node = await this.api.fsApi.getNode(newDir);
+
+    let newTab: FileXTab = {
+      directory: node.path,
+      id: crypto.randomUUID(),
+      name: node.name,
+    };
+
+    const current = this.fileXContextService.tabs(); // remove the current tab which is the one in the editor and add the new one this is becuase we are changing directorys for the given tab
+    const filtredTabs = current.filter(
+      (x) => x.directory !== this.activeDirectory(),
+    );
+    filtredTabs.push(newTab);
+
+    this.fileXContextService.tabs.set(filtredTabs);
+    this.fileXContextService.activeDirectory.set(newTab.directory);
+    this.fileXContextService.activeTabId.set(newTab.id);
   }
 }
