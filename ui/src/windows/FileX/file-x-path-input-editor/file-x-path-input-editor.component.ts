@@ -115,9 +115,9 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       this.isLoading.set(true);
       this.errorMessage.set(null);
 
-      const activeDir = this.activeDirectory(); // change to input value
-      if (activeDir == '') {
-        this.errorMessage.set('No active directory');
+      const searchTerm = this.pathEditorInput()?.nativeElement.value;
+      if (!searchTerm) {
+        this.errorMessage.set('Input not found');
         return;
       }
 
