@@ -37,10 +37,14 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       input.value = this.activeDirectory();
       input.focus();
     }, 1);
+
+    document.addEventListener('click', this.clickListener, true);
   }
 
   ngOnDestroy(): void {
     this.stopSearchTimeout();
+
+    document.removeEventListener('click', this.clickListener, true);
   }
 
   /**
@@ -130,6 +134,19 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       this.stopSearchTimeout();
     }
   }
+
+  /**
+   * Used to listen to clicks and if the focus is no longer on the input or mat auto complete then it emits a focus lost
+   */
+  private clickListener = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    const input = this.pathEditorInput()?.nativeElement;
+    const panel = document.querySelector('.mat-autocomplete-panel');
+
+    if (target !== input && !panel?.contains(target)) {
+      this.userFocusLostEvent.emit();
+    }
+  };
 
   /**
    * Changes the active directory for the given tab thats active and jhaving it's path edityed via the input changed to the new value selected
