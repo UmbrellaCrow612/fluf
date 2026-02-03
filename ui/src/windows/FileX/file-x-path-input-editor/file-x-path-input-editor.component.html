@@ -4,7 +4,13 @@
   #pathEditorInput
   (focus)="searchCurrentActiveDirectory()"
   (input)="searchCurrentActiveDirectory()"
-  (blur)="userFocusLostEvent.emit()"
+  [matAutocomplete]="auto"
 />
 
-<!-- <div>abs pos</div> -->
+<!-- We need to use this becuase we use flex layout for the app and min h and width with overflows auto or scroll and causes clips, angular auto complete append to end 
+ of body so bypasses clipping rules -->
+<mat-autocomplete #auto="matAutocomplete">
+  @for (street of items(); track street.path) {
+    <mat-option [value]="street">{{ street.name }}</mat-option>
+  }
+</mat-autocomplete>

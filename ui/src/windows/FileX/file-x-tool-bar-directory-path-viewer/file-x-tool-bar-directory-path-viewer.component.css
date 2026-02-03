@@ -9,11 +9,9 @@
   flex: 1;
   min-height: 0;
   min-width: 0;
-  overflow-y: hidden;
   overflow-x: auto;
   white-space: nowrap;
   scrollbar-width: none;
-  -ms-overflow-style: none;
   display: flex;
 }
 

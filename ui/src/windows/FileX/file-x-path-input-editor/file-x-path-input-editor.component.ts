@@ -3,6 +3,7 @@ import {
   computed,
   ElementRef,
   inject,
+  OnDestroy,
   OnInit,
   output,
   signal,
@@ -10,18 +11,21 @@ import {
 } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { fileNode } from '../../../gen/type';
+import { getElectronApi } from '../../../utils';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 /**
  * Input that displays the current active directory and when editing it displays possible other directorys that it can be changed to
  */
 @Component({
   selector: 'app-file-x-path-input-editor',
-  imports: [],
+  imports: [MatAutocompleteModule],
   templateUrl: './file-x-path-input-editor.component.html',
   styleUrl: './file-x-path-input-editor.component.css',
 })
-export class FileXPathInputEditorComponent implements OnInit {
+export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
   private readonly fileXContextService = inject(FileXContextService);
+  private readonly api = getElectronApi();
 
   ngOnInit(): void {
     const input = this.pathEditorInput()?.nativeElement;
@@ -29,11 +33,16 @@ export class FileXPathInputEditorComponent implements OnInit {
       throw new Error('Failed to locate input');
     }
 
-    input.value = this.activeDirectory();
-
     setTimeout(() => {
+      input.value = this.activeDirectory();
       input.focus();
     }, 1);
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
   }
 
   /**
@@ -48,11 +57,6 @@ export class FileXPathInputEditorComponent implements OnInit {
   activeDirectory = computed(() => this.fileXContextService.activeDirectory());
 
   /**
-   * Holds search state
-   */
-  isSearching = signal(false);
-
-  /**
    * Holds error state
    */
   errorMessage = signal<string | null>(null);
@@ -65,32 +69,69 @@ export class FileXPathInputEditorComponent implements OnInit {
   /**
    * Event is emitted from user blurs / un focus the input - means it should unrender this component
    */
-  userFocusLostEvent = output()
+  userFocusLostEvent = output();
+
+  /**
+   * Holds loading items state
+   */
+  isLoading = signal<boolean>(false);
+
+  /**
+   * Holds timeout to run the search logic
+   */
+  private searchTimeout: NodeJS.Timeout | null = null;
+
+  /** Clears the timout made for search */
+  private stopSearchTimeout() {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = null;
+    }
+  }
+
+  /** Creates a new timeout */
+  private startSearchTimeout() {
+    if (this.searchTimeout) return;
+
+    this.searchTimeout = setTimeout(() => {
+      this.search();
+    }, 100);
+  }
 
   /**
    * On call trigger a search for other paths to directorys within the current active dir and display them
    */
   searchCurrentActiveDirectory() {
-    if (this.isSearching()) {
-      return;
-    }
-
-    this.search();
+    this.stopSearchTimeout();
+    this.startSearchTimeout();
   }
-
 
   /**
    * Runs the actual search to get av folders
    */
   private async search() {
     try {
-      this.isSearching.set(true);
+      console.log('Searching for directory item for: ', this.activeDirectory());
+      this.isLoading.set(true);
       this.errorMessage.set(null);
+
+      const activeDir = this.activeDirectory(); // change to input value
+      if (activeDir == '') {
+        this.errorMessage.set('No active directory');
+        return;
+      }
+
+      const dirItems = await this.api.fsApi.readDir(activeDir); // we need to make a fuzzy file path finder that doesnt error
+      const directoryOnlyItems = dirItems.filter((x) => x.isDirectory);
+
+      // add another filter based on inpout value fuzzy search paths av
+
+      this.items.set(directoryOnlyItems);
     } catch (error) {
       console.error('Failed to searhc: ', error);
       this.errorMessage.set('Failed to search');
     } finally {
-      this.isSearching.set(false);
+      this.isLoading.set(false);
     }
   }
 }
