@@ -39,9 +39,7 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
+    this.stopSearchTimeout();
   }
 
   /**
@@ -128,7 +126,7 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       this.errorMessage.set('Failed to search');
     } finally {
       this.isLoading.set(false);
-      this.stopSearchTimeout()
+      this.stopSearchTimeout();
     }
   }
 }
