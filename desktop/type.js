@@ -51,6 +51,14 @@
  * @property {selectFile} selectFile - Allow a user to select a file from the explorer
  * @property {fsGetNode} getNode - Used to fetch a path as a file node
  * @property {fuzzyFindDirectorys} fuzzyFindDirectorys - Pass a path and get a list of possible other directorys you can into 
+ * @property {countItemsInDirectory} countItemsInDirectory - Count the amount of items a directory has - not recusive just the top layer of items count.
+ */
+
+/**
+ * Counts the number of items in a given directory quickly
+ * @callback countItemsInDirectory
+ * @param {string} directoryPath - The path to the directory of who's items you want to get a count for
+ * @returns {Promise<number>} The number of items it has
  */
 
 /**
@@ -236,6 +244,14 @@
  * @property {pathSep} sep - Calls path sep
  * @property {pathJoin} join - Calls path join
  * @property {pathIsabsolute} isAbsolute - Calls path absolute
+ * @property {getRootPath} getRootPath - Get the root path of the system such as  `C:\` or `/` based on the system
+ */
+
+/**
+ * Gets the root path based on the platform for windows it will return somthing like `C:\` and on others like linux
+ * `/`
+ * @callback getRootPath
+ * @returns {Promise<string>} The root path
  */
 
 /**

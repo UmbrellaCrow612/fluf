@@ -4,10 +4,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXTab } from '../types';
-import { filexResetState, filexSetTabItemAsActive } from '../utils';
-import { getElectronApi } from '../../../utils';
+import { filexRemoveTabItem, filexSetTabItemAsActive } from '../utils';
 import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
 import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-menu/file-x-tab-item-context-menu.component';
+import { getElectronApi } from '../../../utils';
 
 @Component({
   selector: 'app-file-x-tabs',
@@ -17,10 +17,10 @@ import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-men
 })
 export class FileXTabsComponent {
   private readonly fileXContextService = inject(FileXContextService);
-  private readonly api = getElectronApi();
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
+  private readonly api = getElectronApi()
 
   /** Keeps local ref to the tabs - */
   tabs: Signal<FileXTab[]> = computed(() => this.fileXContextService.tabs());
@@ -34,20 +34,7 @@ export class FileXTabsComponent {
   removeTab(event: Event, item: FileXTab) {
     event.stopPropagation();
 
-    let filteredTabs = this.tabs().filter((x) => x.id !== item.id);
-
-    if (filteredTabs.length > 0) {
-      let next = filteredTabs[0];
-
-      filexSetTabItemAsActive(next, this.fileXContextService);
-      this.fileXContextService.tabs.set(structuredClone(filteredTabs)); // need a diff ref
-    } else {
-      filexResetState(this.fileXContextService);
-
-      setTimeout(() => {
-        this.api.chromeWindowApi.close();
-      }, 10);
-    }
+    filexRemoveTabItem(item, this.fileXContextService)
   }
 
   /** Changes the active tab and directory to the given item  */
@@ -56,12 +43,15 @@ export class FileXTabsComponent {
   }
 
   /** Adds a new tab item - defaults to home directory and makes it active */
-  addNewTab() {
+  async addNewTab() {
     let tabs = this.tabs();
 
+    let root = await this.api.pathApi.getRootPath() + "\\dev" // make it cross platform 
+    const asNode = await this.api.fsApi.getNode(root)
+
     let newTabItem: FileXTab = {
-      directory: 'home',
-      name: 'Home',
+      directory: asNode.path,
+      name: asNode.name,
       id: crypto.randomUUID(),
     };
 

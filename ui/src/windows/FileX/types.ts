@@ -1,3 +1,5 @@
+import { fileNode } from "../../gen/type";
+
 /**
  * Represents a tab folder opened in file x
  */
@@ -10,6 +12,16 @@ export type FileXTab = {
 
   /** A unique ID  generated with `crypto.randomUUID()` */
   id: string;
+};
+
+/**
+ * Represents data that lives in Memory for file x lifecycle i.e until a refresh
+ */
+export type FileXInMemoryData = {
+  /**
+   * Represents items that have been selected via a click or ctrl click i.e for multiple items
+   */
+  selectedItems: fileNode[];
 };
 
 /**
@@ -61,11 +73,6 @@ export type FileXStoreData = {
    * List of items pinned for quick access
    */
   quickAccesses: FileXQuickAccess[];
-
-  /**
-   * List of items selected i.e clicked
-   */
-  selectedItems: FileXSelectedItem[];
 
   /**
    * Contains back history for specific tabs
@@ -178,16 +185,6 @@ export type FileXDirectoryContentGroupBY =
 export type FileXQuickAccess = {
   /**
    * The path to the directory or item pinned for quick access
-   */
-  path: string;
-};
-
-/**
- * Represents a item / directory selected
- */
-export type FileXSelectedItem = {
-  /**
-   * The path to the selcted item
    */
   path: string;
 };

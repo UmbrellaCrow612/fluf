@@ -3,6 +3,7 @@
  */
 const path = require("path");
 const { logger } = require("./logger");
+const os = require("node:os");
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").normalizePath>}
@@ -57,6 +58,23 @@ const isAbs = (_, p) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").getRootPath>}
+ */
+const getRootPathImpl = () => {
+  // Windows logic
+  if (os.platform() === "win32") {
+    // Get something like "C:\" from current working directory
+    const root = path.parse(process.cwd()).root;
+
+    // Ensure it always ends with a backslash (Windows uses one)
+    return Promise.resolve(root.endsWith("\\") ? root : root + "\\");
+  }
+
+  // Unix-based logic → always "/"
+  return Promise.resolve("/");
+};
+
+/**
  * Register all path listeners
  * @param {import("electron").IpcMain} ipcMain
  */
@@ -66,6 +84,7 @@ const registerPathListeners = (ipcMain) => {
   ipcMain.handle("path:sep", sepImpl);
   ipcMain.handle("path:join", joinImpl);
   ipcMain.handle("path:isabsolute", isAbs);
+  ipcMain.handle("path:root", getRootPathImpl)
 };
 
 module.exports = { registerPathListeners };

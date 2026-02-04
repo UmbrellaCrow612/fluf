@@ -129,6 +129,7 @@ const fsApi = {
   selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
   getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
   fuzzyFindDirectorys: (...args) => ipcRenderer.invoke("dir:fuzzy:find", ...args),
+  countItemsInDirectory: (...args) => ipcRenderer.invoke("dir:items:count", ...args),
 
   onChange: (path, callback) => {
     /**
@@ -165,6 +166,7 @@ const pathApi = {
   sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
   join: (...args) => ipcRenderer.invoke("path:join", ...args),
   isAbsolute: (...args) => ipcRenderer.invoke("path:isabsolute", ...args),
+  getRootPath: (...args) => ipcRenderer.invoke("path:root", ...args)
 };
 
 /** @type {import("./type").shellApi} */

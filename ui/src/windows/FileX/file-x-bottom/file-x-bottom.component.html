@@ -1,4 +1,10 @@
 <div class="file_x_bottom">
-  <span class="item_count"> 1 items </span>
-  <span class="items_selected">1 items selcted 230K</span>
+  <span class="item_count"> {{ currentItemCountOfDirectory() }} items </span>
+
+  @if (selectedItemsCount() > 0) {
+    <span class="items_selected"
+      >{{ selectedItemsCount() }} items selected
+      {{ totalSizeOfSelectedItems() }}</span
+    >
+  }
 </div>

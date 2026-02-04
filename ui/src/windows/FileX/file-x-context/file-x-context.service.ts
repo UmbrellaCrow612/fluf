@@ -7,7 +7,6 @@ import {
   FileXDirectoryContentViewMode,
   FileXForwardHistoryItem,
   FileXQuickAccess,
-  FileXSelectedItem,
   FileXStoreData,
   FileXTab,
 } from '../types';
@@ -87,7 +86,6 @@ export class FileXContextService {
       groupBy: this.groupBy(),
       orderBy: this.orderBy(),
       quickAccesses: this.quickAccesses(),
-      selectedItems: this.selectedItems(),
       showPreviews: this.showPreviews(),
       sortBy: this.sortBy(),
       backHistoryItems: this.backHistoryItems(),
@@ -121,7 +119,11 @@ export class FileXContextService {
     }
   }
 
-  /** Sets local values of signals to those parsed from the store */
+  /**
+   * Sets local values of signals to those parsed from the store i.e hydrating them with the previous values
+   *
+   * NOTE: Whenver you add new fields make sure to re hydrate them here by setting there values like the rest, not doing so will lead to data being lost.
+   */
   private setState(data: FileXStoreData) {
     this.tabs.set(data.tabs);
     this.activeDirectory.set(data.activeDirectory);
@@ -132,7 +134,8 @@ export class FileXContextService {
     this.groupBy.set(data.groupBy);
     this.showPreviews.set(data.showPreviews);
     this.quickAccesses.set(data.quickAccesses);
-    this.selectedItems.set(data.selectedItems);
+    this.backHistoryItems.set(data.backHistoryItems);
+    this.forwardHistoryItems.set(data.forwardHistoryItems);
   }
 
   /**
@@ -170,11 +173,6 @@ export class FileXContextService {
    * Exposes quic access list - updates to this will be persisted
    */
   readonly quickAccesses = signal<FileXQuickAccess[]>([]);
-
-  /**
-   * Exposes list of selected item - updates to this will be persisted
-   */
-  readonly selectedItems = signal<FileXSelectedItem[]>([]);
 
   /**
    * Exposes if it should show previews - updates to this will be persisted
