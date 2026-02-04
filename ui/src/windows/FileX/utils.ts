@@ -4,7 +4,28 @@ import { FileXContextService } from './file-x-context/file-x-context.service';
 import { FILE_X_STORE_DATA } from './store-key-constants';
 import { FileXStoreData, FileXTab } from './types';
 
+/**
+ * Options we can pass to change it's behaviour
+ */
+type changeActiveDirectoryOptions = {
+  /**
+   * Indicates if the call for change should persisted the previous directory to the change history buffer
+   */
+  addToBackHistory: boolean;
+
+  /**
+   * Indicates if the call for change should add the directory to a forward history buffer
+   */
+  addToForwardHIstory: boolean;
+};
+
 const electronApi = getElectronApi();
+
+/** Default options for every call  */
+const defaultChangeDirectoryOptions: changeActiveDirectoryOptions = {
+  addToBackHistory: true,
+  addToForwardHIstory: false,
+};
 
 /**
  * Opens the given file in file x - if it was already open in the previous session then it is not opened again.
@@ -93,21 +114,17 @@ export function filexResetState(service: FileXContextService) {
 }
 
 /**
- * Used the change the active directory i.e current tab to the new directory tab - it will replace the previous active tab with the new one.
- * Typically used for i.e going into a folder
+ * Used the change the active directory i.e current tab to the new directory tab - it will change the active directory and other fields needed.
+ * Typically used for i.e going into a folder or other use cases by passing options such as going back in history or other usecases
  * @param newDirectory The new directory to set as the new active one
  * @param service The helper service
  */
 export async function ChangeActiveDirectory(
   newDirectory: string,
-  service: FileXContextService, // todo add a option called persist back history
+  service: FileXContextService,
+  options: Partial<changeActiveDirectoryOptions> = {},
 ) {
-  if (!newDirectory) {
-    throw new Error('No directory passed');
-  }
-  if (!service) {
-    throw new Error('no service passed');
-  }
+  const _options = { ...defaultChangeDirectoryOptions, ...options };
 
   const asNode = await electronApi.fsApi.getNode(newDirectory);
   if (!asNode.isDirectory) {
@@ -129,20 +146,39 @@ export async function ChangeActiveDirectory(
   service.tabs.set(structuredClone(tabs));
   service.activeDirectory.set(activeTab.directory);
 
-  // ---- HISTORY UPDATE
-  const backHistoryItems = service.backHistoryItems();
-  const existing = backHistoryItems.find((x) => x.tabId === activeTabId);
+  if (_options.addToBackHistory) {
+    const backHistoryItems = service.backHistoryItems();
+    const existing = backHistoryItems.find((x) => x.tabId === activeTabId);
 
-  if (!existing) {
-    backHistoryItems.push({
-      history: [previousActiveDirectory],
-      tabId: activeTab.id,
-    });
-  } else {
-    backHistoryItems
-      .find((x) => x.tabId == activeTab.id)
-      ?.history.push(previousActiveDirectory);
+    if (!existing) {
+      backHistoryItems.push({
+        history: [previousActiveDirectory],
+        tabId: activeTab.id,
+      });
+    } else {
+      backHistoryItems
+        .find((x) => x.tabId == activeTab.id)
+        ?.history.push(previousActiveDirectory);
+    }
+
+    service.backHistoryItems.set(structuredClone(backHistoryItems));
   }
 
-  service.backHistoryItems.set(structuredClone(backHistoryItems));
+  if (_options.addToForwardHIstory) {
+    const forwardHistoryItems = service.forwardHistoryItems();
+    const existing = forwardHistoryItems.find((x) => x.tabId == activeTabId);
+
+    if (!existing) {
+      forwardHistoryItems.push({
+        history: [previousActiveDirectory],
+        tabId: activeTab.id,
+      });
+    } else {
+      forwardHistoryItems
+        .find((x) => x.tabId == activeTab.id)
+        ?.history.push(previousActiveDirectory);
+    }
+
+    service.forwardHistoryItems.set(structuredClone(forwardHistoryItems));
+  }
 }
