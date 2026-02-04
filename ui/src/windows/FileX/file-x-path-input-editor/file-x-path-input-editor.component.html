@@ -9,7 +9,10 @@
 
 <!-- We need to use this becuase we use flex layout for the app and min h and width with overflows auto or scroll and causes clips, angular auto complete append to end 
  of body so bypasses clipping rules -->
-<mat-autocomplete #auto="matAutocomplete" (optionSelected)="changeActiveDirectory()" >
+<mat-autocomplete
+  #auto="matAutocomplete"
+  (optionSelected)="changeActiveDirectory()"
+>
   @if (isLoading()) {
     <mat-option [disabled]="true">Loading</mat-option>
   }

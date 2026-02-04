@@ -87,3 +87,38 @@ export function filexResetState(service: FileXContextService) {
   service.tabs.set([]);
   service.activeTabId.set('');
 }
+
+/**
+ * Used the change the active directory i.e current tab to the new directory tab - it will replace the previous active tab with the new one.
+ * Typically used for i.e going into a folder
+ * @param newDirectory The new directory to set as the new active one
+ * @param service The helper service
+ */
+export async function ChangeActiveDirectory(
+  newDirectory: string,
+  service: FileXContextService,
+) {
+  if (!newDirectory) {
+    throw new Error('No directory passed');
+  }
+  if (!service) {
+    throw new Error('no service passed');
+  }
+
+  const activeTabId = service.activeTabId();
+  const node = await electronApi.fsApi.getNode(newDirectory);
+
+  let newTab: FileXTab = {
+    directory: node.path,
+    id: crypto.randomUUID(),
+    name: node.name,
+  };
+
+  const currentTabs = service.tabs();
+  const filtredTabs = currentTabs.filter((x) => x.id !== activeTabId);
+  filtredTabs.push(newTab);
+
+  service.tabs.set(filtredTabs);
+  service.activeDirectory.set(newTab.directory);
+  service.activeTabId.set(newTab.id);
+}

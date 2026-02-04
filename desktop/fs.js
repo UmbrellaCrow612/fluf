@@ -182,7 +182,11 @@ const fuzzyFindDirectorysImpl = async (_, pathLike) => {
     let suggestions = [];
 
     try {
-      const entries = await fs.readdir(baseDir, { withFileTypes: true });
+      const entries = await fs.readdir(baseDir, {
+        withFileTypes: true,
+        encoding: "utf-8",
+        recursive: false,
+      });
 
       for (const entry of entries) {
         if (entry.isDirectory()) {

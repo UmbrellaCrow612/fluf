@@ -13,6 +13,7 @@ import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { getElectronApi } from '../../../utils';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FileXTab } from '../types';
+import { ChangeActiveDirectory } from '../utils';
 
 /**
  * Input that displays the current active directory and when editing it displays possible other directorys that it can be changed to
@@ -37,14 +38,10 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       input.value = this.activeDirectory();
       input.focus();
     }, 1);
-
-    document.addEventListener('click', this.clickListener, true);
   }
 
   ngOnDestroy(): void {
     this.stopSearchTimeout();
-
-    document.removeEventListener('click', this.clickListener, true);
   }
 
   /**
@@ -136,19 +133,6 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Used to listen to clicks and if the focus is no longer on the input or mat auto complete then it emits a focus lost
-   */
-  private clickListener = (event: MouseEvent) => {
-    const target = event.target as HTMLElement;
-    const input = this.pathEditorInput()?.nativeElement;
-    const panel = document.querySelector('.mat-autocomplete-panel');
-
-    if (target !== input && !panel?.contains(target)) {
-      this.userFocusLostEvent.emit();
-    }
-  };
-
-  /**
    * Changes the active directory for the given tab thats active and jhaving it's path edityed via the input changed to the new value selected
    */
   async changeActiveDirectory() {
@@ -158,22 +142,8 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const node = await this.api.fsApi.getNode(newDir);
+    ChangeActiveDirectory(newDir, this.fileXContextService);
 
-    let newTab: FileXTab = {
-      directory: node.path,
-      id: crypto.randomUUID(),
-      name: node.name,
-    };
-
-    const current = this.fileXContextService.tabs(); // remove the current tab which is the one in the editor and add the new one this is becuase we are changing directorys for the given tab
-    const filtredTabs = current.filter(
-      (x) => x.directory !== this.activeDirectory(),
-    );
-    filtredTabs.push(newTab);
-
-    this.fileXContextService.tabs.set(filtredTabs);
-    this.fileXContextService.activeDirectory.set(newTab.directory);
-    this.fileXContextService.activeTabId.set(newTab.id);
+    this.userFocusLostEvent.emit();
   }
 }
