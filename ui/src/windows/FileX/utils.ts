@@ -102,6 +102,42 @@ export function filexSetTabItemAsActive(
 }
 
 /**
+ * Removes a tab item from the tabs and also any related state with it and then trys to put the next aviable tab as active, if it cannot it will close the application
+ * @param item The tab itemn to remove
+ * @param service The service
+ */
+export function filexRemoveTabItem(
+  item: FileXTab,
+  service: FileXContextService,
+) {
+  let filteredTabs = service.tabs().filter((x) => x.id !== item.id);
+
+  if (filteredTabs.length > 0) {
+    let next = filteredTabs[0];
+
+    filexSetTabItemAsActive(next, service);
+    service.tabs.set(structuredClone(filteredTabs));
+
+    // remove any history for it
+    const forwardHistoryFiltered = service
+      .forwardHistoryItems()
+      .filter((x) => x.tabId !== item.id);
+    service.forwardHistoryItems.set(structuredClone(forwardHistoryFiltered));
+
+    const backHistoryFiltered = service
+      .backHistoryItems()
+      .filter((x) => x.tabId !== item.id);
+    service.backHistoryItems.set(structuredClone(backHistoryFiltered));
+  } else {
+    filexResetState(service);
+
+    setTimeout(() => {
+      electronApi.chromeWindowApi.close();
+    }, 10);
+  }
+}
+
+/**
  * Used to reset the state of file x service fields
  * @param service The service
  */

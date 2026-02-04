@@ -1,4 +1,12 @@
-import { Component, computed, inject, signal, Signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  Signal,
+} from '@angular/core';
 import { FileXToolBarDirectoryPathViewerComponent } from '../file-x-tool-bar-directory-path-viewer/file-x-tool-bar-directory-path-viewer.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,6 +15,7 @@ import { FileXSearchComponent } from '../file-x-search/file-x-search.component';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXBackHistoryItem, FileXForwardHistoryItem } from '../types';
 import { ChangeActiveDirectory } from '../utils';
+import { getElectronApi } from '../../../utils';
 
 @Component({
   selector: 'app-file-x-tool-bar',
@@ -22,6 +31,54 @@ import { ChangeActiveDirectory } from '../utils';
 })
 export class FileXToolBarComponent {
   private readonly fileXContextService = inject(FileXContextService);
+  private readonly api = getElectronApi();
+
+  constructor() {
+    /**
+     * Runs each time active dir changes and compouted if it can go up to the parent directory if it exists or is no longer root
+     */
+    effect(async () => {
+      console.log('FileXToolBarComponent effect ran');
+      let activeDir = this.fileXContextService.activeDirectory(); // by reading this we re trigger this each time it changes
+      const asNode = await this.api.fsApi.getNode(activeDir);
+      if (this.isRootPath(asNode.path)) {
+        this.shouldCanGoUpADirecoryBeDisabled.set(true);
+      } else {
+        this.shouldCanGoUpADirecoryBeDisabled.set(false);
+      }
+    });
+  }
+
+  /**
+   * Checks if the provided path is `just` a root path
+   */
+  private isRootPath(path: string): boolean {
+    if (!path || path.length === 0) {
+      return false;
+    }
+
+    // Normalize the path by removing trailing slashes/backslashes
+    const normalizedPath = path.replace(/[/\\]+$/, '');
+
+    // Windows root paths: C:, D:, etc. (with or without trailing slash)
+    // Matches: C:, C:\, D:, D:\, etc.
+    if (/^[a-zA-Z]:$/.test(normalizedPath)) {
+      return true;
+    }
+
+    // Unix root path: / only
+    if (normalizedPath === '' && path.startsWith('/')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Dictated by UI side by reading the current active dir and computing if it can go up from there if it can i.e has a parent directory then this
+   * is changed to allow it else not
+   */
+  shouldCanGoUpADirecoryBeDisabled = signal(false);
 
   /**
    * Keeps track of the back history items
@@ -124,5 +181,22 @@ export class FileXToolBarComponent {
       addToBackHistory: true,
       addToForwardHIstory: false,
     });
+  }
+
+  /**
+   * If the user can go up a directory to it's parent then it will
+   */
+  async goUpToParentDirectory() {
+    if (this.shouldCanGoUpADirecoryBeDisabled()) {
+      throw new Error('Cannot go up');
+    }
+
+    const activeDir = this.fileXContextService.activeDirectory();
+    const asNode = await this.api.fsApi.getNode(activeDir);
+    if (!asNode.isDirectory) {
+      throw new Error('Provided path is not a directory');
+    }
+
+    ChangeActiveDirectory(asNode.parentPath, this.fileXContextService);
   }
 }

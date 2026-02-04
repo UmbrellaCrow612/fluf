@@ -22,6 +22,8 @@
       mat-icon-button
       aria-label="Go upward in directory"
       matTooltip="Upward"
+      [disabled]="shouldCanGoUpADirecoryBeDisabled()"
+      (click)="goUpToParentDirectory()"
     >
       <mat-icon>keyboard_arrow_up</mat-icon>
     </button>

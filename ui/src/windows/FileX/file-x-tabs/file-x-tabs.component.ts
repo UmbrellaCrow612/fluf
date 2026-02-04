@@ -4,8 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXTab } from '../types';
-import { filexResetState, filexSetTabItemAsActive } from '../utils';
-import { getElectronApi } from '../../../utils';
+import { filexRemoveTabItem, filexSetTabItemAsActive } from '../utils';
 import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
 import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-menu/file-x-tab-item-context-menu.component';
 
@@ -17,7 +16,6 @@ import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-men
 })
 export class FileXTabsComponent {
   private readonly fileXContextService = inject(FileXContextService);
-  private readonly api = getElectronApi();
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
@@ -34,20 +32,7 @@ export class FileXTabsComponent {
   removeTab(event: Event, item: FileXTab) {
     event.stopPropagation();
 
-    let filteredTabs = this.tabs().filter((x) => x.id !== item.id);
-
-    if (filteredTabs.length > 0) {
-      let next = filteredTabs[0];
-
-      filexSetTabItemAsActive(next, this.fileXContextService);
-      this.fileXContextService.tabs.set(structuredClone(filteredTabs)); // need a diff ref
-    } else {
-      filexResetState(this.fileXContextService);
-
-      setTimeout(() => {
-        this.api.chromeWindowApi.close();
-      }, 10);
-    }
+    filexRemoveTabItem(item, this.fileXContextService)
   }
 
   /** Changes the active tab and directory to the given item  */
