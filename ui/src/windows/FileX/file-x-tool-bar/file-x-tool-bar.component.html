@@ -1,6 +1,6 @@
 <div class="file_x_tool_bar">
   <div class="history_buttons">
-    <button mat-icon-button aria-label="Go back in history" matTooltip="Back">
+    <button mat-icon-button aria-label="Go back in history" matTooltip="Back" [disabled]="shouldBackHistoryBeDisabled()" (click)="goBackInHistory()">
       <mat-icon>keyboard_arrow_left</mat-icon>
     </button>
     <button

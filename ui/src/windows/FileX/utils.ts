@@ -27,7 +27,7 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
       const sessionData: FileXStoreData = {
         tabs: [tabItemToAdd],
         activeDirectory: dirPath,
-        activeId: tabItemToAdd.id,
+        activeTabId: tabItemToAdd.id,
         directoryContentViewMode: 'details',
         groupBy: 'NONE',
         orderBy: 'ascending',
@@ -35,6 +35,8 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
         selectedItems: [],
         showPreviews: false,
         sortBy: 'name',
+        backHistoryItems: [],
+        forwardHistoryItems: [],
       };
 
       await electronApi.storeApi.set(
@@ -51,7 +53,7 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
     if (!alreadyOpen) {
       previousData.tabs.push(tabItemToAdd);
       previousData.activeDirectory = tabItemToAdd.directory;
-      previousData.activeId = tabItemToAdd.id;
+      previousData.activeTabId = tabItemToAdd.id;
     }
 
     await electronApi.storeApi.set(
@@ -86,6 +88,8 @@ export function filexResetState(service: FileXContextService) {
   service.activeDirectory.set('');
   service.tabs.set([]);
   service.activeTabId.set('');
+  service.backHistoryItems.set([]);
+  service.forwardHistoryItems.set([]);
 }
 
 /**
@@ -96,7 +100,7 @@ export function filexResetState(service: FileXContextService) {
  */
 export async function ChangeActiveDirectory(
   newDirectory: string,
-  service: FileXContextService,
+  service: FileXContextService, // todo add a option called persist back history
 ) {
   if (!newDirectory) {
     throw new Error('No directory passed');
@@ -105,20 +109,40 @@ export async function ChangeActiveDirectory(
     throw new Error('no service passed');
   }
 
+  const asNode = await electronApi.fsApi.getNode(newDirectory);
+  if (!asNode.isDirectory) {
+    throw new Error(
+      'Passed a non directory path to be set as the active directory',
+    );
+  }
+
+  const previousActiveDirectory = service.activeDirectory();
   const activeTabId = service.activeTabId();
-  const node = await electronApi.fsApi.getNode(newDirectory);
+  const tabs = service.tabs();
+  const activeTab = tabs.find((x) => x.id == activeTabId);
+  if (!activeTab) {
+    throw new Error('Invalid state of data');
+  }
+  activeTab.directory = asNode.path;
+  activeTab.name = asNode.name;
 
-  let newTab: FileXTab = {
-    directory: node.path,
-    id: crypto.randomUUID(),
-    name: node.name,
-  };
+  service.tabs.set(structuredClone(tabs));
+  service.activeDirectory.set(activeTab.directory);
 
-  const currentTabs = service.tabs();
-  const filtredTabs = currentTabs.filter((x) => x.id !== activeTabId);
-  filtredTabs.push(newTab);
+  // ---- HISTORY UPDATE
+  const backHistoryItems = service.backHistoryItems();
+  const existing = backHistoryItems.find((x) => x.tabId === activeTabId);
 
-  service.tabs.set(filtredTabs);
-  service.activeDirectory.set(newTab.directory);
-  service.activeTabId.set(newTab.id);
+  if (!existing) {
+    backHistoryItems.push({
+      history: [previousActiveDirectory],
+      tabId: activeTab.id,
+    });
+  } else {
+    backHistoryItems
+      .find((x) => x.tabId == activeTab.id)
+      ?.history.push(previousActiveDirectory);
+  }
+
+  service.backHistoryItems.set(structuredClone(backHistoryItems));
 }

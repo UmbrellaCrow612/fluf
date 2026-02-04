@@ -30,7 +30,7 @@ export type FileXStoreData = {
    * The id of the tab to show - This is a `crypto.randomUUID()`,
    * this is done becuase multiple tabs can refer to the same directory and we need a unique way to id them
    * */
-  activeId: string;
+  activeTabId: string;
 
   /**
    * Holds the view the directory content will be rendered such as tiles, details etc
@@ -66,6 +66,48 @@ export type FileXStoreData = {
    * List of items selected i.e clicked
    */
   selectedItems: FileXSelectedItem[];
+
+  /**
+   * Contains back history for specific tabs
+   */
+  backHistoryItems: FileXBackHistoryItem[];
+
+  /**
+   * Contains forward history for specific tabs
+   */
+  forwardHistoryItems: FileXForwardHistoryItem[];
+};
+
+/**
+ * Represents a history item
+ */
+export type FileXBackHistoryItem = {
+  /**
+   * The specific tab it is for
+   */
+  tabId: string;
+
+  /**
+   * Contains a list of directory paths to go back to i.e back history - if you go into a directory then the previous directory is aded as a possible back history
+   * upon going back remove said item from back history and add it to forward history
+   */
+  history: string[];
+};
+
+/**
+ * Represents forward history for a specific tab
+ */
+export type FileXForwardHistoryItem = {
+  /**
+   * The specific tab it is for
+   */
+  tabId: string;
+
+  /**
+   * Contains a list of directory paths that have been added through going back in history to a previous psath the path beofre it went back is added a possible forward
+   * history item i.e go forward back to it, upon going forward back to it remove said item
+   */
+  history: string[];
 };
 
 /**

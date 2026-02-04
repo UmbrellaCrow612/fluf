@@ -1,9 +1,11 @@
 import { effect, Injectable, signal } from '@angular/core';
 import {
+  FileXBackHistoryItem,
   FileXDirectoryContentGroupBY,
   FileXDirectoryContentOrderBy,
   FileXDirectoryContentSortBy,
   FileXDirectoryContentViewMode,
+  FileXForwardHistoryItem,
   FileXQuickAccess,
   FileXSelectedItem,
   FileXStoreData,
@@ -80,7 +82,7 @@ export class FileXContextService {
     return {
       tabs: this.tabs(),
       activeDirectory: this.activeDirectory(),
-      activeId: this.activeTabId(),
+      activeTabId: this.activeTabId(),
       directoryContentViewMode: this.directoryContentViewMode(),
       groupBy: this.groupBy(),
       orderBy: this.orderBy(),
@@ -88,6 +90,8 @@ export class FileXContextService {
       selectedItems: this.selectedItems(),
       showPreviews: this.showPreviews(),
       sortBy: this.sortBy(),
+      backHistoryItems: this.backHistoryItems(),
+      forwardHistoryItems: this.forwardHistoryItems(),
     };
   }
 
@@ -121,7 +125,7 @@ export class FileXContextService {
   private setState(data: FileXStoreData) {
     this.tabs.set(data.tabs);
     this.activeDirectory.set(data.activeDirectory);
-    this.activeTabId.set(data.activeId);
+    this.activeTabId.set(data.activeTabId);
     this.directoryContentViewMode.set(data.directoryContentViewMode);
     this.sortBy.set(data.sortBy);
     this.orderBy.set(data.orderBy);
@@ -181,4 +185,14 @@ export class FileXContextService {
    * Exposes how the dir content should be sorted by - updates to this will be persisted
    */
   readonly sortBy = signal<FileXDirectoryContentSortBy>('name');
+
+  /**
+   * Exposes the back history which is a list of tabs and there back history - updates to this will be persisted
+   */
+  readonly backHistoryItems = signal<FileXBackHistoryItem[]>([]);
+
+  /**
+   * Exposes the forward history which is a list of tabs and there forward history - updates to this will be persisted
+   */
+  readonly forwardHistoryItems = signal<FileXForwardHistoryItem[]>([]);
 }
