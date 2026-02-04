@@ -121,7 +121,11 @@ export class FileXContextService {
     }
   }
 
-  /** Sets local values of signals to those parsed from the store */
+  /**
+   * Sets local values of signals to those parsed from the store i.e hydrating them with the previous values
+   *
+   * NOTE: Whenver you add new fields make sure to re hydrate them here by setting there values like the rest, not doing so will lead to data being lost.
+   */
   private setState(data: FileXStoreData) {
     this.tabs.set(data.tabs);
     this.activeDirectory.set(data.activeDirectory);
@@ -133,6 +137,8 @@ export class FileXContextService {
     this.showPreviews.set(data.showPreviews);
     this.quickAccesses.set(data.quickAccesses);
     this.selectedItems.set(data.selectedItems);
+    this.backHistoryItems.set(data.backHistoryItems);
+    this.forwardHistoryItems.set(data.forwardHistoryItems);
   }
 
   /**
