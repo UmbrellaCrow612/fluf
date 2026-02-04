@@ -19,9 +19,12 @@ export class FileXDirectoryContentComponent {
 
   constructor() {
     effect(async () => {
+      console.log("FileXDirectoryContentComponent effect ran")
       // whenever the active dir changes re render items
       let activeDirectory = this.fileXContextService.activeDirectory();
       await this.displayDirectoryContent(activeDirectory);
+
+      this.fileXContextService.selectedItems.set([]); // reset selected items
     });
   }
 

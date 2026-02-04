@@ -147,6 +147,7 @@ export function filexResetState(service: FileXContextService) {
   service.activeTabId.set('');
   service.backHistoryItems.set([]);
   service.forwardHistoryItems.set([]);
+  service.selectedItems.set([])
 }
 
 /**

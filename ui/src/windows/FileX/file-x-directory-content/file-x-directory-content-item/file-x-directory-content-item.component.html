@@ -1,4 +1,10 @@
-<div class="directory-item" [class.is-directory]="fileNode().isDirectory" (click)="selectedItem()" (dblclick)="goIntoItem()">
+<div
+  class="directory-item"
+  [class.is_selected]="isSelected()"
+  [class.is-directory]="fileNode().isDirectory"
+  (click)="selectedItem($event)"
+  (dblclick)="goIntoItem()"
+>
   <div class="directory-item__icon-wrapper">
     <mat-icon class="directory-item__icon">
       {{ fileNode().isDirectory ? "folder" : "insert_drive_file" }}
