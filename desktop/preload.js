@@ -165,6 +165,7 @@ const pathApi = {
   sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
   join: (...args) => ipcRenderer.invoke("path:join", ...args),
   isAbsolute: (...args) => ipcRenderer.invoke("path:isabsolute", ...args),
+  getRootPath: (...args) => ipcRenderer.invoke("path:root", ...args)
 };
 
 /** @type {import("./type").shellApi} */

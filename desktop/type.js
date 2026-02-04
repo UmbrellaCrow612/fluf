@@ -236,6 +236,14 @@
  * @property {pathSep} sep - Calls path sep
  * @property {pathJoin} join - Calls path join
  * @property {pathIsabsolute} isAbsolute - Calls path absolute
+ * @property {getRootPath} getRootPath - Get the root path of the system such as  `C:\` or `/` based on the system
+ */
+
+/**
+ * Gets the root path based on the platform for windows it will return somthing like `C:\` and on others like linux
+ * `/`
+ * @callback getRootPath
+ * @returns {Promise<string>} The root path
  */
 
 /**

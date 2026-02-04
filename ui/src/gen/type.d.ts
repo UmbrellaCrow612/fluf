@@ -270,7 +270,16 @@ export type pathApi = {
      * - Calls path absolute
      */
     isAbsolute: pathIsabsolute;
+    /**
+     * - Get the root path of the system such as  `C:\` or `/` based on the system
+     */
+    getRootPath: getRootPath;
 };
+/**
+ * Gets the root path based on the platform for windows it will return somthing like `C:\` and on others like linux
+ * `/`
+ */
+export type getRootPath = () => Promise<string>;
 /**
  * Calls path absolute
  */

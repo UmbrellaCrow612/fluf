@@ -7,6 +7,7 @@ import { FileXTab } from '../types';
 import { filexRemoveTabItem, filexSetTabItemAsActive } from '../utils';
 import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
 import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-menu/file-x-tab-item-context-menu.component';
+import { getElectronApi } from '../../../utils';
 
 @Component({
   selector: 'app-file-x-tabs',
@@ -19,6 +20,7 @@ export class FileXTabsComponent {
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
+  private readonly api = getElectronApi()
 
   /** Keeps local ref to the tabs - */
   tabs: Signal<FileXTab[]> = computed(() => this.fileXContextService.tabs());
@@ -41,12 +43,15 @@ export class FileXTabsComponent {
   }
 
   /** Adds a new tab item - defaults to home directory and makes it active */
-  addNewTab() {
+  async addNewTab() {
     let tabs = this.tabs();
 
+    let root = await this.api.pathApi.getRootPath() + "\\dev" // make it cross platform 
+    const asNode = await this.api.fsApi.getNode(root)
+
     let newTabItem: FileXTab = {
-      directory: 'home',
-      name: 'Home',
+      directory: asNode.path,
+      name: asNode.name,
       id: crypto.randomUUID(),
     };
 

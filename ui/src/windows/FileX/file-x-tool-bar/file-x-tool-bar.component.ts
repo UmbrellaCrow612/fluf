@@ -53,21 +53,30 @@ export class FileXToolBarComponent {
    * Checks if the provided path is `just` a root path
    */
   private isRootPath(path: string): boolean {
-    if (!path || path.length === 0) {
-      return false;
-    }
+    if (!path || path.length === 0) return false;
 
-    // Normalize the path by removing trailing slashes/backslashes
-    const normalizedPath = path.replace(/[/\\]+$/, '');
+    // Normalize trailing slash(es)
+    const normalized = path.replace(/[/\\]+$/, '');
 
-    // Windows root paths: C:, D:, etc. (with or without trailing slash)
-    // Matches: C:, C:\, D:, D:\, etc.
-    if (/^[a-zA-Z]:$/.test(normalizedPath)) {
+    // --- WINDOWS ---
+    // Check for root like "C:"
+    if (/^[a-zA-Z]:$/.test(normalized)) {
       return true;
     }
 
-    // Unix root path: / only
-    if (normalizedPath === '' && path.startsWith('/')) {
+    // Check for exactly one level below root:  C:\something
+    if (/^[a-zA-Z]:[\\/][^\\/]+$/.test(normalized)) {
+      return true;
+    }
+
+    // --- UNIX ---
+    // "/" only → root
+    if (normalized === '/') {
+      return true;
+    }
+
+    // "/something" → exactly one level below root
+    if (/^\/[^\/]+$/.test(normalized)) {
       return true;
     }
 
