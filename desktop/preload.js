@@ -129,6 +129,7 @@ const fsApi = {
   selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
   getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
   fuzzyFindDirectorys: (...args) => ipcRenderer.invoke("dir:fuzzy:find", ...args),
+  countItemsInDirectory: (...args) => ipcRenderer.invoke("dir:items:count", ...args),
 
   onChange: (path, callback) => {
     /**

@@ -418,6 +418,30 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").countItemsInDirectory>}
+ */
+const countItemsInDirectoryImpl = async (_, dirPath) => {
+  try {
+    const norm = path.normalize(path.resolve(dirPath));
+
+    let stats = await fs.stat(norm);
+    if (!stats.isDirectory()) {
+      logger.warn(
+        "The provided path is not a directory so we cannot coun the amount of items it has: ",
+        norm,
+      );
+      return 0;
+    }
+
+    return (await fs.readdir(norm)).length;
+  } catch (error) {
+    logger.error("Failed to count items in direcotry: ", dirPath, error);
+
+    throw error;
+  }
+};
+
+/**
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  */
@@ -431,6 +455,7 @@ const registerFsListeners = (ipcMain) => {
   ipcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
   ipcMain.handle("dir:create", createDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
+  ipcMain.handle("dir:items:count", countItemsInDirectoryImpl);
   ipcMain.on("fs:watch", watchImpl);
   ipcMain.on("fs:unwatch", unwatchImpl);
   ipcMain.handle("file:save:to", saveToImpl);

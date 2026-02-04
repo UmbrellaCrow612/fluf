@@ -82,7 +82,15 @@ export type fsApi = {
      * - Pass a path and get a list of possible other directorys you can into
      */
     fuzzyFindDirectorys: fuzzyFindDirectorys;
+    /**
+     * - Count the amount of items a directory has - not recusive just the top layer of items count.
+     */
+    countItemsInDirectory: countItemsInDirectory;
 };
+/**
+ * Counts the number of items in a given directory quickly
+ */
+export type countItemsInDirectory = (directoryPath: string) => Promise<number>;
 /**
  * Use a path to a file or folder and get it's fileNode information - used when you have a file path but it is not yet a node and you need it as a node format.
  */
