@@ -1,7 +1,7 @@
 import { FileXInMemoryContextService } from './../file-x-context/file-x-in-memory-context.service';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
-import { fileNode } from '../../../gen/type';
+import { fileNode, voidCallback } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
 import { FileXDirectoryContentItemComponent } from './file-x-directory-content-item/file-x-directory-content-item.component';
 
@@ -14,7 +14,7 @@ import { FileXDirectoryContentItemComponent } from './file-x-directory-content-i
   templateUrl: './file-x-directory-content.component.html',
   styleUrl: './file-x-directory-content.component.css',
 })
-export class FileXDirectoryContentComponent {
+export class FileXDirectoryContentComponent implements OnDestroy {
   private readonly fileXContextService = inject(FileXContextService);
   private readonly fileXInMemoryContextService = inject(
     FileXInMemoryContextService,
@@ -24,13 +24,30 @@ export class FileXDirectoryContentComponent {
   constructor() {
     effect(async () => {
       console.log('FileXDirectoryContentComponent effect ran');
+
+      this.unsubs.forEach((cb) => cb());
+
       // whenever the active dir changes re render items
       let activeDirectory = this.fileXContextService.activeDirectory();
       await this.displayDirectoryContent(activeDirectory);
 
-      this.fileXInMemoryContextService.selectedItems.set([]); // reset selected items
+      this.unsubs.push(
+        this.api.fsApi.onChange(activeDirectory, () => {
+          console.log("directory changed")
+          this.displayDirectoryContent(activeDirectory); // keep the UI up to date with directory changes
+        }),
+      );
     });
   }
+
+  ngOnDestroy(): void {
+    this.unsubs.forEach((cb) => cb());
+  }
+
+  /**
+   * List of unsub callbacks to run
+   */
+  private unsubs: voidCallback[] = [];
 
   /** Holds loading state */
   isLoading = signal(false);
@@ -47,6 +64,7 @@ export class FileXDirectoryContentComponent {
    */
   async displayDirectoryContent(path: string) {
     try {
+      this.fileXInMemoryContextService.selectedItems.set([]); // reset selected items
       this.isLoading.set(true);
       this.errorMessage.set(null);
 
@@ -65,7 +83,7 @@ export class FileXDirectoryContentComponent {
    * not a item, doing so will unselect all current selected items etc
    */
   backDropClicked() {
-    console.log("backdrop clicked")
+    console.log('backdrop clicked');
     this.fileXInMemoryContextService.selectedItems.set([]);
   }
 }
