@@ -78,6 +78,10 @@ export type fsApi = {
      * - Used to fetch a path as a file node
      */
     getNode: fsGetNode;
+    /**
+     * - Pass a path and get a list of possible other directorys you can into
+     */
+    fuzzyFindDirectorys: fuzzyFindDirectorys;
 };
 /**
  * Use a path to a file or folder and get it's fileNode information - used when you have a file path but it is not yet a node and you need it as a node format.
@@ -119,6 +123,10 @@ export type fsRemove = (path: string) => Promise<boolean>;
  * Reads a folder content not recursive
  */
 export type readDir = (directoryPath: string) => Promise<fileNode[]>;
+/**
+ * Pass a path like and get suggestions for other possible diurectory
+ */
+export type fuzzyFindDirectorys = (pathLike: string) => Promise<string[]>;
 /**
  * Create a folder at a given path
  */

@@ -50,6 +50,7 @@
  * @property {saveTo} saveTo - Save a files content to a given location
  * @property {selectFile} selectFile - Allow a user to select a file from the explorer
  * @property {fsGetNode} getNode - Used to fetch a path as a file node
+ * @property {fuzzyFindDirectorys} fuzzyFindDirectorys - Pass a path and get a list of possible other directorys you can into 
  */
 
 /**
@@ -121,6 +122,13 @@
  * @callback readDir
  * @param {string} directoryPath - The path to the directory to read.
  * @returns {Promise<fileNode[]>} - List of file nodes
+ */
+
+/**
+ * Pass a path like and get suggestions for other possible diurectory 
+ * @callback fuzzyFindDirectorys
+ * @param {string} pathLike - A abs path, relative path or partial path such as `./home` `home` `c:dev\home`.
+ * @returns {Promise<string[]>} - List of possible auto complete paths
  */
 
 /**

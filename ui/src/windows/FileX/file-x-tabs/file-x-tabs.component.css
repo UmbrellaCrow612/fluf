@@ -23,7 +23,6 @@
   display: flex;
   min-height: 0;
   min-width: 0;
-  overflow-y: hidden;
   overflow-x: auto;
   gap: 5px;
   padding: 5px;

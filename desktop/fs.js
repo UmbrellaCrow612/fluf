@@ -15,6 +15,60 @@ const { broadcastToAll } = require("./broadcast");
 const watcherAbortsMap = new Map();
 
 /**
+ *
+ * @param {string} basePath - The base path used to read the given items for
+ * @param {import("node:fs").Dirent<string>[]} dirItems - List of items read
+ * @returns {Promise<import("./type").fileNode[]>} List of filenodes
+ */
+const mapDirItemsToFileNodes = async (basePath, dirItems) => {
+  /** @type {import("./type").fileNode[]} */
+  const filenodes = [];
+
+  for (const item of dirItems) {
+    let itempath = path.resolve(basePath, item.name);
+    let stats = await fs.stat(itempath);
+
+    filenodes.push({
+      name: item.name,
+      path: itempath,
+      parentPath: item.parentPath,
+      isDirectory: item.isDirectory(),
+      children: [],
+      expanded: false,
+      mode: "default",
+      extension: item.isDirectory() ? "" : path.extname(item.name),
+      size: stats.size,
+      lastModified: stats.mtime.toString(),
+      parentName: path.basename(basePath),
+    });
+  }
+
+  return filenodes;
+};
+
+/**
+ * Checks whether a filesystem path exists.
+ *
+ * This returns `false` only when the path is not found (ENOENT).
+ * Any other access-related errors are re-thrown so callers can handle them.
+ *
+ * @param {string} path - The filesystem path to check.
+ * @returns {Promise<boolean>} Resolves to `true` if the path exists, or `false` if not found.
+ * @throws {Error} Throws any error other than ENOENT (e.g., permission errors).
+ */
+async function pathExists(path) {
+  try {
+    await fs.access(path, fs.constants.F_OK);
+    return true;
+  } catch (/** @type {any}*/ err) {
+    if (err && err.code === "ENOENT") {
+      return false;
+    }
+    throw err;
+  }
+}
+
+/**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
  */
 const saveToImpl = async (event, content, options) => {
@@ -95,6 +149,71 @@ const watchImpl = async (_, fileOrFolderPath) => {
 };
 
 /**
+ * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fuzzyFindDirectorys>}
+ */
+const fuzzyFindDirectorysImpl = async (_, pathLike) => {
+  try {
+    if (!pathLike) pathLike = "."; // default to current dir if empty
+
+    const norm = path.normalize(pathLike);
+    const resolved = path.resolve(norm);
+
+    // Determine the directory to search in and the term to match
+    let baseDir;
+    let searchTerm;
+
+    try {
+      const stats = await fs.stat(resolved);
+      if (stats.isDirectory()) {
+        // If resolved path is an existing directory, search inside it
+        baseDir = resolved;
+        searchTerm = "";
+      } else {
+        // If it's a file or non-existent path, search in its parent dir
+        baseDir = path.dirname(resolved);
+        searchTerm = path.basename(resolved).toLowerCase();
+      }
+    } catch {
+      // If path doesn't exist yet, still try to autocomplete in parent directory
+      baseDir = path.dirname(resolved);
+      searchTerm = path.basename(resolved).toLowerCase();
+    }
+
+    let suggestions = [];
+
+    try {
+      const entries = await fs.readdir(baseDir, {
+        withFileTypes: true,
+        encoding: "utf-8",
+        recursive: false,
+      });
+
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const entryName = entry.name.toLowerCase();
+          if (entryName.startsWith(searchTerm)) {
+            suggestions.push(path.join(baseDir, entry.name));
+          }
+        }
+      }
+    } catch (fsError) {
+      logger.error(
+        "Failed to read directory for suggestions: ",
+        baseDir,
+        searchTerm,
+        fsError,
+      );
+      throw fsError;
+    }
+
+    return suggestions;
+  } catch (error) {
+    logger.error("Failed to fuzzy read path:", pathLike, error);
+    throw error;
+  }
+};
+
+/**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFolder>}
  */
 const selectFolderImpl = async () => {
@@ -126,8 +245,6 @@ const readDirImpl = async (_, dirPath) => {
   try {
     const p = path.normalize(path.resolve(dirPath));
 
-    await fs.access(p);
-
     const res = await fs.readdir(p, {
       encoding: "utf-8",
       withFileTypes: true,
@@ -139,29 +256,9 @@ const readDirImpl = async (_, dirPath) => {
       return a.name.localeCompare(b.name);
     });
 
-    /** @type {import("./type").fileNode[]} */
-    const filenodes = [];
+    const fileNodes = await mapDirItemsToFileNodes(p, res);
 
-    for (const item of res) {
-      let itempath = path.resolve(p, item.name);
-      let stats = await fs.stat(itempath);
-
-      filenodes.push({
-        name: item.name,
-        path: itempath,
-        parentPath: item.parentPath,
-        isDirectory: item.isDirectory(),
-        children: [],
-        expanded: false,
-        mode: "default",
-        extension: item.isDirectory() ? "" : path.extname(item.name),
-        size: stats.size,
-        lastModified: stats.mtime.toString(),
-        parentName: path.basename(p),
-      });
-    }
-
-    return filenodes;
+    return fileNodes;
   } catch (error) {
     logger.error(error, "Failed to read directory");
     return [];
@@ -287,7 +384,7 @@ const selectFileImpl = (event) => {
  */
 const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
   try {
-    const _path = path.normalize(fileOrFolderPath);
+    const _path = path.normalize(path.resolve(fileOrFolderPath));
 
     await fs.access(_path);
 
@@ -331,6 +428,7 @@ const registerFsListeners = (ipcMain) => {
   ipcMain.handle("fs:exists", existsImpl);
   ipcMain.handle("fs:remove", removeImpl);
   ipcMain.handle("dir:read", readDirImpl);
+  ipcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
   ipcMain.handle("dir:create", createDirImpl);
   ipcMain.handle("dir:select", selectFolderImpl);
   ipcMain.on("fs:watch", watchImpl);

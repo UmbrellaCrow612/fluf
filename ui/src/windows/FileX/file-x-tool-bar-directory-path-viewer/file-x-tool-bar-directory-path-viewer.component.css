@@ -9,11 +9,9 @@
   flex: 1;
   min-height: 0;
   min-width: 0;
-  overflow-y: hidden;
   overflow-x: auto;
   white-space: nowrap;
   scrollbar-width: none;
-  -ms-overflow-style: none;
   display: flex;
 }
 
@@ -46,45 +44,4 @@
 .directory_display:hover {
   background: var(--bg-secondary);
   border-color: var(--border-hover);
-}
-
-.directory_input_editor {
-  width: 100%;
-  padding: 4px 8px;
-
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-
-  border: 1px solid var(--border-default);
-  border-radius: 4px;
-
-  font-family: var(--code-editor-font-family);
-  font-size: var(--code-editor-font-size);
-
-  outline: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
-
-  transition:
-    border-color 120ms ease,
-    background 120ms ease;
-}
-
-/* Hover effect (subtle, like Explorer) */
-.directory_input_editor:hover {
-  border-color: var(--border-hover);
-  background: var(--bg-secondary);
-}
-
-/* Focus ring (Windows-style) */
-.directory_input_editor:focus {
-  border-color: var(--border-focus);
-  background: var(--bg-secondary);
-  box-shadow: 0 0 0 2px rgba(189, 147, 249, 0.25);
-}
-
-/* When disabled */
-.directory_input_editor:disabled {
-  background: var(--bg-disabled);
-  color: var(--text-tertiary);
-  border-color: var(--border-default);
 }

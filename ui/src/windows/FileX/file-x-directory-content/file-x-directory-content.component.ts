@@ -1,14 +1,12 @@
-import {
-  Component,
-  effect,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
 import { FileXDirectoryContentItemComponent } from './file-x-directory-content-item/file-x-directory-content-item.component';
 
+/**
+ * Display the directorys content according to the view pattern - ushc as grid based or other formats
+ */
 @Component({
   selector: 'app-file-x-directory-content',
   imports: [FileXDirectoryContentItemComponent],

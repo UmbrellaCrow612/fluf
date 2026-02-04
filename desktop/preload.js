@@ -128,6 +128,7 @@ const fsApi = {
   createDirectory: (...args) => ipcRenderer.invoke("dir:create", ...args),
   selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
   getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
+  fuzzyFindDirectorys: (...args) => ipcRenderer.invoke("dir:fuzzy:find", ...args),
 
   onChange: (path, callback) => {
     /**
@@ -247,7 +248,7 @@ const storeApi = {
   },
   clean: (...args) => ipcRenderer.invoke("store:clean", ...args),
   get: (...args) => ipcRenderer.invoke("store:get", ...args),
-  remove: (...args) => ipcRenderer.invoke("store:remove", ...args)
+  remove: (...args) => ipcRenderer.invoke("store:remove", ...args),
 };
 
 /**

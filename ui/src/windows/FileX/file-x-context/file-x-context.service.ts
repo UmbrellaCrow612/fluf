@@ -1,11 +1,24 @@
 import { effect, Injectable, signal } from '@angular/core';
-import { FileXStoreData, FileXTab } from '../types';
+import {
+  FileXBackHistoryItem,
+  FileXDirectoryContentGroupBY,
+  FileXDirectoryContentOrderBy,
+  FileXDirectoryContentSortBy,
+  FileXDirectoryContentViewMode,
+  FileXForwardHistoryItem,
+  FileXQuickAccess,
+  FileXSelectedItem,
+  FileXStoreData,
+  FileXTab,
+} from '../types';
 import { FILE_X_STORE_DATA } from '../store-key-constants';
 import { getElectronApi } from '../../../utils';
 
 /**
- * Stores the file x context in a central place and offers a signal based API, this is becuase the given data is stored in a file and read from it then 
+ * Stores the file x context in a central place and offers a signal based API, this is becuase the given data is stored in a file and read from it then
  * hydrates the given exposed signals, changing the given signals will update the local file store.
+ *
+ * PERSISTED BETWEEN SESSIONS
  */
 @Injectable({
   providedIn: 'root',
@@ -26,7 +39,7 @@ export class FileXContextService {
 
     effect(() => {
       console.log('effect ran');
-      const snapshot = this.getSnapShot();
+      const snapshot = this.getSnapShot(); // whwver sub signal changes this triggers effect
 
       // Skip if not initialized yet or setting from onChange
       if (!this.isInitialized || this.settingStateFromOnChange) {
@@ -62,12 +75,23 @@ export class FileXContextService {
     });
   }
 
-  /** Get the current state of the store in memory */
+  /**
+   * Get the current state of the store in memory by reading the current signal values
+   */
   private getSnapShot(): FileXStoreData {
     return {
       tabs: this.tabs(),
       activeDirectory: this.activeDirectory(),
-      activeId: this.activeTabId(),
+      activeTabId: this.activeTabId(),
+      directoryContentViewMode: this.directoryContentViewMode(),
+      groupBy: this.groupBy(),
+      orderBy: this.orderBy(),
+      quickAccesses: this.quickAccesses(),
+      selectedItems: this.selectedItems(),
+      showPreviews: this.showPreviews(),
+      sortBy: this.sortBy(),
+      backHistoryItems: this.backHistoryItems(),
+      forwardHistoryItems: this.forwardHistoryItems(),
     };
   }
 
@@ -101,10 +125,74 @@ export class FileXContextService {
   private setState(data: FileXStoreData) {
     this.tabs.set(data.tabs);
     this.activeDirectory.set(data.activeDirectory);
-    this.activeTabId.set(data.activeId);
+    this.activeTabId.set(data.activeTabId);
+    this.directoryContentViewMode.set(data.directoryContentViewMode);
+    this.sortBy.set(data.sortBy);
+    this.orderBy.set(data.orderBy);
+    this.groupBy.set(data.groupBy);
+    this.showPreviews.set(data.showPreviews);
+    this.quickAccesses.set(data.quickAccesses);
+    this.selectedItems.set(data.selectedItems);
   }
 
+  /**
+   * Exposes tabs as a signal - updates to this will be persisted.
+   */
   readonly tabs = signal<FileXTab[]>([]);
+
+  /**
+   * Exposes active dir as a signal - updates to this will be persisted.
+   */
   readonly activeDirectory = signal('');
+
+  /**
+   * Exposes active tab id a signal - updates to this will be persisted.
+   */
   readonly activeTabId = signal('');
+
+  /**
+   * Exposes dir view signal - updates to this will be persisted
+   */
+  readonly directoryContentViewMode =
+    signal<FileXDirectoryContentViewMode>('details');
+
+  /**
+   * Exposes dir content group by signal - updates to this will be persisted
+   */
+  readonly groupBy = signal<FileXDirectoryContentGroupBY>('NONE');
+
+  /**
+   * Exposes order by signal - updates to this will be persisted
+   */
+  readonly orderBy = signal<FileXDirectoryContentOrderBy>('ascending');
+
+  /**
+   * Exposes quic access list - updates to this will be persisted
+   */
+  readonly quickAccesses = signal<FileXQuickAccess[]>([]);
+
+  /**
+   * Exposes list of selected item - updates to this will be persisted
+   */
+  readonly selectedItems = signal<FileXSelectedItem[]>([]);
+
+  /**
+   * Exposes if it should show previews - updates to this will be persisted
+   */
+  readonly showPreviews = signal<boolean>(false);
+
+  /**
+   * Exposes how the dir content should be sorted by - updates to this will be persisted
+   */
+  readonly sortBy = signal<FileXDirectoryContentSortBy>('name');
+
+  /**
+   * Exposes the back history which is a list of tabs and there back history - updates to this will be persisted
+   */
+  readonly backHistoryItems = signal<FileXBackHistoryItem[]>([]);
+
+  /**
+   * Exposes the forward history which is a list of tabs and there forward history - updates to this will be persisted
+   */
+  readonly forwardHistoryItems = signal<FileXForwardHistoryItem[]>([]);
 }

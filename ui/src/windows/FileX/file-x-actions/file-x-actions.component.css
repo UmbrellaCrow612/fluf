@@ -9,7 +9,6 @@
   flex: 1;
   min-height: 0;
   min-width: 0;
-  overflow-y: hidden;
   overflow-x: auto;
   white-space: nowrap;
   display: flex;

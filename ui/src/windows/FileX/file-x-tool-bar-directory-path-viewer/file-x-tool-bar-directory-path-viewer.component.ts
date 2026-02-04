@@ -10,13 +10,14 @@ import {
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXDirectoryViewChild } from '../types';
 import { FileXToolBarDirectoryPathViewerChildComponent } from '../file-x-tool-bar-directory-path-viewer-child/file-x-tool-bar-directory-path-viewer-child.component';
+import { FileXPathInputEditorComponent } from "../file-x-path-input-editor/file-x-path-input-editor.component";
 
 /**
  * Displays the current active directory as a clickable input and enter new path or see how nested you've gone
  */
 @Component({
   selector: 'app-file-x-tool-bar-directory-path-viewer',
-  imports: [FileXToolBarDirectoryPathViewerChildComponent],
+  imports: [FileXToolBarDirectoryPathViewerChildComponent, FileXPathInputEditorComponent],
   templateUrl: './file-x-tool-bar-directory-path-viewer.component.html',
   styleUrl: './file-x-tool-bar-directory-path-viewer.component.css',
 })

@@ -1,0 +1,64 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  position: relative;
+}
+
+.search_dropdown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  padding: 4px 0;
+
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4);
+
+  width: 200px;
+  height: 200px;
+}
+
+.path_input_editor {
+  width: 100%;
+
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+
+  padding-left: 4px;
+  padding-right: 4px;
+
+  font-family: var(--code-editor-font-family);
+  font-size: var(--code-editor-font-size);
+
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.path_input_editor:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-secondary);
+}
+
+.path_input_editor:focus {
+  border-color: var(--border-focus);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 2px rgba(189, 147, 249, 0.25);
+}
+
+.path_input_editor:disabled {
+  background: var(--bg-disabled);
+  color: var(--text-tertiary);
+  border-color: var(--border-default);
+}

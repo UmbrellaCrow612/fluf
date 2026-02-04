@@ -27,7 +27,16 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
       const sessionData: FileXStoreData = {
         tabs: [tabItemToAdd],
         activeDirectory: dirPath,
-        activeId: tabItemToAdd.id,
+        activeTabId: tabItemToAdd.id,
+        directoryContentViewMode: 'details',
+        groupBy: 'NONE',
+        orderBy: 'ascending',
+        quickAccesses: [],
+        selectedItems: [],
+        showPreviews: false,
+        sortBy: 'name',
+        backHistoryItems: [],
+        forwardHistoryItems: [],
       };
 
       await electronApi.storeApi.set(
@@ -44,7 +53,7 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
     if (!alreadyOpen) {
       previousData.tabs.push(tabItemToAdd);
       previousData.activeDirectory = tabItemToAdd.directory;
-      previousData.activeId = tabItemToAdd.id;
+      previousData.activeTabId = tabItemToAdd.id;
     }
 
     await electronApi.storeApi.set(
@@ -79,4 +88,61 @@ export function filexResetState(service: FileXContextService) {
   service.activeDirectory.set('');
   service.tabs.set([]);
   service.activeTabId.set('');
+  service.backHistoryItems.set([]);
+  service.forwardHistoryItems.set([]);
+}
+
+/**
+ * Used the change the active directory i.e current tab to the new directory tab - it will replace the previous active tab with the new one.
+ * Typically used for i.e going into a folder
+ * @param newDirectory The new directory to set as the new active one
+ * @param service The helper service
+ */
+export async function ChangeActiveDirectory(
+  newDirectory: string,
+  service: FileXContextService, // todo add a option called persist back history
+) {
+  if (!newDirectory) {
+    throw new Error('No directory passed');
+  }
+  if (!service) {
+    throw new Error('no service passed');
+  }
+
+  const asNode = await electronApi.fsApi.getNode(newDirectory);
+  if (!asNode.isDirectory) {
+    throw new Error(
+      'Passed a non directory path to be set as the active directory',
+    );
+  }
+
+  const previousActiveDirectory = service.activeDirectory();
+  const activeTabId = service.activeTabId();
+  const tabs = service.tabs();
+  const activeTab = tabs.find((x) => x.id == activeTabId);
+  if (!activeTab) {
+    throw new Error('Invalid state of data');
+  }
+  activeTab.directory = asNode.path;
+  activeTab.name = asNode.name;
+
+  service.tabs.set(structuredClone(tabs));
+  service.activeDirectory.set(activeTab.directory);
+
+  // ---- HISTORY UPDATE
+  const backHistoryItems = service.backHistoryItems();
+  const existing = backHistoryItems.find((x) => x.tabId === activeTabId);
+
+  if (!existing) {
+    backHistoryItems.push({
+      history: [previousActiveDirectory],
+      tabId: activeTab.id,
+    });
+  } else {
+    backHistoryItems
+      .find((x) => x.tabId == activeTab.id)
+      ?.history.push(previousActiveDirectory);
+  }
+
+  service.backHistoryItems.set(structuredClone(backHistoryItems));
 }
