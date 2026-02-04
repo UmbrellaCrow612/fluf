@@ -7,7 +7,6 @@ import {
   FileXDirectoryContentViewMode,
   FileXForwardHistoryItem,
   FileXQuickAccess,
-  FileXSelectedItem,
   FileXStoreData,
   FileXTab,
 } from '../types';

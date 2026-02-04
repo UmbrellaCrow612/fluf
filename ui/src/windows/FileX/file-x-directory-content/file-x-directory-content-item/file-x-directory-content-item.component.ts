@@ -49,7 +49,7 @@ export class FileXDirectoryContentItemComponent {
       if (existingIndex >= 0) {
         selectedItems.splice(existingIndex, 1); // deselect
       } else {
-        selectedItems.push({ path: filePath }); // select
+        selectedItems.push(this.fileNode()); // select
       }
     } else {
       // Normal click
@@ -59,7 +59,7 @@ export class FileXDirectoryContentItemComponent {
       } else {
         // Select only this item
         selectedItems.length = 0;
-        selectedItems.push({ path: filePath });
+        selectedItems.push(this.fileNode());
       }
     }
 

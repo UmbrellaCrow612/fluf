@@ -1,5 +1,6 @@
 import { Injectable, signal, Signal, WritableSignal } from '@angular/core';
-import { FileXInMemoryData, FileXSelectedItem } from '../types';
+import { FileXInMemoryData } from '../types';
+import { fileNode } from '../../../gen/type';
 
 /**
  * Represents data that does not need to be persisted between session but within the lifecycle of the app i.e until a refresh
@@ -20,9 +21,7 @@ export class FileXInMemoryContextService {
   }
 
   /**
-   * Exposes the current selected items - updates ot this signal will propigate to those intrested.
+   * Exposes the current selected items - updates to this signal will propigate to those intrested.
    */
-  readonly selectedItems: WritableSignal<FileXSelectedItem[]> = signal<
-    FileXSelectedItem[]
-  >([]);
+  readonly selectedItems: WritableSignal<fileNode[]> = signal<fileNode[]>([]);
 }

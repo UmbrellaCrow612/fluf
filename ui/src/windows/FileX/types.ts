@@ -1,3 +1,5 @@
+import { fileNode } from "../../gen/type";
+
 /**
  * Represents a tab folder opened in file x
  */
@@ -19,7 +21,7 @@ export type FileXInMemoryData = {
   /**
    * Represents items that have been selected via a click or ctrl click i.e for multiple items
    */
-  selectedItems: FileXSelectedItem[];
+  selectedItems: fileNode[];
 };
 
 /**
@@ -183,16 +185,6 @@ export type FileXDirectoryContentGroupBY =
 export type FileXQuickAccess = {
   /**
    * The path to the directory or item pinned for quick access
-   */
-  path: string;
-};
-
-/**
- * Represents a item / directory selected
- */
-export type FileXSelectedItem = {
-  /**
-   * The path to the selcted item
    */
   path: string;
 };

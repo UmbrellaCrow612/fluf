@@ -107,7 +107,7 @@ const unwatchImpl = (_, pp) => {
       return;
     }
 
-    abort.abort();
+    abort.abort("Requested via a direct unwatch command IPC event");
   } catch (error) {
     logger.error(error, "Failed to un watch directory");
 
@@ -470,7 +470,8 @@ const cleanUpWatchers = () => {
   let a = Array.from(watcherAbortsMap.values());
 
   a.forEach((x) => {
-    x.abort();
+    x.abort("Application ended cleaning up");
+    logger.info("Cleaned up watcher ", x.signal.reason);
   });
 };
 
