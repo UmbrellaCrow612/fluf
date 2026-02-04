@@ -53,7 +53,6 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
         groupBy: 'NONE',
         orderBy: 'ascending',
         quickAccesses: [],
-        selectedItems: [],
         showPreviews: false,
         sortBy: 'name',
         backHistoryItems: [],
@@ -147,7 +146,6 @@ export function filexResetState(service: FileXContextService) {
   service.activeTabId.set('');
   service.backHistoryItems.set([]);
   service.forwardHistoryItems.set([]);
-  service.selectedItems.set([])
 }
 
 /**

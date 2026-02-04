@@ -1,3 +1,4 @@
+import { FileXInMemoryContextService } from './../file-x-context/file-x-in-memory-context.service';
 import { Component, effect, inject, signal } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { fileNode } from '../../../gen/type';
@@ -15,16 +16,19 @@ import { FileXDirectoryContentItemComponent } from './file-x-directory-content-i
 })
 export class FileXDirectoryContentComponent {
   private readonly fileXContextService = inject(FileXContextService);
+  private readonly fileXInMemoryContextService = inject(
+    FileXInMemoryContextService,
+  );
   private readonly api = getElectronApi();
 
   constructor() {
     effect(async () => {
-      console.log("FileXDirectoryContentComponent effect ran")
+      console.log('FileXDirectoryContentComponent effect ran');
       // whenever the active dir changes re render items
       let activeDirectory = this.fileXContextService.activeDirectory();
       await this.displayDirectoryContent(activeDirectory);
 
-      this.fileXContextService.selectedItems.set([]); // reset selected items
+      this.fileXInMemoryContextService.selectedItems.set([]); // reset selected items
     });
   }
 
@@ -54,5 +58,14 @@ export class FileXDirectoryContentComponent {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * Runs when the backdrop of the container is clicked i.e
+   * not a item, doing so will unselect all current selected items etc
+   */
+  backDropClicked() {
+    console.log("backdrop clicked")
+    this.fileXInMemoryContextService.selectedItems.set([]);
   }
 }

@@ -13,6 +13,16 @@ export type FileXTab = {
 };
 
 /**
+ * Represents data that lives in Memory for file x lifecycle i.e until a refresh
+ */
+export type FileXInMemoryData = {
+  /**
+   * Represents items that have been selected via a click or ctrl click i.e for multiple items
+   */
+  selectedItems: FileXSelectedItem[];
+};
+
+/**
  * Represents the shape of data persisted between session for file x
  */
 export type FileXStoreData = {
@@ -61,11 +71,6 @@ export type FileXStoreData = {
    * List of items pinned for quick access
    */
   quickAccesses: FileXQuickAccess[];
-
-  /**
-   * List of items selected i.e clicked
-   */
-  selectedItems: FileXSelectedItem[];
 
   /**
    * Contains back history for specific tabs

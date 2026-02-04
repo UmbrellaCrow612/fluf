@@ -3,6 +3,7 @@ import { Component, computed, inject, input, Signal } from '@angular/core';
 import { fileNode } from '../../../../gen/type';
 import { MatIcon } from '@angular/material/icon';
 import { ChangeActiveDirectory } from '../../utils';
+import { FileXInMemoryContextService } from '../../file-x-context/file-x-in-memory-context.service';
 
 @Component({
   selector: 'app-file-x-directory-content-item',
@@ -12,13 +13,16 @@ import { ChangeActiveDirectory } from '../../utils';
 })
 export class FileXDirectoryContentItemComponent {
   private readonly fileXContextService = inject(FileXContextService);
+  private readonly fileXInMemoryContextService = inject(
+    FileXInMemoryContextService,
+  );
 
   /**
    * Indicates if the given item is selected
    */
   isSelected: Signal<boolean> = computed(() => {
     console.log('selected item ran');
-    let selectedItems = this.fileXContextService.selectedItems();
+    let selectedItems = this.fileXInMemoryContextService.selectedItems();
     let isSelected =
       selectedItems.find((x) => x.path == this.fileNode().path) !== undefined;
     return isSelected;
@@ -33,7 +37,9 @@ export class FileXDirectoryContentItemComponent {
    * Selects or un-selects an item
    */
   selectedItem(event: MouseEvent) {
-    const selectedItems = this.fileXContextService.selectedItems();
+    event.stopPropagation(); // parent backdrop click deselects items
+
+    const selectedItems = this.fileXInMemoryContextService.selectedItems();
     const filePath = this.fileNode().path;
 
     const existingIndex = selectedItems.findIndex((x) => x.path === filePath);
@@ -57,13 +63,16 @@ export class FileXDirectoryContentItemComponent {
       }
     }
 
-    this.fileXContextService.selectedItems.set(structuredClone(selectedItems));
+    this.fileXInMemoryContextService.selectedItems.set(
+      structuredClone(selectedItems),
+    );
   }
 
   /**
    * Trys to go into a folder if it it is a directory or open the it if it is a file
    */
-  goIntoItem() {
+  goIntoItem(event: Event) {
+    event.stopPropagation(); // parent click de selects items
     if (this.fileNode().isDirectory) {
       ChangeActiveDirectory(this.fileNode().path, this.fileXContextService);
     } else {

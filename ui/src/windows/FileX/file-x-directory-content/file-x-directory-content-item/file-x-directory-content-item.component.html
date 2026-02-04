@@ -3,7 +3,7 @@
   [class.is_selected]="isSelected()"
   [class.is-directory]="fileNode().isDirectory"
   (click)="selectedItem($event)"
-  (dblclick)="goIntoItem()"
+  (dblclick)="goIntoItem($event)"
 >
   <div class="directory-item__icon-wrapper">
     <mat-icon class="directory-item__icon">

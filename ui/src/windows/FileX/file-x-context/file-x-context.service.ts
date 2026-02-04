@@ -87,7 +87,6 @@ export class FileXContextService {
       groupBy: this.groupBy(),
       orderBy: this.orderBy(),
       quickAccesses: this.quickAccesses(),
-      selectedItems: this.selectedItems(),
       showPreviews: this.showPreviews(),
       sortBy: this.sortBy(),
       backHistoryItems: this.backHistoryItems(),
@@ -136,7 +135,6 @@ export class FileXContextService {
     this.groupBy.set(data.groupBy);
     this.showPreviews.set(data.showPreviews);
     this.quickAccesses.set(data.quickAccesses);
-    this.selectedItems.set(data.selectedItems);
     this.backHistoryItems.set(data.backHistoryItems);
     this.forwardHistoryItems.set(data.forwardHistoryItems);
   }
@@ -176,11 +174,6 @@ export class FileXContextService {
    * Exposes quic access list - updates to this will be persisted
    */
   readonly quickAccesses = signal<FileXQuickAccess[]>([]);
-
-  /**
-   * Exposes list of selected item - updates to this will be persisted
-   */
-  readonly selectedItems = signal<FileXSelectedItem[]>([]);
 
   /**
    * Exposes if it should show previews - updates to this will be persisted
