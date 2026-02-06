@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
-    "node-logy": "^0.1.0"
+    "node-logy": "^0.1.3"
   }
 }

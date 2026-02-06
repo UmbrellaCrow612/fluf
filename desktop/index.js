@@ -77,9 +77,9 @@ app.whenReady().then(() => {
   registerFsListeners(ipcMain);
   registerWindowListener(ipcMain);
   registerPathListeners(ipcMain);
-  registerFileXListeners(ipcMain)
+  registerFileXListeners(ipcMain);
   registerLanguageServerListener(ipcMain);
-  registerStoreListeners(ipcMain)
+  registerStoreListeners(ipcMain);
 });
 
 app.on("before-quit", async () => {
@@ -88,4 +88,5 @@ app.on("before-quit", async () => {
   cleanUpShells();
 
   await logger.flush();
+  await logger.shutdown();
 });
