@@ -1,6 +1,7 @@
 import { fileNode } from '../../gen/type';
 import { getElectronApi } from '../../utils';
 import { FileXContextService } from './file-x-context/file-x-context.service';
+import { FileXInMemoryContextService } from './file-x-context/file-x-in-memory-context.service';
 import { FILE_X_STORE_DATA } from './store-key-constants';
 import { FileXStoreData, FileXTab } from './types';
 
@@ -55,8 +56,6 @@ export async function OpenFileInFileX(fileNode: fileNode): Promise<void> {
         quickAccesses: [],
         showPreviews: false,
         sortBy: 'name',
-        backHistoryItems: [],
-        forwardHistoryItems: [],
       };
 
       await electronApi.storeApi.set(
@@ -108,6 +107,7 @@ export function filexSetTabItemAsActive(
 export function filexRemoveTabItem(
   item: FileXTab,
   service: FileXContextService,
+  inMemoryService: FileXInMemoryContextService,
 ) {
   let filteredTabs = service.tabs().filter((x) => x.id !== item.id);
 
@@ -118,15 +118,17 @@ export function filexRemoveTabItem(
     service.tabs.set(structuredClone(filteredTabs));
 
     // remove any history for it
-    const forwardHistoryFiltered = service
+    const forwardHistoryFiltered = inMemoryService
       .forwardHistoryItems()
       .filter((x) => x.tabId !== item.id);
-    service.forwardHistoryItems.set(structuredClone(forwardHistoryFiltered));
+    inMemoryService.forwardHistoryItems.set(
+      structuredClone(forwardHistoryFiltered),
+    );
 
-    const backHistoryFiltered = service
+    const backHistoryFiltered = inMemoryService
       .backHistoryItems()
       .filter((x) => x.tabId !== item.id);
-    service.backHistoryItems.set(structuredClone(backHistoryFiltered));
+    inMemoryService.backHistoryItems.set(structuredClone(backHistoryFiltered));
   } else {
     filexResetState(service);
 
@@ -144,8 +146,6 @@ export function filexResetState(service: FileXContextService) {
   service.activeDirectory.set('');
   service.tabs.set([]);
   service.activeTabId.set('');
-  service.backHistoryItems.set([]);
-  service.forwardHistoryItems.set([]);
 }
 
 /**
@@ -157,6 +157,7 @@ export function filexResetState(service: FileXContextService) {
 export async function ChangeActiveDirectory(
   newDirectory: string,
   service: FileXContextService,
+  inMemoryService: FileXInMemoryContextService,
   options: Partial<changeActiveDirectoryOptions> = {},
 ) {
   const _options = { ...defaultChangeDirectoryOptions, ...options };
@@ -182,7 +183,7 @@ export async function ChangeActiveDirectory(
   service.activeDirectory.set(activeTab.directory);
 
   if (_options.addToBackHistory) {
-    const backHistoryItems = service.backHistoryItems();
+    const backHistoryItems = inMemoryService.backHistoryItems();
     const existing = backHistoryItems.find((x) => x.tabId === activeTabId);
 
     if (!existing) {
@@ -196,11 +197,11 @@ export async function ChangeActiveDirectory(
         ?.history.push(previousActiveDirectory);
     }
 
-    service.backHistoryItems.set(structuredClone(backHistoryItems));
+    inMemoryService.backHistoryItems.set(structuredClone(backHistoryItems));
   }
 
   if (_options.addToForwardHIstory) {
-    const forwardHistoryItems = service.forwardHistoryItems();
+    const forwardHistoryItems = inMemoryService.forwardHistoryItems();
     const existing = forwardHistoryItems.find((x) => x.tabId == activeTabId);
 
     if (!existing) {
@@ -214,6 +215,8 @@ export async function ChangeActiveDirectory(
         ?.history.push(previousActiveDirectory);
     }
 
-    service.forwardHistoryItems.set(structuredClone(forwardHistoryItems));
+    inMemoryService.forwardHistoryItems.set(
+      structuredClone(forwardHistoryItems),
+    );
   }
 }

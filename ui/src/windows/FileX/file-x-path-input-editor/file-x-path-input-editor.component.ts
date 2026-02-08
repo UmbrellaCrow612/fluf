@@ -14,6 +14,7 @@ import { getElectronApi } from '../../../utils';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FileXTab } from '../types';
 import { ChangeActiveDirectory } from '../utils';
+import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
 
 /**
  * Input that displays the current active directory and when editing it displays possible other directorys that it can be changed to
@@ -26,6 +27,9 @@ import { ChangeActiveDirectory } from '../utils';
 })
 export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
   private readonly fileXContextService = inject(FileXContextService);
+  private readonly fileXInMemoryContextService = inject(
+    FileXInMemoryContextService,
+  );
   private readonly api = getElectronApi();
 
   ngOnInit(): void {
@@ -142,7 +146,11 @@ export class FileXPathInputEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    ChangeActiveDirectory(newDir, this.fileXContextService);
+    ChangeActiveDirectory(
+      newDir,
+      this.fileXContextService,
+      this.fileXInMemoryContextService,
+    );
 
     this.userFocusLostEvent.emit();
   }

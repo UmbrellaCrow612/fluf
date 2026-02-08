@@ -16,6 +16,7 @@ import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXBackHistoryItem, FileXForwardHistoryItem } from '../types';
 import { ChangeActiveDirectory } from '../utils';
 import { getElectronApi } from '../../../utils';
+import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
 
 @Component({
   selector: 'app-file-x-tool-bar',
@@ -31,6 +32,9 @@ import { getElectronApi } from '../../../utils';
 })
 export class FileXToolBarComponent {
   private readonly fileXContextService = inject(FileXContextService);
+  private readonly fileXInMemoryContextService = inject(
+    FileXInMemoryContextService,
+  );
   private readonly api = getElectronApi();
 
   constructor() {
@@ -93,14 +97,14 @@ export class FileXToolBarComponent {
    * Keeps track of the back history items
    */
   private backHistoryItems: Signal<FileXBackHistoryItem[]> = computed(() =>
-    this.fileXContextService.backHistoryItems(),
+    this.fileXInMemoryContextService.backHistoryItems(),
   );
 
   /**
    * Keeps track of forward history items
    */
   private forwardHistoryItems: Signal<FileXForwardHistoryItem[]> = computed(
-    () => this.fileXContextService.forwardHistoryItems(),
+    () => this.fileXInMemoryContextService.forwardHistoryItems(),
   );
 
   /**
@@ -158,12 +162,19 @@ export class FileXToolBarComponent {
       throw new Error('No history');
     }
 
-    this.fileXContextService.backHistoryItems.set(structuredClone(items)); // we use structuredClone so we give a diffrent refrence so change it propagated in signals
+    this.fileXInMemoryContextService.backHistoryItems.set(
+      structuredClone(items),
+    ); // we use structuredClone so we give a diffrent refrence so change it propagated in signals
 
-    ChangeActiveDirectory(lastDirectory, this.fileXContextService, {
-      addToBackHistory: false,
-      addToForwardHIstory: true,
-    });
+    ChangeActiveDirectory(
+      lastDirectory,
+      this.fileXContextService,
+      this.fileXInMemoryContextService,
+      {
+        addToBackHistory: false,
+        addToForwardHIstory: true,
+      },
+    );
   }
 
   /**
@@ -184,12 +195,19 @@ export class FileXToolBarComponent {
       throw new Error('No history');
     }
 
-    this.fileXContextService.forwardHistoryItems.set(structuredClone(items)); // we use structuredClone so we give a diffrent refrence so change it propagated in signals
+    this.fileXInMemoryContextService.forwardHistoryItems.set(
+      structuredClone(items),
+    ); // we use structuredClone so we give a diffrent refrence so change it propagated in signals
 
-    ChangeActiveDirectory(lastDirectory, this.fileXContextService, {
-      addToBackHistory: true,
-      addToForwardHIstory: false,
-    });
+    ChangeActiveDirectory(
+      lastDirectory,
+      this.fileXContextService,
+      this.fileXInMemoryContextService,
+      {
+        addToBackHistory: true,
+        addToForwardHIstory: false,
+      },
+    );
   }
 
   /**
@@ -206,6 +224,10 @@ export class FileXToolBarComponent {
       throw new Error('Provided path is not a directory');
     }
 
-    ChangeActiveDirectory(asNode.parentPath, this.fileXContextService);
+    ChangeActiveDirectory(
+      asNode.parentPath,
+      this.fileXContextService,
+      this.fileXInMemoryContextService,
+    );
   }
 }

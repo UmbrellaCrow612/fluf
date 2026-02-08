@@ -88,8 +88,6 @@ export class FileXContextService {
       quickAccesses: this.quickAccesses(),
       showPreviews: this.showPreviews(),
       sortBy: this.sortBy(),
-      backHistoryItems: this.backHistoryItems(),
-      forwardHistoryItems: this.forwardHistoryItems(),
     };
   }
 
@@ -134,8 +132,6 @@ export class FileXContextService {
     this.groupBy.set(data.groupBy);
     this.showPreviews.set(data.showPreviews);
     this.quickAccesses.set(data.quickAccesses);
-    this.backHistoryItems.set(data.backHistoryItems);
-    this.forwardHistoryItems.set(data.forwardHistoryItems);
   }
 
   /**
@@ -183,14 +179,4 @@ export class FileXContextService {
    * Exposes how the dir content should be sorted by - updates to this will be persisted
    */
   readonly sortBy = signal<FileXDirectoryContentSortBy>('name');
-
-  /**
-   * Exposes the back history which is a list of tabs and there back history - updates to this will be persisted
-   */
-  readonly backHistoryItems = signal<FileXBackHistoryItem[]>([]);
-
-  /**
-   * Exposes the forward history which is a list of tabs and there forward history - updates to this will be persisted
-   */
-  readonly forwardHistoryItems = signal<FileXForwardHistoryItem[]>([]);
 }
