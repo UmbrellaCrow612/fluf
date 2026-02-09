@@ -108,6 +108,9 @@ const unwatchImpl = (_, pp) => {
     }
 
     abort.abort("Requested via a direct unwatch command IPC event");
+    logger.info("Stoped watching path: ", norm)
+
+    watcherAbortsMap.delete(norm)
   } catch (error) {
     logger.error(error, "Failed to un watch directory");
 
@@ -135,6 +138,8 @@ const watchImpl = async (_, fileOrFolderPath) => {
       recursive: true,
       encoding: "utf-8",
     });
+
+    logger.info("Watching path: ", norm)
 
     for await (const event of watcher) {
       broadcastToAll("fs:change", fileOrFolderPath, event);
