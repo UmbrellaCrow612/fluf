@@ -1,14 +1,29 @@
-<div
-  class="directory-item"
-  [class.is_selected]="isSelected()"
-  [class.is-directory]="fileNode().isDirectory"
-  (click)="selectedItem($event)"
-  (dblclick)="goIntoItem($event)"
->
-  <div class="directory-item__icon-wrapper">
-    <mat-icon class="directory-item__icon">
-      {{ fileNode().isDirectory ? "folder" : "insert_drive_file" }}
-    </mat-icon>
+@if (fileNode().mode === "default") {
+  <div
+    class="directory-item"
+    [class.is_selected]="isSelected()"
+    [class.is-directory]="fileNode().isDirectory"
+    (click)="selectedItem($event)"
+    (dblclick)="goIntoItem($event)"
+  >
+    <div class="directory-item__icon-wrapper">
+      <mat-icon class="directory-item__icon">
+        {{ fileNode().isDirectory ? "folder" : "insert_drive_file" }}
+      </mat-icon>
+    </div>
+    <span class="directory-item__name">{{ fileNode().name }}</span>
   </div>
-  <span class="directory-item__name">{{ fileNode().name }}</span>
-</div>
+}
+
+<!---->
+
+@if (fileNode().mode === "createFile" || fileNode().mode === "createFolder") {
+  <div class="directory-item">
+    <div class="directory-item__icon-wrapper">
+      <mat-icon class="directory-item__icon">
+        {{ fileNode().mode === "createFile" ? "folder" : "insert_drive_file" }}
+      </mat-icon>
+    </div>
+    <span class="directory-item__name"> create file </span>
+  </div>
+}
