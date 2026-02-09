@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { ApplicationContextService } from '../context/application-context.service';
 
 /**
- * Used for confirmation of a user action, displays a model with confirm and cancel
+ * Used for confirmation of a user action, displays a model with confirm and cancel, promise based.
  */
 @Injectable({
   providedIn: 'root',

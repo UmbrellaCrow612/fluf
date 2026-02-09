@@ -68,11 +68,15 @@ export class FileXActionsComponent {
       }),
       onClick: async () => {
         let selectedItems = this.fileXInMemoryContextService.selectedItems();
-        let shouldDelete = await this.confirmationService.ask(
-          `Are you sure you want to delete ${selectedItems.length} items`,
-        );
-        if (shouldDelete) {
-          // run delete logic
+        try {
+          let shouldDelete = await this.confirmationService.ask(
+            `Are you sure you want to delete ${selectedItems.length} items`,
+          );
+          if (shouldDelete) {
+            // run delete logic
+          }
+        } catch (error) {
+          console.error(error) // promise rejects
         }
       },
     },
