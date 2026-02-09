@@ -1,10 +1,13 @@
 import { FileXContextService } from './../../file-x-context/file-x-context.service';
-import { Component, computed, inject, input, Signal } from '@angular/core';
+import { Component, computed, inject, input, output, Signal } from '@angular/core';
 import { fileNode } from '../../../../gen/type';
 import { MatIcon } from '@angular/material/icon';
 import { ChangeActiveDirectory } from '../../utils';
 import { FileXInMemoryContextService } from '../../file-x-context/file-x-in-memory-context.service';
 
+/**
+ * Renders a directory item representing a file or folder
+ */
 @Component({
   selector: 'app-file-x-directory-content-item',
   imports: [MatIcon],
@@ -32,6 +35,12 @@ export class FileXDirectoryContentItemComponent {
    * The given node to render as a item
    */
   fileNode = input.required<fileNode>();
+
+  /**
+   * Emits a event when create file or folder is rendred as the given template and when the user either completes the creation 
+   * or clicks away i.e losing focus inform the parent.
+   */
+  createFileOrFolderSelectionLost = output()
 
   /**
    * Selects or un-selects an item

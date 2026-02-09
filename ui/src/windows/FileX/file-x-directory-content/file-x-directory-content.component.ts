@@ -126,6 +126,15 @@ export class FileXDirectoryContentComponent implements OnDestroy {
   }
 
   /**
+   * Runs when a rendred child is a create file or folder and user either completes the transaction or
+   * clicks away, we will just re fetch the nodes of the directory in term removing old nodes
+   */
+  async createFileOrFolderNodeSelectionLost() {
+    let activeDirectory = this.fileXContextService.activeDirectory();
+    await this.displayDirectoryContent(activeDirectory);
+  }
+
+  /**
    * Runs when the backdrop of the container is clicked i.e
    * not a item, doing so will unselect all current selected items etc
    */

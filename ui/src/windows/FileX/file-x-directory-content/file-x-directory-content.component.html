@@ -15,7 +15,12 @@
 
   @if (!isLoading() && !errorMessage()) {
     @for (item of directoryFileNodes(); track $index) {
-      <app-file-x-directory-content-item [fileNode]="item" />
+      <app-file-x-directory-content-item
+        [fileNode]="item"
+        (createFileOrFolderSelectionLost)="
+          createFileOrFolderNodeSelectionLost()
+        "
+      />
     }
   }
 </div>
