@@ -32,10 +32,49 @@ export class ConfirmationMenuComponent implements OnInit, OnDestroy {
       span.innerText = textToRender;
     }
 
-    // add event listners
+    let dialog = this.dialogRef()?.nativeElement;
+    if (!dialog) {
+      console.error('Could not find dialog in template');
+      return;
+    }
+
+    dialog.showModal();
+    this.addEventListeners();
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.removeEventListeners();
+  }
+
+  /**
+   * Adds event listeners for dialog close events
+   */
+  private addEventListeners(): void {
+    const dialog = this.dialogRef()?.nativeElement;
+    if (!dialog) {
+      console.error('Could not find dialog element');
+      return;
+    }
+
+    dialog.addEventListener('close', this.closeEvent);
+  }
+
+  /**
+   * Runs when the dialog is closed via close event such as esc key
+   */
+  private closeEvent = () => {
+    this.cancel();
+  };
+
+  /**
+   * Removes event listeners
+   */
+  private removeEventListeners(): void {
+    const dialog = this.dialogRef()?.nativeElement;
+    if (!dialog) return;
+
+    dialog.removeEventListener('close', this.closeEvent);
+  }
 
   /**
    * Ref to template dialog
@@ -53,13 +92,13 @@ export class ConfirmationMenuComponent implements OnInit, OnDestroy {
    * Runs when the user clicks confirm, resolves the ask
    */
   confirm() {
-    this.confirmationService.resolve(true)
+    this.confirmationService.resolve(true);
   }
 
   /**
    * Runs when the user clicks cancel, rejects the ask
    */
-  cancel(){
-    this.confirmationService.reject("User clicked cancel")
+  cancel() {
+    this.confirmationService.reject('User clicked cancel');
   }
 }
