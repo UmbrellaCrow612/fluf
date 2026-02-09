@@ -1,4 +1,4 @@
-.directory-item {
+.directory_item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,7 +30,7 @@
   }
 }
 
-.directory-item__icon-wrapper {
+.directory_item__icon_wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,22 +40,22 @@
   background-color: var(--bg-tertiary);
 }
 
-.directory-item__icon {
+.directory_item__icon {
   font-size: 32px;
   width: 32px;
   height: 32px;
   color: var(--text-secondary);
 }
 
-.directory-item.is-directory .directory-item__icon {
+.directory_item.is_directory .directory_item__icon {
   color: var(--xterm-yellow);
 }
 
-.directory-item:not(.is-directory) .directory-item__icon {
+.directory_item:not(.is_directory) .directory_item__icon {
   color: var(--xterm-cyan);
 }
 
-.directory-item__name {
+.directory_item__name {
   font-size: 12px;
   color: var(--text-primary);
   text-align: center;
@@ -68,11 +68,12 @@
   line-height: 1.3;
 }
 
-
 .is_selected {
   background-color: var(--bg-active);
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px var(--bg-focus), var(--shadow-sm);
+  box-shadow:
+    0 0 0 2px var(--bg-focus),
+    var(--shadow-sm);
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
