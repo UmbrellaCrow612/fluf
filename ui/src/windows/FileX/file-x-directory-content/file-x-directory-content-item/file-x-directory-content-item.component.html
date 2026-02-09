@@ -18,12 +18,20 @@
 <!---->
 
 @if (fileNode().mode === "createFile" || fileNode().mode === "createFolder") {
-  <div class="directory_item">
-    <div class="directory_item__icon_wrapper">
-      <mat-icon class="directory_item__icon">
-        {{ fileNode().mode === "createFile" ? "folder" : "insert_drive_file" }}
+  <div class="directory_create_item">
+    <div class="directory_create_item_icon">
+      <mat-icon class="directory_create_item_icon">
+        {{ fileNode().isDirectory ? "folder" : "insert_drive_file" }}
       </mat-icon>
     </div>
-    <span class="directory_item__name"> create file </span>
+
+    <form class="directory_create_item_form">
+      <input
+        type="text"
+        class="directory_create_item_input"
+        #createInput
+        (blur)="createInputFocusLost.emit()"
+      />
+    </form>
   </div>
 }

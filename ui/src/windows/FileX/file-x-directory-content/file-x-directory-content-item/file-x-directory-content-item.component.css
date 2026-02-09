@@ -79,3 +79,69 @@
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
+
+.directory_create_item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  border: 2px dashed var(--border-focus);
+  width: 100px;
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0%,
+  100% {
+    border-color: var(--border-focus);
+  }
+  50% {
+    border-color: var(--border-hover);
+  }
+}
+
+.directory_create_item_icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background-color: var(--bg-tertiary);
+}
+
+.directory_create_item_icon mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--xterm-yellow);
+}
+
+.directory_create_item_form {
+  width: 100%;
+  display: flex;
+}
+
+.directory_create_item_input {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-focus);
+  border-radius: 4px;
+  text-align: center;
+  outline: none;
+}
+
+.directory_create_item_input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--bg-focus);
+}
+
+.directory_create_item_input::placeholder {
+  color: var(--text-secondary);
+}

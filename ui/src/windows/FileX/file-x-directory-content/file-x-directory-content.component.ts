@@ -73,6 +73,17 @@ export class FileXDirectoryContentComponent implements OnDestroy {
   }
 
   /**
+   * Re renders nodes of dir when the create node input loses focus so we remove the create nodes
+   */
+  createInputFocusLost = async () => {
+    this.fileXInMemoryContextService.createFileOrFolderNewNode.set(
+      FileXCreateFileOrFolderValues.DEFAULT,
+    ); // reset
+    let activeDirectory = this.fileXContextService.activeDirectory();
+    await this.displayDirectoryContent(activeDirectory);
+  };
+
+  /**
    * Creates a node with the mode provided
    */
   private createNode(mode: fileNodeMode): fileNode {
@@ -123,15 +134,6 @@ export class FileXDirectoryContentComponent implements OnDestroy {
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  /**
-   * Runs when a rendred child is a create file or folder and user either completes the transaction or
-   * clicks away, we will just re fetch the nodes of the directory in term removing old nodes
-   */
-  async createFileOrFolderNodeSelectionLost() {
-    let activeDirectory = this.fileXContextService.activeDirectory();
-    await this.displayDirectoryContent(activeDirectory);
   }
 
   /**

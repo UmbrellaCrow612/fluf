@@ -17,9 +17,7 @@
     @for (item of directoryFileNodes(); track $index) {
       <app-file-x-directory-content-item
         [fileNode]="item"
-        (createFileOrFolderSelectionLost)="
-          createFileOrFolderNodeSelectionLost()
-        "
+        (createInputFocusLost)="createInputFocusLost()"
       />
     }
   }
