@@ -1,11 +1,12 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ApplicationContextService } from './context/application-context.service';
-import { ContextMenuComponent } from "./context-menu/context-menu.component";
+import { ContextMenuComponent } from './context-menu/context-menu.component';
+import { ConfirmationMenuComponent } from "./confirmation-menu/confirmation-menu.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ContextMenuComponent],
+  imports: [RouterOutlet, ContextMenuComponent, ConfirmationMenuComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -19,5 +20,12 @@ export class AppComponent {
    */
   shouldShowContextMenu = computed(() =>
     this.applicationContextService.showContextMenu(),
+  );
+
+  /**
+   * Keeps track if it should show the generic confirmation menu
+   */
+  showShowConfirmationMenu = computed(() =>
+    this.applicationContextService.showConfirmationMenu(),
   );
 }
