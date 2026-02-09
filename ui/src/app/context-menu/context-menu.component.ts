@@ -12,7 +12,7 @@ import { ApplicationContextMenuService } from './application-context-menu.servic
 import { NgComponentOutlet } from '@angular/common';
 
 /**
- * Render the current active context menu into a dialog at the given position they requested =
+ * Render the current active context menu into a dialog at the given position they requested
  */
 @Component({
   selector: 'app-context-menu',

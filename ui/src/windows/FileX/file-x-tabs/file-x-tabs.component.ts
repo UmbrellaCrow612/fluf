@@ -8,6 +8,7 @@ import { filexRemoveTabItem, filexSetTabItemAsActive } from '../utils';
 import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';
 import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-menu/file-x-tab-item-context-menu.component';
 import { getElectronApi } from '../../../utils';
+import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
 
 @Component({
   selector: 'app-file-x-tabs',
@@ -17,6 +18,7 @@ import { getElectronApi } from '../../../utils';
 })
 export class FileXTabsComponent {
   private readonly fileXContextService = inject(FileXContextService);
+  private readonly fileXInMemoryContextService = inject(FileXInMemoryContextService)
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
@@ -34,7 +36,7 @@ export class FileXTabsComponent {
   removeTab(event: Event, item: FileXTab) {
     event.stopPropagation();
 
-    filexRemoveTabItem(item, this.fileXContextService)
+    filexRemoveTabItem(item, this.fileXContextService, this.fileXInMemoryContextService)
   }
 
   /** Changes the active tab and directory to the given item  */

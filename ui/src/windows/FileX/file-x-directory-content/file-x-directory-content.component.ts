@@ -25,7 +25,8 @@ export class FileXDirectoryContentComponent implements OnDestroy {
     effect(async () => {
       console.log('FileXDirectoryContentComponent effect ran');
 
-      this.unsubs.forEach((cb) => cb());
+      this.unsubs.forEach((cb) => cb()); // Unsub previous callbacks
+      this.unsubs = [] // Clear previous ones
 
       // whenever the active dir changes re render items
       let activeDirectory = this.fileXContextService.activeDirectory();
@@ -37,6 +38,10 @@ export class FileXDirectoryContentComponent implements OnDestroy {
           this.displayDirectoryContent(activeDirectory); // keep the UI up to date with directory changes
         }),
       );
+
+      this.unsubs.push(() => {
+        this.api.fsApi.stopWatching(activeDirectory)
+      })
     });
   }
 

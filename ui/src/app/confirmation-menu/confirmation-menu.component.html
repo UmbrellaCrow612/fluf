@@ -1,0 +1,9 @@
+<dialog #confirmationDialog class="confirmation_dialog">
+  <span #message class="confirmation_message"
+    >Are you sure you want to continue with the action</span
+  >
+  <div class="confirmation_btns">
+    <button (click)="confirm()" class="confirm_button">Confirm</button>
+    <button (click)="cancel()" class="cancel_button">Cancel</button>
+  </div>
+</dialog>

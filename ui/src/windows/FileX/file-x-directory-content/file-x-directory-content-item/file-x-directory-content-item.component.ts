@@ -74,7 +74,11 @@ export class FileXDirectoryContentItemComponent {
   goIntoItem(event: Event) {
     event.stopPropagation(); // parent click de selects items
     if (this.fileNode().isDirectory) {
-      ChangeActiveDirectory(this.fileNode().path, this.fileXContextService);
+      ChangeActiveDirectory(
+        this.fileNode().path,
+        this.fileXContextService,
+        this.fileXInMemoryContextService,
+      );
     } else {
       // open file - could try and open it in editor ?
     }

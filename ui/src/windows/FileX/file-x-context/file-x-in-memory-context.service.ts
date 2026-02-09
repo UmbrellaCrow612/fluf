@@ -1,5 +1,9 @@
 import { Injectable, signal, Signal, WritableSignal } from '@angular/core';
-import { FileXInMemoryData } from '../types';
+import {
+  FileXBackHistoryItem,
+  FileXForwardHistoryItem,
+  FileXInMemoryData,
+} from '../types';
 import { fileNode } from '../../../gen/type';
 
 /**
@@ -17,6 +21,8 @@ export class FileXInMemoryContextService {
   getSnapShot(): FileXInMemoryData {
     return {
       selectedItems: this.selectedItems(),
+      backHistoryItems: this.backHistoryItems(),
+      forwardHistoryItems: this.forwardHistoryItems(),
     };
   }
 
@@ -24,4 +30,16 @@ export class FileXInMemoryContextService {
    * Exposes the current selected items - updates to this signal will propigate to those intrested.
    */
   readonly selectedItems: WritableSignal<fileNode[]> = signal<fileNode[]>([]);
+
+  /**
+   * Exposes the forward history for specific tabs - updates to this signal will propigate to those intrested.
+   */
+  readonly forwardHistoryItems: WritableSignal<FileXForwardHistoryItem[]> =
+    signal<FileXForwardHistoryItem[]>([]);
+
+  /**
+   * Exposes back history items for speciic tabs - updates to this signal will propigate to those intrested.
+   */
+  readonly backHistoryItems: WritableSignal<FileXBackHistoryItem[]> =
+    signal<FileXBackHistoryItem[]>([]);
 }

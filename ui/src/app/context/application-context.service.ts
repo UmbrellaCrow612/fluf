@@ -21,4 +21,9 @@ export class ApplicationContextService {
    * Indicates whether the generic context menu should be shown.
    */
   readonly showContextMenu = signal(false);
+
+  /**
+   * Indicates if the generic confirmation menu should be shown
+   */
+  readonly showConfirmationMenu = signal(false);
 }

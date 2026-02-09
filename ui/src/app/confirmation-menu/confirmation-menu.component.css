@@ -1,0 +1,107 @@
+.confirmation_dialog {
+  /* Reset and base */
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  /* Positioning - center of screen */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* Visual styling using your tokens */
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-xl);
+
+  /* Size constraints */
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 90vh;
+
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+
+  /* Animation support */
+  animation: dialog-appear 0.2s ease-out;
+}
+
+/* Backdrop styling */
+.confirmation_dialog::backdrop {
+  background: var(--bg-overlay);
+  backdrop-filter: blur(2px);
+}
+
+.confirmation_message {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0;
+}
+
+.confirmation_btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirm_button,
+.cancel_button {
+  padding: 10px 20px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.confirm_button {
+  background: var(--bg-active);
+  color: var(--text-primary);
+  border-color: var(--bg-active);
+}
+
+.confirm_button:hover {
+  background: var(--bg-focus);
+  border-color: var(--bg-focus);
+  box-shadow: var(--shadow-sm);
+}
+
+.confirm_button:active {
+  transform: translateY(1px);
+}
+
+.cancel_button {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.cancel_button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.cancel_button:active {
+  transform: translateY(1px);
+}
+
+/* Entry animation */
+@keyframes dialog-appear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

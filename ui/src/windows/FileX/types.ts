@@ -1,4 +1,4 @@
-import { fileNode } from "../../gen/type";
+import { fileNode } from '../../gen/type';
 
 /**
  * Represents a tab folder opened in file x
@@ -22,6 +22,16 @@ export type FileXInMemoryData = {
    * Represents items that have been selected via a click or ctrl click i.e for multiple items
    */
   selectedItems: fileNode[];
+
+  /**
+   * Contains back history for specific tabs
+   */
+  backHistoryItems: FileXBackHistoryItem[];
+
+  /**
+   * Contains forward history for specific tabs
+   */
+  forwardHistoryItems: FileXForwardHistoryItem[];
 };
 
 /**
@@ -73,16 +83,6 @@ export type FileXStoreData = {
    * List of items pinned for quick access
    */
   quickAccesses: FileXQuickAccess[];
-
-  /**
-   * Contains back history for specific tabs
-   */
-  backHistoryItems: FileXBackHistoryItem[];
-
-  /**
-   * Contains forward history for specific tabs
-   */
-  forwardHistoryItems: FileXForwardHistoryItem[];
 };
 
 /**
