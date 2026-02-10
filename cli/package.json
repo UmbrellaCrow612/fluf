@@ -1,0 +1,28 @@
+{
+  "name": "cli",
+  "version": "0.0.1",
+  "description": "A cli tool used to interact with the fluffy editor via the cli in a programmatic way",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cli",
+    "fluffy"
+  ],
+  "type": "module",
+  "author": "Yousaf Wazir",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.2.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "node-logy": "^0.2.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}

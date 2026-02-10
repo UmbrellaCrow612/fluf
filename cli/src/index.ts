@@ -1,25 +1,45 @@
-const net = require("net");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
+import net from "net";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 const AUTH_FILE = path.join(os.tmpdir(), "myelectron-app.auth");
 
-class SecureSocketClient {
-  constructor() {
-    this.socket = null;
-    this.authenticated = false;
-    this.messageId = 0;
-    this.pending = new Map();
-  }
+interface AuthData {
+  pid: number;
+  socketPath: string;
+  token: string;
+}
 
-  async connect() {
+interface Message {
+  id?: number;
+  type: string;
+  success?: boolean;
+  error?: string;
+  result?: unknown;
+  data?: string;
+  script?: string;
+}
+
+interface PendingRequest {
+  resolve: (value: unknown) => void;
+  reject: (reason: Error) => void;
+}
+
+class SecureSocketClient {
+  private socket: net.Socket | null = null;
+  private authenticated: boolean = false;
+  private authFailed: boolean = false;
+  private messageId: number = 0;
+  private pending: Map<number, PendingRequest> = new Map();
+
+  async connect(): Promise<this> {
     // Read auth file
     if (!fs.existsSync(AUTH_FILE)) {
       throw new Error("Electron app not running (no auth file)");
     }
     
-    const auth = JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
+    const auth: AuthData = JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
     
     // Verify PID is still running (basic check)
     try {
@@ -33,19 +53,19 @@ class SecureSocketClient {
         console.log("[CLI] Connected to socket");
         
         // Send auth immediately
-        this.socket.write(JSON.stringify({ type: "auth", token: auth.token }) + "\n");
+        this.socket!.write(JSON.stringify({ type: "auth", token: auth.token }) + "\n");
       });
       
       let buffer = "";
       
-      this.socket.on("data", (data) => {
+      this.socket.on("data", (data: Buffer) => {
         buffer += data.toString();
-        let lines = buffer.split("\n");
-        buffer = lines.pop();
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
         
         for (const line of lines) {
           if (!line.trim()) continue;
-          this.handleMessage(JSON.parse(line));
+          this.handleMessage(JSON.parse(line) as Message);
         }
       });
       
@@ -65,26 +85,26 @@ class SecureSocketClient {
     });
   }
 
-  handleMessage(msg) {
+  private handleMessage(msg: Message): void {
     if (msg.type === "auth") {
-      this.authenticated = msg.success;
+      this.authenticated = msg.success ?? false;
       this.authFailed = !msg.success;
       return;
     }
     
     if (msg.id && this.pending.has(msg.id)) {
-      const { resolve, reject } = this.pending.get(msg.id);
+      const { resolve, reject } = this.pending.get(msg.id)!;
       this.pending.delete(msg.id);
       
       if (msg.type === "error") {
-        reject(new Error(msg.error));
+        reject(new Error(msg.error ?? "Unknown error"));
       } else {
         resolve(msg.result);
       }
     }
   }
 
-  send(type, params = {}) {
+  send(type: string, params: Record<string, unknown> = {}): Promise<unknown> {
     return new Promise((resolve, reject) => {
       if (!this.authenticated) {
         reject(new Error("Not authenticated"));
@@ -95,7 +115,7 @@ class SecureSocketClient {
       this.pending.set(id, { resolve, reject });
       
       const message = { id, type, ...params };
-      this.socket.write(JSON.stringify(message) + "\n");
+      this.socket!.write(JSON.stringify(message) + "\n");
       
       // Timeout
       setTimeout(() => {
@@ -107,7 +127,7 @@ class SecureSocketClient {
     });
   }
 
-  disconnect() {
+  disconnect(): void {
     if (this.socket) {
       this.socket.end();
     }
@@ -115,7 +135,7 @@ class SecureSocketClient {
 }
 
 // CLI Commands
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
   
@@ -125,42 +145,48 @@ async function main() {
     await client.connect();
     
     switch (command) {
-      case "ping":
+      case "ping": {
         const pong = await client.send("ping");
         console.log("Response:", pong);
         break;
+      }
         
-      case "eval":
+      case "eval": {
         const script = args.slice(1).join(" ");
         const result = await client.send("eval", { script });
         console.log("Result:", result);
         break;
+      }
         
-      case "windows":
+      case "windows": {
         const windows = await client.send("get-windows");
         console.log("Windows:", windows);
         break;
+      }
         
-      case "reload":
+      case "reload": {
         await client.send("reload");
         console.log("Reloaded");
         break;
+      }
         
-      case "focus":
+      case "focus": {
         await client.send("focus");
         console.log("Focused");
         break;
+      }
         
-      case "screenshot":
-        const img = await client.send("screenshot");
+      case "screenshot": {
+        const img = await client.send("screenshot") as { data: string };
         fs.writeFileSync("screenshot.png", Buffer.from(img.data, "base64"));
         console.log("Screenshot saved");
         break;
+      }
         
-      case "interactive":
+      case "interactive": {
         console.log("Interactive mode. Commands: ping, eval <code>, reload, focus, quit");
         process.stdin.setEncoding("utf8");
-        process.stdin.on("data", async (line) => {
+        process.stdin.on("data", async (line: string) => {
           line = line.trim();
           if (line === "quit") {
             client.disconnect();
@@ -169,18 +195,19 @@ async function main() {
           
           const [cmd, ...rest] = line.split(" ");
           try {
-            let result;
+            let result: unknown;
             if (cmd === "eval") {
               result = await client.send("eval", { script: rest.join(" ") });
             } else {
-              result = await client.send(cmd);
+              result = await client.send(cmd!);
             }
             console.log(">", result);
           } catch (e) {
-            console.error("Error:", e.message);
+            console.error("Error:", (e as Error).message);
           }
         });
         return; // Keep running
+      }
         
       default:
         console.log("Commands: ping, eval <code>, windows, reload, focus, screenshot, interactive");
@@ -189,7 +216,7 @@ async function main() {
     client.disconnect();
     
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error:", (error as Error).message);
     process.exit(1);
   }
 }
