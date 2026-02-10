@@ -23,7 +23,7 @@ const stopAllLanguageServers = async () => {
 
   for (const lsp of lsps) {
     let result = await lsp.StopAll();
-    logger.info(JSON.stringify(result));
+    logger.info(result);
   }
 };
 
