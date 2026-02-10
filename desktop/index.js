@@ -19,7 +19,7 @@ const {
 } = require("./lsp/bridge");
 const { registerFileXListeners } = require("./file-x");
 const { registerStoreListeners } = require("./store");
-const { createSocketServer, SOCKET_PATH } = require("./server/socket-server");
+const { createSocketServer, SOCKET_PATH } = require("./command-server/tpc-server");
 const fs = require("node:fs")
 
 /**
