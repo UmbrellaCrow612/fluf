@@ -19,6 +19,13 @@ const {
 } = require("./lsp/bridge");
 const { registerFileXListeners } = require("./file-x");
 const { registerStoreListeners } = require("./store");
+const { createSocketServer, SOCKET_PATH } = require("./server/socket-server");
+const fs = require("node:fs")
+
+/**
+ * @type {import("net").Server | null}
+ */
+let socketServer = null;
 
 loadEnv();
 registerProtocols();
@@ -66,6 +73,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
+  socketServer = createSocketServer();
 
   registerRipgrepListeners(ipcMain);
   registerGitListeners(ipcMain);
@@ -83,6 +91,18 @@ app.whenReady().then(() => {
 });
 
 app.on("before-quit", async () => {
+  if (socketServer) {
+    socketServer.close();
+    logger.info("Closed socket server")
+  }
+  // Cleanup socket file
+  if (process.platform !== "win32") {
+    try {
+      fs.unlinkSync(SOCKET_PATH);
+      logger.info("Removed socket path: ", SOCKET_PATH)
+    } catch (e) {}
+  }
+
   await stopAllLanguageServers();
   cleanUpWatchers();
   cleanUpShells();

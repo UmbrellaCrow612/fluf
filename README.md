@@ -35,6 +35,8 @@ A simple text editor written in electron and angular
 
 - Command palette - search files, change themes
 
+- Control the UI and window features via a CLI
+
 ---
 
 ## **Project Overview**
@@ -42,6 +44,7 @@ A simple text editor written in electron and angular
 - **`UI/`** – Contains the frontend source code (built with **Angular**)
 - **`Desktop/`** – Contains the Electron desktop wrapper (built with **Electron** and **esbuild**)
 - **`Scripts/`** – Contains custom build scripts for packaging the Angular app with Electron
+- **`CLI/`** - Contains CLI tool code used to interact with the application via cli cmds
 
 ---
 
