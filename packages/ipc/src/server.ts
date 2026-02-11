@@ -21,11 +21,6 @@ export class IPCServer extends EventEmitter {
    */
   private _clients: Set<Socket> = new Set<Socket>();
 
-  /**
-   * Holds the buffer data from a socket client
-   */
-  private _buffer = "";
-
   constructor() {
     super();
   }
@@ -75,12 +70,17 @@ export class IPCServer extends EventEmitter {
   private _handleConnection(socket: Socket): void {
     this._clients.add(socket);
 
+    /**
+     * Each connection socket gets it's own buffer
+     */
+    let _buffer: string = "";
+
     socket.on("data", (data) => {
-      this._buffer += data.toString();
+      _buffer += data.toString();
 
       // Handle newline-delimited JSON messages
-      let lines = this._buffer.split("\n");
-      this._buffer = lines.pop() || ""; // Keep incomplete line in buffer
+      let lines = _buffer.split("\n");
+      _buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
       for (const line of lines) {
         if (line.trim()) {
