@@ -102,6 +102,33 @@ export type FileXBackHistoryItem = {
 };
 
 /**
+ * Enum like type which indicates if it should create a file node, based on the number it provides
+ * then it will create that node type
+ */
+export const FileXCreateFileOrFolderValues = {
+  /**
+   * Indicates it should render the normal file node component
+   */
+  DEFAULT: 0x00,
+
+  /**
+   * Indicates this node should be rendered as node to create a file
+   */
+  FILE: 0x01,
+
+  /**
+   * Indicates this node should be rendered as a node to crete a folder
+   */
+  FOLDER: 0x02,
+} as const;
+
+/**
+ * What value it can be in terms of numbers refer to enum for what each number means
+ */
+export type FileXCreateFileOrFolder =
+  (typeof FileXCreateFileOrFolderValues)[keyof typeof FileXCreateFileOrFolderValues];
+
+/**
  * Represents forward history for a specific tab
  */
 export type FileXForwardHistoryItem = {

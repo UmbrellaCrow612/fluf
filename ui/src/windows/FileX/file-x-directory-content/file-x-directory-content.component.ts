@@ -1,9 +1,10 @@
 import { FileXInMemoryContextService } from './../file-x-context/file-x-in-memory-context.service';
 import { Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
-import { fileNode, voidCallback } from '../../../gen/type';
+import { fileNode, fileNodeMode, voidCallback } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
 import { FileXDirectoryContentItemComponent } from './file-x-directory-content-item/file-x-directory-content-item.component';
+import { FileXCreateFileOrFolderValues } from '../types';
 
 /**
  * Display the directorys content according to the view pattern - ushc as grid based or other formats
@@ -23,10 +24,10 @@ export class FileXDirectoryContentComponent implements OnDestroy {
 
   constructor() {
     effect(async () => {
-      console.log('FileXDirectoryContentComponent effect ran');
+      console.log('FileXDirectoryContentComponent display effect ran');
 
       this.unsubs.forEach((cb) => cb()); // Unsub previous callbacks
-      this.unsubs = [] // Clear previous ones
+      this.unsubs = []; // Clear previous ones
 
       // whenever the active dir changes re render items
       let activeDirectory = this.fileXContextService.activeDirectory();
@@ -34,19 +35,71 @@ export class FileXDirectoryContentComponent implements OnDestroy {
 
       this.unsubs.push(
         this.api.fsApi.onChange(activeDirectory, () => {
-          console.log("directory changed")
+          console.log('directory changed');
           this.displayDirectoryContent(activeDirectory); // keep the UI up to date with directory changes
         }),
       );
 
       this.unsubs.push(() => {
-        this.api.fsApi.stopWatching(activeDirectory)
-      })
+        this.api.fsApi.stopWatching(activeDirectory);
+      });
+    });
+
+    // Whenever user clicks new button we create a new node
+    effect(async () => {
+      console.log('FileXDirectoryContentComponent create effect ran');
+      let value = this.fileXInMemoryContextService.createFileOrFolderNewNode(); // whenever this is triggered i.e add the node
+
+      if (value === FileXCreateFileOrFolderValues.FILE) {
+        // create a file node
+        this.directoryFileNodes.update((x) => {
+          x.push(this.createNode('createFile'));
+          return structuredClone(x);
+        });
+      }
+
+      if (value === FileXCreateFileOrFolderValues.FOLDER) {
+        // create a folder node
+        this.directoryFileNodes.update((x) => {
+          x.push(this.createNode('createFolder'));
+          return structuredClone(x);
+        });
+      }
     });
   }
 
   ngOnDestroy(): void {
     this.unsubs.forEach((cb) => cb());
+  }
+
+  /**
+   * Re renders nodes of dir when the create node input loses focus so we remove the create nodes
+   */
+  createInputFocusLost = async () => {
+    this.fileXInMemoryContextService.createFileOrFolderNewNode.set(
+      FileXCreateFileOrFolderValues.DEFAULT,
+    ); // reset
+    let activeDirectory = this.fileXContextService.activeDirectory();
+    await this.displayDirectoryContent(activeDirectory);
+  };
+
+  /**
+   * Creates a node with the mode provided
+   */
+  private createNode(mode: fileNodeMode): fileNode {
+    return {
+      children: [],
+      expanded: false,
+      extension: '',
+      isDirectory: false,
+      lastModified: '',
+      mode,
+      name: '',
+      parentName: '',
+      parentPath: '',
+      path: '',
+      size: 0,
+    };
   }
 
   /**

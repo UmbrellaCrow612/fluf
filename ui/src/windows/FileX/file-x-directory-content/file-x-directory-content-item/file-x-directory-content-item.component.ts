@@ -1,21 +1,67 @@
 import { FileXContextService } from './../../file-x-context/file-x-context.service';
-import { Component, computed, inject, input, Signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  OnInit,
+  output,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { fileNode } from '../../../../gen/type';
 import { MatIcon } from '@angular/material/icon';
 import { ChangeActiveDirectory } from '../../utils';
 import { FileXInMemoryContextService } from '../../file-x-context/file-x-in-memory-context.service';
+import { FileXCreateFileOrFolderValues } from '../../types';
 
+/**
+ * Renders a directory item representing a file or folder
+ */
 @Component({
   selector: 'app-file-x-directory-content-item',
   imports: [MatIcon],
   templateUrl: './file-x-directory-content-item.component.html',
   styleUrl: './file-x-directory-content-item.component.css',
 })
-export class FileXDirectoryContentItemComponent {
+export class FileXDirectoryContentItemComponent implements OnInit {
   private readonly fileXContextService = inject(FileXContextService);
   private readonly fileXInMemoryContextService = inject(
     FileXInMemoryContextService,
   );
+
+  ngOnInit(): void {
+    setTimeout(() => {
+      this.focusCreateInput();
+    }, 10); // wait for angular to resolve UI
+  }
+
+  /**
+   * Trys to focus the create input
+   */
+  private focusCreateInput = () => {
+    let mode = this.fileNode().mode;
+    if (mode === 'default') {
+      return;
+    }
+
+    let input = this.createInputRef()?.nativeElement;
+    if (!input) {
+      console.error(
+        'Either this is being run for a mode that does not render the create input or it has not yet rendered in the DOM',
+      );
+      return;
+    }
+
+    input.focus();
+  };
+
+  /**
+   * Ref to the create input template
+   */
+  private readonly createInputRef =
+    viewChild<ElementRef<HTMLInputElement>>('createInput');
 
   /**
    * Indicates if the given item is selected
@@ -32,6 +78,11 @@ export class FileXDirectoryContentItemComponent {
    * The given node to render as a item
    */
   fileNode = input.required<fileNode>();
+
+  /**
+   * Emits when a file creation is rendered and then user loses focus on the input
+   */
+  createInputFocusLost = output();
 
   /**
    * Selects or un-selects an item

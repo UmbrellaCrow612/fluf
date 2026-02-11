@@ -5,6 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
 import { voidCallback } from '../../../gen/type';
 import { ConfirmationService } from '../../../app/confirmation/confirmation.service';
+import { FileXCreateFileOrFolderValues } from '../types';
 
 /**
  * Represents a clickable item
@@ -54,8 +55,10 @@ export class FileXActionsComponent {
       // user can create anytime
       isDisabled: computed(() => false),
 
-      onClick: () => {
-        return Promise.resolve();
+      onClick: async () => {
+        this.fileXInMemoryContextService.createFileOrFolderNewNode.set(
+          FileXCreateFileOrFolderValues.FOLDER,
+        ); // dropdown select create file or folder todo add
       },
     },
     {
@@ -76,7 +79,7 @@ export class FileXActionsComponent {
             // run delete logic
           }
         } catch (error) {
-          console.error(error) // promise rejects
+          console.error(error); // promise rejects
         }
       },
     },
