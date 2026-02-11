@@ -1,142 +1,6 @@
 import os from "node:os";
 import path from "node:path";
-
-/**
- * Current version of IPC protocol
- */
-export const PROTOCOL_VERSION = "1.0";
-
-/**
- * Enumeration of available IPC (Inter-Process Communication) method names.
- * Used to standardize communication between processes and ensure type safety.
- *
- * @example
- * ```typescript
- * // Using in a request
- * const request: IPCRequest = {
- *   id: "123-456",
- *   method: IPCMethods.ping,
- *   data: { message: "hello" }
- * };
- * ```
- */
-export const IPCMethods = {
-  /**
-   * Ping the server and send arguments across the IPC boundary.
-   * Used for health checks and basic connectivity verification.
-   */
-  ping: "ping",
-
-  /**
-   * Open a resource, connection, or channel.
-   * Implementation details depend on the specific IPC handler.
-   */
-  open: "open",
-
-  /**
-   * Close a resource, connection, or channel.
-   * Should be paired with previous `open` calls to clean up resources.
-   */
-  close: "close",
-} as const;
-
-/**
- * Union type of all valid IPC method names.
- * Derived from the {@link IPCMethods} constant object.
- *
- * @example
- * ```typescript
- * function handleMethod(method: IPCMethodType) {
- *   if (method === IPCMethods.ping) {
- *     // handle ping
- *   }
- * }
- * ```
- */
-export type IPCMethodType = (typeof IPCMethods)[keyof typeof IPCMethods];
-
-/**
- * Set containing all valid IPC method strings for O(1) lookup validation.
- * Useful for runtime checking of incoming method names.
- *
- * @example
- * ```typescript
- * if (validIPCMethods.has(incomingMethod)) {
- *   // Safe to process as IPCMethodType
- * }
- * ```
- */
-export const validIPCMethods = new Set(Object.values(IPCMethods));
-
-/**
- * Represents the standard shape each IPC request will take.
- * All requests must conform to this structure for proper routing and handling.
- *
- * @template T - Optional type parameter for the data payload
- *
- * @example
- * ```typescript
- * const request: IPCRequest = {
- *   id: crypto.randomUUID(),
- *   method: IPCMethods.open,
- *   data: { path: "/tmp/file.txt" }
- * };
- * ```
- */
-export type IPCRequest<T = any> = {
-  /**
-   * Unique identifier for correlating requests with responses.
-   * Should be generated using UUID, nanoid, or similar scheme.
-   * Example format: `"123-4321"` or `"550e8400-e29b-41d4-a716-446655440000"`
-   */
-  id: string;
-
-  /**
-   * The IPC method to invoke. Must be one of the defined {@link IPCMethods}.
-   */
-  method: IPCMethodType;
-
-  /**
-   * Optional payload data to send with the request.
-   * Type varies depending on the specific method being called.
-   */
-  data?: T;
-};
-
-/**
- * Represents the standard shape each IPC response will take.
- * Responses mirror their corresponding requests via the `id` and `method` fields.
- *
- * @template T - Optional type parameter for the data payload
- *
- * @example
- * ```typescript
- * const response: IPCResponse = {
- *   id: request.id, // Must match the request ID
- *   method: request.method,
- *   data: { success: true, result: [] }
- * };
- * ```
- */
-export type IPCResponse<T = any> = {
-  /**
-   * ID matching the original request for correlation.
-   * Clients use this to match async responses to pending requests.
-   */
-  id: string;
-
-  /**
-   * The method that was invoked, echoing back from the request.
-   * Useful for routing responses to the correct handler.
-   */
-  method: IPCMethodType;
-
-  /**
-   * Optional response payload containing results or error information.
-   * Structure depends on the method and success/failure state.
-   */
-  data?: T;
-};
+import fs from "node:fs"
 
 /**
  * Name of the pipe/socket used for IPC communication.
@@ -182,5 +46,46 @@ export const getSocketPath = (): string => {
     return path.join(WINDOWS_PIPE_PREFIX, PIPE_NAME);
   } else {
     return path.join(os.tmpdir(), `${PIPE_NAME}.sock`);
+  }
+};
+
+/**
+ * Cleans up the socket file if it exists.
+ * 
+ * On Windows, this is a no-op since named pipes don't use filesystem entries.
+ * On Unix-like systems, removes the socket file from the temporary directory
+ * to prevent "address already in use" errors when binding.
+ * 
+ * @returns {Promise<boolean>} `true` if a file was removed, `false` otherwise
+ * 
+ * @example
+ * ```ts
+ * // Before starting IPC server
+ * await cleanSocket(); // Removes stale socket file on Unix, no-op on Windows
+ * ```
+ */
+export const cleanSocket = async (): Promise<boolean> => {
+  if (os.platform() === "win32") {
+    // Windows named pipes don't create filesystem entries
+    return false;
+  }
+
+  const socketPath = getSocketPath();
+
+  try {
+    await fs.promises.access(socketPath);
+  } catch {
+    // File doesn't exist
+    return false;
+  }
+
+  try {
+    await fs.promises.unlink(socketPath);
+    return true;
+  } catch (err) {
+    // Socket might be in use by another process
+    throw new Error(
+      `Failed to remove stale socket at ${socketPath}: ${(err as Error).message}`
+    );
   }
 };
