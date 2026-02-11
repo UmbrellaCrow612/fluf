@@ -1,6 +1,6 @@
 import { Logger } from "node-logy";
 import net from "node:net";
-import { validCommands, type ParsedCommand } from "./protocol.js";
+import { COMMANDS, validCommands, type ParsedCommand } from "./protocol.js";
 
 /** Logger */
 const logger = new Logger();
@@ -36,7 +36,7 @@ const parseCmds = (parts: string[]): ParsedCommand | null => {
  * Parses the data passed to stdin
  */
 const parseStdin = () => {
-  let input = stdinBuffer.trim();   
+  let input = stdinBuffer.trim();
   stdinBuffer = "";
 
   if (!input) return;
@@ -58,6 +58,21 @@ const parseStdin = () => {
   // TODO: client.write(JSON.stringify(cmd));
 };
 
+/**
+ * Perform l;ogic based on a command
+ * @param command The parsed command obj
+ */
+const handleCommand = (command: ParsedCommand) => {
+  switch (command.command) {
+    case COMMANDS.exit:
+      // disconnect to tcp server
+      // remove stdin listner
+      break;
+
+    default:
+      break;
+  }
+};
 
 const client = net.createConnection({ port: PORT, host: HOST }, () => {
   logger.info("Connected to client tcp server at: ", HOST + PORT);
