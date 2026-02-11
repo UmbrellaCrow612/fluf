@@ -3,6 +3,7 @@ const os = require("node:os");
 const path = require("node:path");
 const fs = require("node:fs");
 const { logger } = require("../logger");
+const { COMMANDS } = require("../gen/protocol");
 
 /**
  * Reference to the command server
@@ -49,6 +50,21 @@ function cleanupSocketFile(path) {
 }
 
 /**
+ * Handle a command sent from IPC
+ * @param {import("../gen/protocol").ParsedCommand} parsedCmd - The command object
+ */
+function handleParsedCommand(parsedCmd) {
+  switch (parsedCmd.command) {
+    case COMMANDS.ping:
+      logger.info("PING recieved");
+      break;
+
+    default:
+      break;
+  }
+}
+
+/**
  * Create a command server using UNIX domain sockets (macOS/Linux)
  * or named pipes (Windows)
  * @returns {void}
@@ -79,9 +95,11 @@ function createCommandServer() {
 
     socket.on("data", (data) => {
       try {
-        let parsed = JSON.parse(data.toString())
+        /** @type {import("../gen/protocol").ParsedCommand} */
+        let parsed = JSON.parse(data.toString());
+        handleParsedCommand(parsed)
       } catch (error) {
-        logger.error("Failed tro parse data sent to socket: ", error)
+        logger.error("Failed tro parse data sent to socket: ", error);
       }
     });
 

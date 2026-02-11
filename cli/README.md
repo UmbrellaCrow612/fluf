@@ -13,3 +13,13 @@ npx tsc
 
 - Build it 
 - Run the `node ./dist/index.js`
+
+
+# Building 
+
+```bash
+npm run build
+```
+
+- Builds the output dist
+- Copies over definition files to desktop as it needs them
