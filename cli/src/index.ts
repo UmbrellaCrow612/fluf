@@ -1,73 +1,86 @@
-import net from 'node:net';
+import { Logger } from "node-logy";
+import net from "node:net";
+import { validCommands, type ParsedCommand } from "./protocol.js";
+
+/** Logger */
+const logger = new Logger();
+
+/**
+ * Holds the stdin buffer data
+ */
+let stdinBuffer = "";
 
 const PORT = 3214;
 const HOST = "127.0.0.1";
 
-// Define available commands with proper typing
-type CommandHandler = (args: string[]) => object;
+/**
+ * Trys to parse a cmd and it's arguments
+ */
+const parseCmds = (parts: string[]): ParsedCommand | null => {
+  if (parts.length < 1) {
+    return null;
+  }
 
-const COMMANDS: Record<string, CommandHandler> = {
-    ping: () => ({ type: 'ping', timestamp: Date.now() })
+  let cmd = parts[0] ?? ("" as any);
+  if (!validCommands.has(cmd)) {
+    return null;
+  }
+
+  return {
+    command: cmd,
+    args: parts.slice(1),
+  };
 };
 
+/**
+ * Parses the data passed to stdin
+ */
+const parseStdin = () => {
+  let input = stdinBuffer.trim();   
+  stdinBuffer = "";
+
+  if (!input) return;
+
+  let parts = input.split(/\s+/);
+  let cmd = parseCmds(parts);
+
+  if (!cmd) {
+    logger.error(
+      "Provided invalid cmd:",
+      cmd,
+      "Valid commands are:",
+      Array.from(validCommands),
+    );
+    return;
+  }
+
+  logger.info("Sending cmd:", cmd);
+  // TODO: client.write(JSON.stringify(cmd));
+};
+
+
 const client = net.createConnection({ port: PORT, host: HOST }, () => {
-    console.error("Connected to server");
-    console.error("Available commands: ping");
+  logger.info("Connected to client tcp server at: ", HOST + PORT);
 });
 
-// Buffer for incomplete lines
-let buffer = '';
-
-process.stdin.on('data', (data) => {
-    buffer += data.toString();
-
-    // Process complete lines
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? ''; // Keep incomplete line in buffer
-
-    for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-
-        // Parse command
-        const parts = trimmed.split(/\s+/);
-        // @ts-ignore
-        const cmd = parts[0].toLowerCase();
-        const args = parts.slice(1);
-
-        const handler = COMMANDS[cmd];
-        if (handler) {
-            const payload = handler(args);
-            const message = JSON.stringify(payload) + '\n';
-            client.write(message);
-            console.error(`Sent: ${cmd}`);
-        } else {
-            console.error(`Unknown command: ${cmd}`);
-            console.error("Available: ping");
-        }
-    }
-});
-
-process.stdin.on('end', () => {
-    client.end();
-});
-
-// Handle responses from server
-client.on('data', (data) => {
-    process.stdout.write(data);
+client.on("data", (data) => {
+  process.stdout.write(data);
 });
 
 // Handle errors
 client.on("error", (err) => {
-    console.error("Connection error:", err.message);
-    process.exit(1);
+  logger.error("Connection error:", err);
+  process.exit(1);
 });
 
 client.on("end", () => {
-    console.error("Server closed connection");
-    process.exit(0);
+  logger.error("Server closed connection");
+  process.exit(0);
 });
 
-client.on("close", () => {
-    process.stdin.end();
+process.stdin.on("data", (chunk) => {
+  stdinBuffer += chunk.toString();
+  if (stdinBuffer.includes("\n")) {
+    parseStdin();
+  }
 });
