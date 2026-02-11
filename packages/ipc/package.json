@@ -1,0 +1,24 @@
+{
+  "name": "fluffy-ipc",
+  "version": "0.0.1",
+  "description": "Contains the IPC contract and code needed to communicate to fluffy IPC",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+  },
+  "keywords": [
+    "Fluffy",
+    "ipc"
+  ],
+  "author": "Yousaf Wazir",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}
