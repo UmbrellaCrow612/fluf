@@ -78,7 +78,11 @@ function createCommandServer() {
     logger.info("Client connected:", clientInfo);
 
     socket.on("data", (data) => {
-      logger.info(data);
+      try {
+        let parsed = JSON.parse(data.toString())
+      } catch (error) {
+        logger.error("Failed tro parse data sent to socket: ", error)
+      }
     });
 
     socket.on("end", () => {

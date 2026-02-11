@@ -2,7 +2,7 @@ import { Logger } from "node-logy";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { COMMANDS, validCommands, type ParsedCommand } from "./protocol.js";
+import { validCommands, type ParsedCommand } from "./protocol.js";
 
 /** Logger */
 const logger = new Logger();
@@ -70,7 +70,7 @@ const handleCommand = (command: ParsedCommand) => {
       const payload = JSON.stringify(command);
       logger.info("Sending:", payload);
 
-      client.write(payload + "\n");
+      client.write(payload);
       cleanExit();
       break;
   }
@@ -114,7 +114,7 @@ client.on("error", (err) => {
 });
 
 client.on("end", () => {
-  logger.error("Server closed connection");
+  logger.info("Server closed connection");
 });
 
 process.on("SIGINT", () => {
