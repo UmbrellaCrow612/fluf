@@ -60,19 +60,18 @@ const parseCmds = (parts: string[]): ParsedCommand | null => {
  */
 const handleCommand = (command: ParsedCommand) => {
   switch (command.command) {
-    case COMMANDS.exit:
-      cleanExit();
-      process.exit(0);
     default:
       if (client.destroyed) {
         logger.error("Cannot send command, connection is closed.");
-        process.exit(1);
+        cleanExit();
+        return;
       }
 
       const payload = JSON.stringify(command);
       logger.info("Sending:", payload);
 
       client.write(payload + "\n");
+      cleanExit();
       break;
   }
 };
@@ -80,7 +79,7 @@ const handleCommand = (command: ParsedCommand) => {
 const client = net.createConnection(SOCKET_PATH, () => {
   logger.info("Connected to command server at:", SOCKET_PATH);
 
-  const args = process.argv.slice(2); 
+  const args = process.argv.slice(2);
 
   if (args.length === 0) {
     logger.error("No command provided. Usage: ./index.js <command> [args...]");
@@ -112,16 +111,13 @@ client.on("data", (data) => {
 // Handle errors
 client.on("error", (err) => {
   logger.error("Connection error:", err);
-  process.exit(1);
 });
 
 client.on("end", () => {
   logger.error("Server closed connection");
-  process.exit(0);
 });
 
 process.on("SIGINT", () => {
   logger.warn("Caught Ctrl-C (SIGINT)");
   cleanExit();
-  process.exit(0);
 });

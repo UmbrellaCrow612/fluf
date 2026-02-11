@@ -18,11 +18,6 @@ export const COMMANDS = {
    * Ping the server and send args across
    */
   ping: "ping",
-
-  /**
-   * Used for clients to stop the connection to the tcp server
-   */
-  exit: "exit",
 } as const;
 
 /**
