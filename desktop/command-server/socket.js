@@ -4,7 +4,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const { logger } = require("../logger");
 
-/**
+/**Z
  * Reference to the command server
  * @type {import("node:net").Server | null}
  */
@@ -95,7 +95,7 @@ function createCommandServer() {
     socket.on("data", (data) => {
       try {
         let parsed = JSON.parse(data.toString());
-        handleParsedCommand(parsed)
+        handleParsedCommand(parsed);
       } catch (error) {
         logger.error("Failed tro parse data sent to socket: ", error);
       }
