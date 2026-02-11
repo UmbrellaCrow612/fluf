@@ -1,5 +1,7 @@
 import { Logger } from "node-logy";
 import net from "node:net";
+import os from "node:os";
+import path from "node:path";
 import { COMMANDS, validCommands, type ParsedCommand } from "./protocol.js";
 
 /** Logger */
@@ -10,8 +12,22 @@ const logger = new Logger();
  */
 let stdinBuffer = "";
 
-const PORT = 3214;
-const HOST = "127.0.0.1";
+/**
+ * Get the socket/pipe path based on platform
+ */
+const getSocketPath = (): string => {
+  const platform = os.platform();
+
+  if (platform === "win32") {
+    // Windows named pipe
+    return "\\\\.\\pipe\\myapp-command-server";
+  } else {
+    // macOS/Linux UNIX domain socket
+    return path.join(os.tmpdir(), "myapp-command-server.sock");
+  }
+};
+
+const SOCKET_PATH = getSocketPath();
 
 /**
  * Extracts exit logic into a callback
@@ -81,20 +97,20 @@ const handleCommand = (command: ParsedCommand) => {
       break;
     default:
       if (client.destroyed) {
-        logger.error("Cannot send command, TCP connection is closed.");
+        logger.error("Cannot send command, connection is closed.");
         return;
       }
 
       const payload = JSON.stringify(command);
-      logger.info("Sending to TCP:", payload);
+      logger.info("Sending:", payload);
 
       client.write(payload + "\n");
       break;
   }
 };
 
-const client = net.createConnection({ port: PORT, host: HOST }, () => {
-  logger.info("Connected to client tcp server at: ", HOST + PORT);
+const client = net.createConnection(SOCKET_PATH, () => {
+  logger.info("Connected to command server at:", SOCKET_PATH);
 });
 
 client.on("data", (data) => {
