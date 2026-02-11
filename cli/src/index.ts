@@ -8,11 +8,6 @@ import { COMMANDS, validCommands, type ParsedCommand } from "./protocol.js";
 const logger = new Logger();
 
 /**
- * Holds the stdin buffer data
- */
-let stdinBuffer = "";
-
-/**
  * Get the socket/pipe path based on platform
  */
 const getSocketPath = (): string => {
@@ -30,12 +25,10 @@ const getSocketPath = (): string => {
 const SOCKET_PATH = getSocketPath();
 
 /**
- * Extracts exit logic into a callback
+ * Clean up and exit
  */
 const cleanExit = () => {
   logger.info("Exiting...");
-
-  process.stdin.off("data", onStdin);
 
   if (!client.destroyed) {
     client.end();
@@ -62,31 +55,6 @@ const parseCmds = (parts: string[]): ParsedCommand | null => {
 };
 
 /**
- * Parses the data passed to stdin
- */
-const parseStdin = () => {
-  let input = stdinBuffer.trim();
-  stdinBuffer = "";
-
-  if (!input) return;
-
-  let parts = input.split(/\s+/);
-  let cmd = parseCmds(parts);
-
-  if (!cmd) {
-    logger.error(
-      "Provided invalid cmd:",
-      cmd,
-      "Valid commands are:",
-      Array.from(validCommands),
-    );
-    return;
-  }
-
-  handleCommand(cmd);
-};
-
-/**
  * Perform logic based on a command
  * @param command The parsed command obj
  */
@@ -94,11 +62,11 @@ const handleCommand = (command: ParsedCommand) => {
   switch (command.command) {
     case COMMANDS.exit:
       cleanExit();
-      break;
+      process.exit(0);
     default:
       if (client.destroyed) {
         logger.error("Cannot send command, connection is closed.");
-        return;
+        process.exit(1);
       }
 
       const payload = JSON.stringify(command);
@@ -111,6 +79,30 @@ const handleCommand = (command: ParsedCommand) => {
 
 const client = net.createConnection(SOCKET_PATH, () => {
   logger.info("Connected to command server at:", SOCKET_PATH);
+
+  const args = process.argv.slice(2); 
+
+  if (args.length === 0) {
+    logger.error("No command provided. Usage: ./index.js <command> [args...]");
+    logger.error("Valid commands:", Array.from(validCommands));
+    cleanExit();
+    process.exit(1);
+  }
+
+  const cmd = parseCmds(args);
+
+  if (!cmd) {
+    logger.error(
+      "Provided invalid cmd:",
+      args[0],
+      "Valid commands are:",
+      Array.from(validCommands),
+    );
+    cleanExit();
+    process.exit(1);
+  }
+
+  handleCommand(cmd);
 });
 
 client.on("data", (data) => {
@@ -128,18 +120,8 @@ client.on("end", () => {
   process.exit(0);
 });
 
-/**
- * Callback runs on stdin data
- */
-const onStdin = (chunk: Buffer) => {
-  stdinBuffer += chunk.toString();
-  if (stdinBuffer.includes("\n")) {
-    parseStdin();
-  }
-};
-
-process.stdin.on("data", onStdin);
 process.on("SIGINT", () => {
   logger.warn("Caught Ctrl-C (SIGINT)");
   cleanExit();
+  process.exit(0);
 });
