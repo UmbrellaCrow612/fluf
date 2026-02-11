@@ -3,7 +3,6 @@ const os = require("node:os");
 const path = require("node:path");
 const fs = require("node:fs");
 const { logger } = require("../logger");
-const { COMMANDS } = require("../gen/protocol");
 
 /**
  * Reference to the command server
@@ -51,11 +50,11 @@ function cleanupSocketFile(path) {
 
 /**
  * Handle a command sent from IPC
- * @param {import("../gen/protocol").ParsedCommand} parsedCmd - The command object
+ * @param {any} parsedCmd - The command object
  */
 function handleParsedCommand(parsedCmd) {
   switch (parsedCmd.command) {
-    case COMMANDS.ping:
+    case "ping":
       logger.info("PING recieved");
       break;
 
@@ -95,7 +94,6 @@ function createCommandServer() {
 
     socket.on("data", (data) => {
       try {
-        /** @type {import("../gen/protocol").ParsedCommand} */
         let parsed = JSON.parse(data.toString());
         handleParsedCommand(parsed)
       } catch (error) {
