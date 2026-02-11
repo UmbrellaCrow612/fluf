@@ -56,15 +56,9 @@ export const getSocketPath = (): string => {
  * On Unix-like systems, removes the socket file from the temporary directory
  * to prevent "address already in use" errors when binding.
  * 
- * @returns {Promise<boolean>} `true` if a file was removed, `false` otherwise
- * 
- * @example
- * ```ts
- * // Before starting IPC server
- * await cleanSocket(); // Removes stale socket file on Unix, no-op on Windows
- * ```
+ * @returns {boolean} `true` if a file was removed, `false` otherwise
  */
-export const cleanSocket = async (): Promise<boolean> => {
+export const cleanSocket = (): boolean => {
   if (os.platform() === "win32") {
     // Windows named pipes don't create filesystem entries
     return false;
@@ -73,14 +67,14 @@ export const cleanSocket = async (): Promise<boolean> => {
   const socketPath = getSocketPath();
 
   try {
-    await fs.promises.access(socketPath);
+    fs.accessSync(socketPath);
   } catch {
     // File doesn't exist
     return false;
   }
 
   try {
-    await fs.promises.unlink(socketPath);
+    fs.unlinkSync(socketPath);
     return true;
   } catch (err) {
     // Socket might be in use by another process
