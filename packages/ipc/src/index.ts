@@ -1,6 +1,21 @@
 import os from "node:os";
 import path from "node:path";
-import fs from "node:fs"
+import fs from "node:fs";
+
+/**
+ * Represents the data sent to the server
+ */
+export type IPCRequest<T> = {
+  /**
+   * A ID for the given request
+   */
+  id: string;
+
+  /**
+   * Addtional data that can be sent for this request
+   */
+  data?: T;
+};
 
 /**
  * Name of the pipe/socket used for IPC communication.
@@ -51,11 +66,11 @@ export const getSocketPath = (): string => {
 
 /**
  * Cleans up the socket file if it exists.
- * 
+ *
  * On Windows, this is a no-op since named pipes don't use filesystem entries.
  * On Unix-like systems, removes the socket file from the temporary directory
  * to prevent "address already in use" errors when binding.
- * 
+ *
  * @returns {boolean} `true` if a file was removed, `false` otherwise
  */
 export const cleanSocket = (): boolean => {
@@ -79,7 +94,7 @@ export const cleanSocket = (): boolean => {
   } catch (err) {
     // Socket might be in use by another process
     throw new Error(
-      `Failed to remove stale socket at ${socketPath}: ${(err as Error).message}`
+      `Failed to remove stale socket at ${socketPath}: ${(err as Error).message}`,
     );
   }
 };
