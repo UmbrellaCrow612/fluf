@@ -1,9 +1,6 @@
 const net = require("node:net");
 const { logger } = require("../logger");
 
-
-// TODO: on data match cmd then broadcast to all
-
 /**
  * Refrence to the TCP command server
  * @type {import("node:net").Server | null}

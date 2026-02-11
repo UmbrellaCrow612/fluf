@@ -54,7 +54,7 @@ const parseStdin = () => {
     return;
   }
 
-  handleCommand(cmd)
+  handleCommand(cmd);
 };
 
 /**
@@ -69,11 +69,19 @@ const handleCommand = (command: ParsedCommand) => {
       process.stdin.off("data", onStdin);
 
       if (!client.destroyed) {
-        client.end(); 
+        client.end();
       }
       break;
     default:
-      // send the command across
+      if (client.destroyed) {
+        logger.error("Cannot send command, TCP connection is closed.");
+        return;
+      }
+
+      const payload = JSON.stringify(command);
+      logger.info("Sending to TCP:", payload);
+
+      client.write(payload + "\n");
       break;
   }
 };
