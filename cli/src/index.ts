@@ -54,22 +54,26 @@ const parseStdin = () => {
     return;
   }
 
-  logger.info("Sending cmd:", cmd);
-  // TODO: client.write(JSON.stringify(cmd));
+  handleCommand(cmd)
 };
 
 /**
- * Perform l;ogic based on a command
+ * Perform logic based on a command
  * @param command The parsed command obj
  */
 const handleCommand = (command: ParsedCommand) => {
   switch (command.command) {
     case COMMANDS.exit:
-      // disconnect to tcp server
-      // remove stdin listner
-      break;
+      logger.info("Exiting...");
 
+      process.stdin.off("data", onStdin);
+
+      if (!client.destroyed) {
+        client.end(); 
+      }
+      break;
     default:
+      // send the command across
       break;
   }
 };
@@ -93,9 +97,14 @@ client.on("end", () => {
   process.exit(0);
 });
 
-process.stdin.on("data", (chunk) => {
+/**
+ * Callback runs on stdin data
+ */
+const onStdin = (chunk: Buffer) => {
   stdinBuffer += chunk.toString();
   if (stdinBuffer.includes("\n")) {
     parseStdin();
   }
-});
+};
+
+process.stdin.on("data", onStdin);
