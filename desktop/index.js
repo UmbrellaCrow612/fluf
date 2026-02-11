@@ -19,7 +19,7 @@ const {
 } = require("./lsp/bridge");
 const { registerFileXListeners } = require("./file-x");
 const { registerStoreListeners } = require("./store");
-const { createCommandServer, stopCommandServer } = require("./command-server/tpc-server");
+const { createCommandServer, stopCommandServer } = require("./command-server/socket");
 
 loadEnv();
 registerProtocols();
