@@ -7,6 +7,7 @@ import { FileXTabsComponent } from './file-x-tabs/file-x-tabs.component';
 import { FileXActionsComponent } from './file-x-actions/file-x-actions.component';
 import { FileXBottomComponent } from './file-x-bottom/file-x-bottom.component';
 import { getElectronApi } from '../../utils';
+import { OpenFileInFileX } from './utils';
 
 /**
  * Our custom built file explorer application similar to windows file explorer built inside the IDE to offer fast file exploration.
@@ -29,8 +30,11 @@ export class FileXComponent implements OnInit {
   private readonly api = getElectronApi();
 
   ngOnInit(): void {
-    this.api.commandServer.on('ping', () => {
-      console.log('Ping recived on UI side');
+    this.api.commandServer.on('open', async (window, fp) => {
+      if(window == "fx"){
+        let asNode = await this.api.fsApi.getNode(fp)
+        OpenFileInFileX(asNode)
+      }
     });
   }
 }

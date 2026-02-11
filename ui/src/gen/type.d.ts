@@ -1010,7 +1010,7 @@ export type onCommand = (command: string, callback: onCommandCallback) => voidCa
 /**
  * Callback ot be run when the command is fired
  */
-export type onCommandCallback = (...args: string[]) => void;
+export type onCommandCallback = (...args: string[]) => void | Promise<void>;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */

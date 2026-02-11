@@ -931,7 +931,7 @@
  * Callback ot be run when the command is fired
  * @callback onCommandCallback
  * @param {...string} args - Arguments for the given command
- * @returns {void} Nothing
+ * @returns {void | Promise<void>} Nothing
  */
 
 /**

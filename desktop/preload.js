@@ -14,8 +14,8 @@ const commandServer = {
      * @param {any} _ Is the ipc event
      * @param  {...any} args
      */
-    let l = (_, ...args) => {
-      callback(...args);
+    let l = async (_, ...args) => {
+      await callback(...args);
     };
 
     ipcRenderer.on(`command:server:${cmd}`, l);

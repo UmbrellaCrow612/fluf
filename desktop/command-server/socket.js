@@ -63,8 +63,8 @@ function handleParsedCommand(parsedCmd) {
 
     case "open":
       let window = parsedCmd.args[0]; // be either code or fx for file explorer
-      if (window !== "fx" || window !== "code") {
-        logger.error("Recived invalid args");
+      if (window !== "fx" && window !== "code") {
+        logger.error("Recived invalid args", window);
         return;
       }
 
