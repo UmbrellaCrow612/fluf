@@ -84,7 +84,7 @@ export class IPCServer extends EventEmitter {
 
       for (const line of lines) {
         if (line.trim()) {
-          this._handleMessage(socket, line);
+          this._handleMessage(line);
         }
       }
     });
@@ -100,9 +100,47 @@ export class IPCServer extends EventEmitter {
 
   /**
    * Parses and handles incoming messages
-   * @param socket
-   * @param rawMessage
+   * @param {string} rawMessage - The raw JSON string message
    * @returns {void} Nothing
    */
-  private _handleMessage(socket: Socket, rawMessage: string): void {}
+  private _handleMessage(rawMessage: string): void {
+    try {
+      const message = JSON.parse(rawMessage);
+
+      // TODO make rewquest shape
+
+      // Emit on server for general handling
+      this.emit(message.channel, message.data);
+
+      // Also emit a catch-all event
+      this.emit("message", message.channel, message.data);
+    } catch (err) {
+      console.error("Failed to parse IPC message:", err);
+      this.emit("error", new Error(`Invalid message format: ${rawMessage}`));
+    }
+  }
+
+  /**
+   * Cleans up / stops the IPC server
+   */
+  stop(): Promise<void> {
+    return new Promise((resolve) => {
+      for (const client of this._clients) {
+        client.end();
+        client.destroy();
+      }
+      this._clients.clear();
+
+      if (!this._server) {
+        resolve();
+        return;
+      }
+
+      this._server.close(() => {
+        cleanSocket();
+        this._server = null;
+        resolve();
+      });
+    });
+  }
 }
