@@ -37,6 +37,8 @@ A simple text editor written in electron and angular
 
 - Control the UI and window features via a CLI
 
+- Custom CLI for IPC communication between CLI and UI i.e can use the cli to change / perform actions in the UI
+
 ---
 
 ## **Project Overview**
