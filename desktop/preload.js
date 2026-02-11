@@ -6,6 +6,27 @@ const { contextBridge, ipcRenderer } = require("electron");
  */
 
 /**
+ * @type {import("./type").commandServer}
+ */
+const commandServer = {
+  on: (cmd, callback) => {
+    /**
+     * @param {any} _ Is the ipc event
+     * @param  {...any} args
+     */
+    let l = (_, ...args) => {
+      callback(...args);
+    };
+
+    ipcRenderer.on(`command:server:${cmd}`, l);
+
+    return () => {
+      ipcRenderer.removeListener(`command:server:${cmd}`, l);
+    };
+  },
+};
+
+/**
  * @type {import("./type").fileXApi}
  */
 const fileXApi = {
@@ -128,8 +149,10 @@ const fsApi = {
   createDirectory: (...args) => ipcRenderer.invoke("dir:create", ...args),
   selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
   getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
-  fuzzyFindDirectorys: (...args) => ipcRenderer.invoke("dir:fuzzy:find", ...args),
-  countItemsInDirectory: (...args) => ipcRenderer.invoke("dir:items:count", ...args),
+  fuzzyFindDirectorys: (...args) =>
+    ipcRenderer.invoke("dir:fuzzy:find", ...args),
+  countItemsInDirectory: (...args) =>
+    ipcRenderer.invoke("dir:items:count", ...args),
 
   onChange: (path, callback) => {
     /**
@@ -166,7 +189,7 @@ const pathApi = {
   sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
   join: (...args) => ipcRenderer.invoke("path:join", ...args),
   isAbsolute: (...args) => ipcRenderer.invoke("path:isabsolute", ...args),
-  getRootPath: (...args) => ipcRenderer.invoke("path:root", ...args)
+  getRootPath: (...args) => ipcRenderer.invoke("path:root", ...args),
 };
 
 /** @type {import("./type").shellApi} */
@@ -268,6 +291,7 @@ const api = {
   lspClient,
   fileXApi,
   storeApi,
+  commandServer,
 };
 
 contextBridge.exposeInMainWorld("electronApi", api);
