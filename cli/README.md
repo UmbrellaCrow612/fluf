@@ -18,8 +18,8 @@ npx tsc
 # Building 
 
 ```bash
-npm run build
+npx tsc
 ```
 
 - Builds the output dist
-- Copies over definition files to desktop as it needs them
+

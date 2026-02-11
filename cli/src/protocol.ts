@@ -18,6 +18,11 @@ export const COMMANDS = {
    * Ping the server and send args across
    */
   ping: "ping",
+
+  /**
+   * Open a file in file x or the editor based on args
+   */
+  open: "open"
 } as const;
 
 /**

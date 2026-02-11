@@ -3,8 +3,9 @@ const os = require("node:os");
 const path = require("node:path");
 const fs = require("node:fs");
 const { logger } = require("../logger");
+const { broadcastToAll } = require("../broadcast");
 
-/**
+/**Z
  * Reference to the command server
  * @type {import("node:net").Server | null}
  */
@@ -54,8 +55,30 @@ function cleanupSocketFile(path) {
  */
 function handleParsedCommand(parsedCmd) {
   switch (parsedCmd.command) {
-    case "ping":
+    case "ping": // we dont have types and are doing checks like this for now becuase we dont have a standard way to share command types, possibly a types libary both cli and this use as cli is just a spawn file
       logger.info("PING recieved");
+
+      broadcastToAll(`command:server:${parsedCmd.command}`);
+      break;
+
+    case "open":
+      let window = parsedCmd.args[0]; // be either code or fx for file explorer
+      if (window !== "fx" && window !== "code") {
+        logger.error("Recived invalid args", window);
+        return;
+      }
+
+      let fp = parsedCmd.args[1];
+      if (!fp) {
+        logger.error("Did not recieve file path");
+        return;
+      }
+
+      broadcastToAll(
+        `command:server:${parsedCmd.command}`,
+        window,
+        path.normalize(fp),
+      );
       break;
 
     default:
@@ -95,7 +118,7 @@ function createCommandServer() {
     socket.on("data", (data) => {
       try {
         let parsed = JSON.parse(data.toString());
-        handleParsedCommand(parsed)
+        handleParsedCommand(parsed);
       } catch (error) {
         logger.error("Failed tro parse data sent to socket: ", error);
       }

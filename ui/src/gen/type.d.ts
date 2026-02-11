@@ -995,6 +995,23 @@ export type storeClean = () => Promise<void>;
  */
 export type storeGet = (key: string) => Promise<string | undefined>;
 /**
+ * Represents the comand server which recieves commands via IPC from other processes to perform actions
+ */
+export type commandServer = {
+    /**
+     * - Listen to a specific command and run logic
+     */
+    on: onCommand;
+};
+/**
+ * Listen to a specific command emitted and perform a action
+ */
+export type onCommand = (command: string, callback: onCommandCallback) => voidCallback;
+/**
+ * Callback ot be run when the command is fired
+ */
+export type onCommandCallback = (...args: string[]) => void | Promise<void>;
+/**
  * APIs exposed to the renderer process for using Electron functions.
  */
 export type ElectronApi = {
@@ -1042,6 +1059,10 @@ export type ElectronApi = {
      * - Contains all the api to save and restore data between browser sessions
      */
     storeApi: storeApi;
+    /**
+     * - Listne to events from external IPC process and run logic
+     */
+    commandServer: commandServer;
 };
 /**
  * Extends the global `window` object to include the Electron API.
