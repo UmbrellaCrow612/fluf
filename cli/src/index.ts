@@ -14,6 +14,19 @@ const PORT = 3214;
 const HOST = "127.0.0.1";
 
 /**
+ * Extracts exit logic into a callback
+ */
+const cleanExit = () => {
+  logger.info("Exiting...");
+
+  process.stdin.off("data", onStdin);
+
+  if (!client.destroyed) {
+    client.end();
+  }
+};
+
+/**
  * Trys to parse a cmd and it's arguments
  */
 const parseCmds = (parts: string[]): ParsedCommand | null => {
@@ -64,13 +77,7 @@ const parseStdin = () => {
 const handleCommand = (command: ParsedCommand) => {
   switch (command.command) {
     case COMMANDS.exit:
-      logger.info("Exiting...");
-
-      process.stdin.off("data", onStdin);
-
-      if (!client.destroyed) {
-        client.end();
-      }
+      cleanExit();
       break;
     default:
       if (client.destroyed) {
@@ -116,3 +123,7 @@ const onStdin = (chunk: Buffer) => {
 };
 
 process.stdin.on("data", onStdin);
+process.on("SIGINT", () => {
+  logger.warn("Caught Ctrl-C (SIGINT)");
+  cleanExit();
+});
