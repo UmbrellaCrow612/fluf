@@ -1,8 +1,9 @@
 /**
  * Uses IPC contract defined in flufy-ipc-contract to allow other applications to interact with it
  */
-const { IPCServer } = require("flufy-ipc-contract/dist/server");
+const { IPCServer } = require("flufy-ipc-contract");
 const { logger } = require("../logger");
+const { broadcastToAll } = require("../broadcast");
 
 /**
  * Holds ref to the IPC server
@@ -27,6 +28,10 @@ const startCommandServer = () => {
 
   server.on("message", (req) => {
     logger.info("Server recieved request: ", req);
+  });
+
+  server.on("open:file", (req) => {
+    broadcastToAll(`command:open:file`, req);
   });
 
   server.on("error", (err) => {

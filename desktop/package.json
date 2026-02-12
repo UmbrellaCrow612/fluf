@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
-    "flufy-ipc-contract": "^0.0.1",
+    "flufy-ipc-contract": "^0.0.4",
     "node-logy": "^0.2.0"
   }
 }
