@@ -14,18 +14,18 @@ export const IPCCommands = {
   /**
    * Perform a close operation could be closing a file or folder
    */
-  close: "close"
-}
+  close: "close",
+} as const;
 
 /**
  * Represents all valid commands that can be sent
  */
-export type IPCCommandType = (typeof IPCCommands)[keyof typeof IPCCommands]
+export type IPCCommandType = (typeof IPCCommands)[keyof typeof IPCCommands];
 
 /**
  * Set containing all valid commands
  */
-export const validIPCCommands = new Set(Object.values(IPCCommands))
+export const validIPCCommands = new Set(Object.values(IPCCommands));
 
 /**
  * Represents the base data sent to the server for every request
@@ -44,18 +44,18 @@ export type IPCRequest<T> = {
   /**
    * The specific command to run
    */
-  command: IPCCommandType
+  command: IPCCommandType;
 
   /**
    * Addtional data that can be sent for this request
    */
-  data?: T;
+  data: T;
 };
 
 /**
  * Contains all valid ipc channels
  */
-export const IPCChannel = {
+export const IPCChannels = {
   /**
    * Notify editor
    */
@@ -70,12 +70,54 @@ export const IPCChannel = {
 /**
  * Represents the valid channels you can messages to
  */
-export type IPCChannelType = (typeof IPCChannel)[keyof typeof IPCChannel]
+export type IPCChannelType = (typeof IPCChannels)[keyof typeof IPCChannels];
 
 /**
  * Contains a set of all valid ipc channels messages can be sent to
  */
-export const validIPCChannels = new Set(Object.values(IPCChannel))
+export const validIPCChannels = new Set(Object.values(IPCChannels));
+
+/**
+ * Data specific to opening a file
+ */
+export type OpenFileData = {
+  /**
+   * Absolute path to the file to open
+   */
+  filePath: string;
+};
+
+/**
+ * Request type specifically for opening files.
+ * Extends base IPCRequest with OpenFileData and enforces correct command/channel.
+ */
+export type OpenFileRequest = IPCRequest<OpenFileData> & {
+  /**
+   * Fixed to 'open' command for type safety
+   */
+  command: typeof IPCCommands.open;
+};
+
+/**
+ * Data specific to closing a file
+ */
+export type CloseFileData = {
+  /**
+   * Absolute path to the file to close
+   */
+  filePath: string;
+};
+
+/**
+ * Request type specifically for closing files.
+ * Extends base IPCRequest with CloseFileData and enforces correct command/channel.
+ */
+export type CloseFileRequest = IPCRequest<CloseFileData> & {
+  /**
+   * Fixed to 'close' command for type safety
+   */
+  command: typeof IPCCommands.close;
+};
 
 /**
  * Name of the pipe/socket used for IPC communication.

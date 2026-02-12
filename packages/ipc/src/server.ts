@@ -1,5 +1,8 @@
 import { EventEmitter } from "node:stream";
-import { cleanSocket, getSocketPath, type IPCRequest } from "./index.js";
+import {
+  cleanSocket,
+  getSocketPath,
+} from "./index.js";
 import { createServer, Server, Socket } from "node:net";
 
 /**
