@@ -53,16 +53,16 @@ export type IPCRequest<T> = {
 };
 
 /**
- * Contains all valid ipc channels
+ * Contains all valid ipc channels, these are seperate applications or areas within the whole application
  */
 export const IPCChannels = {
   /**
-   * Notify editor
+   * Editor is the main code editor module
    */
   editor: "editor",
 
   /**
-   * Notify file x
+   * File-X is the built in file explroer module
    */
   fileX: "file-x",
 } as const;
@@ -99,6 +99,19 @@ export type OpenFileRequest = IPCRequest<OpenFileData> & {
 };
 
 /**
+ * Type guards to check if it is a open file request
+ */
+export const isOpenFileRequest = (
+  req: IPCRequest<unknown>,
+): req is OpenFileRequest => {
+  return (
+    req.command === IPCCommands.open &&
+    validIPCChannels.has(req.channel) &&
+    typeof (req.data as OpenFileData)?.filePath === "string"
+  );
+};
+
+/**
  * Data specific to closing a file
  */
 export type CloseFileData = {
@@ -118,6 +131,41 @@ export type CloseFileRequest = IPCRequest<CloseFileData> & {
    */
   command: typeof IPCCommands.close;
 };
+
+/**
+ * Type guard to check if a object is a close file request
+ */
+export const isCloseFileRequest = (
+  req: IPCRequest<unknown>,
+): req is CloseFileRequest => {
+  return (
+    req.command === IPCCommands.close &&
+    validIPCChannels.has(req.channel) &&
+    typeof (req.data as CloseFileData)?.filePath === "string"
+  );
+};
+
+/**
+ * Validates that a parsed object matches the base IPCRequest shape
+ */
+export const isValidBaseRequest = (
+  obj: unknown,
+): obj is IPCRequest<unknown> => {
+  if (typeof obj !== "object" || obj === null) return false;
+  const req = obj as Record<string, unknown>;
+
+  return (
+    typeof req["id"] === "string" &&
+    typeof req["channel"] === "string" &&
+    typeof req["command"] === "string" &&
+    typeof req["data"] === "object"
+  );
+};
+
+/**
+ * Union type of all specific request types
+ */
+export type KnownRequest = OpenFileRequest | CloseFileRequest;
 
 /**
  * Name of the pipe/socket used for IPC communication.
