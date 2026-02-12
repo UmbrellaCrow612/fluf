@@ -37,7 +37,7 @@ export const IPCChannels = {
   editor: "editor",
 
   /**
-   * File-X is the built in file explroer module
+   * File-X is the built in file explorer module
    */
   fileX: "file-x",
 } as const;

@@ -8,10 +8,11 @@ import {
   validIPCChannels,
   validIPCCommands,
   type CloseFileRequest,
+  type CloseFileResponse,
   type ErrorResponse,
   type IPCRequest,
-  type IPCResponse,
   type OpenFileRequest,
+  type OpenFileResponse,
 } from "./index.js";
 import { createServer, Server, Socket } from "node:net";
 
@@ -40,7 +41,7 @@ export class IPCServer extends EventEmitter {
 
   /**
    * Starts the IPC server
-   * @returns {Promis<void>} A promise that needs awaiting for the server to get everything ready
+   * @returns {Promise<void>} A promise that needs awaiting for the server to get everything ready
    */
   start(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -198,9 +199,12 @@ export class IPCServer extends EventEmitter {
 
     // Default success response (can be overridden by event listeners)
     if (this.listenerCount("open:file") === 0) {
-      this._sendSuccessResponse(socket, request.id, {
-        filePath: request.data.filePath,
-      });
+      const response: OpenFileResponse = {
+        id: request.id,
+        success: true,
+        data: { filePath: request.data.filePath },
+      };
+      this._sendResponse(socket, response);
     }
   }
 
@@ -215,33 +219,24 @@ export class IPCServer extends EventEmitter {
 
     // Default success response (can be overridden by event listeners)
     if (this.listenerCount("close:file") === 0) {
-      this._sendSuccessResponse(socket, request.id, {
-        filePath: request.data.filePath,
-      });
+      const response: CloseFileResponse = {
+        id: request.id,
+        success: true,
+        data: { filePath: request.data.filePath },
+      };
+      this._sendResponse(socket, response);
     }
-  }
-
-  /**
-   * Sends a success response to a socket
-   * @param {Socket} socket - The socket to send to
-   * @param {string} id - The request ID
-   * @param {T} data - The response data
-   */
-  private _sendSuccessResponse<T>(socket: Socket, id: string, data: T): void {
-    const response: IPCResponse<T> = {
-      id,
-      success: true,
-      data,
-    };
-    this._sendResponse(socket, response);
   }
 
   /**
    * Sends a response to a socket
    * @param {Socket} socket - The socket to send to
-   * @param {IPCResponse<T>} response - The response to send
+   * @param {OpenFileResponse | CloseFileResponse | ErrorResponse} response - The response to send
    */
-  private _sendResponse<T>(socket: Socket, response: IPCResponse<T>): void {
+  private _sendResponse(
+    socket: Socket,
+    response: OpenFileResponse | CloseFileResponse | ErrorResponse,
+  ): void {
     try {
       const json = JSON.stringify(response);
       socket.write(json + "\n");
