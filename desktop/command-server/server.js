@@ -15,30 +15,38 @@ let server = null;
  * Starts the IPC server
  * @returns {Promise<void>}
  */
-const startCommandServer = async () => {
+const startCommandServer = () => {
   server = new IPCServer();
 
-  server.on("open:file", (req) => {
-    broadcastToAll(`command:open:file`, req);
+  server.on("connect", () => {
+    logger.info("Command server started");
   });
 
-  await server.start();
+  server.on("disconnect", () => {
+    logger.info("Command server stoppedF");
+  });
 
-  logger.info("Started command IPC server");
+  server.on("message", (req) => {
+    logger.info("Server recieved request: ", req);
+  });
+
+  server.on("error", (err) => {
+    logger.error("Server errored: ", err);
+  });
+
+  return server.start();
 };
 
 /**
  * Stops the command server
  * @returns {Promise<void>}
  */
-const stopCommandServer = async () => {
+const stopCommandServer = () => {
   if (!server) {
     return Promise.resolve();
   }
 
-  await server.stop()
-
-  logger.info("Command IPC server stopped")
+  return server.stop();
 };
 
 module.exports = { startCommandServer, stopCommandServer };
