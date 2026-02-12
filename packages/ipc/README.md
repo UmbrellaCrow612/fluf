@@ -20,10 +20,5 @@ In a monorepo setup, IPC channels often become a source of runtime errors when m
 ## Installation
 
 ```bash
-# In a monorepo workspace (recommended)
-pnpm add @flufy/ipc-contract
-
-# Or with npm/yarn
-npm install @flufy/ipc-contract
-yarn add @flufy/ipc-contract
+npm install flufy-ipc-contract
 ```

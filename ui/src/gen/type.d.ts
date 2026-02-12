@@ -999,18 +999,18 @@ export type storeGet = (key: string) => Promise<string | undefined>;
  */
 export type commandServer = {
     /**
-     * - Listen to a specific command and run logic
+     * - Listen to when open file cmd is recieved
      */
-    on: onCommand;
+    onOpenFile: onOpenFileCommand;
 };
 /**
- * Listen to a specific command emitted and perform a action
+ * Runs when the server recieves a command to open a file
  */
-export type onCommand = (command: string, callback: onCommandCallback) => voidCallback;
+export type onOpenFileCommand = (callback: onOpenFileCommandCallback) => voidCallback;
 /**
- * Callback ot be run when the command is fired
+ * Callback to run when the command is given to the server
  */
-export type onCommandCallback = (...args: string[]) => void | Promise<void>;
+export type onOpenFileCommandCallback = (request: import("flufy-ipc-contract").OpenFileRequest) => void | Promise<void>;
 /**
  * APIs exposed to the renderer process for using Electron functions.
  */

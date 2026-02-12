@@ -1,4 +1,4 @@
-import { IPCClient } from "../client.js";
+import { IPCClient } from "../dist/client.js";
 
 async function main() {
   let client = new IPCClient();
@@ -21,10 +21,10 @@ async function main() {
 
   await client.connect();
 
-  let res = await client.openFile("/some/file", "file-x");
+  let res = await client.openFile(`C:\\dev\\fluf\\packages\\ipc`, "file-x");
   console.log("Res here ", JSON.stringify(res));
 
-  let resTwo = await client.closeFile("/some/file", "file-x");
+  let resTwo = await client.closeFile("C:\\dev\\fluf\\packages\\ipc", "file-x");
   console.log("Here two ", JSON.stringify(resTwo));
 
   setTimeout(async () => {

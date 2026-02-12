@@ -9,19 +9,19 @@ const { contextBridge, ipcRenderer } = require("electron");
  * @type {import("./type").commandServer}
  */
 const commandServer = {
-  on: (cmd, callback) => {
+  onOpenFile: (callback) => {
     /**
-     * @param {any} _ Is the ipc event
-     * @param  {...any} args
+     * @param {*} _
+     * @param  {any} req
      */
-    let l = async (_, ...args) => {
-      await callback(...args);
+    let l = async (_, req) => {
+      await callback(req);
     };
 
-    ipcRenderer.on(`command:server:${cmd}`, l);
+    ipcRenderer.on("command:open:file", l);
 
     return () => {
-      ipcRenderer.removeListener(`command:server:${cmd}`, l);
+      ipcRenderer.removeListener("command:open:file", l);
     };
   },
 };
