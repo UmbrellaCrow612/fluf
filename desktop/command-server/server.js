@@ -2,7 +2,6 @@
  * Uses IPC contract defined in flufy-ipc-contract to allow other applications to interact with it
  */
 const { IPCServer } = require("flufy-ipc-contract/dist/server");
-const { broadcastToAll } = require("../broadcast");
 const { logger } = require("../logger");
 
 /**

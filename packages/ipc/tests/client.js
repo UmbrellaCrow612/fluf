@@ -1,4 +1,4 @@
-import { IPCClient } from "../dist/client.js";
+import { IPCClient } from "../dist/index.js";
 
 async function main() {
   let client = new IPCClient();

@@ -1,6 +1,10 @@
 import os from "node:os";
 import path from "node:path";
 import fs from "node:fs";
+import { IPCServer } from "./server.js";
+import { IPCClient } from "./client.js";
+
+export { IPCServer, IPCClient };
 
 /**
  * Contains all commands that can be sent to the server to perform actions based on the request
@@ -236,7 +240,10 @@ export type CloseFileResponse = IPCResponse<CloseFileData>;
 /**
  * Union type of all specific response types
  */
-export type KnownResponse = ErrorResponse | OpenFileResponse | CloseFileResponse;
+export type KnownResponse =
+  | ErrorResponse
+  | OpenFileResponse
+  | CloseFileResponse;
 
 /**
  * Name of the pipe/socket used for IPC communication.

@@ -1,4 +1,4 @@
-import { IPCServer } from "../dist/server.js";
+import { IPCServer } from "../dist/index.js";
 
 async function main() {
   const server = new IPCServer();
