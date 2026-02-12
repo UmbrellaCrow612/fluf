@@ -19,7 +19,10 @@ const {
 } = require("./lsp/bridge");
 const { registerFileXListeners } = require("./file-x");
 const { registerStoreListeners } = require("./store");
-const { createCommandServer, stopCommandServer } = require("./command-server/socket");
+const {
+  startCommandServer,
+  stopCommandServer,
+} = require("./command-server/server");
 
 loadEnv();
 registerProtocols();
@@ -67,7 +70,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   createWindow();
-  createCommandServer();
+  startCommandServer();
 
   registerRipgrepListeners(ipcMain);
   registerGitListeners(ipcMain);
@@ -85,7 +88,7 @@ app.whenReady().then(() => {
 });
 
 app.on("before-quit", async () => {
-  stopCommandServer();
+  await stopCommandServer();
 
   await stopAllLanguageServers();
   cleanUpWatchers();

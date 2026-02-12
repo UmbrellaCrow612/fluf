@@ -50,7 +50,7 @@
  * @property {saveTo} saveTo - Save a files content to a given location
  * @property {selectFile} selectFile - Allow a user to select a file from the explorer
  * @property {fsGetNode} getNode - Used to fetch a path as a file node
- * @property {fuzzyFindDirectorys} fuzzyFindDirectorys - Pass a path and get a list of possible other directorys you can into 
+ * @property {fuzzyFindDirectorys} fuzzyFindDirectorys - Pass a path and get a list of possible other directorys you can into
  * @property {countItemsInDirectory} countItemsInDirectory - Count the amount of items a directory has - not recusive just the top layer of items count.
  */
 
@@ -133,7 +133,7 @@
  */
 
 /**
- * Pass a path like and get suggestions for other possible diurectory 
+ * Pass a path like and get suggestions for other possible diurectory
  * @callback fuzzyFindDirectorys
  * @param {string} pathLike - A abs path, relative path or partial path such as `./home` `home` `c:dev\home`.
  * @returns {Promise<string[]>} - List of possible auto complete paths
@@ -916,21 +916,20 @@
 /**
  * Represents the comand server which recieves commands via IPC from other processes to perform actions
  * @typedef {Object} commandServer
- * @property {onCommand} on - Listen to a specific command and run logic
+ * @property {onOpenFileCommand} onOpenFile - Listen to when open file cmd is recieved
  */
 
 /**
- * Listen to a specific command emitted and perform a action
- * @callback onCommand
- * @param {string} command - The command to listen to for exmaple `ping`
- * @param {onCommandCallback} callback - The callback to run
+ * Runs when the server recieves a command to open a file
+ * @callback onOpenFileCommand
+ * @param {onOpenFileCommandCallback} callback - The callback to run
  * @returns {voidCallback} Unsub
  */
 
 /**
- * Callback ot be run when the command is fired
- * @callback onCommandCallback
- * @param {...string} args - Arguments for the given command
+ * Callback to run when the command is given to the server
+ * @callback onOpenFileCommandCallback
+ * @param {import("flufy-ipc-contract").OpenFileRequest} request - The request data
  * @returns {void | Promise<void>} Nothing
  */
 
@@ -960,7 +959,7 @@
  * @property {fileXApi} fileXApi - Contains all the api's for file x
  *
  * @property {storeApi} storeApi - Contains all the api to save and restore data between browser sessions
- * 
+ *
  * @property {commandServer} commandServer - Listne to events from external IPC process and run logic
  */
 

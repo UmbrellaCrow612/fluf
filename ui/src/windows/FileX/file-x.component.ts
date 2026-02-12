@@ -30,10 +30,10 @@ export class FileXComponent implements OnInit {
   private readonly api = getElectronApi();
 
   ngOnInit(): void {
-    this.api.commandServer.on('open', async (window, fp) => {
-      if(window == "fx"){
-        let asNode = await this.api.fsApi.getNode(fp)
-        OpenFileInFileX(asNode)
+    this.api.commandServer.onOpenFile(async (req) => {
+      if(req.channel == "file-x"){
+        let node = await this.api.fsApi.getNode(req.data.filePath)
+        OpenFileInFileX(node)
       }
     });
   }
