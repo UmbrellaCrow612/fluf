@@ -1,11 +1,12 @@
 {
   "name": "flufy-ipc-contract",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Contains the IPC contract and code needed to communicate to fluffy IPC",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
-  "scripts": {},
+  "scripts": {
+  },
   "keywords": [
     "Fluffy",
     "ipc"
@@ -17,7 +18,7 @@
     "typescript": "^5.9.3"
   },
   "files": [
-    "dist/**/*",
+    "dist",
     "README.md"
   ]
 }
