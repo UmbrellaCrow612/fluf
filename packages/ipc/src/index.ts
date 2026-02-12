@@ -236,7 +236,7 @@ export type CloseFileResponse = IPCResponse<CloseFileData>;
 /**
  * Union type of all specific response types
  */
-export type KnowResponse = ErrorResponse | OpenFileResponse;
+export type KnownResponse = ErrorResponse | OpenFileResponse | CloseFileResponse;
 
 /**
  * Name of the pipe/socket used for IPC communication.
