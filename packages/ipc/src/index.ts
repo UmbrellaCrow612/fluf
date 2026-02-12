@@ -28,31 +28,6 @@ export type IPCCommandType = (typeof IPCCommands)[keyof typeof IPCCommands];
 export const validIPCCommands = new Set(Object.values(IPCCommands));
 
 /**
- * Represents the base data sent to the server for every request
- */
-export type IPCRequest<T> = {
-  /**
-   * A ID for the given request
-   */
-  id: string;
-
-  /**
-   * The specific group of clinets to notify
-   */
-  channel: IPCChannelType;
-
-  /**
-   * The specific command to run
-   */
-  command: IPCCommandType;
-
-  /**
-   * Addtional data that can be sent for this request
-   */
-  data: T;
-};
-
-/**
  * Contains all valid ipc channels, these are seperate applications or areas within the whole application
  */
 export const IPCChannels = {
@@ -76,6 +51,31 @@ export type IPCChannelType = (typeof IPCChannels)[keyof typeof IPCChannels];
  * Contains a set of all valid ipc channels messages can be sent to
  */
 export const validIPCChannels = new Set(Object.values(IPCChannels));
+
+/**
+ * Represents the base data sent to the server for every request
+ */
+export type IPCRequest<T> = {
+  /**
+   * A ID for the given request
+   */
+  id: string;
+
+  /**
+   * The specific group of clinets to notify
+   */
+  channel: IPCChannelType;
+
+  /**
+   * The specific command to run
+   */
+  command: IPCCommandType;
+
+  /**
+   * Addtional data that can be sent for this request
+   */
+  data: T;
+};
 
 /**
  * Data specific to opening a file
@@ -166,6 +166,52 @@ export const isValidBaseRequest = (
  * Union type of all specific request types
  */
 export type KnownRequest = OpenFileRequest | CloseFileRequest;
+
+/**
+ * Represents the base shape for all IPC server responses to clients
+ */
+export type IPCResponse<T> = {
+  /**
+   * ID matching the original request
+   * */
+  id: string;
+
+  /**
+   * Whether the operation was successful
+   */
+  success: boolean;
+
+  /**
+   * Specific data for this response
+   */
+  data: T;
+
+  /**
+   * Error message if success is false
+   */
+  error?: string;
+};
+
+/**
+ * Type guard to validate that a value is a valid IPCResponse
+ */
+export const isValidIPCResponse = <T>(obj: unknown): obj is IPCResponse<T> => {
+  if (typeof obj !== "object" || obj === null) return false;
+  const res = obj as Record<string, unknown>;
+
+  const hasValidBase =
+    typeof res["id"] === "string" &&
+    typeof res["success"] === "boolean" &&
+    "data" in res;
+
+  if (!hasValidBase) return false;
+
+  if (res["success"] === false) {
+    return typeof res["error"] === "string";
+  }
+
+  return true;
+};
 
 /**
  * Name of the pipe/socket used for IPC communication.
