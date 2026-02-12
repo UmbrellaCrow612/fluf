@@ -21,6 +21,11 @@ import { createServer, Server, Socket } from "node:net";
  * Define all events and their argument tuples
  */
 interface IPCServerEvents {
+  // When the server connects
+  connect: [];
+  // When the server stops
+  disconnect: [];
+
   // Error handling
   error: [error: Error];
 
@@ -87,6 +92,7 @@ export class IPCServer extends EventEmitter<IPCServerEvents> {
       });
 
       this._server.listen(this._socketPath, () => {
+        this.emit("connect");
         resolve();
       });
     });
@@ -139,33 +145,33 @@ export class IPCServer extends EventEmitter<IPCServerEvents> {
       const parsed = JSON.parse(rawMessage);
 
       if (!isValidBaseRequest(parsed)) {
-        this._sendErrorResponse(socket, "unknown", "Invalid request structure");
         this.emit(
           "error",
           new Error(`Invalid request structure: ${rawMessage}`),
         );
+        this._sendErrorResponse(socket, "unknown", "Invalid request structure");
         return;
       }
 
       const message = parsed as IPCRequest<unknown>;
 
       if (!validIPCChannels.has(message.channel)) {
+        this.emit("error", new Error(`Invalid channel: ${message.channel}`));
         this._sendErrorResponse(
           socket,
           message.id,
           `Invalid channel: ${message.channel}`,
         );
-        this.emit("error", new Error(`Invalid channel: ${message.channel}`));
         return;
       }
 
       if (!validIPCCommands.has(message.command)) {
+        this.emit("error", new Error(`Invalid command: ${message.command}`));
         this._sendErrorResponse(
           socket,
           message.id,
           `Invalid command: ${message.command}`,
         );
-        this.emit("error", new Error(`Invalid command: ${message.command}`));
         return;
       }
 
@@ -283,6 +289,7 @@ export class IPCServer extends EventEmitter<IPCServerEvents> {
       }
 
       this._server.close(() => {
+        this.emit("disconnect");
         cleanSocket();
         this._server = null;
         resolve();
