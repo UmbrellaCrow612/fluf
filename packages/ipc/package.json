@@ -1,5 +1,5 @@
 {
-  "name": "fluffy-ipc",
+  "name": "@flufy/ipc-contract",
   "version": "0.0.1",
   "description": "Contains the IPC contract and code needed to communicate to fluffy IPC",
   "main": "dist/index.js",
