@@ -48,6 +48,16 @@ export const IPCChannels = {
 export type IPCChannelType = (typeof IPCChannels)[keyof typeof IPCChannels];
 
 /**
+ * Dynamic type for all channel strings
+ */
+export type ChannelEvent = `channel:${IPCChannelType}`;
+
+/**
+ * Dynamic type for all command strings
+ */
+export type CommandEvent = `command:${IPCCommandType}`;
+
+/**
  * Contains a set of all valid ipc channels messages can be sent to
  */
 export const validIPCChannels = new Set(Object.values(IPCChannels));
@@ -226,12 +236,12 @@ export type ErrorResponse = IPCResponse<ErrorData>;
 /**
  * Response for @see {OpenFileRequest}
  */
-export type OpenFileResponse = IPCResponse<OpenFileData>
+export type OpenFileResponse = IPCResponse<OpenFileData>;
 
 /**
  * Response for @see {CloseFileRequest}
  */
-export type CloseFileResponse = IPCResponse<CloseFileData>
+export type CloseFileResponse = IPCResponse<CloseFileData>;
 
 /**
  * Union type of all specific response types
