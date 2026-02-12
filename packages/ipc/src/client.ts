@@ -18,12 +18,16 @@ import { createConnection, Socket } from "node:net";
  * Define all events and their argument tuples for the client
  */
 interface IPCClientEvents {
-  // Connection events
+  // When the client connects to server
   connect: [];
+
+  // When the client disconnects from server
   disconnect: [];
+
+  // When error is thrown
   error: [error: Error];
 
-  // Response events
+  // When a response is recieved 
   response: [response: IPCResponse<unknown>];
 }
 
