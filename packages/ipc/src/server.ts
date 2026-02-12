@@ -21,7 +21,7 @@ import { createServer, Server, Socket } from "node:net";
  * Define all events and their argument tuples
  */
 interface IPCServerEvents {
-  // When the server connects
+  // When the server starts
   connect: [];
   // When the server stops
   disconnect: [];
