@@ -3,7 +3,32 @@ import path from "node:path";
 import fs from "node:fs";
 
 /**
- * Represents the data sent to the server
+ * Contains all commands that can be sent to the server to perform actions based on the request
+ */
+export const IPCCommands = {
+  /**
+   * Perform a open operation could be opening a file or folder etc
+   */
+  open: "open",
+
+  /**
+   * Perform a close operation could be closing a file or folder
+   */
+  close: "close"
+}
+
+/**
+ * Represents all valid commands that can be sent
+ */
+export type IPCCommandType = (typeof IPCCommands)[keyof typeof IPCCommands]
+
+/**
+ * Set containing all valid commands
+ */
+export const validIPCCommands = new Set(Object.values(IPCCommands))
+
+/**
+ * Represents the base data sent to the server for every request
  */
 export type IPCRequest<T> = {
   /**
@@ -12,10 +37,45 @@ export type IPCRequest<T> = {
   id: string;
 
   /**
+   * The specific group of clinets to notify
+   */
+  channel: IPCChannelType;
+
+  /**
+   * The specific command to run
+   */
+  command: IPCCommandType
+
+  /**
    * Addtional data that can be sent for this request
    */
   data?: T;
 };
+
+/**
+ * Contains all valid ipc channels
+ */
+export const IPCChannel = {
+  /**
+   * Notify editor
+   */
+  editor: "editor",
+
+  /**
+   * Notify file x
+   */
+  fileX: "file-x",
+} as const;
+
+/**
+ * Represents the valid channels you can messages to
+ */
+export type IPCChannelType = (typeof IPCChannel)[keyof typeof IPCChannel]
+
+/**
+ * Contains a set of all valid ipc channels messages can be sent to
+ */
+export const validIPCChannels = new Set(Object.values(IPCChannel))
 
 /**
  * Name of the pipe/socket used for IPC communication.

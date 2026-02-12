@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:stream";
-import { cleanSocket, getSocketPath } from "./index.js";
+import { cleanSocket, getSocketPath, type IPCRequest } from "./index.js";
 import { createServer, Server, Socket } from "node:net";
 
 /**
@@ -105,15 +105,13 @@ export class IPCServer extends EventEmitter {
    */
   private _handleMessage(rawMessage: string): void {
     try {
-      const message = JSON.parse(rawMessage);
+      const message: IPCRequest<any> = JSON.parse(rawMessage);
 
       // TODO make rewquest shape
 
       // Emit on server for general handling
-      this.emit(message.channel, message.data);
 
       // Also emit a catch-all event
-      this.emit("message", message.channel, message.data);
     } catch (err) {
       console.error("Failed to parse IPC message:", err);
       this.emit("error", new Error(`Invalid message format: ${rawMessage}`));
