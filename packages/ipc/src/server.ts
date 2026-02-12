@@ -13,10 +13,6 @@ import {
   type IPCRequest,
   type OpenFileRequest,
   type OpenFileResponse,
-  type IPCChannelType,
-  type IPCCommandType,
-  type ChannelEvent,
-  type CommandEvent,
 } from "./index.js";
 import { createServer, Server, Socket } from "node:net";
 
@@ -29,14 +25,6 @@ interface IPCServerEvents {
 
   // Generic message events
   "message": [request: IPCRequest<unknown>, socket: Socket];
-  
-  // Typed channel-specific events - one for each valid channel
-  "channel:editor": [request: IPCRequest<unknown>, socket: Socket];
-  "channel:file-x": [request: IPCRequest<unknown>, socket: Socket];
-  
-  // Typed command-specific events - one for each valid command
-  "command:open": [request: IPCRequest<unknown>, socket: Socket];
-  "command:close": [request: IPCRequest<unknown>, socket: Socket];
 
   // File operation events
   "open:file": [request: OpenFileRequest, socket: Socket];
@@ -64,22 +52,6 @@ export class IPCServer extends EventEmitter<IPCServerEvents> {
 
   constructor() {
     super();
-  }
-
-  /**
-   * Helper to emit channel events with proper typing
-   */
-  private _emitChannelEvent(channel: IPCChannelType, request: IPCRequest<unknown>, socket: Socket): void {
-    const eventName: ChannelEvent = `channel:${channel}`;
-    this.emit(eventName, request, socket);
-  }
-
-  /**
-   * Helper to emit command events with proper typing
-   */
-  private _emitCommandEvent(command: IPCCommandType, request: IPCRequest<unknown>, socket: Socket): void {
-    const eventName: CommandEvent = `command:${command}`;
-    this.emit(eventName, request, socket);
   }
 
   /**
@@ -214,12 +186,6 @@ export class IPCServer extends EventEmitter<IPCServerEvents> {
 
       // Emit on server for general handling
       this.emit("message", message, socket);
-
-      // Emit channel-specific event using helper for type safety
-      this._emitChannelEvent(message.channel, message, socket);
-
-      // Emit command-specific event using helper for type safety
-      this._emitCommandEvent(message.command, message, socket);
     } catch (err) {
       console.error("Failed to parse IPC message:", err);
       this._sendErrorResponse(

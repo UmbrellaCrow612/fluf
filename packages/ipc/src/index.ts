@@ -48,16 +48,6 @@ export const IPCChannels = {
 export type IPCChannelType = (typeof IPCChannels)[keyof typeof IPCChannels];
 
 /**
- * Dynamic type for all channel strings
- */
-export type ChannelEvent = `channel:${IPCChannelType}`;
-
-/**
- * Dynamic type for all command strings
- */
-export type CommandEvent = `command:${IPCCommandType}`;
-
-/**
  * Contains a set of all valid ipc channels messages can be sent to
  */
 export const validIPCChannels = new Set(Object.values(IPCChannels));
