@@ -68,9 +68,9 @@ const createWindow = () => {
   }
 };
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   createWindow();
-  startCommandServer();
+  await startCommandServer();
 
   registerRipgrepListeners(ipcMain);
   registerGitListeners(ipcMain);
