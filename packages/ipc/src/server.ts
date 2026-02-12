@@ -11,6 +11,7 @@ import {
   type CloseFileResponse,
   type ErrorResponse,
   type IPCRequest,
+  type KnownResponse,
   type OpenFileRequest,
   type OpenFileResponse,
 } from "./index.js";
@@ -21,10 +22,10 @@ import { createServer, Server, Socket } from "node:net";
  */
 interface IPCServerEvents {
   // Error handling
-  "error": [error: Error];
+  error: [error: Error];
 
   // Generic message events
-  "message": [request: IPCRequest<unknown>, socket: Socket];
+  message: [request: IPCRequest<unknown>, socket: Socket];
 
   // File operation events
   "open:file": [request: OpenFileRequest, socket: Socket];
@@ -206,15 +207,12 @@ export class IPCServer extends EventEmitter<IPCServerEvents> {
     // Emit specific event for open file operations
     this.emit("open:file", request, socket);
 
-    // Default success response (can be overridden by event listeners)
-    if (this.listenerCount("open:file") === 0) {
-      const response: OpenFileResponse = {
-        id: request.id,
-        success: true,
-        data: { filePath: request.data.filePath },
-      };
-      this._sendResponse(socket, response);
-    }
+    const response: OpenFileResponse = {
+      id: request.id,
+      success: true,
+      data: { filePath: request.data.filePath },
+    };
+    this._sendResponse(socket, response);
   }
 
   /**
@@ -226,26 +224,20 @@ export class IPCServer extends EventEmitter<IPCServerEvents> {
     // Emit specific event for close file operations
     this.emit("close:file", request, socket);
 
-    // Default success response (can be overridden by event listeners)
-    if (this.listenerCount("close:file") === 0) {
-      const response: CloseFileResponse = {
-        id: request.id,
-        success: true,
-        data: { filePath: request.data.filePath },
-      };
-      this._sendResponse(socket, response);
-    }
+    const response: CloseFileResponse = {
+      id: request.id,
+      success: true,
+      data: { filePath: request.data.filePath },
+    };
+    this._sendResponse(socket, response);
   }
 
   /**
    * Sends a response to a socket
    * @param {Socket} socket - The socket to send to
-   * @param {OpenFileResponse | CloseFileResponse | ErrorResponse} response - The response to send
+   * @param {KnownResponse} response - The response to send
    */
-  private _sendResponse(
-    socket: Socket,
-    response: OpenFileResponse | CloseFileResponse | ErrorResponse,
-  ): void {
+  private _sendResponse(socket: Socket, response: KnownResponse): void {
     try {
       const json = JSON.stringify(response);
       socket.write(json + "\n");

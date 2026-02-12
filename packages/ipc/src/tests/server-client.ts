@@ -34,6 +34,14 @@ async function main() {
 
   const clientOne = new IPCClient();
 
+  clientOne.on("error", (err) => {
+    console.error("Clinet error ", err);
+  });
+
+  clientOne.on("response", (res) => {
+    console.log("Clinet recieved res ", JSON.stringify(res))
+  })
+
   try {
     await clientOne.connect();
     console.log("client connect to server");
