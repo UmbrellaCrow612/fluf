@@ -214,6 +214,31 @@ export const isValidIPCResponse = <T>(obj: unknown): obj is IPCResponse<T> => {
 };
 
 /**
+ * Contains all the error information
+ */
+export type ErrorData = {};
+
+/**
+ * Response sent when a error has occured for a given request
+ */
+export type ErrorResponse = IPCResponse<ErrorData>;
+
+/**
+ * Response for @see {OpenFileRequest}
+ */
+export type OpenFileResponse = IPCResponse<OpenFileData>
+
+/**
+ * Response for @see {CloseFileRequest}
+ */
+export type CloseFileResponse = IPCResponse<CloseFileData>
+
+/**
+ * Union type of all specific response types
+ */
+export type KnowResponse = ErrorResponse | OpenFileResponse;
+
+/**
  * Name of the pipe/socket used for IPC communication.
  * Used as the identifier for both Windows named pipes and Unix domain sockets.
  */

@@ -2,6 +2,16 @@ import { EventEmitter } from "node:stream";
 import {
   cleanSocket,
   getSocketPath,
+  isCloseFileRequest,
+  isOpenFileRequest,
+  isValidBaseRequest,
+  validIPCChannels,
+  validIPCCommands,
+  type CloseFileRequest,
+  type ErrorResponse,
+  type IPCRequest,
+  type IPCResponse,
+  type OpenFileRequest,
 } from "./index.js";
 import { createServer, Server, Socket } from "node:net";
 
@@ -87,7 +97,7 @@ export class IPCServer extends EventEmitter {
 
       for (const line of lines) {
         if (line.trim()) {
-          this._handleMessage(line);
+          this._handleMessage(line, socket);
         }
       }
     });
@@ -104,21 +114,160 @@ export class IPCServer extends EventEmitter {
   /**
    * Parses and handles incoming messages
    * @param {string} rawMessage - The raw JSON string message
+   * @param {Socket} socket - The socket that sent the message
    * @returns {void} Nothing
    */
-  private _handleMessage(rawMessage: string): void {
+  private _handleMessage(rawMessage: string, socket: Socket): void {
     try {
-      const message: IPCRequest<any> = JSON.parse(rawMessage);
+      const parsed = JSON.parse(rawMessage);
 
-      // TODO make rewquest shape
+      if (!isValidBaseRequest(parsed)) {
+        this._sendErrorResponse(socket, "unknown", "Invalid request structure");
+        this.emit(
+          "error",
+          new Error(`Invalid request structure: ${rawMessage}`),
+        );
+        return;
+      }
+
+      const message = parsed as IPCRequest<unknown>;
+
+      if (!validIPCChannels.has(message.channel)) {
+        this._sendErrorResponse(
+          socket,
+          message.id,
+          `Invalid channel: ${message.channel}`,
+        );
+        this.emit("error", new Error(`Invalid channel: ${message.channel}`));
+        return;
+      }
+
+      if (!validIPCCommands.has(message.command)) {
+        this._sendErrorResponse(
+          socket,
+          message.id,
+          `Invalid command: ${message.command}`,
+        );
+        this.emit("error", new Error(`Invalid command: ${message.command}`));
+        return;
+      }
+
+      if (isOpenFileRequest(message)) {
+        this._handleOpenFile(message, socket);
+      } else if (isCloseFileRequest(message)) {
+        this._handleCloseFile(message, socket);
+      } else {
+        this._sendErrorResponse(
+          socket,
+          message.id,
+          `Command '${message.command}' not implemented`,
+        );
+        this.emit(
+          "error",
+          new Error(`Unimplemented command: ${message.command}`),
+        );
+      }
 
       // Emit on server for general handling
+      this.emit("message", message, socket);
 
-      // Also emit a catch-all event
+      // Also emit channel-specific event
+      this.emit(`channel:${message.channel}`, message, socket);
+
+      // Emit command-specific event
+      this.emit(`command:${message.command}`, message, socket);
     } catch (err) {
       console.error("Failed to parse IPC message:", err);
+      this._sendErrorResponse(
+        socket,
+        "unknown",
+        `Invalid JSON: ${(err as Error).message}`,
+      );
       this.emit("error", new Error(`Invalid message format: ${rawMessage}`));
     }
+  }
+
+  /**
+   * Handles open file requests
+   * @param {OpenFileRequest} request - The open file request
+   * @param {Socket} socket - The socket to respond to
+   */
+  private _handleOpenFile(request: OpenFileRequest, socket: Socket): void {
+    // Emit specific event for open file operations
+    this.emit("open:file", request, socket);
+
+    // Default success response (can be overridden by event listeners)
+    if (this.listenerCount("open:file") === 0) {
+      this._sendSuccessResponse(socket, request.id, {
+        filePath: request.data.filePath,
+      });
+    }
+  }
+
+  /**
+   * Handles close file requests
+   * @param {CloseFileRequest} request - The close file request
+   * @param {Socket} socket - The socket to respond to
+   */
+  private _handleCloseFile(request: CloseFileRequest, socket: Socket): void {
+    // Emit specific event for close file operations
+    this.emit("close:file", request, socket);
+
+    // Default success response (can be overridden by event listeners)
+    if (this.listenerCount("close:file") === 0) {
+      this._sendSuccessResponse(socket, request.id, {
+        filePath: request.data.filePath,
+      });
+    }
+  }
+
+  /**
+   * Sends a success response to a socket
+   * @param {Socket} socket - The socket to send to
+   * @param {string} id - The request ID
+   * @param {T} data - The response data
+   */
+  private _sendSuccessResponse<T>(socket: Socket, id: string, data: T): void {
+    const response: IPCResponse<T> = {
+      id,
+      success: true,
+      data,
+    };
+    this._sendResponse(socket, response);
+  }
+
+  /**
+   * Sends a response to a socket
+   * @param {Socket} socket - The socket to send to
+   * @param {IPCResponse<T>} response - The response to send
+   */
+  private _sendResponse<T>(socket: Socket, response: IPCResponse<T>): void {
+    try {
+      const json = JSON.stringify(response);
+      socket.write(json + "\n");
+    } catch (err) {
+      console.error("Failed to send IPC response:", err);
+      this.emit(
+        "error",
+        new Error(`Failed to send response: ${(err as Error).message}`),
+      );
+    }
+  }
+
+  /**
+   * Sends an error response to a socket
+   * @param {Socket} socket - The socket to send to
+   * @param {string} id - The request ID
+   * @param {string} error - The error message
+   */
+  private _sendErrorResponse(socket: Socket, id: string, error: string): void {
+    const response: ErrorResponse = {
+      id,
+      success: false,
+      data: {},
+      error,
+    };
+    this._sendResponse(socket, response);
   }
 
   /**
