@@ -1,17 +1,10 @@
-/**
- * @typedef {import("../type").languageId} languageId
- */
-
-const { logger } = require("../logger");
-
-/**
- * @typedef {import("../type").ILanguageServer} ILanguageServer
- */
+import { logger } from "../logger.js";
+import type { ILanguageServer, languageId } from "../type.js";
 
 /**
  * Used as a way to register and manage language servers
  */
-class LanguageServerManager {
+export class LanguageServerManager {
   /**
    * Holds a language and it's LSP impl
    *
@@ -20,14 +13,14 @@ class LanguageServerManager {
    *
    * @type {Map<languageId, ILanguageServer>}
    */
-  #languageLspMap = new Map();
+  #languageLspMap: Map<languageId, ILanguageServer> = new Map();
 
   /**
    * Register a language and it's LSP implementation
    * @param {languageId} languageId - The specific language
    * @param {ILanguageServer} lsp - The languages implementation of the LSP
    */
-  Register(languageId, lsp) {
+  Register(languageId: languageId, lsp: ILanguageServer) {
     if (!languageId || typeof languageId !== "string")
       throw new TypeError("languageId must be a non-empty string");
 
@@ -49,7 +42,7 @@ class LanguageServerManager {
    * @param {languageId} languageId - The specific language
    * @returns {ILanguageServer | undefined} - The languages LSP if it was registered or nothing
    */
-  Get(languageId) {
+  Get(languageId: languageId): ILanguageServer | undefined {
     if (!languageId || typeof languageId !== "string")
       throw new TypeError("languageId must be a non-empty string");
 
@@ -60,9 +53,7 @@ class LanguageServerManager {
    * Get all language servers registered
    * @returns {ILanguageServer[]} List of language servers registered
    */
-  GetAll() {
+  GetAll(): ILanguageServer[] {
     return Array.from(this.#languageLspMap.values());
   }
 }
-
-module.exports = { LanguageServerManager };

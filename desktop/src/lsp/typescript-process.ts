@@ -1,13 +1,13 @@
-/**
- * @typedef {import("../type").languageId} languageId
- */
-
-const { spawn } = require("child_process");
-const { logger } = require("../logger");
-const path = require("path");
-const fs = require("fs/promises");
-const { createUri } = require("./uri");
-const { broadcastToAll } = require("../broadcast");
+import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
+import path from "path";
+import fs from "fs/promises";
+import type {
+  languageId,
+  LanguageServerNotificationResponse,
+} from "../type.js";
+import { logger } from "../logger.js";
+import { broadcastToAll } from "../broadcast.js";
+import { createUri } from "./uri.js";
 
 const { protocol } = require("typescript").server;
 
@@ -16,36 +16,36 @@ const { protocol } = require("typescript").server;
  *
  * @see https://github.com/microsoft/TypeScript/wiki/Standalone-Server-(tsserver)
  */
-class TypeScriptProcess {
+export class TypeScriptProcess {
   /**
    * The specific command used to spawn the process such as either path to a exe or a command itself like `gopls`
    * @type {string | null}
    */
-  #command = null;
+  #command: string | null = null;
 
   /**
    * The folder this process was spawned for example `c:/dev/some/project`
    * @type {string | null}
    */
-  #workSpaceFolder = null;
+  #workSpaceFolder: string | null = null;
 
   /**
    * The specific language this is for example `go` or `typescript` etc
    * @type {languageId | null}
    */
-  #languageId = null;
+  #languageId: languageId | null = null;
 
   /**
    * Indicates if the process is running - stops it spawing multiple
    * @type {boolean}
    */
-  #isStarted = false;
+  #isStarted: boolean = false;
 
   /**
    * Check if the process is running or not
    * @returns {boolean} If the process is running or not=
    */
-  IsRunning() {
+  IsRunning(): boolean {
     return this.#isStarted;
   }
 
@@ -53,19 +53,19 @@ class TypeScriptProcess {
    * Ref to the process spawned using the command
    * @type {import("child_process").ChildProcessWithoutNullStreams  | null}
    */
-  #spawnRef = null;
+  #spawnRef: ChildProcessWithoutNullStreams | null = null;
 
   /**
    * Holds the list of arguments passed to the command on spawn
    * @type {string[]}
    */
-  #args = [];
+  #args: string[] = [];
 
   /**
    * Holds the output produced by the stdout process
    * @type {Buffer}
    */
-  #stdoutBuffer = Buffer.alloc(0);
+  #stdoutBuffer: Buffer = Buffer.alloc(0);
 
   /** Holds the next request number */
   #seqId = 1;
@@ -78,9 +78,12 @@ class TypeScriptProcess {
    *
    * - `Key` - The specific request id
    * - `Value` - Resolvers for the promise it is for
-   * @type {Map<number, {resolve: (value: import("typescript").server.protocol.Response["body"]) => void, reject: (reason?: any) => void}>}
+   * @type {Map<number, {resolve: (value: any) => void, reject: (reason?: any) => void}>}
    */
-  #pendingRequests = new Map();
+  #pendingRequests: Map<
+    number,
+    { resolve: (value: any) => void; reject: (reason?: any) => void }
+  > = new Map();
 
   /**
    * Required to spawn and manage the typescript process
@@ -89,7 +92,12 @@ class TypeScriptProcess {
    * @param {string} workSpaceFolder - Path to the folder this is for for example `c:/dev/some/project`
    * @param {languageId} languageId - The specific language ID to identify it between layers such as `typescript`
    */
-  constructor(command, args, workSpaceFolder, languageId) {
+  constructor(
+    command: string,
+    args: string[],
+    workSpaceFolder: string,
+    languageId: languageId,
+  ) {
     if (typeof command !== "string" || command.trim().length === 0)
       throw new TypeError("command must be a non empty string");
 
@@ -115,7 +123,7 @@ class TypeScriptProcess {
    * Starts the process for the workspace folder provided and other options provided
    * @returns {Promise<void>} Nothing
    */
-  async Start() {
+  async Start(): Promise<void> {
     try {
       if (this.#isStarted) {
         logger.warn(
@@ -179,11 +187,15 @@ class TypeScriptProcess {
    * @param {{ expectResponse?: boolean }} [options] - Options for the request
    * @returns {Promise<import("typescript").server.protocol.Response["body"] | null>} Promise that resolves to the parsed content or resolves immediately if expectResponse is false
    */
-  SendRequest(command, params, options = { expectResponse: true }) {
+  SendRequest(
+    command: import("typescript").server.protocol.CommandTypes,
+    params: any,
+    options: { expectResponse?: boolean } = { expectResponse: true },
+  ): Promise<import("typescript").server.protocol.Response["body"] | null> {
     try {
       const requestId = this.#getNextSeq();
       /** @type {import("typescript").server.protocol.Request} */
-      const payload = {
+      const payload: import("typescript").server.protocol.Request = {
         command: command,
         seq: requestId,
         type: "request",
@@ -236,7 +248,11 @@ class TypeScriptProcess {
    * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - The changes made to the file
    * @returns {void}
    */
-  DidChangeTextDocument(filePath, version, changes) {
+  DidChangeTextDocument(
+    filePath: string,
+    version: number,
+    changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
+  ): void {
     if (typeof filePath !== "string" || filePath.trim().length === 0)
       throw new TypeError("filePath must be a non empty string");
 
@@ -252,7 +268,8 @@ class TypeScriptProcess {
        * this is done as we receive a list of changes from lsp protocol but typescript expects a different format
        * @type {import("typescript").server.protocol.ChangeRequestArgs[]}
        */
-      let typescriptChanges = [];
+      let typescriptChanges: import("typescript").server.protocol.ChangeRequestArgs[] =
+        [];
 
       changes.forEach((change) => {
         // Handle both full document changes and ranged changes
@@ -301,7 +318,7 @@ class TypeScriptProcess {
    * Send a notification to the typescript server that a text document was closed
    * @param {string} filePath - The file path that was closed
    */
-  DidCloseTextDocument(filePath) {
+  DidCloseTextDocument(filePath: string) {
     if (typeof filePath !== "string" || filePath.trim().length === 0)
       throw new TypeError("filePath must be a non empty string");
 
@@ -335,7 +352,7 @@ class TypeScriptProcess {
    * @param {string} filePath - The file path that was opened
    * @param {string} content - The content of the file
    */
-  DidOpenTextDocument(filePath, content) {
+  DidOpenTextDocument(filePath: string, content: string) {
     if (typeof filePath !== "string" || filePath.trim().length === 0)
       throw new TypeError("filePath must be a non empty string");
 
@@ -373,7 +390,7 @@ class TypeScriptProcess {
    * @param {number} [delay=100] - Delay in milliseconds before requesting diagnostics
    * @returns {void}
    */
-  RequestDiagnostics(filePath, delay = 100) {
+  RequestDiagnostics(filePath: string, delay: number = 100): void {
     if (typeof filePath !== "string" || filePath.trim().length === 0)
       throw new TypeError("filePath must be a non empty string");
 
@@ -494,7 +511,7 @@ class TypeScriptProcess {
    * Given a parsed stdout message to notify those intrested and pass the content along where needed
    * @param {import("typescript").server.protocol.Response} respose - Response parsed from typescript server
    */
-  #handle(respose) {
+  #handle(respose: import("typescript").server.protocol.Response) {
     if (respose.type === "response") {
       const seq = respose.request_seq;
       const pending = this.#pendingRequests.get(seq);
@@ -518,7 +535,7 @@ class TypeScriptProcess {
    * Send a response to UI if the response is a notification
    * @param {any} notification - Notification received
    */
-  #notify(notification) {
+  #notify(notification: any) {
     if (typeof notification !== "object")
       throw new TypeError("notification must be a object");
 
@@ -568,30 +585,31 @@ class TypeScriptProcess {
          * This the type UI expects with common JSON rpc publish diag
          * @type {import("vscode-languageserver-protocol").PublishDiagnosticsParams}
          */
-        let lspResponse = {
-          uri: createUri(body.file),
-          diagnostics: body.diagnostics.map((diag) => {
-            return {
-              range: {
-                start: {
-                  line: diag.start.line - 1, // TS is 1-based, LSP is 0-based
-                  character: diag.start.offset - 1,
+        let lspResponse: import("vscode-languageserver-protocol").PublishDiagnosticsParams =
+          {
+            uri: createUri(body.file),
+            diagnostics: body.diagnostics.map((diag: any) => {
+              return {
+                range: {
+                  start: {
+                    line: diag.start.line - 1, // TS is 1-based, LSP is 0-based
+                    character: diag.start.offset - 1,
+                  },
+                  end: {
+                    line: diag.end.line - 1,
+                    character: diag.end.offset - 1,
+                  },
                 },
-                end: {
-                  line: diag.end.line - 1,
-                  character: diag.end.offset - 1,
-                },
-              },
-              severity: this.#convertSeverity(diag.category),
-              code: diag.code,
-              source: "typescript",
-              message: diag.text,
-            };
-          }),
-        };
+                severity: this.#convertSeverity(diag.category),
+                code: diag.code,
+                source: "typescript",
+                message: diag.text,
+              };
+            }),
+          };
 
         /** @type {import("../type").LanguageServerNotificationResponse} */
-        let notificationData = {
+        let notificationData: LanguageServerNotificationResponse = {
           languageId: this.#languageId,
           workSpaceFolder: this.#workSpaceFolder,
           params: lspResponse,
@@ -615,7 +633,9 @@ class TypeScriptProcess {
    * @param {string} category - TS category: "error", "warning", "suggestion", "message"
    * @returns {import("vscode-languageserver-protocol").DiagnosticSeverity} LSP DiagnosticSeverity (1=Error, 2=Warning, 3=Information, 4=Hint)
    */
-  #convertSeverity(category) {
+  #convertSeverity(
+    category: string,
+  ): import("vscode-languageserver-protocol").DiagnosticSeverity {
     switch (category) {
       case "error":
         return 1;
@@ -635,7 +655,7 @@ class TypeScriptProcess {
    * @param {import("typescript").server.protocol.Request} message - The message to send
    * @returns {void} Nothing
    */
-  #writeToStdin(message) {
+  #writeToStdin(message: import("typescript").server.protocol.Request): void {
     if (typeof message !== "object")
       throw new TypeError("message must be a object");
 
@@ -661,5 +681,3 @@ class TypeScriptProcess {
     }
   }
 }
-
-module.exports = { TypeScriptProcess };
