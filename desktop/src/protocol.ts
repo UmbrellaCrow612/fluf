@@ -3,8 +3,8 @@
  */
 
 import { protocol } from "electron";
-import { registerPdfProtocol } from "./pdf";
-import { registerImageProtocol } from "./image";
+import { registerPdfProtocol } from "./pdf.js";
+import { registerImageProtocol } from "./image.js";
 
 /**
  * Called once before app ready to define protocol schemes
