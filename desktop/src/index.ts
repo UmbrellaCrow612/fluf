@@ -35,16 +35,12 @@ registerProtocols();
  * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
  */
 const createWindow = () => {
-  let preloadPath = path.join(__dirname, "preload.js");
-
-  logger.warn(preloadPath);
-
   const window = new BrowserWindow({
     width: 800,
     minWidth: 800,
     height: 600,
     minHeight: 600,
-    frame: false,
+    frame: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       plugins: true,
