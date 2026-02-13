@@ -1,10 +1,7 @@
-const binmanResolve = require("umbr-binman");
-const { JsonRpcLanguageServer } = require("../json-rpc-language-server");
-const { binPath } = require("../../packing");
-
-/**
- * @typedef {import("../../type").ILanguageServer} ILanguageServer
- */
+import { binPath } from "../../packing.js";
+import type { ILanguageServerDidOpenTextDocument } from "../../type.js";
+import { JsonRpcLanguageServer } from "../json-rpc-language-server.js";
+import binmanResolve from "umbr-binman";
 
 /**
  * The go language server implementation using JSON rpc
@@ -14,7 +11,7 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerStart}
    */
-  async Start(workSpaceFolder) {
+  async Start(workSpaceFolder: string) {
     let exePath = await binmanResolve("gopls", ["gopls"], binPath());
     if (!exePath) {
       throw new Error("No gopls exe path");
@@ -26,14 +23,14 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerStop}
    */
-  Stop(wsf) {
+  Stop(wsf:string) {
     return this._stop(wsf);
   }
 
   /**
    * @type {import("../../type").ILanguageServerIsRunning}
    */
-  IsRunning(wsf) {
+  IsRunning(wsf:string) {
     return this._isRunning(wsf);
   }
 
@@ -47,7 +44,7 @@ class GoLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerDidOpenTextDocument}
    */
-  DidOpenTextDocument(wsf, filePath, langId, version, text) {
+  DidOpenTextDocument(wsf, filePath, langId, version, text): ILanguageServerDidOpenTextDocument {
     return this._didOpenTextDocument(wsf, filePath, langId, version, text);
   }
 
