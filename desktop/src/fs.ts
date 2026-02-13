@@ -72,28 +72,6 @@ const mapDirItemsToFileNodes = async (
 };
 
 /**
- * Checks whether a filesystem path exists.
- *
- * This returns `false` only when the path is not found (ENOENT).
- * Any other access-related errors are re-thrown so callers can handle them.
- *
- * @param {string} path - The filesystem path to check.
- * @returns {Promise<boolean>} Resolves to `true` if the path exists, or `false` if not found.
- * @throws {Error} Throws any error other than ENOENT (e.g., permission errors).
- */
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await fs.access(path, fs.constants.F_OK);
-    return true;
-  } catch (/** @type {any}*/ err: any) {
-    if (err && err.code === "ENOENT") {
-      return false;
-    }
-    throw err;
-  }
-}
-
-/**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
  */
 const saveToImpl: CombinedCallback<IpcMainInvokeEventCallback, saveTo> = async (
