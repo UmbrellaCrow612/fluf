@@ -17,7 +17,7 @@ import type {
   storeChangeCallback,
 } from "./type.js";
 
-import { contextBridge, ipcRenderer } from "electron";
+const { contextBridge, ipcRenderer } = require("electron");
 
 /**
  * This script is attached to the UI source code window object on load.
