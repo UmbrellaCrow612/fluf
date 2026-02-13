@@ -1,4 +1,28 @@
 import { loadEnvFile } from "node:process";
+import { registerProtocols } from "./protocol.js";
+import path from "node:path";
+import { app, BrowserWindow, ipcMain, protocol } from "electron";
+import { logger } from "./logger.js";
+import {
+  startCommandServer,
+  stopCommandServer,
+} from "./command-server/server.js";
+import { registerRipgrepListeners } from "./ripgrep.js";
+import { registerGitListeners } from "./git.js";
+import { registerFsearchListeners } from "./fsearch.js";
+import { registerClipboardListeners } from "./clipboard.js";
+import { registerPdfListeners } from "./pdf.js";
+import { registerImageListeners } from "./image.js";
+import { cleanUpShells, registerShellListeners } from "./shell.js";
+import { cleanUpWatchers, registerFsListeners } from "./fs.js";
+import { registerWindowListener } from "./window.js";
+import { registerPathListeners } from "./path.js";
+import { registerFileXListeners } from "./file-x.js";
+import {
+  registerLanguageServerListener,
+  stopAllLanguageServers,
+} from "./lsp/bridge.js";
+import { registerStoreListeners } from "./store.js";
 
 loadEnvFile("./env");
 registerProtocols();

@@ -107,11 +107,9 @@ const removeItemByKeyImpl: CombinedCallback<IpcMainInvokeEventCallback, storeRem
  * Register all store listeners
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerStoreListeners = (ipcMain: IpcMain) => {
+export const registerStoreListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("store:set", setStoreItemImpl);
   ipcMain.handle("store:get", getStoreItemImpl);
   ipcMain.handle("store:clean", cleanStoreImpl);
   ipcMain.handle("store:remove", removeItemByKeyImpl);
 };
-
-module.exports = { registerStoreListeners };
