@@ -9,7 +9,8 @@ import { logger } from "../logger.js";
 import { broadcastToAll } from "../broadcast.js";
 import { createUri } from "./uri.js";
 
-const { protocol } = require("typescript").server;
+import { server } from "typescript";
+const { protocol } = server;
 
 /**
  * Used to spawn and manage the typescript process offering the LSP protocol to interact with it as typescript has a custom protocol.

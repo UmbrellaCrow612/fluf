@@ -2,17 +2,15 @@ import type {
   Position,
   TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
-import type {
-  ILanguageServerStopAllResult,
-  languageId,
-} from "../../type.js";
+import type { ILanguageServerStopAllResult, languageId } from "../../type.js";
 import { TypeScriptProcess } from "../typescript-process.js";
 import { getTypescriptServerPath } from "../../packing.js";
 import path from "node:path";
 import { logger } from "../../logger.js";
 import { broadcastToAll } from "../../broadcast.js";
 
-const { protocol } = require("typescript").server;
+import { server } from "typescript";
+const { protocol } = server;
 
 /**
  * The typescript language server implementation using following json RPC protocol design

@@ -24,7 +24,7 @@ import {
 } from "./lsp/bridge.js";
 import { registerStoreListeners } from "./store.js";
 
-loadEnvFile("../env");
+loadEnvFile(".env");
 registerProtocols();
 
 /**
