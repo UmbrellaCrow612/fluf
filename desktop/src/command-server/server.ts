@@ -1,21 +1,21 @@
 /**
  * Uses IPC contract defined in flufy-ipc-contract to allow other applications to interact with it
  */
-const { IPCServer } = require("flufy-ipc-contract");
-const { logger } = require("../logger");
-const { broadcastToAll } = require("../broadcast");
+import { IPCServer } from "flufy-ipc-contract";
+import { logger } from "../logger.js";
+import { broadcastToAll } from "../broadcast.js";
 
 /**
  * Holds ref to the IPC server
  * @type {IPCServer | null}
  */
-let server = null;
+let server: IPCServer | null = null;
 
 /**
  * Starts the IPC server
  * @returns {Promise<void>}
  */
-const startCommandServer = () => {
+export const startCommandServer = (): Promise<void> => {
   server = new IPCServer();
 
   server.on("connect", () => {
@@ -45,12 +45,10 @@ const startCommandServer = () => {
  * Stops the command server
  * @returns {Promise<void>}
  */
-const stopCommandServer = () => {
+export const stopCommandServer = (): Promise<void> => {
   if (!server) {
     return Promise.resolve();
   }
 
   return server.stop();
 };
-
-module.exports = { startCommandServer, stopCommandServer };

@@ -1,19 +1,20 @@
-const { JsonRpcLanguageServer } = require("../json-rpc-language-server");
-const { getPythonServerPath } = require("../../packing");
-
-/**
- * @typedef {import("../../type").ILanguageServer} ILanguageServer
- */
+import type {
+  Position,
+  TextDocumentContentChangeEvent,
+} from "vscode-languageserver-protocol";
+import { JsonRpcLanguageServer } from "../json-rpc-language-server.js";
+import { getPythonServerPath } from "../../packing.js";
+import type { languageId } from "../../type.js";
 
 /**
  * The python language server implementation using JSON rpc
  * @implements {ILanguageServer}
  */
-class PythonLanguageServer extends JsonRpcLanguageServer {
+export class PythonLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerStart}
    */
-  Start(workSpaceFolder) {
+  Start(workSpaceFolder: string) {
     let exePath = getPythonServerPath();
     if (!exePath) {
       throw new Error("No python exe path");
@@ -25,14 +26,14 @@ class PythonLanguageServer extends JsonRpcLanguageServer {
   /**
    * @type {import("../../type").ILanguageServerStop}
    */
-  Stop(wsf) {
+  Stop(wsf: string) {
     return this._stop(wsf);
   }
 
   /**
    * @type {import("../../type").ILanguageServerIsRunning}
    */
-  IsRunning(wsf) {
+  IsRunning(wsf: string) {
     return this._isRunning(wsf);
   }
 
@@ -44,9 +45,15 @@ class PythonLanguageServer extends JsonRpcLanguageServer {
   }
 
   /**
-   * @type {import("../../type").ILanguageServerDidOpenTextDocument}
+   * @type {ILanguageServerDidOpenTextDocument}
    */
-  DidOpenTextDocument(wsf, filePath, langId, version, text) {
+  DidOpenTextDocument(
+    wsf: string,
+    filePath: string,
+    langId: languageId,
+    version: number,
+    text: string,
+  ) {
     return this._didOpenTextDocument(wsf, filePath, langId, version, text);
   }
 
@@ -58,41 +65,42 @@ class PythonLanguageServer extends JsonRpcLanguageServer {
   }
 
   /**
-   * @type {import("../../type").ILanguageServerDidChangeTextDocument}
+   * @type {ILanguageServerDidChangeTextDocument}
    */
-  DidChangeTextDocument(wsf, fp, version, changes) {
+  DidChangeTextDocument(
+    wsf: string,
+    fp: string,
+    version: number,
+    changes: TextDocumentContentChangeEvent[],
+  ) {
     return this._didChangeTextDocument(wsf, fp, version, changes);
   }
 
   /**
-   * @type {import("../../type").ILanguageServerDidCloseTextDocument}
+   * @type {ILanguageServerDidCloseTextDocument}
    */
-  DidCloseTextDocument(wsf, fp) {
+  DidCloseTextDocument(wsf: string, fp: string) {
     return this._didCloseTextDocument(wsf, fp);
   }
 
   /**
    * @type {import("../../type").ILanguageServerHover}
    */
-  Hover(workSpaceFolder, filePath, position) {
+  Hover(workSpaceFolder: string, filePath: string, position: Position) {
     return this._hover(workSpaceFolder, filePath, position);
   }
 
   /**
    * @type {import("../../type").ILanguageServerCompletion}
    */
-  Completion(workSpaceFolder, filePath, position) {
+  Completion(workSpaceFolder: string, filePath: string, position: Position) {
     return this._completion(workSpaceFolder, filePath, position);
   }
 
   /**
    * @type {import("../../type").ILanguageServerDefinition}
    */
-  Definition(workSpaceFolder, filePath, position) {
+  Definition(workSpaceFolder: string, filePath: string, position: Position) {
     return this._definition(workSpaceFolder, filePath, position);
   }
 }
-
-module.exports = {
-  PythonLanguageServer,
-};

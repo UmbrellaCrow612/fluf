@@ -1,20 +1,36 @@
+import type { IpcMain } from "electron";
+import { logger } from "../logger.js";
+import { GoLanguageServer } from "./impl/golsp.js";
+import { PythonLanguageServer } from "./impl/pythonlsp.js";
+import { TypeScriptLanguageServer } from "./impl/typescriptlsp.js";
 import { LanguageServerManager } from "./manager.js";
+import type {
+  CombinedCallback,
+  ILanguageServerClientCompletion,
+  ILanguageServerClientDefinition,
+  ILanguageServerClientDidChangeTextDocument,
+  ILanguageServerClientDidCloseTextDocument,
+  ILanguageServerClientDidOpenTextDocument,
+  ILanguageServerClientHover,
+  ILanguageServerClientIsRunning,
+  ILanguageServerClientStart,
+  ILanguageServerClientStop,
+  IpcMainEventCallback,
+  IpcMainInvokeEventCallback,
+} from "../type.js";
 
 var languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer("go"));
-languageServerManager.Register(
-  "python",
-  new PythonLanguageServer("python"),
-);
+languageServerManager.Register("python", new PythonLanguageServer("python"));
 languageServerManager.Register(
   "typescript",
-  new TypeScriptLanguageServer("typescript"),
+  new TypeScriptLanguageServer("typescript") as any,
 );
 
 /**
  * Helper to stop and clean up all language servers
  */
-const stopAllLanguageServers = async () => {
+export const stopAllLanguageServers = async () => {
   let lsps = languageServerManager.GetAll();
 
   for (const lsp of lsps) {
@@ -26,7 +42,10 @@ const stopAllLanguageServers = async () => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStart>}
  */
-const startImpl = (_, wsf, langId) => {
+const startImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  ILanguageServerClientStart
+> = (_, wsf, langId) => {
   let lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.warn(`No language server registered for language: ${langId}`);
@@ -39,7 +58,10 @@ const startImpl = (_, wsf, langId) => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStop>}
  */
-const stopLspImpl = (_, wsf, langId) => {
+const stopLspImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  ILanguageServerClientStop
+> = (_, wsf, langId) => {
   let lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.warn(`No language server language: ${langId}`);
@@ -52,14 +74,10 @@ const stopLspImpl = (_, wsf, langId) => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidChangeTextDocument>}
  */
-const docChangedImpl = (
-  _,
-  workSpaceFolder,
-  languageId,
-  filePath,
-  version,
-  changes,
-) => {
+const docChangedImpl: CombinedCallback<
+  IpcMainEventCallback,
+  ILanguageServerClientDidChangeTextDocument
+> = (_, workSpaceFolder, languageId, filePath, version, changes) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
@@ -72,14 +90,10 @@ const docChangedImpl = (
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidOpenTextDocument>}
  */
-const openDocImpl = (
-  _,
-  workSpaceFolder,
-  languageId,
-  filePath,
-  version,
-  documentText,
-) => {
+const openDocImpl: CombinedCallback<
+  IpcMainEventCallback,
+  ILanguageServerClientDidOpenTextDocument
+> = (_, workSpaceFolder, languageId, filePath, version, documentText) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
@@ -98,7 +112,10 @@ const openDocImpl = (
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientIsRunning>}
  */
-const isRunningImpl = (_, workSpaceFolder, languageId) => {
+const isRunningImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  ILanguageServerClientIsRunning
+> = (_, workSpaceFolder, languageId) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
@@ -111,7 +128,10 @@ const isRunningImpl = (_, workSpaceFolder, languageId) => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidCloseTextDocument>}
  */
-const closeDocImpl = (_, workSpaceFolder, languageId, filePath) => {
+const closeDocImpl: CombinedCallback<
+  IpcMainEventCallback,
+  ILanguageServerClientDidCloseTextDocument
+> = (_, workSpaceFolder, languageId, filePath) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
@@ -124,7 +144,10 @@ const closeDocImpl = (_, workSpaceFolder, languageId, filePath) => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientHover>}
  */
-const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
+const hoverDocImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  ILanguageServerClientHover
+> = (_, workSpaceFolder, languageId, filePath, position) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.error(`No language server language: ${languageId}`);
@@ -141,7 +164,10 @@ const hoverDocImpl = (_, workSpaceFolder, languageId, filePath, position) => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientCompletion>}
  */
-const completionImpl = (_, workSpaceFolder, languageId, filePath, position) => {
+const completionImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  ILanguageServerClientCompletion
+> = (_, workSpaceFolder, languageId, filePath, position) => {
   let lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.error(
@@ -160,7 +186,10 @@ const completionImpl = (_, workSpaceFolder, languageId, filePath, position) => {
 /**
  * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientDefinition>}
  */
-const definitionImpl = (_, wsf, langId, fp, pos) => {
+const definitionImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  ILanguageServerClientDefinition
+> = (_, wsf, langId, fp, pos) => {
   let lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.error(
@@ -180,7 +209,7 @@ const definitionImpl = (_, wsf, langId, fp, pos) => {
  * Register all LSP related IPC channels needed for LSP to work
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerLanguageServerListener = (ipcMain) => {
+export const registerLanguageServerListener = (ipcMain: IpcMain) => {
   ipcMain.handle("lsp:start", startImpl);
   ipcMain.handle("lsp:stop", stopLspImpl);
   ipcMain.handle("lsp:is:running", isRunningImpl);
@@ -193,5 +222,3 @@ const registerLanguageServerListener = (ipcMain) => {
   ipcMain.on("lsp:document:change", docChangedImpl);
   ipcMain.on("lsp:document:close", closeDocImpl);
 };
-
-module.exports = { registerLanguageServerListener, stopAllLanguageServers };
