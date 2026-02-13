@@ -4,6 +4,10 @@
 
 import path from "path";
 import { logger } from "./logger.js";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let electronApp;
 try {

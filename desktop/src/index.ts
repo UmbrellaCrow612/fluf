@@ -23,6 +23,10 @@ import {
   stopAllLanguageServers,
 } from "./lsp/bridge.js";
 import { registerStoreListeners } from "./store.js";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 loadEnvFile(".env");
 registerProtocols();
@@ -31,6 +35,10 @@ registerProtocols();
  * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
  */
 const createWindow = () => {
+  let preloadPath = path.join(__dirname, "preload.js");
+
+  logger.warn(preloadPath);
+
   const window = new BrowserWindow({
     width: 800,
     minWidth: 800,
