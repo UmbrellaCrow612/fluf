@@ -56,6 +56,9 @@ Sometimes types generated from `desktop` change and `npm run start` does not cat
   directoryFileNodes = signal<fileNode[]>([]);
 ```
 
+- Offer generic util helpers such as `OpenNodeInEditor(fileNode)` so we have a central way of doing it and other services or parts of the application can use it.
+
+- When making components or css classes make it prefix with the module such as `editor-side-bar` or `.editor_class`
 
 # Structure 
 
