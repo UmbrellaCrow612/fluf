@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SideSearchItemComponent } from './side-search-item/side-search-item.component';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 import {
   FormControl,
   FormsModule,

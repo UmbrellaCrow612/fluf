@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { EditorContextService } from '../../app-context/editor-context.service';
+import { EditorContextService } from '../../editor-context/editor-context.service';
 import { MatButtonModule } from '@angular/material/button';
 import { getElectronApi } from '../../../../utils';
 

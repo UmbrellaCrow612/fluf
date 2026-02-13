@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 import { MatButtonModule } from '@angular/material/button';
 import { FileChangeInfo } from 'fs/promises';
 import { getElectronApi } from '../../../utils';

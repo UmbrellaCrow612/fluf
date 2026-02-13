@@ -9,7 +9,7 @@ import {
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IDisposable, Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
-import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
 import { SerializeAddon } from '@xterm/addon-serialize';
 import { getElectronApi } from '../../../../utils';
 import { voidCallback } from '../../../../gen/type';

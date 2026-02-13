@@ -18,8 +18,8 @@ import {
   CompletionContext,
   CompletionResult,
 } from '@codemirror/autocomplete';
-import { EditorContextService } from '../app-context/editor-context.service';
-import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 import { codeEditorTheme } from './theme';
 import { getLanguageExtension } from './language';
 import { getLanguageId } from '../lsp/utils';

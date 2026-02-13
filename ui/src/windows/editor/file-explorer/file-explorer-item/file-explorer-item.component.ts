@@ -8,8 +8,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { EditorContextService } from '../../app-context/editor-context.service';
-import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorContextService } from '../../editor-context/editor-context.service';
+import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
 import {
   addNodeIfNotExists,
   collapseNodeByPath,

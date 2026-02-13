@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { FileTabItemComponent } from './file-tab-item/file-tab-item.component';
-import { EditorContextService } from '../../app-context/editor-context.service';
+import { EditorContextService } from '../../editor-context/editor-context.service';
 
 @Component({
   selector: 'app-open-file-container-tabs',

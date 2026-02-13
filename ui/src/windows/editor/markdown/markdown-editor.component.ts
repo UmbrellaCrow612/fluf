@@ -6,7 +6,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 import { applyMarkdownClasses, isMarkdownFile, markdownToHtml } from './helper';
 import { getElectronApi } from '../../../utils';
 

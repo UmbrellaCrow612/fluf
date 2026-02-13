@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
-import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
 import { OpenFileInFileX } from '../../../FileX/utils';
 import { getElectronApi } from '../../../../utils';
 import { fileNode } from '../../../../gen/type';

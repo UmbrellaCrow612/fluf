@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { cssVar } from './type';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 
 /**
  * Used to change, create or edit the applications theme throughg chaning it's css vars defined globally

@@ -1,5 +1,5 @@
 import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
-import { EditorContextService } from '../../app-context/editor-context.service';
+import { EditorContextService } from '../../editor-context/editor-context.service';
 import { PdfService } from './pdf.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 

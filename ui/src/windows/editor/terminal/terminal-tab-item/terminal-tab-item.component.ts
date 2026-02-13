@@ -2,7 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
 import { getElectronApi } from '../../../../utils';
 
 @Component({

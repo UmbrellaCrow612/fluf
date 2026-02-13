@@ -3,8 +3,8 @@ import { TerminalTabItemComponent } from '../terminal-tab-item/terminal-tab-item
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { EditorContextService } from '../../app-context/editor-context.service';
-import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorContextService } from '../../editor-context/editor-context.service';
+import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
 import { getElectronApi } from '../../../../utils';
 
 @Component({

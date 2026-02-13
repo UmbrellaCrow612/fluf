@@ -7,7 +7,7 @@ import {
   Signal,
   Type,
 } from '@angular/core';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 import { DocumentNotSupportedComponent } from './document-not-supported/document-not-supported.component';
 import { NgComponentOutlet } from '@angular/common';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';

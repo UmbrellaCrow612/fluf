@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, Signal } from '@angular/core';
-import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
 import { isMarkdownFile } from '../../markdown/helper';
-import { EditorContextService } from '../../app-context/editor-context.service';
+import { EditorContextService } from '../../editor-context/editor-context.service';
 import { fileNode, voidCallback } from '../../../../gen/type';
 import { ApplicationContextMenuService } from '../../../../app/context-menu/application-context-menu.service';
 

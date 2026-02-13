@@ -7,9 +7,9 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EditorContextService } from '../../app-context/editor-context.service';
+import { EditorContextService } from '../../editor-context/editor-context.service';
 import { OpenFileOrFolderInExplorer } from '../../file-explorer/helper';
-import { EditorInMemoryContextService } from '../../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
 import { getElectronApi } from '../../../../utils';
 import { fsearchResult } from '../../../../gen/type';
 

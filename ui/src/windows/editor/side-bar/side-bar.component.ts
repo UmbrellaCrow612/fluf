@@ -2,8 +2,8 @@ import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorContextService } from '../app-context/editor-context.service';
-import { sideBarActiveElement } from '../app-context/type';
+import { EditorContextService } from '../editor-context/editor-context.service';
+import { sideBarActiveElement } from '../editor-context/type';
 
 type sideBarElement = {
   element: sideBarActiveElement;

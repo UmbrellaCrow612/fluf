@@ -6,7 +6,7 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 import { hasImageExtension } from './utils';
 import { ImageService } from './image.service';
 import { ApplicationContextMenuService } from '../../../app/context-menu/application-context-menu.service';

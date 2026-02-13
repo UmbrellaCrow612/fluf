@@ -1,12 +1,13 @@
 import { inject, Injectable } from '@angular/core';
-import { FileXContextService } from '../../windows/FileX/file-x-context/file-x-context.service';
 import { getElectronApi } from '../../utils';
 import { IPCChannels } from 'flufy-ipc-contract';
 import { OpenFileInFileX } from '../../windows/FileX/utils';
+import { OpenNodeInEditor } from '../../windows/editor/file-explorer/helper';
+import { EditorContextService } from '../../windows/editor/editor-context/editor-context.service';
 
 /**
  * Acts as the central, framework-agnostic location where we register
- * command-server logic, UI-side handlers, and notification logic.  
+ * command-server logic, UI-side handlers, and notification logic.
  * We use the services and logic provided by UI modules to respond to
  * command-server notifications and update the UI accordingly.
  *
@@ -24,6 +25,7 @@ import { OpenFileInFileX } from '../../windows/FileX/utils';
 })
 export class CommandServerService {
   private readonly electronApi = getElectronApi();
+  private readonly editorContextService = inject(EditorContextService);
 
   /**
    * Registers all command-server logic.
@@ -34,6 +36,14 @@ export class CommandServerService {
         // Open the file in FileX
         const node = await this.electronApi.fsApi.getNode(req.data.filePath);
         OpenFileInFileX(node);
+      }
+      if (req.channel === IPCChannels.editor) {
+        const node = await this.electronApi.fsApi.getNode(req.data.filePath);
+        if (node.isDirectory) {
+          return;
+        } else {
+          OpenNodeInEditor(node, this.editorContextService);
+        }
       }
     });
   }

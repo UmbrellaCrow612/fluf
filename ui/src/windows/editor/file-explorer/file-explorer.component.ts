@@ -9,10 +9,10 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 
 import { FileExplorerItemComponent } from './file-explorer-item/file-explorer-item.component';
-import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 import { collapseNodes, getNodeParent, pushNodeIntoChildren } from './fileNode';
 import { getElectronApi } from '../../../utils';
 import { fileNode, fileNodeMode } from '../../../gen/type';

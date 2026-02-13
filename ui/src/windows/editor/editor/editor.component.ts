@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { TopBarComponent } from '../top-bar/top-bar.component';
 import { SideBarComponent } from '../side-bar/side-bar.component';
-import { EditorContextService } from '../app-context/editor-context.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
 import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
 import { SideSearchComponent } from '../side-search/side-search.component';
 import { SideFolderSearchComponent } from '../side-folder-search/side-folder-search.component';
@@ -19,7 +19,7 @@ import { SideGitComponent } from '../side-git/side-git.component';
 import { NgComponentOutlet } from '@angular/common';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
-import { EditorInMemoryContextService } from '../app-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 import { ResizerTwo } from 'umbr-resizer-two';
 import { HotKeyService } from '../hotkeys/hot-key.service';
 import { EditorHomePageComponent } from './editor-home-page/editor-home-page.component';

@@ -21,7 +21,7 @@ async function main() {
 
   await client.connect();
 
-  let res = await client.openFile(`C:\\dev\\fluf\\packages\\ipc`, "file-x");
+  let res = await client.openFile(`C:\\dev\\fluf\\packages\\ipc\\tests\\client.js`, "editor");
   console.log("Res here ", JSON.stringify(res));
 
   let resTwo = await client.closeFile("C:\\dev\\fluf\\packages\\ipc", "file-x");

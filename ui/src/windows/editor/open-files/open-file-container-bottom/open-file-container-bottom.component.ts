@@ -1,6 +1,6 @@
 import { Component, computed, inject, Signal, Type } from '@angular/core';
-import { EditorContextService } from '../../app-context/editor-context.service';
-import { fileEditorBottomActiveElement } from '../../app-context/type';
+import { EditorContextService } from '../../editor-context/editor-context.service';
+import { fileEditorBottomActiveElement } from '../../editor-context/type';
 import { TerminalComponent } from '../../terminal/terminal.component';
 import { NgComponentOutlet } from '@angular/common';
 import { ProblemsComponent } from '../../problems/problems.component';
