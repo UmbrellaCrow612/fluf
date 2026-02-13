@@ -1,12 +1,9 @@
-const { logger } = require("../logger");
-const { JsonRpcProcess } = require("./json-rpc-process");
-const path = require("path");
-const { createUri } = require("./uri");
-const { broadcastToAll } = require("../broadcast");
-
-/**
- * @typedef {import("../type").ILanguageServer} ILanguageServer
- */
+import path from "path";
+import type { ILanguageServerStopAllResult, languageId } from "../type.js";
+import { JsonRpcProcess } from "./json-rpc-process.js";
+import { logger } from "../logger.js";
+import { createUri } from "./uri.js";
+import { broadcastToAll } from "../broadcast.js";
 
 /**
  * Base class that implements common JSON-RPC LSP functionality.
@@ -21,12 +18,12 @@ const { broadcastToAll } = require("../broadcast");
  *
  * @see {ILanguageServer} for the interface this class is designed to support
  */
-class JsonRpcLanguageServer {
+export class JsonRpcLanguageServer {
   /**
    * Required for LSP to work
    * @param {import("../type").languageId} languageId - The specific language this is for
    */
-  constructor(languageId) {
+  constructor(languageId: languageId) {
     if (typeof languageId !== "string")
       throw new TypeError("languageId must be a non empty string");
 
@@ -37,13 +34,13 @@ class JsonRpcLanguageServer {
    * Holds a map of specific workspace folders normalized and abs and there rpc
    * @type {Map<string, JsonRpcProcess>}
    */
-  #workSpaceRpcMap = new Map();
+  #workSpaceRpcMap: Map<string, JsonRpcProcess> = new Map();
 
   /**
    * Holds the language this LSP is for exmaple `go` or `js` etc
    * @type {import("../type").languageId | null}
    */
-  #languageId = null;
+  #languageId: languageId | null = null;
 
   /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
@@ -52,7 +49,7 @@ class JsonRpcLanguageServer {
    * @param {string} wsf - The path to the workspace folder to run the lsp for
    * @returns {Promise<boolean>} If it could or could not start it
    */
-  async _start(command, args, wsf) {
+  async _start(command: string, args: string[], wsf: string): Promise<boolean> {
     if (!command || typeof command !== "string")
       throw new TypeError("command must be a non-empty string");
 
@@ -79,7 +76,7 @@ class JsonRpcLanguageServer {
       await rc.Start();
 
       /** @type {import("vscode-languageserver-protocol").InitializeParams} */
-      let params = {
+      let params: import("vscode-languageserver-protocol").InitializeParams = {
         capabilities: {},
         processId: rc.GetPid() ?? null,
         clientInfo: {
@@ -123,7 +120,7 @@ class JsonRpcLanguageServer {
    * @param {string} workSpaceFolder - The workspace folder to stop
    * @returns {Promise<boolean>} If it could or could not
    */
-  async _stop(workSpaceFolder) {
+  async _stop(workSpaceFolder: string): Promise<boolean> {
     if (!workSpaceFolder || typeof workSpaceFolder !== "string")
       throw new TypeError("workspace-folder must be a non empty string ");
 
@@ -137,7 +134,7 @@ class JsonRpcLanguageServer {
 
       try {
         await rc.SendRequest("shutdown", {});
-      } catch (/** @type {any}*/ error) {
+      } catch (/** @type {any}*/ error: any) {
         logger.error(error, `Shutdown requested hanged`);
       }
 
@@ -150,7 +147,7 @@ class JsonRpcLanguageServer {
         `Language server stopped for command: ${rc.GetCommand()} at workspace folder: ${workSpaceFolder}`,
       );
       return true;
-    } catch (/** @type {any}*/ error) {
+    } catch (/** @type {any}*/ error: any) {
       logger.error(
         error,
         `Failed to stop language server for work space folder ${workSpaceFolder}`,
@@ -164,10 +161,10 @@ class JsonRpcLanguageServer {
    * Stop all language servers active for all workspaces
    * @returns {Promise<import("../type").ILanguageServerStopAllResult[]>} All stop values for all workspaces
    */
-  async _stopAll() {
+  async _stopAll(): Promise<ILanguageServerStopAllResult[]> {
     let wsfs = Array.from(this.#workSpaceRpcMap.keys());
     /** @type {import("../type").ILanguageServerStopAllResult[]} */
-    let result = [];
+    let result: ILanguageServerStopAllResult[] = [];
 
     for (const wsf of wsfs) {
       result.push({
@@ -184,7 +181,7 @@ class JsonRpcLanguageServer {
    * @param {string} workSpaceFolder - The workspace folder to check
    * @returns {boolean} If it is or is not
    */
-  _isRunning(workSpaceFolder) {
+  _isRunning(workSpaceFolder: string): boolean {
     return this.#workSpaceRpcMap.has(
       path.normalize(path.resolve(workSpaceFolder)),
     );
@@ -194,7 +191,7 @@ class JsonRpcLanguageServer {
    * Get a list of workspace folders that have a active LSP process running for them
    * @returns {string[]} List of workspace folder paths
    */
-  _getWorkSpaceFolders() {
+  _getWorkSpaceFolders(): string[] {
     return Array.from(this.#workSpaceRpcMap.keys());
   }
 
@@ -207,7 +204,13 @@ class JsonRpcLanguageServer {
    * @param {string} text - The documents full text content
    * @returns {void} Write's to the process
    */
-  _didOpenTextDocument(workSpaceFolder, filePath, languageId, version, text) {
+  _didOpenTextDocument(
+    workSpaceFolder: string,
+    filePath: string,
+    languageId: string,
+    version: number,
+    text: string,
+  ): void {
     if (!workSpaceFolder || typeof workSpaceFolder !== "string")
       throw new TypeError("workSpaceFolder must be a non-empty string");
 
@@ -257,7 +260,12 @@ class JsonRpcLanguageServer {
    * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - List of changes applied to the document
    * @returns {void} Nothing
    */
-  _didChangeTextDocument(workSpaceFolder, filePath, version, changes) {
+  _didChangeTextDocument(
+    workSpaceFolder: string,
+    filePath: string,
+    version: number,
+    changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
+  ): void {
     if (!workSpaceFolder || typeof workSpaceFolder !== "string")
       throw new TypeError("workSpaceFolder must be a non-empty string");
 
@@ -302,7 +310,7 @@ class JsonRpcLanguageServer {
    * @param {string} filePath - The path to the file to close
    * @returns {void} Nothing
    */
-  _didCloseTextDocument(workSpaceFolder, filePath) {
+  _didCloseTextDocument(workSpaceFolder: string, filePath: string): void {
     if (typeof workSpaceFolder !== "string")
       throw new TypeError("workSpaceFolder must be a non empty string");
     if (typeof filePath !== "string")
@@ -341,7 +349,11 @@ class JsonRpcLanguageServer {
    * @param {import("vscode-languageserver-protocol").Position} position - The position at which to get the hover information
    * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The hover information
    */
-  _hover(workSpaceFolder, filePath, position) {
+  _hover(
+    workSpaceFolder: string,
+    filePath: string,
+    position: import("vscode-languageserver-protocol").Position,
+  ): Promise<import("vscode-languageserver-protocol").Hover> {
     if (typeof workSpaceFolder !== "string")
       throw new TypeError("workSpaceFolder must be a non empty string");
     if (typeof filePath !== "string")
@@ -372,7 +384,7 @@ class JsonRpcLanguageServer {
       }
 
       /** @type {import("vscode-languageserver-protocol").HoverParams} */
-      let params = {
+      let params: import("vscode-languageserver-protocol").HoverParams = {
         position,
         textDocument: {
           uri: createUri(filePath),
@@ -397,7 +409,11 @@ class JsonRpcLanguageServer {
    * @param {import("vscode-languageserver-protocol").Position} position - The position at which to get completions
    * @returns {Promise<import("vscode-languageserver-protocol").CompletionList | null>} The completion items or list
    */
-  _completion(workSpaceFolder, filePath, position) {
+  _completion(
+    workSpaceFolder: string,
+    filePath: string,
+    position: import("vscode-languageserver-protocol").Position,
+  ): Promise<import("vscode-languageserver-protocol").CompletionList | null> {
     if (typeof workSpaceFolder !== "string")
       throw new TypeError("workSpaceFolder must be a non empty string");
     if (typeof filePath !== "string")
@@ -428,7 +444,7 @@ class JsonRpcLanguageServer {
       }
 
       /** @type {import("vscode-languageserver-protocol").CompletionParams} */
-      let params = {
+      let params: import("vscode-languageserver-protocol").CompletionParams = {
         position,
         textDocument: {
           uri: createUri(filePath),
@@ -453,7 +469,11 @@ class JsonRpcLanguageServer {
    * @param {import("vscode-languageserver-protocol").Position} position - The position of the symbol to get the definition for
    * @returns {Promise<import("vscode-languageserver-protocol").Definition | null>} - The definition location / locations or null if the position of the symbol is empty whitesapce
    */
-  _definition(workSpaceFolder, filePath, position) {
+  _definition(
+    workSpaceFolder: string,
+    filePath: string,
+    position: import("vscode-languageserver-protocol").Position,
+  ): Promise<import("vscode-languageserver-protocol").Definition | null> {
     if (
       typeof workSpaceFolder !== "string" ||
       workSpaceFolder.trim().length === 0
@@ -491,7 +511,7 @@ class JsonRpcLanguageServer {
       /**
        * @type {import("vscode-languageserver-protocol").DefinitionParams}
        */
-      let params = {
+      let params: import("vscode-languageserver-protocol").DefinitionParams = {
         position: position,
         textDocument: {
           uri: createUri(filePath),
@@ -511,5 +531,3 @@ class JsonRpcLanguageServer {
     }
   }
 }
-
-module.exports = { JsonRpcLanguageServer };
