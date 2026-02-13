@@ -2,21 +2,28 @@
  * Used as a way of sotring generic JSON objects in keys and also modifying them, this is used for stoaring things between browser windows.
  */
 
-const { logger } = require("./logger");
-const path = require("path");
-const fs = require("fs/promises");
-const { broadcastToAll } = require("./broadcast");
-const { app } = require("electron");
+import path from "path";
+import fs from "fs/promises";
+import { app, type IpcMain } from "electron";
+import type {
+  CombinedCallback,
+  IpcMainInvokeEventCallback,
+  storeGet,
+  storeRemove,
+  storeSet,
+} from "./type.js";
+import { logger } from "./logger.js";
+import { broadcastToAll } from "./broadcast.js";
 
 /**
  * Represents the base directory we save store files to
  */
 const storeBaseDirectory = path.join(app.getPath("userData"), "store"); // on windows it saves to C:\Users\<you>\AppData\Roaming\<YourApp>\store
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeSet>}
- */
-const setStoreItemImpl = async (_, key, content) => {
+const setStoreItemImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  storeSet
+> = async (_, key, content) => {
   if (typeof key !== "string" || key.trim().length == 0) {
     throw new TypeError("key must be a non empty string");
   }
@@ -58,7 +65,10 @@ const cleanStoreImpl = async () => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeGet>}
  */
-const getStoreItemImpl = async (_, key) => {
+const getStoreItemImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  storeGet
+> = async (_, key) => {
   if (typeof key !== "string" || key.trim().length === 0) {
     throw new TypeError("key must be a non empty string");
   }
@@ -66,7 +76,7 @@ const getStoreItemImpl = async (_, key) => {
   try {
     const filePath = path.join(storeBaseDirectory, key);
     return await fs.readFile(filePath, "utf8");
-  } catch (/** @type {any}*/ error) {
+  } catch (/** @type {any}*/ error: any) {
     if (error.code === "ENOENT") {
       return undefined;
     }
@@ -79,7 +89,7 @@ const getStoreItemImpl = async (_, key) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeRemove>}
  */
-const removeItemByKeyImpl = async (_, key) => {
+const removeItemByKeyImpl: CombinedCallback<IpcMainInvokeEventCallback, storeRemove> = async (_, key) => {
   if (typeof key !== "string" || key.trim().length == 0)
     throw new TypeError("key must be a non empty string");
 
@@ -97,7 +107,7 @@ const removeItemByKeyImpl = async (_, key) => {
  * Register all store listeners
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerStoreListeners = (ipcMain) => {
+const registerStoreListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("store:set", setStoreItemImpl);
   ipcMain.handle("store:get", getStoreItemImpl);
   ipcMain.handle("store:clean", cleanStoreImpl);

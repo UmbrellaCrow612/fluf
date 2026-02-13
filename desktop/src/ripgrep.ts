@@ -2,10 +2,18 @@
  * Contains all rip grep related code
  */
 
-const fs = require("fs");
-const { spawn } = require("child_process");
-const { binPath } = require("./packing");
-const binmanResolve = require("umbr-binman");
+import fs from "fs";
+import { spawn } from "child_process";
+import binmanResolve from "umbr-binman";
+import type {
+  CombinedCallback,
+  IpcMainInvokeEventCallback,
+  ripgrepArgsOptions,
+  ripGrepResult,
+  ripgrepSearch,
+} from "./type.js";
+import type { IpcMain } from "electron";
+import { binPath } from "./packing.js";
 
 /**
  * Parses ripgrep --vimgrep stdout and converts it to structured objects
@@ -13,12 +21,15 @@ const binmanResolve = require("umbr-binman");
  * @param {string} searchTerm - The search term
  * @returns {import("./type").ripGrepResult[]} Array of structured results
  */
-function parseRipgrepOutput(stdout, searchTerm) {
+function parseRipgrepOutput(
+  stdout: string,
+  searchTerm: string,
+): ripGrepResult[] {
   /**
    * Contains the file path i.e file and the ripgrep result for it
    * @type {Map<string, import("./type").ripGrepResult>}
    */
-  const map = new Map();
+  const map: Map<string, ripGrepResult> = new Map();
 
   const lines = stdout.split(/\r?\n/);
   const lineRegex = /^(.+?):(\d+):(\d+):(.*)$/; // file:line:column:text
@@ -30,15 +41,15 @@ function parseRipgrepOutput(stdout, searchTerm) {
     if (!match) continue;
 
     const [, filePath, lineNumberStr, , content] = match;
-    const lineNumber = parseInt(lineNumberStr, 10);
+    const lineNumber = parseInt(lineNumberStr!, 10);
 
     // Initialize entry for this file
-    if (!map.has(filePath)) {
-      const parts = filePath.split(/[/\\]/);
+    if (!map.has(filePath!)) {
+      const parts = filePath!.split(/[/\\]/);
       const fileName = parts.pop();
       const directoryName = parts.pop() || "";
-      map.set(filePath, {
-        filePath,
+      map.set(filePath!, {
+        filePath: filePath ?? "",
         directoryName,
         lines: [],
         fileName: fileName ?? "",
@@ -47,12 +58,12 @@ function parseRipgrepOutput(stdout, searchTerm) {
 
     // Extract before, match, after for the found term
     const regex = new RegExp(searchTerm, "i");
-    const found = regex.exec(content);
+    const found = regex.exec(content!);
     if (!found) continue;
 
-    const before = content.slice(0, found.index);
+    const before = content!.slice(0, found.index);
     const matchText = found[0];
-    const after = content.slice(found.index + matchText.length);
+    const after = content!.slice(found.index + matchText.length);
 
     // @ts-ignore
     map.get(filePath).lines.push({
@@ -71,7 +82,7 @@ function parseRipgrepOutput(stdout, searchTerm) {
  * @param {import("./type").ripgrepArgsOptions} options
  * @returns {string[]} Array of arguments for ripgrep
  */
-function buildRipgrepArgs(options) {
+function buildRipgrepArgs(options: ripgrepArgsOptions): string[] {
   if (!options || !options.searchTerm || !options.searchPath) {
     throw new Error("Both searchTerm and searchPath are required.");
   }
@@ -126,7 +137,9 @@ function buildRipgrepArgs(options) {
  * @param {import("./type").ripgrepArgsOptions} options
  * @returns {Promise<import("./type").ripGrepResult[]>}
  */
-async function searchWithRipGrep(options) {
+async function searchWithRipGrep(
+  options: ripgrepArgsOptions,
+): Promise<ripGrepResult[]> {
   let bpath = binPath();
   const ripGrepPath = await binmanResolve("ripgrep", ["rg"], bpath);
 
@@ -152,11 +165,11 @@ async function searchWithRipGrep(options) {
 
     ripGrep.on("close", (code) => {
       if (code === 0 || code === 1) {
-        clearTimeout(timeoutId)
+        clearTimeout(timeoutId);
         const data = parseRipgrepOutput(stdout, options.searchTerm);
         resolve(data);
       } else {
-        clearTimeout(timeoutId)
+        clearTimeout(timeoutId);
         reject(new Error(`Ripgrep exited with code ${code}: ${stderr}`));
       }
     });
@@ -166,7 +179,10 @@ async function searchWithRipGrep(options) {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").ripgrepSearch>}
  */
-const searchImpl = async (_, options) => {
+const searchImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  ripgrepSearch
+> = async (_, options) => {
   return await searchWithRipGrep(options);
 };
 
@@ -174,10 +190,6 @@ const searchImpl = async (_, options) => {
  * Register ripgrep listeners
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerRipgrepListeners = (ipcMain) => {
+export const registerRipgrepListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("ripgrep:search", searchImpl);
-};
-
-module.exports = {
-  registerRipgrepListeners,
 };

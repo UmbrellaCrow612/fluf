@@ -2,8 +2,8 @@
  * Contains all code and helpers related to app packing state
  */
 
-const path = require("path");
-const { logger } = require("./logger");
+import path from "path";
+import { logger } from "./logger.js";
 
 let electronApp;
 try {
@@ -16,7 +16,7 @@ try {
  * Checks if the application is packaged
  * @returns {boolean}
  */
-const isPackaged = () => {
+export const isPackaged = (): boolean => {
   return electronApp ? electronApp.isPackaged : false;
 };
 
@@ -24,7 +24,7 @@ const isPackaged = () => {
  * Get the path of the bin folder (dev or packaged)
  * @returns {string}
  */
-const binPath = () => {
+export const binPath = (): string => {
   try {
     return isPackaged()
       ? path.join(process.resourcesPath, "bin")
@@ -39,7 +39,7 @@ const binPath = () => {
  * Get the path to the TypeScript language server
  * @returns {string}
  */
-const getTypescriptServerPath = () => {
+export const getTypescriptServerPath = (): string => {
   return isPackaged()
     ? path.join(process.resourcesPath, "typescript", "tsserver.js")
     : path.join(__dirname, "node_modules", "typescript", "lib", "tsserver.js");
@@ -49,15 +49,8 @@ const getTypescriptServerPath = () => {
  * Get the path to the Python language server
  * @returns {string}
  */
-const getPythonServerPath = () => {
+export const getPythonServerPath = (): string => {
   return isPackaged()
     ? path.join(process.resourcesPath, "pyright", "langserver.index.js")
     : path.join(__dirname, "node_modules", "pyright", "langserver.index.js");
-};
-
-module.exports = {
-  isPackaged,
-  binPath,
-  getTypescriptServerPath,
-  getPythonServerPath,
 };

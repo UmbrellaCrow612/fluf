@@ -2,13 +2,21 @@
  * Contains all the code to interact with fsearch
  */
 
-const fs = require("fs");
-const { spawn } = require("child_process");
-const { binPath } = require("./packing");
-const binmanResolve = require("umbr-binman");
+import fs from "fs";
+import { spawn } from "child_process";
+import binmanResolve from "umbr-binman";
+import type {
+  CombinedCallback,
+  fsearch,
+  fsearchOptions,
+  fsearchResult,
+  IpcMainInvokeEventCallback,
+} from "./type.js";
+import { binPath } from "./packing.js";
+import type { IpcMain } from "electron";
 
 /** @type {import("./type").fsearchOptions} */
-const defaultSearchOptions = {
+const defaultSearchOptions: fsearchOptions = {
   directory: ".",
   term: "default",
   count: false,
@@ -37,11 +45,11 @@ const defaultSearchOptions = {
  * @param {string} stdout
  * @returns {import("./type").fsearchResult[]}
  */
-const parseStdout = (stdout) => {
+const parseStdout = (stdout: string): fsearchResult[] => {
   /**
    * @type {import("./type").fsearchResult[]}
    */
-  const results = [];
+  const results: fsearchResult[] = [];
 
   if (!stdout || typeof stdout !== "string") return results;
 
@@ -75,9 +83,9 @@ const parseStdout = (stdout) => {
  * @param {import("./type").fsearchOptions} options
  * @returns {string[]} Args array
  */
-const buildArgs = (options) => {
+const buildArgs = (options: fsearchOptions) => {
   /** @type {string[]} */
-  const args = [];
+  const args: string[] = [];
 
   if (options.term) {
     args.push(options.term);
@@ -87,7 +95,7 @@ const buildArgs = (options) => {
    * @param {string} flag
    * @param {string | string[] | boolean | undefined | number} value
    */
-  const addFlag = (flag, value) => {
+  const addFlag = (flag: string, value: any) => {
     if (value === undefined || value === null) return;
 
     // Case 1: boolean flag → only include if true
@@ -140,7 +148,9 @@ const buildArgs = (options) => {
  * @param {import("./type").fsearchOptions} options
  * @returns {Promise<import("./type").fsearchResult[]>}
  */
-const searchWithFSearch = async (options) => {
+const searchWithFSearch = async (
+  options: fsearchOptions,
+): Promise<fsearchResult[]> => {
   let bpath = binPath();
   const exePath = await binmanResolve("fsearch", ["fsearch"], bpath);
 
@@ -170,7 +180,8 @@ const searchWithFSearch = async (options) => {
 
     child.on("close", (code) => {
       if (code === 0) {
-        try { // try to parse the stdout
+        try {
+          // try to parse the stdout
           const results = parseStdout(stdout);
           clearTimeout(timeoutId);
           resolve(results);
@@ -178,7 +189,8 @@ const searchWithFSearch = async (options) => {
           clearTimeout(timeoutId);
           reject(err);
         }
-      } else { // other error code failed
+      } else {
+        // other error code failed
         clearTimeout(timeoutId);
         reject(
           new Error(
@@ -193,7 +205,10 @@ const searchWithFSearch = async (options) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsearch>}
  */
-const fsearchImpl = async (_, options) => {
+const fsearchImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  fsearch
+> = async (_, options) => {
   let newOptions = { ...defaultSearchOptions, ...options };
   return await searchWithFSearch(newOptions);
 };
@@ -202,8 +217,6 @@ const fsearchImpl = async (_, options) => {
  * Register fsearch listeners
  * @param {import("electron").IpcMain} ipcMain
  */
-function registerFsearchListeners(ipcMain) {
+export function registerFsearchListeners(ipcMain: IpcMain) {
   ipcMain.handle("fsearch", fsearchImpl);
 }
-
-module.exports = { registerFsearchListeners };

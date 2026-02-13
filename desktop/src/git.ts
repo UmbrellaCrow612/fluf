@@ -2,10 +2,21 @@
  * Contains all api code for interacting with git via electron
  */
 
-const { spawn } = require("child_process");
-const fs = require("fs/promises");
-const path = require("path");
-const { logger } = require("./logger");
+import { spawn } from "child_process";
+import fs from "fs/promises";
+import path from "path";
+import type {
+  CombinedCallback,
+  gitFileEntry,
+  gitSection,
+  gitStatus,
+  gitStatusResult,
+  initializeGit,
+  IpcMainInvokeEventCallback,
+  isGitInitialized,
+} from "./type.js";
+import type { IpcMain } from "electron";
+import { logger } from "./logger.js";
 
 /**
  * Parses the stdout from `git status` and returns a structured JSON object.
@@ -13,10 +24,10 @@ const { logger } = require("./logger");
  * @param {string} stdout - The raw stdout string from `git status`
  * @returns {import("./type").gitStatusResult} A structured representation of the git status
  */
-function parseGitStatus(stdout) {
+function parseGitStatus(stdout: string): gitStatusResult {
   const lines = stdout.split(/\r?\n/);
   /** @type {import("./type").gitStatusResult} */
-  const result = {
+  const result: gitStatusResult = {
     branch: null,
     branchStatus: null,
     staged: [],
@@ -27,7 +38,7 @@ function parseGitStatus(stdout) {
   };
 
   /** @type {import("./type").gitSection} */
-  let section = null;
+  let section: gitSection = null;
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -82,21 +93,22 @@ function parseGitStatus(stdout) {
         /^(modified:|deleted:|new file:|renamed:|.+->.+)?\s*(.+)$/,
       );
       if (match) {
-        let status = match[1] ? match[1].replace(":", "").trim() : null;
+        let status: any = match[1]
+          ? match[1].replace(":", "").trim()
+          : null;
         let file = match[2] ? match[2].trim() : null;
 
         if (file) {
           /** @type {import("./type").gitFileEntry} */
-          const entry = {
-            status: /** @type {import("./type").gitFileStatus} */ (
-              status || "untracked"
-            ),
+          const entry: gitFileEntry = {
+            status: status || "untracked",
             file,
           };
 
-          result[
-            /** @type {"staged"|"unstaged"|"untracked"|"ignored"} */ (section)
-          ].push(entry);
+          result /** @type {"staged"|"unstaged"|"untracked"|"ignored"} */[
+            section
+          ]
+            .push(entry);
         }
       }
     }
@@ -112,7 +124,11 @@ function parseGitStatus(stdout) {
  * @param {number} [timeOut=5000] - The timeout for a git cmd's to take before it fails
  * @returns {Promise<string>}
  */
-function runGitCommand(args, cwd, timeOut = 5000) {
+function runGitCommand(
+  args: string[],
+  cwd: string,
+  timeOut: number = 5000,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const gitProc = spawn("git", args, {
       cwd: path.normalize(path.resolve(cwd)),
@@ -167,7 +183,10 @@ const hasGitImpl = async () => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").initializeGit>}
  */
-const gitInitImpl = async (_, dir) => {
+const gitInitImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  initializeGit
+> = async (_, dir) => {
   let p = path.normalize(path.resolve(dir));
 
   try {
@@ -183,15 +202,17 @@ const gitInitImpl = async (_, dir) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").isGitInitialized>}
  */
-const igGitInit = async (_, dir) => {
+const igGitInit: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  isGitInitialized
+> = async (_, dir) => {
   let gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
 
   try {
     await fs.access(gitPath);
     return true;
   } catch (error) {
-
-    logger.error(error, `Failed to check if git is init in directory ${dir}`)
+    logger.error(error, `Failed to check if git is init in directory ${dir}`);
     return false;
   }
 };
@@ -199,7 +220,10 @@ const igGitInit = async (_, dir) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").gitStatus>}
  */
-const gitStatusImpl = async (_, dir) => {
+const gitStatusImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  gitStatus
+> = async (_, dir) => {
   try {
     const stdout = await runGitCommand(
       ["status"],
@@ -217,13 +241,9 @@ const gitStatusImpl = async (_, dir) => {
  * Registers all listeners and handlers for git
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerGitListeners = (ipcMain) => {
+export const registerGitListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("has:git", hasGitImpl);
   ipcMain.handle("git:init", gitInitImpl);
   ipcMain.handle("git:is:init", igGitInit);
   ipcMain.handle("git:status", gitStatusImpl);
-};
-
-module.exports = {
-  registerGitListeners,
 };

@@ -1,24 +1,40 @@
 /*
  * Contains all the code needed to have pty / shell support like vscode terminal
  */
-const os = require("os");
-const fs = require("fs/promises");
-const { spawn } = require("@homebridge/node-pty-prebuilt-multiarch");
-const path = require("path");
-const { logger } = require("./logger");
-const { broadcastToAll } = require("./broadcast");
+import os from "os";
+import fs from "fs/promises";
+import {
+  spawn,
+  type IDisposable,
+  type IPty,
+} from "@homebridge/node-pty-prebuilt-multiarch";
+import path from "path";
+import type {
+  CombinedCallback,
+  createShell,
+  IpcMainInvokeEventCallback,
+  killShell,
+  resizeShell,
+  writeToShell,
+} from "./type.js";
+import { logger } from "./logger.js";
+import { broadcastToAll } from "./broadcast.js";
+import type { IpcMain } from "electron";
 
 /**
  * Contains a map of shell PID and then the proccess
  * @type {Map<number, import("@homebridge/node-pty-prebuilt-multiarch").IPty>}
  */
-const shells = new Map();
+const shells: Map<number, IPty> = new Map<number, IPty>();
 
 /**
  * Contains a list of specific shell PID's and there dipose methods
  * @type {Map<number, import("@homebridge/node-pty-prebuilt-multiarch").IDisposable[]>}
  */
-const shellDisposes = new Map();
+const shellDisposes: Map<number, IDisposable[]> = new Map<
+  number,
+  IDisposable[]
+>();
 
 /** Spawn specific shell based on platform  */
 const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
@@ -26,7 +42,10 @@ const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createShell>}
  */
-const createImpl = async (_, directory) => {
+const createImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  createShell
+> = async (_, directory) => {
   /** Return -1 for error's */
   let err = -1;
 
@@ -52,7 +71,7 @@ const createImpl = async (_, directory) => {
      * Contains all disposes for this pty
      * @type {import("@homebridge/node-pty-prebuilt-multiarch").IDisposable[]}
      */
-    let disposes = [];
+    let disposes: IDisposable[] = [];
 
     disposes.push(
       pty.onData((chunk) => {
@@ -90,7 +109,7 @@ const createImpl = async (_, directory) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").killShell>}
  */
-const killImpl = (_, pid) => {
+const killImpl: CombinedCallback<IpcMainInvokeEventCallback, killShell> = (_, pid) => {
   try {
     let shell = shells.get(pid);
     if (!shell) return Promise.resolve(false);
@@ -116,7 +135,7 @@ const killImpl = (_, pid) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").resizeShell>}
  */
-const resizeImpl = (_, pid, col, row) => {
+const resizeImpl: CombinedCallback<IpcMainInvokeEventCallback, resizeShell> = (_, pid, col, row) => {
   try {
     let shell = shells.get(pid);
     if (!shell) return Promise.resolve(false);
@@ -133,7 +152,7 @@ const resizeImpl = (_, pid, col, row) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").writeToShell>}
  */
-const writeImpl = (_, pid, content) => {
+const writeImpl: CombinedCallback<IpcMainInvokeEventCallback, writeToShell> = (_, pid, content) => {
   let shell = shells.get(pid);
   if (!shell) return;
 
@@ -142,9 +161,9 @@ const writeImpl = (_, pid, content) => {
 
 /**
  * Add all event listener
- * @param {import("electron").IpcMain} ipcMain\
+ * @param {import("electron").IpcMain} ipcMain
  */
-const registerShellListeners = (ipcMain) => {
+export const registerShellListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("shell:create", createImpl);
   ipcMain.handle("shell:kill", killImpl);
   ipcMain.handle("shell:resize", resizeImpl);
@@ -154,7 +173,7 @@ const registerShellListeners = (ipcMain) => {
 /**
  * Kills shells
  */
-const cleanUpShells = () => {
+export const cleanUpShells = () => {
   let a = Array.from(shells.values());
   let b = Array.from(shellDisposes.values());
 
@@ -173,5 +192,3 @@ const cleanUpShells = () => {
     x.kill();
   });
 };
-
-module.exports = { registerShellListeners, cleanUpShells };

@@ -1,4 +1,4 @@
-const path = require("path");
+import path from "path";
 
 /**
  * Converts a local file path into an LSP-compliant DocumentUri.
@@ -14,7 +14,7 @@ const path = require("path");
  * createUri('./file.txt');             // 'file:///absolute/path/to/file.txt'
  * createUri('/home/user/file.txt');    // 'file:///home/user/file.txt'
  */
-function createUri(filePath) {
+export function createUri(filePath: string): string {
   if (typeof filePath !== "string") {
     throw new TypeError("filePath must be a string");
   }
@@ -43,12 +43,10 @@ function createUri(filePath) {
  * @param {string} uri - The string to check
  * @returns {boolean} True if the string is a valid file URI, false otherwise
  */
-function isUri(uri) {
+export function isUri(uri: string): boolean {
   if (typeof uri !== "string" || uri.length === 0) {
     return false;
   }
 
   return uri.startsWith("file://");
 }
-
-module.exports = { createUri, isUri };

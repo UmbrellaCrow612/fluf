@@ -1,4 +1,23 @@
-const { contextBridge, ipcRenderer } = require("electron");
+import type {
+  chromeWindowApi,
+  clipboardApi,
+  CombinedCallback,
+  commandServer,
+  ElectronApi,
+  fileXApi,
+  fsApi,
+  fsearchApi,
+  gitApi,
+  ILanguageServerClient,
+  IpcRendererEventCallback,
+  pathApi,
+  ripgrepApi,
+  shellApi,
+  storeApi,
+  storeChangeCallback,
+} from "./type.js";
+
+import { contextBridge, ipcRenderer } from "electron";
 
 /**
  * This script is attached to the UI source code window object on load.
@@ -8,13 +27,9 @@ const { contextBridge, ipcRenderer } = require("electron");
 /**
  * @type {import("./type").commandServer}
  */
-const commandServer = {
+const commandServer: commandServer = {
   onOpenFile: (callback) => {
-    /**
-     * @param {*} _
-     * @param  {any} req
-     */
-    let l = async (_, req) => {
+    let l = async (_: any, req: any) => {
       await callback(req);
     };
 
@@ -29,14 +44,14 @@ const commandServer = {
 /**
  * @type {import("./type").fileXApi}
  */
-const fileXApi = {
+const fileXApi: fileXApi = {
   open: (...args) => ipcRenderer.invoke("filex:open", ...args),
 };
 
 /**
  * @type {import("./type").ILanguageServerClient}
  */
-const lspClient = {
+const lspClient: ILanguageServerClient = {
   start: (...args) => ipcRenderer.invoke("lsp:start", ...args),
   stop: (...args) => ipcRenderer.invoke("lsp:stop", ...args),
   isRunning: (...args) => ipcRenderer.invoke("lsp:is:running", ...args),
@@ -46,7 +61,7 @@ const lspClient = {
      * @param {*} _
      * @param {*} object
      */
-    let l = (_, object) => {
+    let l = (_: any, object: any) => {
       callback(object);
     };
 
@@ -62,7 +77,7 @@ const lspClient = {
      * @param {*} _
      * @param {*} data
      */
-    let l = (_, data) => {
+    let l = (_: any, data: any) => {
       callback(data);
     };
 
@@ -78,7 +93,7 @@ const lspClient = {
      * @param {*} _
      * @param {*} data
      */
-    let l = (_, data) => {
+    let l = (_: any, data: any) => {
       callback(data);
     };
 
@@ -93,7 +108,7 @@ const lspClient = {
     /**
      * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").ILanguageServerClientOnReadyCallback>}
      */
-    const list = (_, languageId, workSpaceFolder) => {
+    const list = (_: any, languageId: any, workSpaceFolder: any) => {
       callback(languageId, workSpaceFolder);
     };
 
@@ -121,14 +136,14 @@ const lspClient = {
 /**
  * @type {import("./type").ripgrepApi}
  */
-const ripgrepApi = {
+const ripgrepApi: ripgrepApi = {
   search: (...args) => ipcRenderer.invoke("ripgrep:search", ...args),
 };
 
 /**
  * @type {import("./type").chromeWindowApi}
  */
-const chromeWindowApi = {
+const chromeWindowApi: chromeWindowApi = {
   isMaximized: (...args) => ipcRenderer.invoke("window:ismaximized", ...args),
   minimize: (...args) => ipcRenderer.send("window:minimize", ...args),
   maximize: (...args) => ipcRenderer.send("window:maximize", ...args),
@@ -139,7 +154,7 @@ const chromeWindowApi = {
 /**
  * @type {import("./type").fsApi}
  */
-const fsApi = {
+const fsApi: fsApi = {
   readFile: (...args) => ipcRenderer.invoke("file:read", ...args),
   write: (...args) => ipcRenderer.invoke("file:write", ...args),
   createFile: (...args) => ipcRenderer.invoke("file:create", ...args),
@@ -160,7 +175,7 @@ const fsApi = {
      * @param {string} changedPath - The dir changed
      * @param {import("fs/promises").FileChangeInfo<string>} event
      */
-    let listener = (_, changedPath, event) => {
+    let listener = (_:any, changedPath:any, event:any) => {
       if (path === changedPath) {
         callback(event);
       }
@@ -183,7 +198,7 @@ const fsApi = {
 /**
  * @type {import("./type").pathApi}
  */
-const pathApi = {
+const pathApi: pathApi = {
   normalize: (...args) => ipcRenderer.invoke("path:normalize", ...args),
   relative: (...args) => ipcRenderer.invoke("path:relative", ...args),
   sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
@@ -193,7 +208,7 @@ const pathApi = {
 };
 
 /** @type {import("./type").shellApi} */
-const shellApi = {
+const shellApi: shellApi = {
   create: (...args) => ipcRenderer.invoke("shell:create", ...args),
   kill: (...args) => ipcRenderer.invoke("shell:kill", ...args),
   resize: (...args) => ipcRenderer.invoke("shell:resize", ...args),
@@ -206,7 +221,7 @@ const shellApi = {
      * @param  {number} id
      * @param {string} chunk
      */
-    let listener = (_, id, chunk) => {
+    let listener = (_:any, id:any, chunk:any) => {
       if (pid == id) callback(chunk);
     };
 
@@ -220,7 +235,7 @@ const shellApi = {
      * @param {import("electron").IpcRendererEvent} _
      * @param  {number} id
      */
-    let listener = (_, id) => {
+    let listener = (_:any, id:any) => {
       if (pid === id) callback();
     };
 
@@ -233,7 +248,7 @@ const shellApi = {
 /**
  * @type {import("./type").gitApi}
  */
-const gitApi = {
+const gitApi: gitApi = {
   hasGit: (...args) => ipcRenderer.invoke("has:git", ...args),
   isGitInitialized: (...args) => ipcRenderer.invoke("git:is:init", ...args),
   initializeGit: (...args) => ipcRenderer.invoke("git:init", ...args),
@@ -243,25 +258,28 @@ const gitApi = {
 /**
  * @type {import("./type").fsearchApi}
  */
-const fsearchApi = {
+const fsearchApi: fsearchApi = {
   search: (...args) => ipcRenderer.invoke("fsearch", ...args),
 };
 
 /**
  * @type {import("./type").clipboardApi}
  */
-const clipboardApi = {
+const clipboardApi: clipboardApi = {
   writeImage: (...args) => ipcRenderer.invoke("clipboard:write:image", ...args),
 };
 
 /** @type {import("./type").storeApi} */
-const storeApi = {
+const storeApi: storeApi = {
   set: (...args) => ipcRenderer.invoke("store:set", ...args),
   onChange: (key, callback) => {
     /**
      * @type {import("./type").CombinedCallback<import("./type").IpcRendererEventCallback, import("./type").storeChangeCallback>}
      */
-    let list = (_, newContent) => {
+    let list: CombinedCallback<
+      IpcRendererEventCallback,
+      storeChangeCallback
+    > = (_, newContent) => {
       callback(newContent);
     };
 
@@ -279,7 +297,7 @@ const storeApi = {
 /**
  * @type {import("./type").ElectronApi}
  */
-const api = {
+const api: ElectronApi = {
   ripgrepApi,
   fsearchApi,
   gitApi,

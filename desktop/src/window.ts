@@ -2,13 +2,13 @@
  * Contains all code related to the chrome window itself not the js window object
  */
 
-const { BrowserWindow } = require("electron");
+import { BrowserWindow, type IpcMain } from "electron";
 
 /**
  * Register custom listener for chrome window itself
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerWindowListener = (ipcMain) => {
+export const registerWindowListener = (ipcMain: IpcMain) => {
   ipcMain.handle("window:ismaximized", (event) => {
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
@@ -43,5 +43,3 @@ const registerWindowListener = (ipcMain) => {
     win?.restore();
   });
 };
-
-module.exports = { registerWindowListener };

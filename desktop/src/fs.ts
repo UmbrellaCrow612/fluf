@@ -2,17 +2,39 @@
  * Contains all code related to file or folder methods su8ch as those using fs
  */
 
-const path = require("path");
-const fs = require("fs/promises");
-const { logger } = require("./logger");
-const { dialog, BrowserWindow } = require("electron");
-const { broadcastToAll } = require("./broadcast");
+import path from "path";
+import fs from "fs/promises";
+import { dialog, BrowserWindow, type IpcMain } from "electron";
+import type { Dirent } from "fs";
+import type {
+  CombinedCallback,
+  countItemsInDirectory,
+  createDirectory,
+  createFile,
+  fileNode,
+  fsExists,
+  fsGetNode,
+  fsRemove,
+  fsStopWatching,
+  fsWatch,
+  fuzzyFindDirectorys,
+  IpcMainEventCallback,
+  IpcMainInvokeEventCallback,
+  readDir,
+  readFile,
+  saveTo,
+  selectFile,
+  selectFolder,
+  writeToFile,
+} from "./type.js";
+import { logger } from "./logger.js";
+import { broadcastToAll } from "./broadcast.js";
 
 /**
  * Contains a map of specific path and it's abort controller to stop the watcher for it
  * @type {Map<string, AbortController>}
  */
-const watcherAbortsMap = new Map();
+const watcherAbortsMap: Map<string, AbortController> = new Map();
 
 /**
  *
@@ -20,9 +42,12 @@ const watcherAbortsMap = new Map();
  * @param {import("node:fs").Dirent<string>[]} dirItems - List of items read
  * @returns {Promise<import("./type").fileNode[]>} List of filenodes
  */
-const mapDirItemsToFileNodes = async (basePath, dirItems) => {
+const mapDirItemsToFileNodes = async (
+  basePath: string,
+  dirItems: Dirent<string>[],
+) => {
   /** @type {import("./type").fileNode[]} */
-  const filenodes = [];
+  const filenodes: fileNode[] = [];
 
   for (const item of dirItems) {
     let itempath = path.resolve(basePath, item.name);
@@ -56,11 +81,11 @@ const mapDirItemsToFileNodes = async (basePath, dirItems) => {
  * @returns {Promise<boolean>} Resolves to `true` if the path exists, or `false` if not found.
  * @throws {Error} Throws any error other than ENOENT (e.g., permission errors).
  */
-async function pathExists(path) {
+async function pathExists(path: string): Promise<boolean> {
   try {
     await fs.access(path, fs.constants.F_OK);
     return true;
-  } catch (/** @type {any}*/ err) {
+  } catch (/** @type {any}*/ err: any) {
     if (err && err.code === "ENOENT") {
       return false;
     }
@@ -71,7 +96,11 @@ async function pathExists(path) {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
  */
-const saveToImpl = async (event, content, options) => {
+const saveToImpl: CombinedCallback<IpcMainInvokeEventCallback, saveTo> = async (
+  event,
+  content,
+  options,
+) => {
   try {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (!win) {
@@ -97,7 +126,10 @@ const saveToImpl = async (event, content, options) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").fsStopWatching>}
  */
-const unwatchImpl = (_, pp) => {
+const unwatchImpl: CombinedCallback<IpcMainEventCallback, fsStopWatching> = (
+  _,
+  pp,
+) => {
   try {
     let norm = path.normalize(path.resolve(pp));
 
@@ -108,9 +140,9 @@ const unwatchImpl = (_, pp) => {
     }
 
     abort.abort("Requested via a direct unwatch command IPC event");
-    logger.info("Stoped watching path: ", norm)
+    logger.info("Stoped watching path: ", norm);
 
-    watcherAbortsMap.delete(norm)
+    watcherAbortsMap.delete(norm);
   } catch (error) {
     logger.error(error, "Failed to un watch directory");
 
@@ -121,7 +153,10 @@ const unwatchImpl = (_, pp) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").fsWatch>}
  */
-const watchImpl = async (_, fileOrFolderPath) => {
+const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
+  _,
+  fileOrFolderPath,
+) => {
   try {
     let norm = path.normalize(path.resolve(fileOrFolderPath));
 
@@ -139,12 +174,12 @@ const watchImpl = async (_, fileOrFolderPath) => {
       encoding: "utf-8",
     });
 
-    logger.info("Watching path: ", norm)
+    logger.info("Watching path: ", norm);
 
     for await (const event of watcher) {
       broadcastToAll("fs:change", fileOrFolderPath, event);
     }
-  } catch (/** @type {any}*/ error) {
+  } catch (/** @type {any}*/ error: any) {
     if (error.name === "AbortError") return;
 
     logger.error(error, "Failed to watch directory");
@@ -156,7 +191,10 @@ const watchImpl = async (_, fileOrFolderPath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fuzzyFindDirectorys>}
  */
-const fuzzyFindDirectorysImpl = async (_, pathLike) => {
+const fuzzyFindDirectorysImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  fuzzyFindDirectorys
+> = async (_, pathLike) => {
   try {
     if (!pathLike) pathLike = "."; // default to current dir if empty
 
@@ -221,7 +259,10 @@ const fuzzyFindDirectorysImpl = async (_, pathLike) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFolder>}
  */
-const selectFolderImpl = async () => {
+const selectFolderImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  selectFolder
+> = async () => {
   return await dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
@@ -230,7 +271,10 @@ const selectFolderImpl = async () => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createDirectory>}
  */
-const createDirImpl = async (_, dirPath) => {
+const createDirImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  createDirectory
+> = async (_, dirPath) => {
   try {
     let p = path.normalize(path.resolve(dirPath));
 
@@ -246,7 +290,10 @@ const createDirImpl = async (_, dirPath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").readDir>}
  */
-const readDirImpl = async (_, dirPath) => {
+const readDirImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  readDir
+> = async (_, dirPath) => {
   try {
     const p = path.normalize(path.resolve(dirPath));
 
@@ -273,7 +320,10 @@ const readDirImpl = async (_, dirPath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsRemove>}
  */
-const removeImpl = async (_, fileOrFolderPath) => {
+const removeImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  fsRemove
+> = async (_, fileOrFolderPath) => {
   try {
     let p = path.normalize(path.resolve(fileOrFolderPath));
 
@@ -291,14 +341,17 @@ const removeImpl = async (_, fileOrFolderPath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsExists>}
  */
-const existsImpl = async (_, fileOrFolderPath) => {
+const existsImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  fsExists
+> = async (_, fileOrFolderPath) => {
   try {
     let p = path.normalize(path.resolve(fileOrFolderPath));
 
     await fs.access(p);
 
     return true;
-  } catch (/** @type {any}*/ error) {
+  } catch (/** @type {any}*/ error: any) {
     if (error?.code === "ENOENT") return false; // just didn't exit not true error
 
     logger.error("Failed to check if a file exists");
@@ -309,7 +362,10 @@ const existsImpl = async (_, fileOrFolderPath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createFile>}
  */
-const createFileImpl = async (_, filePath) => {
+const createFileImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  createFile
+> = async (_, filePath) => {
   try {
     if (!filePath) return false;
 
@@ -327,7 +383,10 @@ const createFileImpl = async (_, filePath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").writeToFile>}
  */
-const writeToFileImpl = async (_, filePath, fileContent) => {
+const writeToFileImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  writeToFile
+> = async (_, filePath, fileContent) => {
   try {
     if (!filePath || !fileContent) return false;
 
@@ -347,7 +406,10 @@ const writeToFileImpl = async (_, filePath, fileContent) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").readFile>}
  */
-const readFileImpl = async (_, filePath) => {
+const readFileImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  readFile
+> = async (_, filePath) => {
   try {
     if (!filePath) return "";
 
@@ -366,7 +428,10 @@ const readFileImpl = async (_, filePath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFile>}
  */
-const selectFileImpl = (event) => {
+const selectFileImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  selectFile
+> = (event) => {
   try {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (!win) {
@@ -387,7 +452,10 @@ const selectFileImpl = (event) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsGetNode>}
  */
-const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
+const getPathAsNodeImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  fsGetNode
+> = async (_, fileOrFolderPath) => {
   try {
     const _path = path.normalize(path.resolve(fileOrFolderPath));
 
@@ -425,7 +493,10 @@ const getPathAsNodeImpl = async (_, fileOrFolderPath) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").countItemsInDirectory>}
  */
-const countItemsInDirectoryImpl = async (_, dirPath) => {
+const countItemsInDirectoryImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  countItemsInDirectory
+> = async (_, dirPath) => {
   try {
     const norm = path.normalize(path.resolve(dirPath));
 
@@ -450,7 +521,7 @@ const countItemsInDirectoryImpl = async (_, dirPath) => {
  * Registers all fs related listeners
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerFsListeners = (ipcMain) => {
+export const registerFsListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("file:read", readFileImpl);
   ipcMain.handle("file:write", writeToFileImpl);
   ipcMain.handle("file:create", createFileImpl);
@@ -471,16 +542,11 @@ const registerFsListeners = (ipcMain) => {
 /**
  * If any directory are being watch or files stop listening to them
  */
-const cleanUpWatchers = () => {
+export const cleanUpWatchers = () => {
   let a = Array.from(watcherAbortsMap.values());
 
   a.forEach((x) => {
     x.abort("Application ended cleaning up");
     logger.info("Cleaned up watcher ", x.signal.reason);
   });
-};
-
-module.exports = {
-  registerFsListeners,
-  cleanUpWatchers,
 };

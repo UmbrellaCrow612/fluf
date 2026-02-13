@@ -1,12 +1,10 @@
-const { Logger } = require("node-logy");
+import { Logger } from "node-logy";
 
 /**
  * Out logger instace
  */
-const logger = new Logger({
+export const logger = new Logger({
   showCallSite: true,
   saveToLogFiles: true,
   timestampType: "short",
 });
-
-module.exports = { logger };

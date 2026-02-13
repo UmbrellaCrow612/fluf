@@ -2,15 +2,20 @@
  * Contains all the code needed for file-x custom file explorer to work
  */
 
-const { BrowserWindow } = require("electron");
-const path = require("path");
-const { logger } = require("./logger");
+import { BrowserWindow, type IpcMain } from "electron";
+import path from "path";
+import { logger } from "./logger.js";
+import type {
+  CombinedCallback,
+  fileXOpen,
+  IpcMainInvokeEventCallback,
+} from "./type.js";
 
 /**
  * Global ref to file x window used for sending events without being coupled to incoming events
  * @type {import("electron").BrowserWindow | null}
  */
-let fileXWindow = null;
+let fileXWindow: BrowserWindow | null = null;
 
 /**
  * Opens a window and load the specific route data for /file-x which is out custom built in file explorer
@@ -28,13 +33,13 @@ const createFileXWindow = () => {
     },
   });
 
-  const mode = process.env.MODE;
+  const mode = process.env["MODE"];
   if (!mode) {
     logger.error(".env does not contain .env value MODE");
     throw new Error(".env");
   }
 
-  const devUIPort = process.env.DEV_UI_PORT;
+  const devUIPort = process.env["DEV_UI_PORT"];
 
   if (!devUIPort) {
     logger.error(".env does not contain .env value DEV_UI_PORT");
@@ -60,7 +65,10 @@ const createFileXWindow = () => {
  *
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fileXOpen>}
  */
-const openFileXWindowImpl = () => {
+const openFileXWindowImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  fileXOpen
+> = () => {
   if (fileXWindow && !fileXWindow.isDestroyed()) {
     logger.info("Bringing existing file x window to front");
 
@@ -83,8 +91,6 @@ const openFileXWindowImpl = () => {
  * Register all file x related listeners
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerFileXListeners = (ipcMain) => {
+export const registerFileXListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("filex:open", openFileXWindowImpl);
 };
-
-module.exports = { registerFileXListeners };

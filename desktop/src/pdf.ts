@@ -2,16 +2,16 @@
  * Contains all code for serving local pdf files to render process
  */
 
-const { pathToFileURL } = require("node:url");
-const { net } = require("electron");
-const fs = require("fs/promises");
-const path = require("path");
+import { pathToFileURL } from "node:url";
+import { net, type Protocol } from "electron";
+import fs from "fs/promises";
+import path from "path";
 
 /**
  * Registers protocol called beofre app ready
  * @param {import("electron").Protocol} protocol main
  */
-const registerPdfProtocol = (protocol) => {
+export const registerPdfProtocol = (protocol: Protocol) => {
   protocol.registerSchemesAsPrivileged([
     {
       scheme: "pdf",
@@ -29,7 +29,7 @@ const registerPdfProtocol = (protocol) => {
  * Called on app ready, contains protocol hanlers which are added in app ready state
  * @param {import("electron").Protocol} protocol
  */
-const registerPdfListeners = (protocol) => {
+export const registerPdfListeners = (protocol: Protocol) => {
   protocol.handle("pdf", async (request) => {
     try {
       let rawPath = request.url.replace("pdf://", "");
@@ -54,9 +54,4 @@ const registerPdfListeners = (protocol) => {
       return new Response("Internal Server Error", { status: 500 });
     }
   });
-};
-
-module.exports = {
-  registerPdfProtocol,
-  registerPdfListeners,
 };

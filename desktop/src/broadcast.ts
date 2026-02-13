@@ -2,8 +2,8 @@
  * Usesd a s centreal way to send events to ALL windows in the render
  */
 
-const { webContents } = require("electron");
-const { logger } = require("./logger");
+import { webContents } from "electron";
+import { logger } from "./logger.js";
 
 /**
  * Broadcast/send an event to all browser windows. This is necessary because if we have multiple windows,
@@ -13,15 +13,15 @@ const { logger } = require("./logger");
  * @param {string} channel - The specific channel string like `shell:change`, etc.
  * @param {...any} args - Any data you want to broadcast that consumers expect.
  */
-function broadcastToAll(channel, ...args) {
+export function broadcastToAll(channel: string, ...args: any[]) {
   const allWebContents = webContents.getAllWebContents();
   allWebContents.forEach((wc) => {
-    if(!wc.isDestroyed()){
+    if (!wc.isDestroyed()) {
       wc.send(channel, ...args);
     } else {
-      logger.warn(`trying to send ipc message for channel ${channel} but the given window is destroyed`)
+      logger.warn(
+        `trying to send ipc message for channel ${channel} but the given window is destroyed`,
+      );
     }
   });
 }
-
-module.exports = { broadcastToAll };

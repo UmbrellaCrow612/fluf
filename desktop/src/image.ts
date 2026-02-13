@@ -2,14 +2,15 @@
  * Contains code to  interact with image files
  */
 
-const path = require("path");
-const fs = require("fs/promises");
+import path from "path";
+import fs from "fs/promises";
+import type { Protocol } from "electron";
 
 /**
  * Register image protocol called beofre app ready
  * @param {import("electron").Protocol} protocol
  */
-function registerImageProtocol(protocol) {
+export function registerImageProtocol(protocol: Protocol) {
   protocol.registerSchemesAsPrivileged([
     {
       scheme: "image",
@@ -27,7 +28,7 @@ function registerImageProtocol(protocol) {
  * @param {string} ext
  * @returns {string}
  */
-function getMimeType(ext) {
+function getMimeType(ext:string) {
   switch (ext) {
     case ".png":
       return "image/png";
@@ -49,7 +50,7 @@ function getMimeType(ext) {
  * Register all ipcmain image listeners and custom protocols for image related actions
  * @param {import("electron").Protocol} protocol
  */
-function registerImageListeners(protocol) {
+export function registerImageListeners(protocol: Protocol) {
   protocol.handle("image", async (request) => {
     try {
       let rawPath = request.url.replace("image://", "");
@@ -86,5 +87,3 @@ function registerImageListeners(protocol) {
     }
   });
 }
-
-module.exports = { registerImageProtocol, registerImageListeners };

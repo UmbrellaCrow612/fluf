@@ -1,30 +1,6 @@
-const { app, BrowserWindow, ipcMain, protocol } = require("electron");
-const { loadEnv } = require("./env");
-const path = require("path");
-const { registerFsearchListeners } = require("./fsearch");
-const { registerGitListeners } = require("./git");
-const { registerClipboardListeners } = require("./clipboard");
-const { registerProtocols } = require("./protocol");
-const { registerPdfListeners } = require("./pdf");
-const { registerImageListeners } = require("./image");
-const { cleanUpShells, registerShellListeners } = require("./shell");
-const { registerFsListeners, cleanUpWatchers } = require("./fs");
-const { registerWindowListener } = require("./window");
-const { registerRipgrepListeners } = require("./ripgrep");
-const { logger } = require("./logger");
-const { registerPathListeners } = require("./path");
-const {
-  registerLanguageServerListener,
-  stopAllLanguageServers,
-} = require("./lsp/bridge");
-const { registerFileXListeners } = require("./file-x");
-const { registerStoreListeners } = require("./store");
-const {
-  startCommandServer,
-  stopCommandServer,
-} = require("./command-server/server");
+import { loadEnvFile } from "node:process";
 
-loadEnv();
+loadEnvFile("./env");
 registerProtocols();
 
 /**
@@ -43,13 +19,13 @@ const createWindow = () => {
     },
   });
 
-  let mode = process.env.MODE;
+  let mode = process.env["MODE"];
   if (!mode) {
     logger.error(".env does not contain .env value MODE");
     throw new Error(".env");
   }
 
-  let devUIPort = process.env.DEV_UI_PORT;
+  let devUIPort = process.env["DEV_UI_PORT"];
   if (!devUIPort) {
     logger.error(".env does not contain .env value DEV_UI_PORT");
     throw new Error(".env");
@@ -58,7 +34,7 @@ const createWindow = () => {
   if (mode === "dev") {
     // In dev we can just load the running app on the website port it is running on instead of loading it from file system works the same
     logger.info(
-      "Running dev mode loading website from " + process.env.DEV_UI_PORT,
+      "Running dev mode loading website from " + process.env["DEV_UI_PORT"],
     );
 
     window.loadURL(devUIPort);

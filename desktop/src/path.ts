@@ -1,14 +1,28 @@
 /*
  * Contaisn path helpers utils
  */
-const path = require("path");
-const { logger } = require("./logger");
-const os = require("node:os");
+import path from "path";
+import os from "node:os";
+import type {
+  CombinedCallback,
+  getRootPath,
+  IpcMainInvokeEventCallback,
+  normalizePath,
+  pathIsabsolute,
+  pathJoin,
+  pathSep,
+  relativePath,
+} from "./type.js";
+import { logger } from "./logger.js";
+import type { IpcMain } from "electron";
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").normalizePath>}
  */
-const normImpl = (_, fp) => {
+const normImpl: CombinedCallback<IpcMainInvokeEventCallback, normalizePath> = (
+  _,
+  fp,
+) => {
   try {
     if (!fp) return Promise.resolve("");
 
@@ -22,7 +36,11 @@ const normImpl = (_, fp) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").relativePath>}
  */
-const relImpl = (_, from, to) => {
+const relImpl: CombinedCallback<IpcMainInvokeEventCallback, relativePath> = (
+  _,
+  from,
+  to,
+) => {
   try {
     return Promise.resolve(
       path.relative(
@@ -39,28 +57,37 @@ const relImpl = (_, from, to) => {
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathSep>}
  */
-const sepImpl = () => {
+const sepImpl: CombinedCallback<IpcMainInvokeEventCallback, pathSep> = () => {
   return Promise.resolve(path.sep);
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathJoin>}
  */
-const joinImpl = (_, ...args) => {
+const joinImpl: CombinedCallback<IpcMainInvokeEventCallback, pathJoin> = (
+  _,
+  ...args
+) => {
   return Promise.resolve(path.join(...args));
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathIsabsolute>}
  */
-const isAbs = (_, p) => {
+const isAbs: CombinedCallback<IpcMainInvokeEventCallback, pathIsabsolute> = (
+  _,
+  p,
+) => {
   return Promise.resolve(path.isAbsolute(p));
 };
 
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").getRootPath>}
  */
-const getRootPathImpl = () => {
+const getRootPathImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  getRootPath
+> = () => {
   // Windows logic
   if (os.platform() === "win32") {
     // Get something like "C:\" from current working directory
@@ -78,13 +105,11 @@ const getRootPathImpl = () => {
  * Register all path listeners
  * @param {import("electron").IpcMain} ipcMain
  */
-const registerPathListeners = (ipcMain) => {
+export const registerPathListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("path:normalize", normImpl);
   ipcMain.handle("path:relative", relImpl);
   ipcMain.handle("path:sep", sepImpl);
   ipcMain.handle("path:join", joinImpl);
   ipcMain.handle("path:isabsolute", isAbs);
-  ipcMain.handle("path:root", getRootPathImpl)
+  ipcMain.handle("path:root", getRootPathImpl);
 };
-
-module.exports = { registerPathListeners };
