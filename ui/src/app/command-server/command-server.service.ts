@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
 import { getElectronApi } from '../../utils';
-import { IPCChannels } from 'flufy-ipc-contract';
 import { OpenFileInFileX } from '../../windows/FileX/utils';
 import { OpenNodeInEditor } from '../../windows/editor/file-explorer/helper';
 import { EditorContextService } from '../../windows/editor/editor-context/editor-context.service';
@@ -32,12 +31,12 @@ export class CommandServerService {
    */
   register() {
     this.electronApi.commandServer.onOpenFile(async (req) => {
-      if (req.channel === IPCChannels.fileX) {
+      if (req.channel === 'file-x') {
         // Open the file in FileX
         const node = await this.electronApi.fsApi.getNode(req.data.filePath);
         OpenFileInFileX(node);
       }
-      if (req.channel === IPCChannels.editor) {
+      if (req.channel === 'editor') {
         const node = await this.electronApi.fsApi.getNode(req.data.filePath);
         if (node.isDirectory) {
           return;
