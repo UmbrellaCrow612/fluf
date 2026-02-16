@@ -1,3 +1,4 @@
+import type { ILanguageServer } from './../type.js';
 import path from "path";
 import type { ILanguageServerStopAllResult, languageId } from "../type.js";
 import { JsonRpcProcess } from "./json-rpc-process.js";
@@ -12,16 +13,13 @@ import { broadcastToAll } from "../broadcast.js";
  *
  * - Methods that implement {@link ILanguageServer} interface should be defined in subclasses
  * - Methods should start with `_` indicating it is a shared for all lsp impl can use
- * - Use Template strings
- * - Validate params types and values if they do not match throw typeErrors
- * - Re throw any errors after logging them
- *
+ * 
  * @see {ILanguageServer} for the interface this class is designed to support
  */
 export class JsonRpcLanguageServer {
   /**
    * Required for LSP to work
-   * @param {import("../type").languageId} languageId - The specific language this is for
+   * @param {languageId} languageId - The specific language this is for
    */
   constructor(languageId: languageId) {
     if (typeof languageId !== "string")
@@ -38,7 +36,7 @@ export class JsonRpcLanguageServer {
 
   /**
    * Holds the language this LSP is for exmaple `go` or `js` etc
-   * @type {import("../type").languageId | null}
+   * @type {languageId | null}
    */
   #languageId: languageId | null = null;
 
@@ -159,11 +157,11 @@ export class JsonRpcLanguageServer {
 
   /**
    * Stop all language servers active for all workspaces
-   * @returns {Promise<import("../type").ILanguageServerStopAllResult[]>} All stop values for all workspaces
+   * @returns {Promise<ILanguageServerStopAllResult[]>} All stop values for all workspaces
    */
   async _stopAll(): Promise<ILanguageServerStopAllResult[]> {
     let wsfs = Array.from(this.#workSpaceRpcMap.keys());
-    /** @type {import("../type").ILanguageServerStopAllResult[]} */
+    /** @type {ILanguageServerStopAllResult[]} */
     let result: ILanguageServerStopAllResult[] = [];
 
     for (const wsf of wsfs) {

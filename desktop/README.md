@@ -21,6 +21,7 @@ npm run start
 as the other files adds `export {}` at the end breaking it in the browser. Hence we use the default ts config for backend code and the preload specific ts config for the browser code 
 of `preload.ts`
 - Instead of coping over the node_modules specific packages just copy all the source code with the node_module naming like how vscode does it so
+- Migrated from jsdoc to ts
 
 # Building
 
