@@ -10,6 +10,7 @@ import {
   type IpcMainInvokeEvent,
   type IpcRendererEvent,
 } from "electron";
+import type { StoreEvents } from "./store.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -36,7 +37,7 @@ type ReturnOf<T> = T extends { return: infer R } ? R : void;
  */
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
-export interface TypedIpcMain<T extends EventMap<T>> {
+interface IpcMain<T extends EventMap<T>> {
   addListener<K extends keyof T>(
     channel: K,
     listener: (event: IpcMainEvent, ...args: ArgsOf<T[K]>) => void,
@@ -82,6 +83,8 @@ export interface TypedIpcMain<T extends EventMap<T>> {
 
   removeHandler<K extends keyof T>(channel: K): void;
 }
+
+export type TypedIpcMain = IpcMain<ApplicationEvents>;
 
 export interface TypedIpcRenderer<T extends EventMap<T>> {
   addListener<K extends keyof T>(
@@ -135,34 +138,9 @@ export interface TypedIpcRenderer<T extends EventMap<T>> {
 /**
  * Contains all fluffy channels and their arguments + return types for IPC
  */
-export interface ApplicationEvents {
-  "app:ready": {
-    args: [isReady: boolean];
-    return: void;
-  };
-
-  "app:get-version": {
-    args: [];
-    return: string;
-  };
-
-  "app:open-file": {
-    args: [filePath: string, options?: { readOnly?: boolean }];
-    return: { success: boolean; content?: string; error?: string };
-  };
-
-  "db:query": {
-    args: [sql: string, params?: unknown[]];
-    return: { rows: unknown[]; count: number };
-  };
-
-  "window:minimize": {
-    args: [windowId?: number];
-    return: void;
-  };
-}
+export type ApplicationEvents = StoreEvents;
 
 /**
  * Use this instead of the built in IPC main because we extended it with type safety
  */
-export const typedIpcMain = ipcMain as TypedIpcMain<ApplicationEvents>;
+export const typedIpcMain = ipcMain as TypedIpcMain;

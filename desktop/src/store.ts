@@ -4,7 +4,7 @@
 
 import path from "path";
 import fs from "fs/promises";
-import { app, type IpcMain } from "electron";
+import { app } from "electron";
 import type {
   CombinedCallback,
   IpcMainInvokeEventCallback,
@@ -15,6 +15,7 @@ import type {
 } from "./type.js";
 import { logger } from "./logger.js";
 import { broadcastToAll } from "./broadcast.js";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
  * Represents the base directory we save store files to
@@ -111,9 +112,31 @@ const removeItemByKeyImpl: CombinedCallback<
 };
 
 /**
+ * Event map for store operations
+ */
+export interface StoreEvents {
+  "store:set": {
+    args: [key: string, content: string];
+    return: void;
+  };
+  "store:get": {
+    args: [key: string];
+    return: string | undefined;
+  };
+  "store:clean": {
+    args: [];
+    return: void;
+  };
+  "store:remove": {
+    args: [key: string];
+    return: void;
+  };
+}
+
+/**
  * Register all store listeners
  */
-export const registerStoreListeners = (ipcMain: IpcMain) => {
+export const registerStoreListeners = (ipcMain: TypedIpcMain) => {
   ipcMain.handle("store:set", setStoreItemImpl);
   ipcMain.handle("store:get", getStoreItemImpl);
   ipcMain.handle("store:clean", cleanStoreImpl);
