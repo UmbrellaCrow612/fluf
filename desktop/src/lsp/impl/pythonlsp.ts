@@ -15,7 +15,7 @@ export class PythonLanguageServer
   implements ILanguageServer
 {
   Start(workSpaceFolder: string) {
-    let exePath = getPythonServerPath();
+    const exePath = getPythonServerPath();
     if (!exePath) {
       throw new Error("No python exe path");
     }

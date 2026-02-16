@@ -96,7 +96,7 @@ function parseGitStatus(stdout: string): gitStatusResult {
         const status: any = match[1]
           ? match[1].replace(":", "").trim()
           : null;
-        let file = match[2] ? match[2].trim() : null;
+        const file = match[2] ? match[2].trim() : null;
 
         if (file) {
           /** @type {import("./type").gitFileEntry} */
@@ -206,7 +206,7 @@ const igGitInit: CombinedCallback<
   IpcMainInvokeEventCallback,
   isGitInitialized
 > = async (_, dir) => {
-  let gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
+  const gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
 
   try {
     await fs.access(gitPath);

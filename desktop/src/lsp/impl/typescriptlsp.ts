@@ -54,7 +54,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       throw new Error("languageId must be a non-empty string");
 
     try {
-      let exePath = getTypescriptServerPath();
+      const exePath = getTypescriptServerPath();
       if (!exePath) {
         throw new Error("No typescript exe path");
       }
@@ -189,7 +189,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       /**
        * @type {import("typescript").server.protocol.CompletionsRequestArgs}
        */
-      let params: import("typescript").server.protocol.CompletionsRequestArgs =
+      const params: import("typescript").server.protocol.CompletionsRequestArgs =
         {
           file: path.normalize(path.resolve(filePath)),
           line: position.line + 1, // typescript server uses 1-based line numbers
@@ -199,7 +199,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       /**
        * @type {import("typescript").server.protocol.CompletionInfoResponse["body"]}
        */
-      let responseBody: import("typescript").server.protocol.CompletionInfoResponse["body"] =
+      const responseBody: import("typescript").server.protocol.CompletionInfoResponse["body"] =
         await process.SendRequest(protocol.CommandTypes.CompletionInfo, params);
 
       if (!responseBody) {
@@ -209,7 +209,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       /**
        * @type {import("vscode-languageserver-types").CompletionList}
        */
-      let lspCompletionResponse: import("vscode-languageserver-types").CompletionList =
+      const lspCompletionResponse: import("vscode-languageserver-types").CompletionList =
         {
           isIncomplete: true,
           items: responseBody.entries.map((entry) => {
@@ -433,7 +433,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       /**
        * @type {import("typescript").server.protocol.FileLocationRequestArgs}
        */
-      let params: import("typescript").server.protocol.FileLocationRequestArgs =
+      const params: import("typescript").server.protocol.FileLocationRequestArgs =
         {
           file: path.normalize(path.resolve(filePath)),
           line: position.line + 1, // typescript server uses 1-based line numbers
@@ -443,7 +443,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       /**
        * @type {import("typescript").server.protocol.QuickInfoResponse["body"]}
        */
-      let responseBody: import("typescript").server.protocol.QuickInfoResponse["body"] =
+      const responseBody: import("typescript").server.protocol.QuickInfoResponse["body"] =
         await process.SendRequest(protocol.CommandTypes.Quickinfo, params);
 
       if (!responseBody) {
@@ -453,7 +453,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       /**
        * @type {import("vscode-languageserver-types").MarkupContent}
        */
-      let content: import("vscode-languageserver-types").MarkupContent = {
+      const content: import("vscode-languageserver-types").MarkupContent = {
         kind: "markdown",
         value: `${responseBody.displayString} \n ${responseBody.documentation}`, // TODO Fix for UI rendering
       };
@@ -461,7 +461,7 @@ export class TypeScriptLanguageServer implements ILanguageServer {
       /**
        * @type {import("vscode-languageserver-types").Hover}
        */
-      let hoverLspResponse: import("vscode-languageserver-types").Hover = {
+      const hoverLspResponse: import("vscode-languageserver-types").Hover = {
         contents: content,
         range: {
           start: {
@@ -498,9 +498,9 @@ export class TypeScriptLanguageServer implements ILanguageServer {
   }
 
   async StopAll() {
-    let wsfs = Array.from(this.#workSpaceProcessMap.keys());
+    const wsfs = Array.from(this.#workSpaceProcessMap.keys());
     /** @type {import("../../type").ILanguageServerStopAllResult[]} */
-    let result: ILanguageServerStopAllResult[] = [];
+    const result: ILanguageServerStopAllResult[] = [];
 
     for (const wsf of wsfs) {
       result.push({

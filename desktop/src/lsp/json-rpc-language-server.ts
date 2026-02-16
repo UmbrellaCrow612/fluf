@@ -79,7 +79,7 @@ export class JsonRpcLanguageServer {
 
       await jsonRpcProcess.Start();
 
-      let params: InitializeParams = {
+      const params: InitializeParams = {
         capabilities: {},
         processId: jsonRpcProcess.GetPid() ?? null,
         clientInfo: {
@@ -165,9 +165,9 @@ export class JsonRpcLanguageServer {
    * @returns {Promise<ILanguageServerStopAllResult[]>} All stop values for all workspaces
    */
   async _stopAll(): Promise<ILanguageServerStopAllResult[]> {
-    let wsfs = Array.from(this._workSpaceRpcMap.keys());
+    const wsfs = Array.from(this._workSpaceRpcMap.keys());
     /** @type {ILanguageServerStopAllResult[]} */
-    let result: ILanguageServerStopAllResult[] = [];
+    const result: ILanguageServerStopAllResult[] = [];
 
     for (const wsf of wsfs) {
       result.push({
@@ -387,7 +387,7 @@ export class JsonRpcLanguageServer {
       }
 
       /** @type {import("vscode-languageserver-protocol").HoverParams} */
-      let params: import("vscode-languageserver-protocol").HoverParams = {
+      const params: import("vscode-languageserver-protocol").HoverParams = {
         position,
         textDocument: {
           uri: createUri(filePath),
@@ -447,7 +447,7 @@ export class JsonRpcLanguageServer {
       }
 
       /** @type {import("vscode-languageserver-protocol").CompletionParams} */
-      let params: import("vscode-languageserver-protocol").CompletionParams = {
+      const params: import("vscode-languageserver-protocol").CompletionParams = {
         position,
         textDocument: {
           uri: createUri(filePath),
@@ -514,7 +514,7 @@ export class JsonRpcLanguageServer {
       /**
        * @type {import("vscode-languageserver-protocol").DefinitionParams}
        */
-      let params: import("vscode-languageserver-protocol").DefinitionParams = {
+      const params: import("vscode-languageserver-protocol").DefinitionParams = {
         position: position,
         textDocument: {
           uri: createUri(filePath),

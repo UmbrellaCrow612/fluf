@@ -26,7 +26,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 const commandServer: commandServer = {
   onOpenFile: (callback) => {
-    let l = async (_: any, req: any) => {
+    const l = async (_: any, req: any) => {
       await callback(req);
     };
 
@@ -52,7 +52,7 @@ const lspClient: ILanguageServerClient = {
      * @param {*} _
      * @param {*} object
      */
-    let l = (_: any, object: any) => {
+    const l = (_: any, object: any) => {
       callback(object);
     };
 
@@ -68,7 +68,7 @@ const lspClient: ILanguageServerClient = {
      * @param {*} _
      * @param {*} data
      */
-    let l = (_: any, data: any) => {
+    const l = (_: any, data: any) => {
       callback(data);
     };
 
@@ -84,7 +84,7 @@ const lspClient: ILanguageServerClient = {
      * @param {*} _
      * @param {*} data
      */
-    let l = (_: any, data: any) => {
+    const l = (_: any, data: any) => {
       callback(data);
     };
 
@@ -157,7 +157,7 @@ const fsApi: fsApi = {
      * @param {string} changedPath - The dir changed
      * @param {import("fs/promises").FileChangeInfo<string>} event
      */
-    let listener = (_: any, changedPath: any, event: any) => {
+    const listener = (_: any, changedPath: any, event: any) => {
       if (path === changedPath) {
         callback(event);
       }
@@ -199,7 +199,7 @@ const shellApi: shellApi = {
      * @param  {number} id
      * @param {string} chunk
      */
-    let listener = (_: any, id: any, chunk: any) => {
+    const listener = (_: any, id: any, chunk: any) => {
       if (pid == id) callback(chunk);
     };
 
@@ -213,7 +213,7 @@ const shellApi: shellApi = {
      * @param {import("electron").IpcRendererEvent} _
      * @param  {number} id
      */
-    let listener = (_: any, id: any) => {
+    const listener = (_: any, id: any) => {
       if (pid === id) callback();
     };
 
@@ -244,7 +244,7 @@ const storeApi: storeApi = {
     /**
      * @type {import("./type.js").CombinedCallback<import("./type.js").IpcRendererEventCallback, import("./type.js").storeChangeCallback>}
      */
-    let list: CombinedCallback<
+    const list: CombinedCallback<
       IpcRendererEventCallback,
       storeChangeCallback
     > = (_, newContent) => {

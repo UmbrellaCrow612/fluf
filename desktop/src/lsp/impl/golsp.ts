@@ -16,7 +16,7 @@ export class GoLanguageServer
   implements ILanguageServer
 {
   async Start(workSpaceFolder: string) {
-    let exePath = await binmanResolve("gopls", ["gopls"], binPath());
+    const exePath = await binmanResolve("gopls", ["gopls"], binPath());
     if (!exePath) {
       throw new Error("No gopls exe path");
     }

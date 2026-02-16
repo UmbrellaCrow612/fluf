@@ -36,7 +36,7 @@ const setStoreItemImpl: CombinedCallback<
   try {
     await fs.mkdir(storeBaseDirectory, { recursive: true });
 
-    let filePath = path.join(storeBaseDirectory, key);
+    const filePath = path.join(storeBaseDirectory, key);
 
     await fs.writeFile(filePath, content, "utf8");
 
@@ -98,7 +98,7 @@ const removeItemByKeyImpl: CombinedCallback<
     throw new TypeError("key must be a non empty string");
 
   try {
-    let filePath = path.join(storeBaseDirectory, key);
+    const filePath = path.join(storeBaseDirectory, key);
     await fs.unlink(filePath);
   } catch (error) {
     logger.error("Failed to remove key: ", key, error);

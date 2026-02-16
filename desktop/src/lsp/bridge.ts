@@ -19,7 +19,7 @@ import type {
   IpcMainInvokeEventCallback,
 } from "../type.js";
 
-var languageServerManager = new LanguageServerManager();
+const languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer("go"));
 languageServerManager.Register("python", new PythonLanguageServer("python"));
 languageServerManager.Register(

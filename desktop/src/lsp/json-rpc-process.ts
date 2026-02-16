@@ -296,7 +296,7 @@ export class JsonRpcProcess {
     }
 
     try {
-      let requestId = this._getId();
+      const requestId = this._getId();
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           if (this._pendingRequests.has(requestId)) {
@@ -510,7 +510,7 @@ export class JsonRpcProcess {
    */
   private _resolveRequests(responseMessage: ResponseMessage): void {
     if (responseMessage.id !== null) {
-      let requestId = Number(responseMessage.id);
+      const requestId = Number(responseMessage.id);
       if (!this._pendingRequests.has(requestId)) {
         return;
       }
@@ -566,7 +566,7 @@ export class JsonRpcProcess {
       workSpaceFolder: this._workSpaceFolder,
     });
 
-    let notificationData: LanguageServerNotificationResponse = {
+    const notificationData: LanguageServerNotificationResponse = {
       languageId: this._languageId,
       workSpaceFolder: this._workSpaceFolder,
       params: notification?.params,
