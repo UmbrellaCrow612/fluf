@@ -1,20 +1,25 @@
-const { spawn } = require('child_process');
+import { spawn } from "child_process";
 
-function runCommand(command, args = []) {
+const commands = [
+  ['npx', ['tsc', '-p', '.\\tsconfig.json']],
+  ['npx', ['tsc', '-p', '.\\tsconfig.preload.json']],
+  ['npx', ['electron', '.', '--trace-warnings']]
+];
+
+// Helper function to run a command and return a Promise
+function runCommand([cmd, args]) {
   return new Promise((resolve, reject) => {
-    console.log(`\n▶ Running: ${command} ${args.join(' ')}\n`);
-    
-    const child = spawn(command, args, {
-      stdio: 'inherit',
-      shell: true
+    const child = spawn(cmd, args, {
+      stdio: 'inherit',  // This pipes stdout/stderr directly to parent
+      shell: true        // Allows npx to work properly on Windows
     });
 
     child.on('close', (code) => {
       if (code !== 0) {
         reject(new Error(`Command failed with exit code ${code}`));
-      } else {
-        resolve();
+        return;
       }
+      resolve();
     });
 
     child.on('error', (err) => {
@@ -23,17 +28,16 @@ function runCommand(command, args = []) {
   });
 }
 
-async function main() {
+// Run commands sequentially
+(async () => {
   try {
-    // Step 1: Compile TypeScript
-    await runCommand('npx', ['tsc']);
-    
-    // Step 2: Run Electron
-    await runCommand('npx', ['electron', '.']);
-  } catch (error) {
-    console.error('\n✖ Error:', error.message);
+    for (const [cmd, args] of commands) {
+      console.log(`\nRunning: ${cmd} ${args.join(' ')}\n`);
+      await runCommand([cmd, args]);
+    }
+    console.log("\nAll commands executed successfully!");
+  } catch (err) {
+    console.error("\nCommand failed:", err.message);
     process.exit(1);
   }
-}
-
-main();
+})();

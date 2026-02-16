@@ -8,7 +8,6 @@ import type {
 import { logger } from "../logger.js";
 import { broadcastToAll } from "../broadcast.js";
 import { createUri } from "./uri.js";
-
 import { server } from "typescript";
 const { protocol } = server;
 
