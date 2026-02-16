@@ -1073,4 +1073,3 @@ export type EWindow = {
      */
     electronApi: ElectronApi;
 };
-//# sourceMappingURL=type.d.ts.map

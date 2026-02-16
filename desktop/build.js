@@ -30,8 +30,8 @@ function runCommand([cmd, args]) {
 }
 
 async function copyTypesFile() {
-  const sourcePath = 'dist/type.d.ts';
-  const destPath = '../ui/gen/type.d.ts';
+  const sourcePath = './src/type.ts';
+  const destPath = '../ui/gen/type.ts';
   
   try {
     // Ensure destination directory exists
