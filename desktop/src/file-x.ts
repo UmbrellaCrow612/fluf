@@ -24,7 +24,7 @@ let fileXWindow: BrowserWindow | null = null;
 /**
  * Opens a window and load the specific route data for /file-x which is out custom built in file explorer
  */
-const createFileXWindow = () => {
+const createFileXWindow = async () => {
   fileXWindow = new BrowserWindow({
     width: 750,
     height: 550,
@@ -58,36 +58,41 @@ const createFileXWindow = () => {
   });
 
   if (mode === "dev") {
-    fileXWindow.loadURL(`${devUIPort}#/file-x`);
+    await fileXWindow.loadURL(`${devUIPort}#/file-x`);
   } else {
-    fileXWindow.loadFile("index.html", { hash: "file-x" });
+    await fileXWindow.loadFile("index.html", { hash: "file-x" });
   }
 };
 
 /**
  * Creates a file x window if one is not already created
  *
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fileXOpen>}
+ * @type {import("./type").CombinedCallback<IpcMainInvokeEventCallback, fileXOpen>}
  */
 const openFileXWindowImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   fileXOpen
-> = () => {
-  if (fileXWindow && !fileXWindow.isDestroyed()) {
-    logger.info("Bringing existing file x window to front");
+> = async () => {
+  try {
+    if (fileXWindow && !fileXWindow.isDestroyed()) {
+      logger.info("Bringing existing file x window to front");
 
-    if (fileXWindow.isMinimized()) {
-      fileXWindow.restore();
+      if (fileXWindow.isMinimized()) {
+        fileXWindow.restore();
+      }
+
+      fileXWindow.focus();
+      fileXWindow.show();
+
+      return true
+    } else {
+      logger.info("Opened file x window");
+      await createFileXWindow();
+      return true
     }
-
-    fileXWindow.focus();
-    fileXWindow.show();
-
-    return Promise.resolve(false);
-  } else {
-    logger.info("Opened file x window");
-    createFileXWindow();
-    return Promise.resolve(true);
+  } catch (error) {
+    logger.error("Failed to open or bring window to front: ", error)
+    return false
   }
 };
 
