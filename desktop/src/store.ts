@@ -4,7 +4,7 @@
 
 import path from "path";
 import fs from "fs/promises";
-import { app } from "electron";
+import { app, type IpcMain } from "electron";
 import type {
   CombinedCallback,
   IpcMainInvokeEventCallback,
@@ -15,7 +15,6 @@ import type {
 } from "./type.js";
 import { logger } from "./logger.js";
 import { broadcastToAll } from "./broadcast.js";
-import { typedIpcMain } from "./typed-ipc-main.js";
 
 /**
  * Represents the base directory we save store files to
@@ -54,7 +53,10 @@ const setStoreItemImpl: CombinedCallback<
 /**
  * @type {CombinedCallback<IpcMainInvokeEventCallback, storeClean>}
  */
-const cleanStoreImpl: CombinedCallback<IpcMainInvokeEventCallback, storeClean> = async () => {
+const cleanStoreImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  storeClean
+> = async () => {
   try {
     await fs.rm(storeBaseDirectory, { recursive: true, force: true });
     await fs.mkdir(storeBaseDirectory, { recursive: true });
@@ -111,7 +113,7 @@ const removeItemByKeyImpl: CombinedCallback<
 /**
  * Register all store listeners
  */
-export const registerStoreListeners = (ipcMain: typedIpcMain) => {
+export const registerStoreListeners = (ipcMain: IpcMain) => {
   ipcMain.handle("store:set", setStoreItemImpl);
   ipcMain.handle("store:get", getStoreItemImpl);
   ipcMain.handle("store:clean", cleanStoreImpl);

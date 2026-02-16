@@ -18,6 +18,9 @@ import type {
 } from "./type.js";
 
 import { contextBridge, ipcRenderer } from "electron";
+import type { ApplicationEvents, TypedIpcRenderer } from "./typed-ipc.js";
+
+const typedIpcRender = ipcRenderer as TypedIpcRenderer<ApplicationEvents>
 
 /**
  * This script is attached to the UI source code window object on load.

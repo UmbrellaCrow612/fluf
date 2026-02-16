@@ -1,25 +1,18 @@
 /**
  * Inspired by event emitter pattern from node events
  *
- * Extends the pattern of IpcMain type with full type safety for arguments and return values
+ * Extends the pattern of IpcMain and IpcRenderer types with full type safety
  */
 
-import { ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from "electron";
+import {
+  ipcMain,
+  type IpcMainEvent,
+  type IpcMainInvokeEvent,
+  type IpcRendererEvent,
+} from "electron";
 
 /**
  * Define events with their argument types AND return types for handlers
- *
- * @example
- * {
- *   "channel:name": {
- *     args: [string, number],
- *     return: boolean
- *   }
- *   "channel:fire": {
- *     args: [payload: SomeType],
- *     return: void // for fire-and-forget events
- *   }
- * }
  */
 type EventDefinition = {
   args: any[];
@@ -37,6 +30,11 @@ type ArgsOf<T> = T extends { args: infer A } ? A : never;
  * Extract the return type from an event definition (defaults to void)
  */
 type ReturnOf<T> = T extends { return: infer R } ? R : void;
+
+/**
+ * Unwrap Promise<T> to just T for comparison
+ */
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
 export interface TypedIpcMain<T extends EventMap<T>> {
   addListener<K extends keyof T>(
@@ -71,7 +69,7 @@ export interface TypedIpcMain<T extends EventMap<T>> {
     listener: (
       event: IpcMainInvokeEvent,
       ...args: ArgsOf<T[K]>
-    ) => Promise<ReturnOf<T[K]>> | ReturnOf<T[K]>,
+    ) => Promise<UnwrapPromise<ReturnOf<T[K]>>> | UnwrapPromise<ReturnOf<T[K]>>,
   ): void;
 
   handleOnce<K extends keyof T>(
@@ -79,19 +77,68 @@ export interface TypedIpcMain<T extends EventMap<T>> {
     listener: (
       event: IpcMainInvokeEvent,
       ...args: ArgsOf<T[K]>
-    ) => Promise<ReturnOf<T[K]>> | ReturnOf<T[K]>,
+    ) => Promise<UnwrapPromise<ReturnOf<T[K]>>> | UnwrapPromise<ReturnOf<T[K]>>,
   ): void;
 
   removeHandler<K extends keyof T>(channel: K): void;
 }
 
+export interface TypedIpcRenderer<T extends EventMap<T>> {
+  addListener<K extends keyof T>(
+    channel: K,
+    listener: (event: IpcRendererEvent, ...args: ArgsOf<T[K]>) => void,
+  ): this;
+
+  invoke<K extends keyof T>(
+    channel: K,
+    ...args: ArgsOf<T[K]>
+  ): Promise<UnwrapPromise<ReturnOf<T[K]>>>;
+
+  off<K extends keyof T>(
+    channel: K,
+    listener: (event: IpcRendererEvent, ...args: ArgsOf<T[K]>) => void,
+  ): this;
+
+  on<K extends keyof T>(
+    channel: K,
+    listener: (event: IpcRendererEvent, ...args: ArgsOf<T[K]>) => void,
+  ): this;
+
+  once<K extends keyof T>(
+    channel: K,
+    listener: (event: IpcRendererEvent, ...args: ArgsOf<T[K]>) => void,
+  ): this;
+
+  postMessage<K extends keyof T>(
+    channel: K,
+    message: ArgsOf<T[K]> extends [infer First, ...any[]] ? First : any,
+    transfer?: MessagePort[],
+  ): void;
+
+  removeAllListeners<K extends keyof T>(channel?: K): this;
+
+  removeListener<K extends keyof T>(
+    channel: K,
+    listener: (event: IpcRendererEvent, ...args: ArgsOf<T[K]>) => void,
+  ): this;
+
+  send<K extends keyof T>(channel: K, ...args: ArgsOf<T[K]>): void;
+
+  sendSync<K extends keyof T>(
+    channel: K,
+    ...args: ArgsOf<T[K]>
+  ): UnwrapPromise<ReturnOf<T[K]>>;
+
+  sendToHost<K extends keyof T>(channel: K, ...args: ArgsOf<T[K]>): void;
+}
+
 /**
- * Contains all fluffy channels and their arguments + return types for IPC main
+ * Contains all fluffy channels and their arguments + return types for IPC
  */
 export interface ApplicationEvents {
   "app:ready": {
     args: [isReady: boolean];
-    return: void; // fire-and-forget event
+    return: void;
   };
 
   "app:get-version": {
@@ -101,12 +148,12 @@ export interface ApplicationEvents {
 
   "app:open-file": {
     args: [filePath: string, options?: { readOnly?: boolean }];
-    return: Promise<{ success: boolean; content?: string; error?: string }>;
+    return: { success: boolean; content?: string; error?: string };
   };
 
   "db:query": {
     args: [sql: string, params?: unknown[]];
-    return: Promise<{ rows: unknown[]; count: number }>;
+    return: { rows: unknown[]; count: number };
   };
 
   "window:minimize": {
