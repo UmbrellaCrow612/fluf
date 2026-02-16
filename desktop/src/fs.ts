@@ -50,8 +50,8 @@ const mapDirItemsToFileNodes = async (
   const filenodes: fileNode[] = [];
 
   for (const item of dirItems) {
-    let itempath = path.resolve(basePath, item.name);
-    let stats = await fs.stat(itempath);
+    const itempath = path.resolve(basePath, item.name);
+    const stats = await fs.stat(itempath);
 
     filenodes.push({
       name: item.name,
@@ -86,12 +86,12 @@ const saveToImpl: CombinedCallback<IpcMainInvokeEventCallback, saveTo> = async (
       return false;
     }
 
-    let result = await dialog.showSaveDialog(win, {
+    const result = await dialog.showSaveDialog(win, {
       ...options,
     });
     if (result.canceled || result.filePath.trim() == "") return false;
 
-    let fp = path.normalize(path.resolve(result.filePath));
+    const fp = path.normalize(path.resolve(result.filePath));
     await fs.writeFile(fp, content, { encoding: "utf-8" });
 
     return true;
@@ -109,9 +109,9 @@ const unwatchImpl: CombinedCallback<IpcMainEventCallback, fsStopWatching> = (
   pp,
 ) => {
   try {
-    let norm = path.normalize(path.resolve(pp));
+    const norm = path.normalize(path.resolve(pp));
 
-    let abort = watcherAbortsMap.get(norm);
+    const abort = watcherAbortsMap.get(norm);
     if (!abort) {
       logger.info("Path not being watched");
       return;
@@ -136,7 +136,7 @@ const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
   fileOrFolderPath,
 ) => {
   try {
-    let norm = path.normalize(path.resolve(fileOrFolderPath));
+    const norm = path.normalize(path.resolve(fileOrFolderPath));
 
     if (watcherAbortsMap.has(norm)) {
       logger.info("Path already being watched " + norm);
@@ -146,7 +146,7 @@ const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
     const ac = new AbortController();
     watcherAbortsMap.set(norm, ac);
 
-    let watcher = fs.watch(norm, {
+    const watcher = fs.watch(norm, {
       signal: ac.signal,
       recursive: true,
       encoding: "utf-8",
@@ -200,7 +200,7 @@ const fuzzyFindDirectorysImpl: CombinedCallback<
       searchTerm = path.basename(resolved).toLowerCase();
     }
 
-    let suggestions = [];
+    const suggestions = [];
 
     try {
       const entries = await fs.readdir(baseDir, {
@@ -254,7 +254,7 @@ const createDirImpl: CombinedCallback<
   createDirectory
 > = async (_, dirPath) => {
   try {
-    let p = path.normalize(path.resolve(dirPath));
+    const p = path.normalize(path.resolve(dirPath));
 
     await fs.mkdir(p, { recursive: true });
 
@@ -303,7 +303,7 @@ const removeImpl: CombinedCallback<
   fsRemove
 > = async (_, fileOrFolderPath) => {
   try {
-    let p = path.normalize(path.resolve(fileOrFolderPath));
+    const p = path.normalize(path.resolve(fileOrFolderPath));
 
     await fs.access(p);
 
@@ -324,7 +324,7 @@ const existsImpl: CombinedCallback<
   fsExists
 > = async (_, fileOrFolderPath) => {
   try {
-    let p = path.normalize(path.resolve(fileOrFolderPath));
+    const p = path.normalize(path.resolve(fileOrFolderPath));
 
     await fs.access(p);
 
@@ -347,7 +347,7 @@ const createFileImpl: CombinedCallback<
   try {
     if (!filePath) return false;
 
-    let p = path.normalize(path.resolve(filePath));
+    const p = path.normalize(path.resolve(filePath));
 
     await fs.writeFile(p, "", { encoding: "utf-8", flag: "wx" });
 
@@ -368,7 +368,7 @@ const writeToFileImpl: CombinedCallback<
   try {
     if (!filePath || !fileContent) return false;
 
-    let p = path.normalize(path.resolve(filePath));
+    const p = path.normalize(path.resolve(filePath));
 
     await fs.access(p);
 
@@ -391,7 +391,7 @@ const readFileImpl: CombinedCallback<
   try {
     if (!filePath) return "";
 
-    let p = path.normalize(path.resolve(filePath));
+    const p = path.normalize(path.resolve(filePath));
 
     await fs.access(p);
 
@@ -478,7 +478,7 @@ const countItemsInDirectoryImpl: CombinedCallback<
   try {
     const norm = path.normalize(path.resolve(dirPath));
 
-    let stats = await fs.stat(norm);
+    const stats = await fs.stat(norm);
     if (!stats.isDirectory()) {
       logger.warn(
         "The provided path is not a directory so we cannot coun the amount of items it has: ",
@@ -521,7 +521,7 @@ export const registerFsListeners = (ipcMain: IpcMain) => {
  * If any directory are being watch or files stop listening to them
  */
 export const cleanUpWatchers = () => {
-  let a = Array.from(watcherAbortsMap.values());
+  const a = Array.from(watcherAbortsMap.values());
 
   a.forEach((x) => {
     x.abort("Application ended cleaning up");

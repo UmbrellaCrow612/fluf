@@ -47,13 +47,13 @@ const createWindow = () => {
     },
   });
 
-  let mode = process.env["MODE"];
+  const mode = process.env["MODE"];
   if (!mode) {
     logger.error(".env does not contain .env value MODE");
     throw new Error(".env");
   }
 
-  let devUIPort = process.env["DEV_UI_PORT"];
+  const devUIPort = process.env["DEV_UI_PORT"];
   if (!devUIPort) {
     logger.error(".env does not contain .env value DEV_UI_PORT");
     throw new Error(".env");

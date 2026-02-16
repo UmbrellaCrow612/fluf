@@ -151,7 +151,7 @@ const buildArgs = (options: fsearchOptions) => {
 const searchWithFSearch = async (
   options: fsearchOptions,
 ): Promise<fsearchResult[]> => {
-  let bpath = binPath();
+  const bpath = binPath();
   const exePath = await binmanResolve("fsearch", ["fsearch"], bpath);
 
   if (!exePath) throw new Error("fsearch executable not found");
@@ -209,7 +209,7 @@ const fsearchImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   fsearch
 > = async (_, options) => {
-  let newOptions = { ...defaultSearchOptions, ...options };
+  const newOptions = { ...defaultSearchOptions, ...options };
   return await searchWithFSearch(newOptions);
 };
 
