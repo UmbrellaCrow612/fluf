@@ -13,7 +13,7 @@ npm run start
 
 # Style 
 
-- write jsdoc and it's type for all methods as well as typescript types
+- Write jsdoc and it's type for all methods as well as typescript types
 
 # Notes
 

@@ -6,7 +6,7 @@ import { BrowserWindow, type IpcMain } from "electron";
 
 /**
  * Register custom listener for chrome window itself
- * @param {import("electron").IpcMain} ipcMain
+ * @param {IpcMain} ipcMain
  */
 export const registerWindowListener = (ipcMain: IpcMain) => {
   ipcMain.handle("window:ismaximized", (event) => {

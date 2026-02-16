@@ -8,6 +8,7 @@ import { app, type IpcMain } from "electron";
 import type {
   CombinedCallback,
   IpcMainInvokeEventCallback,
+  storeClean,
   storeGet,
   storeRemove,
   storeSet,
@@ -50,9 +51,9 @@ const setStoreItemImpl: CombinedCallback<
 };
 
 /**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeClean>}
+ * @type {CombinedCallback<IpcMainInvokeEventCallback, storeClean>}
  */
-const cleanStoreImpl = async () => {
+const cleanStoreImpl: CombinedCallback<IpcMainInvokeEventCallback, storeClean> = async () => {
   try {
     await fs.rm(storeBaseDirectory, { recursive: true, force: true });
     await fs.mkdir(storeBaseDirectory, { recursive: true });
@@ -89,7 +90,10 @@ const getStoreItemImpl: CombinedCallback<
 /**
  * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").storeRemove>}
  */
-const removeItemByKeyImpl: CombinedCallback<IpcMainInvokeEventCallback, storeRemove> = async (_, key) => {
+const removeItemByKeyImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  storeRemove
+> = async (_, key) => {
   if (typeof key !== "string" || key.trim().length == 0)
     throw new TypeError("key must be a non empty string");
 
