@@ -11,9 +11,9 @@ import { logger } from "./logger.js";
  * This way, all open windows can receive it.
  *
  * @param {string} channel - The specific channel string like `shell:change`, etc.
- * @param {...any} args - Any data you want to broadcast that consumers expect.
+ * @param {...unknown} args - Any data you want to broadcast that consumers expect.
  */
-export function broadcastToAll(channel: string, ...args: any[]) {
+export function broadcastToAll(channel: string, ...args: unknown[]) {
   const allWebContents = webContents.getAllWebContents();
   allWebContents.forEach((wc) => {
     if (!wc.isDestroyed()) {

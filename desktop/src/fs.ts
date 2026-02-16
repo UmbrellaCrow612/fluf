@@ -157,8 +157,8 @@ const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
     for await (const event of watcher) {
       broadcastToAll("fs:change", fileOrFolderPath, event);
     }
-  } catch (/** @type {any}*/ error: any) {
-    if (error.name === "AbortError") return;
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === "AbortError") return;
 
     logger.error(error, "Failed to watch directory");
 
@@ -329,8 +329,13 @@ const existsImpl: CombinedCallback<
     await fs.access(p);
 
     return true;
-  } catch (/** @type {any}*/ error: any) {
-    if (error?.code === "ENOENT") return false; // just didn't exit not true error
+  } catch (error: unknown) {
+    if (
+      error instanceof Error &&
+      (error as NodeJS.ErrnoException).code === "ENOENT"
+    ) {
+      return false;
+    }
 
     logger.error("Failed to check if a file exists");
     return false;
