@@ -2,10 +2,10 @@
   "name": "desktop",
   "version": "0.0.1",
   "description": "Contains all our desktop specific code built with electron for flufy",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
-    "start": "node start.js",
+    "start": "node build.js && npx electron . --trace-warnings",
     "build:linux": "node build.js linux",
     "build:darwin": "node build.js darwin",
     "build:windows": "node build.js windows",

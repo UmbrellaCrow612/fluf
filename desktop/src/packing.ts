@@ -32,7 +32,7 @@ export const binPath = (): string => {
   try {
     return isPackaged()
       ? path.join(process.resourcesPath, "bin")
-      : path.join(__dirname, "bin");
+      : path.join(__dirname, "../", "bin");
   } catch (error) {
     logger.error("Failed to get bin path " + JSON.stringify(error));
     return "";
@@ -45,8 +45,15 @@ export const binPath = (): string => {
  */
 export const getTypescriptServerPath = (): string => {
   return isPackaged()
-    ? path.join(process.resourcesPath, "typescript", "tsserver.js")
-    : path.join(__dirname, "node_modules", "typescript", "lib", "tsserver.js");
+    ? path.join(process.resourcesPath, "typescript", "tsserver.js") // todo change to copy over node modules like vscode
+    : path.join(
+        __dirname,
+        "../",
+        "node_modules",
+        "typescript",
+        "lib",
+        "tsserver.js",
+      );
 };
 
 /**
@@ -56,5 +63,11 @@ export const getTypescriptServerPath = (): string => {
 export const getPythonServerPath = (): string => {
   return isPackaged()
     ? path.join(process.resourcesPath, "pyright", "langserver.index.js")
-    : path.join(__dirname, "node_modules", "pyright", "langserver.index.js");
+    : path.join(
+        __dirname,
+        "../",
+        "node_modules",
+        "pyright",
+        "langserver.index.js",
+      );
 };
