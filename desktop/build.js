@@ -1,4 +1,6 @@
 import { spawn } from "child_process";
+import { copyFile, mkdir } from "fs/promises";
+import { dirname } from "path";
 
 const commands = [
   ['npx', ['tsc', '-p', '.\\tsconfig.json']],
@@ -27,13 +29,31 @@ function runCommand([cmd, args]) {
   });
 }
 
-// Run commands sequentially
+async function copyTypesFile() {
+  const sourcePath = 'dist/type.d.ts';
+  const destPath = '../ui/gen/type.d.ts';
+  
+  try {
+    // Ensure destination directory exists
+    await mkdir(dirname(destPath), { recursive: true });
+    
+    // Copy the file
+    await copyFile(sourcePath, destPath);
+    console.log(`\n✓ Copied ${sourcePath} to ${destPath}`);
+  } catch (err) {
+    throw new Error(`Failed to copy types file: ${err.message}`);
+  }
+}
+
 (async () => {
   try {
     for (const [cmd, args] of commands) {
       console.log(`\nRunning: ${cmd} ${args.join(' ')}\n`);
       await runCommand([cmd, args]);
     }
+    
+    await copyTypesFile();
+    
     console.log("\nAll commands executed successfully!");
   } catch (err) {
     console.error("\nCommand failed:", err.message);
