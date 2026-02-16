@@ -2,8 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
+    "verbatimModuleSyntax": false
   },
-  "include": [
-    "src/preload.ts"
-  ]
+  "include": ["src/preload.ts"]
 }
