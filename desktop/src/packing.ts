@@ -1,0 +1,73 @@
+/*
+ * Contains all code and helpers related to app packing state
+ */
+
+import path from "path";
+import { logger } from "./logger.js";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let electronApp;
+try {
+  ({ app: electronApp } = require("electron"));
+} catch {
+  electronApp = null; // Running outside Electron (e.g. tests, scripts)
+}
+
+/**
+ * Checks if the application is packaged
+ * @returns {boolean}
+ */
+export const isPackaged = (): boolean => {
+  return electronApp ? electronApp.isPackaged : false;
+};
+
+/**
+ * Get the path of the bin folder (dev or packaged)
+ * @returns {string}
+ */
+export const binPath = (): string => {
+  try {
+    return isPackaged()
+      ? path.join(process.resourcesPath, "bin")
+      : path.join(__dirname, "../", "bin");
+  } catch (error) {
+    logger.error("Failed to get bin path " + JSON.stringify(error));
+    return "";
+  }
+};
+
+/**
+ * Get the path to the TypeScript language server
+ * @returns {string}
+ */
+export const getTypescriptServerPath = (): string => {
+  return isPackaged()
+    ? path.join(process.resourcesPath, "typescript", "tsserver.js") // todo change to copy over node modules like vscode
+    : path.join(
+        __dirname,
+        "../",
+        "node_modules",
+        "typescript",
+        "lib",
+        "tsserver.js",
+      );
+};
+
+/**
+ * Get the path to the Python language server
+ * @returns {string}
+ */
+export const getPythonServerPath = (): string => {
+  return isPackaged()
+    ? path.join(process.resourcesPath, "pyright", "langserver.index.js")
+    : path.join(
+        __dirname,
+        "../",
+        "node_modules",
+        "pyright",
+        "langserver.index.js",
+      );
+};

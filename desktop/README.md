@@ -5,51 +5,35 @@ Contains all our desktop specific code such as acessing files etc, built with el
 # Running / re run steps
 
 ```bash
-nvm use 22
 npm ci
 npm run binman
 npm run start
 ```
 
-# Style Guide
 
-- Use plain JavaScript (CommonJS) with JSDoc.
-- Write types in `types.js`.
-- Use `CombinCallback` on the backend side to type the listener with the public API and the Electron event being attached. This saves us from having to write another type for it.
-- In `preload.js`, make each API have its own object that contains the related features, for example `shellApi`.
-- In `preload.js`, when typing the APIs, if they do not receive a callback as a parameter, use `...args` for the parameters and pass them to IPC as `...args`.
-  This saves trouble when extending the API usage: the frontend will throw a type error if you don’t pass the required arguments, and they will automatically be forwarded through the bridge.
-- Whenever you extend `types.js`, run `npx tsc` in the `desktop` directory to generate the types for the UI.
-- Use template strings for messages / logs
-- Validate params types and values if they do not match throw typeErrors
-- Re throw any errors after logging them
-- when catch error use `logError`
-- Use eslint 
+# Style 
 
-# Type checking
+- Write jsdoc and it's type for all methods as well as typescript types
 
-- tsconfig.check.json holds rules from jsconfig but allows us to just use it for type checking
+# Notes
 
-```bash
-npx tsc -p tsconfig.check.json
-```
+- When using typescript the preload js file must be generated using diffrent common js complier as it is in the browser using the same ts config 
+as the other files adds `export {}` at the end breaking it in the browser. Hence we use the default ts config for backend code and the preload specific ts config for the browser code 
+of `preload.ts`
+- Instead of coping over the node_modules specific packages just copy all the source code with the node_module naming like how vscode does it so
 
-# Eslint
+# Building
 
-Run this to find problems / check your not doing any styles that cause problems 
+Steps we need todo 
+
+- Build the ts code 
+- Copy over `.env`, `node_modules` deps, `package.json` and binary's `bin/**`
 
 ```bash
-npx eslint .
+--- final
+ .env
+ node_modules - specific deps
+ package.json
+ dist ts dist files
+ bin
 ```
-
-# Info
-
-Building:
-
-- build index.js and preload with esbuild dist
-- exclude electron, node pty ("@homebridge") from esbuild
-- copy over typescript source code
-- copy over node pty (@homebridge)
-- copy over .env and pack json into dist
-- pack the app into asar
-- download electron binarys into dist
