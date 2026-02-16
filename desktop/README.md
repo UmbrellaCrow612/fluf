@@ -20,25 +20,20 @@ npm run start
 - When using typescript the preload js file must be generated using diffrent common js complier as it is in the browser using the same ts config 
 as the other files adds `export {}` at the end breaking it in the browser. Hence we use the default ts config for backend code and the preload specific ts config for the browser code 
 of `preload.ts`
-- Instead of coping over the node_modules sdpecific packages just copy all the source code with the node_module naming like how vscode doest it so
+- Instead of coping over the node_modules specific packages just copy all the source code with the node_module naming like how vscode does it so
 
 # Building
 
 Steps we need todo 
 
-- Build ts code using standard ts file
-- Build prelods ts using the custom file as it's a browser file 
-- Copy over node_modules deps 
-- Thats the final code source code + node_modules used
-
-Final dist is 
+- Build the ts code 
+- Copy over `.env`, `node_modules` deps, `package.json` and binary's `bin/**`
 
 ```bash
-
---- dist
+--- final
  .env
  node_modules - specific deps
  package.json
- ...spread ts dist files
- bin/**
+ dist ts dist files
+ bin
 ```
