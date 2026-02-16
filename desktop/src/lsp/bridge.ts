@@ -35,7 +35,9 @@ export const stopAllLanguageServers = async () => {
 
   for (const lsp of lsps) {
     let result = await lsp.StopAll();
-    logger.info(result);
+    result.forEach(x  => {
+      logger.info(x.workSpaceFolder, x.result)
+    })
   }
 };
 
