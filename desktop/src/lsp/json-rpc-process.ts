@@ -9,6 +9,25 @@ import type {
 import { logger } from "../logger.js";
 import { isUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
+import type {
+  NotificationMessage,
+  ResponseMessage,
+} from "vscode-languageserver-protocol";
+
+/**
+ * Type guard to check if an object is a NotificationMessage
+ */
+function isNotificationMessage(obj: any): obj is NotificationMessage {
+  if (typeof obj !== "object" || obj === null) return false;
+  if (typeof obj.method !== "string") return false;
+  if (
+    obj.params !== undefined &&
+    !Array.isArray(obj.params) &&
+    typeof obj.params !== "object"
+  )
+    return false;
+  return true;
+}
 
 /**
  * Used as a generic way to interact with a JSONRpc compliant LSP process that is spawned with the command combined with electron event sending,
@@ -61,19 +80,11 @@ export class JsonRpcProcess {
    * Holds the pending requests made to the process.
    *
    * Each entry in the map corresponds to a request ID and its associated handlers.
-   *
-   * @type {Map<number, { resolve: (value: any) => void; reject: (reason?: any) => void; timeout: NodeJS.Timeout }>}
-   *
-   * - `Key` - The request ID.
-   * - `Value` - An object containing:
-   *   - `resolve` - Function to resolve the request.
-   *   - `reject` - Function to reject the request.
-   *   - `timeout` - Timeout handle for the request.
    */
   private _pendingRequests: Map<
     number,
     {
-      resolve: (value: any) => void;
+      resolve: (value: ResponseMessage["result"]) => void;
       reject: (reason?: any) => void;
       timeout: NodeJS.Timeout;
     }
@@ -249,6 +260,7 @@ export class JsonRpcProcess {
     this._write({
       jsonrpc: "2.0",
       method: "exit",
+      id: null,
     });
   }
 
@@ -260,6 +272,7 @@ export class JsonRpcProcess {
       jsonrpc: "2.0",
       method: "initialized",
       params: {},
+      id: null,
     });
   }
 
@@ -361,6 +374,7 @@ export class JsonRpcProcess {
           text: text,
         },
       },
+      id: null,
     });
   }
 
@@ -403,6 +417,7 @@ export class JsonRpcProcess {
         },
         contentChanges: contentChanges,
       },
+      id: null,
     });
   }
 
@@ -427,6 +442,7 @@ export class JsonRpcProcess {
           uri: uri,
         },
       },
+      id: null,
     });
   }
 
@@ -476,7 +492,7 @@ export class JsonRpcProcess {
       }
 
       try {
-        this.#handle(response);
+        this._handle(response);
       } catch (/** @type {any}*/ err: any) {
         logger.error(
           err,
@@ -488,41 +504,49 @@ export class JsonRpcProcess {
   }
 
   /**
+   * Resolve any pending requests
+   * @param {ResponseMessage} responseMessage - The parsed message from the LSP
+   * @returns {void} Nothing
+   */
+  private _resolveRequests(responseMessage: ResponseMessage): void {
+    if (responseMessage.id !== null) {
+      let requestId = Number(responseMessage.id);
+      if (!this._pendingRequests.has(requestId)) {
+        return;
+      }
+
+      const obj = this._pendingRequests.get(requestId)!;
+
+      if (responseMessage.error) {
+        clearTimeout(obj.timeout);
+        obj.reject(responseMessage.error);
+      } else {
+        clearTimeout(obj.timeout);
+        obj?.resolve(responseMessage.result);
+      }
+
+      this._pendingRequests.delete(requestId);
+    }
+  }
+
+  /**
    * Handles a response message from the LSP and notifies any listeners
    * @param {import("vscode-languageserver-protocol").ResponseMessage} response
    */
-  #handle(response: import("vscode-languageserver-protocol").ResponseMessage) {
-    // We need to resolve pending requests first to stop hanging
-    if (
-      response.id !== null &&
-      this._pendingRequests.has(Number(response.id))
-    ) {
-      const obj = this._pendingRequests.get(Number(response.id));
+  private _handle(
+    response: import("vscode-languageserver-protocol").ResponseMessage,
+  ) {
+    this._resolveRequests(response);
 
-      if (response.error) {
-        obj?.reject(response.error);
-
-        broadcastToAll("lsp:error", {
-          error: response.error,
-          id: response.id,
-          languageId: this._languageId,
-          workSpaceFolder: this._workSpaceFolder,
-        });
-      } else {
-        obj?.resolve(response.result);
-      }
-
-      this._pendingRequests.delete(Number(response.id));
-    }
-
-    // Check if window still exists before sending data event
     broadcastToAll("lsp:data", {
       response: response,
       languageId: this._languageId,
       workSpaceFolder: this._workSpaceFolder,
     });
 
-    this.#notify(response);
+    if (isNotificationMessage(response)) {
+      this._handleNotificationMessage(response);
+    }
   }
 
   /**
@@ -530,36 +554,25 @@ export class JsonRpcProcess {
    * @param {any} notification - The notification message
    * @returns {void} Nothing
    */
-  #notify(notification: any): void {
-    if (!notification || typeof notification !== "object")
-      throw new TypeError("notification must be an object");
-
+  private _handleNotificationMessage(notification: NotificationMessage): void {
     if (!this._languageId) throw new Error("No language id cannot send events");
     if (!this._workSpaceFolder)
       throw new Error("No workspace folder cannot send events");
 
-    if (
-      notification.method &&
-      (notification.id === undefined || notification.id === null)
-    ) {
-      broadcastToAll("lsp:notification", {
-        method: notification.method,
-        params: notification.params,
-        languageId: this._languageId,
-        workSpaceFolder: this._workSpaceFolder,
-      });
+    broadcastToAll("lsp:notification", {
+      method: notification.method,
+      params: notification.params,
+      languageId: this._languageId,
+      workSpaceFolder: this._workSpaceFolder,
+    });
 
-      let notificationData: LanguageServerNotificationResponse = {
-        languageId: this._languageId,
-        workSpaceFolder: this._workSpaceFolder,
-        params: notification?.params,
-      };
+    let notificationData: LanguageServerNotificationResponse = {
+      languageId: this._languageId,
+      workSpaceFolder: this._workSpaceFolder,
+      params: notification?.params,
+    };
 
-      broadcastToAll(
-        `lsp:notification:${notification.method}`,
-        notificationData,
-      );
-    }
+    broadcastToAll(`lsp:notification:${notification.method}`, notificationData);
   }
 
   /**
@@ -567,7 +580,7 @@ export class JsonRpcProcess {
    * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} message The message
    */
   private _write(
-    message: Partial<import("vscode-languageserver-protocol").RequestMessage>,
+    message: import("vscode-languageserver-protocol").RequestMessage,
   ) {
     if (!message || typeof message !== "object")
       throw new TypeError("message must be an object");
@@ -598,8 +611,8 @@ export class JsonRpcProcess {
       this._spawnRef.stdin.write(writeContent);
     } catch (error) {
       logger.error(
+        `Failed to write to stdin stream of command: ${this._command} error: `,
         error,
-        `Failed to write to stdin stream of command: ${this._command} error: ${JSON.stringify(error)}`,
       );
 
       throw error;

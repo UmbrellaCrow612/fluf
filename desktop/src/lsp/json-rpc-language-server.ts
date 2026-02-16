@@ -1,10 +1,11 @@
-import type { ILanguageServer } from './../type.js';
+import type { ILanguageServer } from "./../type.js";
 import path from "path";
 import type { ILanguageServerStopAllResult, languageId } from "../type.js";
 import { JsonRpcProcess } from "./json-rpc-process.js";
 import { logger } from "../logger.js";
 import { createUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
+import type { InitializeParams } from "vscode-languageserver-protocol";
 
 /**
  * Base class that implements common JSON-RPC LSP functionality.
@@ -13,7 +14,7 @@ import { broadcastToAll } from "../broadcast.js";
  *
  * - Methods that implement {@link ILanguageServer} interface should be defined in subclasses
  * - Methods should start with `_` indicating it is a shared for all lsp impl can use
- * 
+ *
  * @see {ILanguageServer} for the interface this class is designed to support
  */
 export class JsonRpcLanguageServer {
@@ -59,8 +60,13 @@ export class JsonRpcLanguageServer {
 
     if (!this._languageId) throw new Error("languageId is null");
 
-    let rc = new JsonRpcProcess(command, args, wsf, this._languageId);
     const _workSpaceFolder = path.normalize(path.resolve(wsf));
+    const jsonRpcProcess = new JsonRpcProcess(
+      command,
+      args,
+      wsf,
+      this._languageId,
+    );
 
     try {
       if (this._workSpaceRpcMap.has(_workSpaceFolder)) {
@@ -69,14 +75,13 @@ export class JsonRpcLanguageServer {
         );
         return true;
       }
-      this._workSpaceRpcMap.set(_workSpaceFolder, rc);
+      this._workSpaceRpcMap.set(_workSpaceFolder, jsonRpcProcess);
 
-      await rc.Start();
+      await jsonRpcProcess.Start();
 
-      /** @type {import("vscode-languageserver-protocol").InitializeParams} */
-      let params: import("vscode-languageserver-protocol").InitializeParams = {
+      let params: InitializeParams = {
         capabilities: {},
-        processId: rc.GetPid() ?? null,
+        processId: jsonRpcProcess.GetPid() ?? null,
         clientInfo: {
           name: path.basename(_workSpaceFolder),
           version: "1",
@@ -90,8 +95,8 @@ export class JsonRpcLanguageServer {
         rootUri: createUri(_workSpaceFolder),
       };
 
-      await rc.SendRequest("initialize", params);
-      rc.Initialized();
+      await jsonRpcProcess.SendRequest("initialize", params);
+      jsonRpcProcess.Initialized();
 
       // notify ui lsp ready for given lang and workspace
       broadcastToAll("lsp:on:ready", this._languageId, wsf);
@@ -106,7 +111,7 @@ export class JsonRpcLanguageServer {
         `Failed to start language server. command: ${command} workspace folder ${wsf}`,
       );
 
-      rc.Shutdown();
+      jsonRpcProcess.Shutdown();
       this._workSpaceRpcMap.delete(_workSpaceFolder);
 
       throw error;
