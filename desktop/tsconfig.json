@@ -11,7 +11,7 @@
     "types": [
       "node"
     ],
-    "sourceMap": true,
+    "sourceMap": false,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,

@@ -4,6 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "verbatimModuleSyntax": false,
+    "outDir": "./dist/preload"
   },
   "include": [
     "src/preload.ts"
