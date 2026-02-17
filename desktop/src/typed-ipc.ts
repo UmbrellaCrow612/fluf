@@ -10,15 +10,26 @@ import {
   type IpcRendererEvent,
 } from "electron";
 import type { StoreEvents } from "./store.js";
+import type { WindowEvents } from "./window.js";
 
 /**
  * Define events with their argument types AND return types for handlers
  */
 type EventDefinition = {
+  /**
+   * List of adtional params args for this channel
+   */
   args: any[];
-  return?: any;
+
+  /**
+   * What the channel returns
+   */
+  return: any;
 };
 
+/**
+ * Mapped to how event emitter event map does it the T is the channel i.e like `fs:read`
+ */
 type EventMap<T> = Record<keyof T, EventDefinition>;
 
 /**
@@ -36,6 +47,9 @@ type ReturnOf<T> = T extends { return: infer R } ? R : void;
  */
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
+/**
+ * Maps the type definition of ipc main but with event emitter style event map passed to it
+ */
 interface IpcMain<T extends EventMap<T>> {
   addListener<K extends keyof T>(
     channel: K,
@@ -85,7 +99,11 @@ interface IpcMain<T extends EventMap<T>> {
 
 export type TypedIpcMain = IpcMain<ApplicationEvents>;
 
-export interface TypedIpcRenderer<T extends EventMap<T>> {
+
+/**
+ * Maps the type definition of ipc render but with event emitter style event map passed to it
+ */
+export interface IpcRenderer<T extends EventMap<T>> {
   addListener<K extends keyof T>(
     channel: K,
     listener: (event: IpcRendererEvent, ...args: ArgsOf<T[K]>) => void,
@@ -135,6 +153,11 @@ export interface TypedIpcRenderer<T extends EventMap<T>> {
 }
 
 /**
+ * The final type for ipc render which has full type safety
+ */
+export type TypedIpcRenderer = IpcRenderer<ApplicationEvents>;
+
+/**
  * Contains all fluffy channels and their arguments + return types for IPC
  */
-export type ApplicationEvents = StoreEvents;
+export type ApplicationEvents = StoreEvents & WindowEvents;

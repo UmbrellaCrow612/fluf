@@ -18,12 +18,12 @@ import type {
 } from "./type.js";
 
 import { contextBridge, ipcRenderer } from "electron";
-import type { ApplicationEvents, TypedIpcRenderer } from "./typed-ipc.js";
+import type { TypedIpcRenderer } from "./typed-ipc.js";
 
 /**
  * Fully typed version of ipc render
  */
-const typedIpcRender = ipcRenderer as TypedIpcRenderer<ApplicationEvents>;
+const typedIpcRender = ipcRenderer as TypedIpcRenderer;
 
 /**
  * This script is attached to the UI source code window object on load.
@@ -135,11 +135,12 @@ const ripgrepApi: ripgrepApi = {
 };
 
 const chromeWindowApi: chromeWindowApi = {
-  isMaximized: (...args) => ipcRenderer.invoke("window:ismaximized", ...args),
-  minimize: (...args) => ipcRenderer.send("window:minimize", ...args),
-  maximize: (...args) => ipcRenderer.send("window:maximize", ...args),
-  close: (...args) => ipcRenderer.send("window:close", ...args),
-  restore: (...args) => ipcRenderer.send("window:restore", ...args),
+  isMaximized: (...args) =>
+    typedIpcRender.invoke("window:is:maximized", ...args),
+  minimize: (...args) => typedIpcRender.send("window:minimize", ...args),
+  maximize: (...args) => typedIpcRender.send("window:maximize", ...args),
+  close: (...args) => typedIpcRender.send("window:close", ...args),
+  restore: (...args) => typedIpcRender.send("window:restore", ...args),
 };
 
 const fsApi: fsApi = {
