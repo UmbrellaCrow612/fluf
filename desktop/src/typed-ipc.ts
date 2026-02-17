@@ -5,7 +5,6 @@
  */
 
 import {
-  ipcMain,
   type IpcMainEvent,
   type IpcMainInvokeEvent,
   type IpcRendererEvent,
@@ -139,8 +138,3 @@ export interface TypedIpcRenderer<T extends EventMap<T>> {
  * Contains all fluffy channels and their arguments + return types for IPC
  */
 export type ApplicationEvents = StoreEvents;
-
-/**
- * Use this instead of the built in IPC main because we extended it with type safety
- */
-export const typedIpcMain = ipcMain as TypedIpcMain;
