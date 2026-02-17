@@ -28,7 +28,7 @@ of `preload.ts`
 
 Steps we need todo 
 
-- Build the ts code 
+- Build the ts code using module config for other code and then common js for preload
 - Copy over `.env`, `node_modules` deps, `package.json` and binary's `bin/**`
 
 ```bash
