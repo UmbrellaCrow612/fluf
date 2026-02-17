@@ -22,6 +22,7 @@ as the other files adds `export {}` at the end breaking it in the browser. Hence
 of `preload.ts`
 - Instead of coping over the node_modules specific packages just copy all the source code with the node_module naming like how vscode does it so
 - Migrated from jsdoc to ts
+- Use typed icp main and ipc render pattern now we get full type saftey for channels and what args they recieve / get, each module exports it's events / channels and args
 
 # Building
 

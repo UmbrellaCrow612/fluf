@@ -13,7 +13,7 @@ import { logger } from "./logger.js";
  * @param {string} channel - The specific channel string like `shell:change`, etc.
  * @param {...unknown} args - Any data you want to broadcast that consumers expect.
  */
-export function broadcastToAll(channel: string, ...args: unknown[]) {
+export const broadcastToAll = (channel: string, ...args: unknown[]) => {
   const allWebContents = webContents.getAllWebContents();
   allWebContents.forEach((wc) => {
     if (!wc.isDestroyed()) {
@@ -24,4 +24,4 @@ export function broadcastToAll(channel: string, ...args: unknown[]) {
       );
     }
   });
-}
+};

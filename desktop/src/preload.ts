@@ -20,7 +20,10 @@ import type {
 import { contextBridge, ipcRenderer } from "electron";
 import type { ApplicationEvents, TypedIpcRenderer } from "./typed-ipc.js";
 
-const typedIpcRender = ipcRenderer as TypedIpcRenderer<ApplicationEvents>
+/**
+ * Fully typed version of ipc render
+ */
+const typedIpcRender = ipcRenderer as TypedIpcRenderer<ApplicationEvents>;
 
 /**
  * This script is attached to the UI source code window object on load.
@@ -242,27 +245,26 @@ const clipboardApi: clipboardApi = {
 };
 
 const storeApi: storeApi = {
-  set: (...args) => ipcRenderer.invoke("store:set", ...args),
+  set: (...args) => typedIpcRender.invoke("store:set", ...args),
   onChange: (key, callback) => {
-    /**
-     * @type {import("./type.js").CombinedCallback<import("./type.js").IpcRendererEventCallback, import("./type.js").storeChangeCallback>}
-     */
-    const list: CombinedCallback<
+    const listener: CombinedCallback<
       IpcRendererEventCallback,
       storeChangeCallback
-    > = (_, newContent) => {
-      callback(newContent);
+    > = (_, changedKey, newContent) => {
+      if (changedKey === key) {
+        callback(changedKey, newContent);
+      }
     };
 
-    ipcRenderer.on(`store:key:${key}:changed`, list);
+    typedIpcRender.on(`store:changed`, listener);
 
     return () => {
-      ipcRenderer.removeListener(`store:key:${key}:changed`, list);
+      typedIpcRender.removeListener("store:changed", listener);
     };
   },
-  clean: (...args) => ipcRenderer.invoke("store:clean", ...args),
-  get: (...args) => ipcRenderer.invoke("store:get", ...args),
-  remove: (...args) => ipcRenderer.invoke("store:remove", ...args),
+  clean: (...args) => typedIpcRender.invoke("store:clean", ...args),
+  get: (...args) => typedIpcRender.invoke("store:get", ...args),
+  remove: (...args) => typedIpcRender.invoke("store:remove", ...args),
 };
 
 const api: ElectronApi = {

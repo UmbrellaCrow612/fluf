@@ -3,7 +3,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
   },
-  "include": ["src/preload.ts"]
+  "include": [
+    "src/preload.ts"
+  ]
 }

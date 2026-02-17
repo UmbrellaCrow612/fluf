@@ -1,9 +1,8 @@
 /**
  * Used as a way of sotring generic JSON objects in keys and also modifying them, this is used for stoaring things between browser windows.
  */
-
-import path from "path";
-import fs from "fs/promises";
+import * as path from "node:path";
+import * as fs from "node:fs";
 import { app } from "electron";
 import type {
   CombinedCallback,
@@ -35,11 +34,11 @@ const setStoreItemImpl: CombinedCallback<
   }
 
   try {
-    await fs.mkdir(storeBaseDirectory, { recursive: true });
+    await fs.promises.mkdir(storeBaseDirectory, { recursive: true });
 
     const filePath = path.join(storeBaseDirectory, key);
 
-    await fs.writeFile(filePath, content, "utf8");
+    await fs.promises.writeFile(filePath, content, "utf8");
 
     logger.info("Set store item at path: ", filePath);
 
@@ -59,8 +58,8 @@ const cleanStoreImpl: CombinedCallback<
   storeClean
 > = async () => {
   try {
-    await fs.rm(storeBaseDirectory, { recursive: true, force: true });
-    await fs.mkdir(storeBaseDirectory, { recursive: true });
+    await fs.promises.rm(storeBaseDirectory, { recursive: true, force: true });
+    await fs.promises.mkdir(storeBaseDirectory, { recursive: true });
   } catch (error) {
     logger.error("Failed to clean store", error);
     throw error;
@@ -80,7 +79,7 @@ const getStoreItemImpl: CombinedCallback<
 
   try {
     const filePath = path.join(storeBaseDirectory, key);
-    return await fs.readFile(filePath, "utf8");
+    return await fs.promises.readFile(filePath, "utf8");
   } catch (/** @type {any}*/ error: any) {
     if (error.code === "ENOENT") {
       return undefined;
@@ -103,7 +102,7 @@ const removeItemByKeyImpl: CombinedCallback<
 
   try {
     const filePath = path.join(storeBaseDirectory, key);
-    await fs.unlink(filePath);
+    await fs.promises.unlink(filePath);
   } catch (error) {
     logger.error("Failed to remove key: ", key, error);
 
@@ -117,7 +116,7 @@ const removeItemByKeyImpl: CombinedCallback<
 export interface StoreEvents {
   "store:set": {
     args: [key: string, content: string];
-    return: void;
+    return: Promise<void>;
   };
   "store:get": {
     args: [key: string];
@@ -131,14 +130,18 @@ export interface StoreEvents {
     args: [key: string];
     return: void;
   };
+  "store:changed": {
+    args: [changedKey: string, newContent: string];
+    return: void;
+  };
 }
 
 /**
  * Register all store listeners
  */
-export const registerStoreListeners = (ipcMain: TypedIpcMain) => {
-  ipcMain.handle("store:set", setStoreItemImpl);
-  ipcMain.handle("store:get", getStoreItemImpl);
-  ipcMain.handle("store:clean", cleanStoreImpl);
-  ipcMain.handle("store:remove", removeItemByKeyImpl);
+export const registerStoreListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("store:set", setStoreItemImpl);
+  typedIpcMain.handle("store:get", getStoreItemImpl);
+  typedIpcMain.handle("store:clean", cleanStoreImpl);
+  typedIpcMain.handle("store:remove", removeItemByKeyImpl);
 };

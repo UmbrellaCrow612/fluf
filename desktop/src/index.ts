@@ -29,6 +29,7 @@ import {
 } from "./lsp/bridge.js";
 import { registerStoreListeners } from "./store.js";
 import { fileURLToPath } from "node:url";
+import { typedIpcMain } from "./typed-ipc.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,7 +94,7 @@ app.whenReady().then(async () => {
   registerPathListeners(ipcMain);
   registerFileXListeners(ipcMain);
   registerLanguageServerListener(ipcMain);
-  registerStoreListeners(ipcMain);
+  registerStoreListeners(typedIpcMain);
 });
 
 app.on("before-quit", async () => {
