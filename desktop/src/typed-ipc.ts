@@ -11,6 +11,7 @@ import {
 } from "electron";
 import type { StoreEvents } from "./store.js";
 import type { WindowEvents } from "./window.js";
+import type { ShellEvents } from "./shell.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -160,4 +161,4 @@ export type TypedIpcRenderer = IpcRenderer<ApplicationEvents>;
 /**
  * Contains all fluffy channels and their arguments + return types for IPC
  */
-export type ApplicationEvents = StoreEvents & WindowEvents;
+export type ApplicationEvents = StoreEvents & WindowEvents & ShellEvents;

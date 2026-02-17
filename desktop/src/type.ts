@@ -660,11 +660,11 @@ export type resizeShell = (
   pid: number,
   col: number,
   row: number,
-) => Promise<boolean>;
+) => void;
 /**
  * Run custom logic when a shell outputs stuff to it's stdout
  */
-export type shellChangeCallback = (chunk: string) => void;
+export type shellChangeCallback = (pid:number, chunk: string) => void;
 /**
  * Listen to changes for a specific shell and get it's output stream
  */

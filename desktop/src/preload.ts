@@ -13,6 +13,7 @@ import type {
   pathApi,
   ripgrepApi,
   shellApi,
+  shellChangeCallback,
   storeApi,
   storeChangeCallback,
 } from "./type.js";
@@ -194,25 +195,25 @@ const pathApi: pathApi = {
 };
 
 const shellApi: shellApi = {
-  create: (...args) => ipcRenderer.invoke("shell:create", ...args),
-  kill: (...args) => ipcRenderer.invoke("shell:kill", ...args),
-  resize: (...args) => ipcRenderer.invoke("shell:resize", ...args),
-  write: (...args) => {
-    ipcRenderer.send("shell:write", ...args);
-  },
+  create: (...args) => typedIpcRender.invoke("shell:create", ...args),
+  kill: (...args) => typedIpcRender.invoke("shell:kill", ...args),
+  resize: (...args) => typedIpcRender.send("shell:resize", ...args),
+  write: (...args) => typedIpcRender.send("shell:write", ...args),
   onChange: (pid, callback) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param  {number} id
-     * @param {string} chunk
-     */
-    const listener = (_: any, id: any, chunk: any) => {
-      if (pid == id) callback(chunk);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      shellChangeCallback
+    > = (_, id, chunk) => {
+      if (pid == id) {
+        callback(id, chunk);
+      }
     };
 
-    ipcRenderer.on(`shell:change`, listener);
+    typedIpcRender.on(`shell:change`, listener);
 
-    return () => ipcRenderer.removeListener("shell:change", listener);
+    return () => {
+      typedIpcRender.removeListener("shell:change", listener);
+    };
   },
 
   onExit: (pid, callback) => {
