@@ -10,14 +10,22 @@ import type {
   gitApi,
   ILanguageServerClient,
   IpcRendererEventCallback,
+  onShellExitCallback,
   pathApi,
   ripgrepApi,
   shellApi,
+  shellChangeCallback,
   storeApi,
   storeChangeCallback,
 } from "./type.js";
 
-const { contextBridge, ipcRenderer } = require("electron");
+import { contextBridge, ipcRenderer } from "electron";
+import type { TypedIpcRenderer } from "./typed-ipc.js";
+
+/**
+ * Fully typed version of ipc render
+ */
+const typedIpcRender = ipcRenderer as TypedIpcRenderer;
 
 /**
  * This script is attached to the UI source code window object on load.
@@ -26,7 +34,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 const commandServer: commandServer = {
   onOpenFile: (callback) => {
-    let l = async (_: any, req: any) => {
+    const l = async (_: any, req: any) => {
       await callback(req);
     };
 
@@ -52,7 +60,7 @@ const lspClient: ILanguageServerClient = {
      * @param {*} _
      * @param {*} object
      */
-    let l = (_: any, object: any) => {
+    const l = (_: any, object: any) => {
       callback(object);
     };
 
@@ -68,7 +76,7 @@ const lspClient: ILanguageServerClient = {
      * @param {*} _
      * @param {*} data
      */
-    let l = (_: any, data: any) => {
+    const l = (_: any, data: any) => {
       callback(data);
     };
 
@@ -84,7 +92,7 @@ const lspClient: ILanguageServerClient = {
      * @param {*} _
      * @param {*} data
      */
-    let l = (_: any, data: any) => {
+    const l = (_: any, data: any) => {
       callback(data);
     };
 
@@ -129,11 +137,12 @@ const ripgrepApi: ripgrepApi = {
 };
 
 const chromeWindowApi: chromeWindowApi = {
-  isMaximized: (...args) => ipcRenderer.invoke("window:ismaximized", ...args),
-  minimize: (...args) => ipcRenderer.send("window:minimize", ...args),
-  maximize: (...args) => ipcRenderer.send("window:maximize", ...args),
-  close: (...args) => ipcRenderer.send("window:close", ...args),
-  restore: (...args) => ipcRenderer.send("window:restore", ...args),
+  isMaximized: (...args) =>
+    typedIpcRender.invoke("window:is:maximized", ...args),
+  minimize: (...args) => typedIpcRender.send("window:minimize", ...args),
+  maximize: (...args) => typedIpcRender.send("window:maximize", ...args),
+  close: (...args) => typedIpcRender.send("window:close", ...args),
+  restore: (...args) => typedIpcRender.send("window:restore", ...args),
 };
 
 const fsApi: fsApi = {
@@ -157,7 +166,7 @@ const fsApi: fsApi = {
      * @param {string} changedPath - The dir changed
      * @param {import("fs/promises").FileChangeInfo<string>} event
      */
-    let listener = (_: any, changedPath: any, event: any) => {
+    const listener = (_: any, changedPath: any, event: any) => {
       if (path === changedPath) {
         callback(event);
       }
@@ -187,39 +196,42 @@ const pathApi: pathApi = {
 };
 
 const shellApi: shellApi = {
-  create: (...args) => ipcRenderer.invoke("shell:create", ...args),
-  kill: (...args) => ipcRenderer.invoke("shell:kill", ...args),
-  resize: (...args) => ipcRenderer.invoke("shell:resize", ...args),
-  write: (...args) => {
-    ipcRenderer.send("shell:write", ...args);
-  },
+  create: (...args) => typedIpcRender.invoke("shell:create", ...args),
+  kill: (...args) => typedIpcRender.invoke("shell:kill", ...args),
+  resize: (...args) => typedIpcRender.send("shell:resize", ...args),
+  write: (...args) => typedIpcRender.send("shell:write", ...args),
   onChange: (pid, callback) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param  {number} id
-     * @param {string} chunk
-     */
-    let listener = (_: any, id: any, chunk: any) => {
-      if (pid == id) callback(chunk);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      shellChangeCallback
+    > = (_, id, chunk) => {
+      if (pid == id) {
+        callback(id, chunk);
+      }
     };
 
-    ipcRenderer.on(`shell:change`, listener);
+    typedIpcRender.on(`shell:change`, listener);
 
-    return () => ipcRenderer.removeListener("shell:change", listener);
+    return () => {
+      typedIpcRender.removeListener("shell:change", listener);
+    };
   },
 
   onExit: (pid, callback) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param  {number} id
-     */
-    let listener = (_: any, id: any) => {
-      if (pid === id) callback();
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      onShellExitCallback
+    > = (_, id) => {
+      if (pid === id) {
+        callback(id);
+      }
     };
 
-    ipcRenderer.on("shell:exit", listener);
+    typedIpcRender.on("shell:exit", listener);
 
-    return () => ipcRenderer.removeListener("shell:exit", listener);
+    return () => {
+      typedIpcRender.removeListener("shell:exit", listener);
+    };
   },
 };
 
@@ -239,27 +251,26 @@ const clipboardApi: clipboardApi = {
 };
 
 const storeApi: storeApi = {
-  set: (...args) => ipcRenderer.invoke("store:set", ...args),
+  set: (...args) => typedIpcRender.invoke("store:set", ...args),
   onChange: (key, callback) => {
-    /**
-     * @type {import("./type.js").CombinedCallback<import("./type.js").IpcRendererEventCallback, import("./type.js").storeChangeCallback>}
-     */
-    let list: CombinedCallback<
+    const listener: CombinedCallback<
       IpcRendererEventCallback,
       storeChangeCallback
-    > = (_, newContent) => {
-      callback(newContent);
+    > = (_, changedKey, newContent) => {
+      if (changedKey === key) {
+        callback(changedKey, newContent);
+      }
     };
 
-    ipcRenderer.on(`store:key:${key}:changed`, list);
+    typedIpcRender.on(`store:changed`, listener);
 
     return () => {
-      ipcRenderer.removeListener(`store:key:${key}:changed`, list);
+      typedIpcRender.removeListener("store:changed", listener);
     };
   },
-  clean: (...args) => ipcRenderer.invoke("store:clean", ...args),
-  get: (...args) => ipcRenderer.invoke("store:get", ...args),
-  remove: (...args) => ipcRenderer.invoke("store:remove", ...args),
+  clean: (...args) => typedIpcRender.invoke("store:clean", ...args),
+  get: (...args) => typedIpcRender.invoke("store:get", ...args),
+  remove: (...args) => typedIpcRender.invoke("store:remove", ...args),
 };
 
 const api: ElectronApi = {

@@ -19,7 +19,7 @@ import type {
   IpcMainInvokeEventCallback,
 } from "../type.js";
 
-var languageServerManager = new LanguageServerManager();
+const languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer("go"));
 languageServerManager.Register("python", new PythonLanguageServer("python"));
 languageServerManager.Register(
@@ -31,11 +31,13 @@ languageServerManager.Register(
  * Helper to stop and clean up all language servers
  */
 export const stopAllLanguageServers = async () => {
-  let lsps = languageServerManager.GetAll();
+  const lsps = languageServerManager.GetAll();
 
   for (const lsp of lsps) {
-    let result = await lsp.StopAll();
-    logger.info(result);
+    const result = await lsp.StopAll();
+    result.forEach(x  => {
+      logger.info(x.workSpaceFolder, x.result)
+    })
   }
 };
 
@@ -46,7 +48,7 @@ const startImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientStart
 > = (_, wsf, langId) => {
-  let lsp = languageServerManager.Get(langId);
+  const lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.warn(`No language server registered for language: ${langId}`);
     return Promise.resolve(true);
@@ -62,7 +64,7 @@ const stopLspImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientStop
 > = (_, wsf, langId) => {
-  let lsp = languageServerManager.Get(langId);
+  const lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.warn(`No language server language: ${langId}`);
     return Promise.resolve(true);
@@ -78,7 +80,7 @@ const docChangedImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidChangeTextDocument
 > = (_, workSpaceFolder, languageId, filePath, version, changes) => {
-  let lsp = languageServerManager.Get(languageId);
+  const lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
     return;
@@ -94,7 +96,7 @@ const openDocImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidOpenTextDocument
 > = (_, workSpaceFolder, languageId, filePath, version, documentText) => {
-  let lsp = languageServerManager.Get(languageId);
+  const lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
     return;
@@ -116,7 +118,7 @@ const isRunningImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientIsRunning
 > = (_, workSpaceFolder, languageId) => {
-  let lsp = languageServerManager.Get(languageId);
+  const lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
     return Promise.resolve(true);
@@ -132,7 +134,7 @@ const closeDocImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidCloseTextDocument
 > = (_, workSpaceFolder, languageId, filePath) => {
-  let lsp = languageServerManager.Get(languageId);
+  const lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.warn(`No language server language: ${languageId}`);
     return;
@@ -148,7 +150,7 @@ const hoverDocImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientHover
 > = (_, workSpaceFolder, languageId, filePath, position) => {
-  let lsp = languageServerManager.Get(languageId);
+  const lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.error(`No language server language: ${languageId}`);
     return Promise.reject(
@@ -168,7 +170,7 @@ const completionImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientCompletion
 > = (_, workSpaceFolder, languageId, filePath, position) => {
-  let lsp = languageServerManager.Get(languageId);
+  const lsp = languageServerManager.Get(languageId);
   if (!lsp) {
     logger.error(
       `No language server language: ${languageId} cannot offer completions`,
@@ -190,7 +192,7 @@ const definitionImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientDefinition
 > = (_, wsf, langId, fp, pos) => {
-  let lsp = languageServerManager.Get(langId);
+  const lsp = languageServerManager.Get(langId);
   if (!lsp) {
     logger.error(
       `No language server language: ${langId} cannot offer definitions`,

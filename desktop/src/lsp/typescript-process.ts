@@ -268,7 +268,7 @@ export class TypeScriptProcess {
        * this is done as we receive a list of changes from lsp protocol but typescript expects a different format
        * @type {import("typescript").server.protocol.ChangeRequestArgs[]}
        */
-      let typescriptChanges: import("typescript").server.protocol.ChangeRequestArgs[] =
+      const typescriptChanges: import("typescript").server.protocol.ChangeRequestArgs[] =
         [];
 
       changes.forEach((change) => {
@@ -327,7 +327,7 @@ export class TypeScriptProcess {
        * Close request uses the FileRequestArgs type
        * @type {import("typescript").server.protocol.FileRequestArgs}
        */
-      let params = {
+      const params = {
         file: path.normalize(path.resolve(filePath)),
       };
 
@@ -363,7 +363,7 @@ export class TypeScriptProcess {
       /**
        * @type {import("typescript").server.protocol.OpenRequestArgs}
        */
-      let params = {
+      const params = {
         file: path.normalize(path.resolve(filePath)),
         fileContent: content,
       };
@@ -579,13 +579,13 @@ export class TypeScriptProcess {
       // We convert it to LSP textDocument/publishDiagnostics
       if (notification.event === "semanticDiag") {
         /** @type {import("typescript").server.protocol.DiagnosticEventBody} */
-        let body = notification.body;
+        const body = notification.body;
 
         /**
          * This the type UI expects with common JSON rpc publish diag
          * @type {import("vscode-languageserver-protocol").PublishDiagnosticsParams}
          */
-        let lspResponse: import("vscode-languageserver-protocol").PublishDiagnosticsParams =
+        const lspResponse: import("vscode-languageserver-protocol").PublishDiagnosticsParams =
           {
             uri: createUri(body.file),
             diagnostics: body.diagnostics.map((diag: any) => {
@@ -609,7 +609,7 @@ export class TypeScriptProcess {
           };
 
         /** @type {import("../type").LanguageServerNotificationResponse} */
-        let notificationData: LanguageServerNotificationResponse = {
+        const notificationData: LanguageServerNotificationResponse = {
           languageId: this.#languageId,
           workSpaceFolder: this.#workSpaceFolder,
           params: lspResponse,

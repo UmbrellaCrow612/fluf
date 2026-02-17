@@ -1,10 +1,9 @@
 /**
  * Used as a way of sotring generic JSON objects in keys and also modifying them, this is used for stoaring things between browser windows.
  */
-
-import path from "path";
-import fs from "fs/promises";
-import { app, type IpcMain } from "electron";
+import * as path from "node:path";
+import * as fs from "node:fs";
+import { app } from "electron";
 import type {
   CombinedCallback,
   IpcMainInvokeEventCallback,
@@ -15,6 +14,7 @@ import type {
 } from "./type.js";
 import { logger } from "./logger.js";
 import { broadcastToAll } from "./broadcast.js";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
  * Represents the base directory we save store files to
@@ -34,11 +34,11 @@ const setStoreItemImpl: CombinedCallback<
   }
 
   try {
-    await fs.mkdir(storeBaseDirectory, { recursive: true });
+    await fs.promises.mkdir(storeBaseDirectory, { recursive: true });
 
-    let filePath = path.join(storeBaseDirectory, key);
+    const filePath = path.join(storeBaseDirectory, key);
 
-    await fs.writeFile(filePath, content, "utf8");
+    await fs.promises.writeFile(filePath, content, "utf8");
 
     logger.info("Set store item at path: ", filePath);
 
@@ -53,10 +53,13 @@ const setStoreItemImpl: CombinedCallback<
 /**
  * @type {CombinedCallback<IpcMainInvokeEventCallback, storeClean>}
  */
-const cleanStoreImpl: CombinedCallback<IpcMainInvokeEventCallback, storeClean> = async () => {
+const cleanStoreImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  storeClean
+> = async () => {
   try {
-    await fs.rm(storeBaseDirectory, { recursive: true, force: true });
-    await fs.mkdir(storeBaseDirectory, { recursive: true });
+    await fs.promises.rm(storeBaseDirectory, { recursive: true, force: true });
+    await fs.promises.mkdir(storeBaseDirectory, { recursive: true });
   } catch (error) {
     logger.error("Failed to clean store", error);
     throw error;
@@ -76,7 +79,7 @@ const getStoreItemImpl: CombinedCallback<
 
   try {
     const filePath = path.join(storeBaseDirectory, key);
-    return await fs.readFile(filePath, "utf8");
+    return await fs.promises.readFile(filePath, "utf8");
   } catch (/** @type {any}*/ error: any) {
     if (error.code === "ENOENT") {
       return undefined;
@@ -98,8 +101,8 @@ const removeItemByKeyImpl: CombinedCallback<
     throw new TypeError("key must be a non empty string");
 
   try {
-    let filePath = path.join(storeBaseDirectory, key);
-    await fs.unlink(filePath);
+    const filePath = path.join(storeBaseDirectory, key);
+    await fs.promises.unlink(filePath);
   } catch (error) {
     logger.error("Failed to remove key: ", key, error);
 
@@ -108,12 +111,37 @@ const removeItemByKeyImpl: CombinedCallback<
 };
 
 /**
- * Register all store listeners
- * @param {import("electron").IpcMain} ipcMain
+ * Event map for store operations
  */
-export const registerStoreListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("store:set", setStoreItemImpl);
-  ipcMain.handle("store:get", getStoreItemImpl);
-  ipcMain.handle("store:clean", cleanStoreImpl);
-  ipcMain.handle("store:remove", removeItemByKeyImpl);
+export interface StoreEvents {
+  "store:set": {
+    args: [key: string, content: string];
+    return: Promise<void>;
+  };
+  "store:get": {
+    args: [key: string];
+    return: string | undefined;
+  };
+  "store:clean": {
+    args: [];
+    return: void;
+  };
+  "store:remove": {
+    args: [key: string];
+    return: void;
+  };
+  "store:changed": {
+    args: [changedKey: string, newContent: string];
+    return: void;
+  };
+}
+
+/**
+ * Register all store listeners
+ */
+export const registerStoreListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("store:set", setStoreItemImpl);
+  typedIpcMain.handle("store:get", getStoreItemImpl);
+  typedIpcMain.handle("store:clean", cleanStoreImpl);
+  typedIpcMain.handle("store:remove", removeItemByKeyImpl);
 };

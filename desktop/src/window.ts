@@ -2,44 +2,90 @@
  * Contains all code related to the chrome window itself not the js window object
  */
 
-import { BrowserWindow, type IpcMain } from "electron";
+import { BrowserWindow } from "electron";
+import type { TypedIpcMain } from "./typed-ipc.js";
+
+/**
+ * Event map for window operations
+ */
+export interface WindowEvents {
+  "window:is:maximized": {
+    args: [];
+    return: boolean;
+  };
+
+  "window:minimize": {
+    args: [];
+    return: void;
+  };
+
+  "window:maximize": {
+    args: [];
+    return: void;
+  };
+
+  "window:close": {
+    args: [];
+    return: void;
+  };
+
+  "window:restore": {
+    args: [];
+    return: void;
+  };
+}
 
 /**
  * Register custom listener for chrome window itself
- * @param {IpcMain} ipcMain
  */
-export const registerWindowListener = (ipcMain: IpcMain) => {
-  ipcMain.handle("window:ismaximized", (event) => {
+export const registerWindowListener = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("window:is:maximized", (event) => {
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
-    return win?.isMaximized();
+    if (!win || win.isDestroyed()) {
+      return false;
+    }
+
+    return win.isMaximized();
   });
 
-  ipcMain.on("window:minimize", (event) => {
+  typedIpcMain.on("window:minimize", (event) => {
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
+    if (!win || win.isDestroyed()) {
+      return;
+    }
 
-    win?.minimize();
+    win.minimize();
   });
 
-  ipcMain.on("window:maximize", (event) => {
+  typedIpcMain.on("window:maximize", (event) => {
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
+    if (!win || win.isDestroyed()) {
+      return;
+    }
 
-    win?.maximize();
+    win.maximize();
   });
 
-  ipcMain.on("window:close", (event) => {
+  typedIpcMain.on("window:close", (event) => {
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
+    if (!win || win.isDestroyed()) {
+      return;
+    }
 
-    win?.close();
+    win.close();
   });
 
-  ipcMain.on("window:restore", (event) => {
+  typedIpcMain.on("window:restore", (event) => {
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
+    if (!win || win.isDestroyed()) {
+      return;
+    }
 
-    win?.restore();
+    win.restore();
   });
 };

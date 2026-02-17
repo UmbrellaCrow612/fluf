@@ -1,9 +1,11 @@
+import type { ILanguageServer } from "./../type.js";
 import path from "path";
 import type { ILanguageServerStopAllResult, languageId } from "../type.js";
 import { JsonRpcProcess } from "./json-rpc-process.js";
 import { logger } from "../logger.js";
 import { createUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
+import type { InitializeParams } from "vscode-languageserver-protocol";
 
 /**
  * Base class that implements common JSON-RPC LSP functionality.
@@ -12,35 +14,32 @@ import { broadcastToAll } from "../broadcast.js";
  *
  * - Methods that implement {@link ILanguageServer} interface should be defined in subclasses
  * - Methods should start with `_` indicating it is a shared for all lsp impl can use
- * - Use Template strings
- * - Validate params types and values if they do not match throw typeErrors
- * - Re throw any errors after logging them
  *
  * @see {ILanguageServer} for the interface this class is designed to support
  */
 export class JsonRpcLanguageServer {
   /**
    * Required for LSP to work
-   * @param {import("../type").languageId} languageId - The specific language this is for
+   * @param {languageId} languageId - The specific language this is for
    */
   constructor(languageId: languageId) {
     if (typeof languageId !== "string")
       throw new TypeError("languageId must be a non empty string");
 
-    this.#languageId = languageId;
+    this._languageId = languageId;
   }
 
   /**
    * Holds a map of specific workspace folders normalized and abs and there rpc
    * @type {Map<string, JsonRpcProcess>}
    */
-  #workSpaceRpcMap: Map<string, JsonRpcProcess> = new Map();
+  private _workSpaceRpcMap: Map<string, JsonRpcProcess> = new Map();
 
   /**
    * Holds the language this LSP is for exmaple `go` or `js` etc
-   * @type {import("../type").languageId | null}
+   * @type {languageId | null}
    */
-  #languageId: languageId | null = null;
+  private _languageId: languageId | null = null;
 
   /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
@@ -59,26 +58,30 @@ export class JsonRpcLanguageServer {
     if (!wsf || typeof wsf !== "string")
       throw new TypeError("workSpaceFolder must be a non-empty string");
 
-    if (!this.#languageId) throw new Error("languageId is null");
+    if (!this._languageId) throw new Error("languageId is null");
 
-    let rc = new JsonRpcProcess(command, args, wsf, this.#languageId);
     const _workSpaceFolder = path.normalize(path.resolve(wsf));
+    const jsonRpcProcess = new JsonRpcProcess(
+      command,
+      args,
+      wsf,
+      this._languageId,
+    );
 
     try {
-      if (this.#workSpaceRpcMap.has(_workSpaceFolder)) {
+      if (this._workSpaceRpcMap.has(_workSpaceFolder)) {
         logger.warn(
           `Language server already started for command: ${command} at workspace folder: ${_workSpaceFolder}`,
         );
         return true;
       }
-      this.#workSpaceRpcMap.set(_workSpaceFolder, rc);
+      this._workSpaceRpcMap.set(_workSpaceFolder, jsonRpcProcess);
 
-      await rc.Start();
+      await jsonRpcProcess.Start();
 
-      /** @type {import("vscode-languageserver-protocol").InitializeParams} */
-      let params: import("vscode-languageserver-protocol").InitializeParams = {
+      const params: InitializeParams = {
         capabilities: {},
-        processId: rc.GetPid() ?? null,
+        processId: jsonRpcProcess.GetPid() ?? null,
         clientInfo: {
           name: path.basename(_workSpaceFolder),
           version: "1",
@@ -92,11 +95,11 @@ export class JsonRpcLanguageServer {
         rootUri: createUri(_workSpaceFolder),
       };
 
-      await rc.SendRequest("initialize", params);
-      rc.Initialized();
+      await jsonRpcProcess.SendRequest("initialize", params);
+      jsonRpcProcess.Initialized();
 
       // notify ui lsp ready for given lang and workspace
-      broadcastToAll("lsp:on:ready", this.#languageId, wsf);
+      broadcastToAll("lsp:on:ready", this._languageId, wsf);
 
       logger.info(
         `Language server started for command: ${command} at workspace folder: ${wsf}`,
@@ -108,8 +111,8 @@ export class JsonRpcLanguageServer {
         `Failed to start language server. command: ${command} workspace folder ${wsf}`,
       );
 
-      rc.Shutdown();
-      this.#workSpaceRpcMap.delete(_workSpaceFolder);
+      jsonRpcProcess.Shutdown();
+      this._workSpaceRpcMap.delete(_workSpaceFolder);
 
       throw error;
     }
@@ -126,7 +129,7 @@ export class JsonRpcLanguageServer {
 
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
 
       if (!rc) {
         return true;
@@ -141,7 +144,7 @@ export class JsonRpcLanguageServer {
       rc.Exit();
       rc.Shutdown();
 
-      this.#workSpaceRpcMap.delete(_workSpaceFolder);
+      this._workSpaceRpcMap.delete(_workSpaceFolder);
 
       logger.info(
         `Language server stopped for command: ${rc.GetCommand()} at workspace folder: ${workSpaceFolder}`,
@@ -159,12 +162,12 @@ export class JsonRpcLanguageServer {
 
   /**
    * Stop all language servers active for all workspaces
-   * @returns {Promise<import("../type").ILanguageServerStopAllResult[]>} All stop values for all workspaces
+   * @returns {Promise<ILanguageServerStopAllResult[]>} All stop values for all workspaces
    */
   async _stopAll(): Promise<ILanguageServerStopAllResult[]> {
-    let wsfs = Array.from(this.#workSpaceRpcMap.keys());
-    /** @type {import("../type").ILanguageServerStopAllResult[]} */
-    let result: ILanguageServerStopAllResult[] = [];
+    const wsfs = Array.from(this._workSpaceRpcMap.keys());
+    /** @type {ILanguageServerStopAllResult[]} */
+    const result: ILanguageServerStopAllResult[] = [];
 
     for (const wsf of wsfs) {
       result.push({
@@ -182,7 +185,7 @@ export class JsonRpcLanguageServer {
    * @returns {boolean} If it is or is not
    */
   _isRunning(workSpaceFolder: string): boolean {
-    return this.#workSpaceRpcMap.has(
+    return this._workSpaceRpcMap.has(
       path.normalize(path.resolve(workSpaceFolder)),
     );
   }
@@ -192,7 +195,7 @@ export class JsonRpcLanguageServer {
    * @returns {string[]} List of workspace folder paths
    */
   _getWorkSpaceFolders(): string[] {
-    return Array.from(this.#workSpaceRpcMap.keys());
+    return Array.from(this._workSpaceRpcMap.keys());
   }
 
   /**
@@ -228,7 +231,7 @@ export class JsonRpcLanguageServer {
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return;
@@ -281,7 +284,7 @@ export class JsonRpcLanguageServer {
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return;
@@ -319,7 +322,7 @@ export class JsonRpcLanguageServer {
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return;
@@ -364,7 +367,7 @@ export class JsonRpcLanguageServer {
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return Promise.reject(
@@ -384,7 +387,7 @@ export class JsonRpcLanguageServer {
       }
 
       /** @type {import("vscode-languageserver-protocol").HoverParams} */
-      let params: import("vscode-languageserver-protocol").HoverParams = {
+      const params: import("vscode-languageserver-protocol").HoverParams = {
         position,
         textDocument: {
           uri: createUri(filePath),
@@ -424,7 +427,7 @@ export class JsonRpcLanguageServer {
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return Promise.reject(
@@ -444,7 +447,7 @@ export class JsonRpcLanguageServer {
       }
 
       /** @type {import("vscode-languageserver-protocol").CompletionParams} */
-      let params: import("vscode-languageserver-protocol").CompletionParams = {
+      const params: import("vscode-languageserver-protocol").CompletionParams = {
         position,
         textDocument: {
           uri: createUri(filePath),
@@ -489,7 +492,7 @@ export class JsonRpcLanguageServer {
     try {
       const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
 
-      const rc = this.#workSpaceRpcMap.get(_workSpaceFolder);
+      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
       if (!rc) {
         logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
         return Promise.reject(
@@ -511,7 +514,7 @@ export class JsonRpcLanguageServer {
       /**
        * @type {import("vscode-languageserver-protocol").DefinitionParams}
        */
-      let params: import("vscode-languageserver-protocol").DefinitionParams = {
+      const params: import("vscode-languageserver-protocol").DefinitionParams = {
         position: position,
         textDocument: {
           uri: createUri(filePath),

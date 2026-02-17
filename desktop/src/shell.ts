@@ -19,35 +19,32 @@ import type {
 } from "./type.js";
 import { logger } from "./logger.js";
 import { broadcastToAll } from "./broadcast.js";
-import type { IpcMain } from "electron";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
  * Contains a map of shell PID and then the proccess
- * @type {Map<number, import("@homebridge/node-pty-prebuilt-multiarch").IPty>}
  */
 const shells: Map<number, IPty> = new Map<number, IPty>();
 
 /**
  * Contains a list of specific shell PID's and there dipose methods
- * @type {Map<number, import("@homebridge/node-pty-prebuilt-multiarch").IDisposable[]>}
  */
 const shellDisposes: Map<number, IDisposable[]> = new Map<
   number,
   IDisposable[]
 >();
 
-/** Spawn specific shell based on platform  */
+/**
+ * Spawn specific shell based on platform
+ * */
 const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createShell>}
- */
 const createImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   createShell
 > = async (_, directory) => {
   /** Return -1 for error's */
-  let err = -1;
+  const err = -1;
 
   try {
     if (!directory) {
@@ -57,7 +54,7 @@ const createImpl: CombinedCallback<
 
     await fs.access(path.normalize(directory));
 
-    let pty = spawn(shell, [], {
+    const pty = spawn(shell, [], {
       name: "xterm-color",
       cols: 80,
       rows: 30,
@@ -71,7 +68,7 @@ const createImpl: CombinedCallback<
      * Contains all disposes for this pty
      * @type {import("@homebridge/node-pty-prebuilt-multiarch").IDisposable[]}
      */
-    let disposes: IDisposable[] = [];
+    const disposes: IDisposable[] = [];
 
     disposes.push(
       pty.onData((chunk) => {
@@ -83,7 +80,7 @@ const createImpl: CombinedCallback<
       pty.onExit((exit) => {
         broadcastToAll("shell:exit", pty.pid, exit);
 
-        let shell = shells.get(pty.pid);
+        const shell = shells.get(pty.pid);
         shellDisposes.get(pty.pid)?.forEach((x) => x.dispose());
         shellDisposes.delete(pty.pid);
 
@@ -106,15 +103,15 @@ const createImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").killShell>}
- */
-const killImpl: CombinedCallback<IpcMainInvokeEventCallback, killShell> = (_, pid) => {
+const killImpl: CombinedCallback<IpcMainInvokeEventCallback, killShell> = (
+  _,
+  pid,
+) => {
   try {
-    let shell = shells.get(pid);
+    const shell = shells.get(pid);
     if (!shell) return Promise.resolve(false);
 
-    let disposes = shellDisposes.get(pid);
+    const disposes = shellDisposes.get(pid);
     if (!disposes) return Promise.resolve(false);
 
     shell.write("exit" + "\n");
@@ -132,50 +129,41 @@ const killImpl: CombinedCallback<IpcMainInvokeEventCallback, killShell> = (_, pi
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").resizeShell>}
- */
-const resizeImpl: CombinedCallback<IpcMainInvokeEventCallback, resizeShell> = (_, pid, col, row) => {
+const resizeImpl: CombinedCallback<IpcMainInvokeEventCallback, resizeShell> = (
+  _,
+  pid,
+  col,
+  row,
+) => {
   try {
-    let shell = shells.get(pid);
-    if (!shell) return Promise.resolve(false);
+    const shell = shells.get(pid);
+    if (!shell) return;
 
     shell.resize(col, row);
-
-    return Promise.resolve(true);
   } catch (error) {
-    logger.error("Failed to resize shell " + JSON.stringify(error));
-    return Promise.resolve(false);
+    logger.error("Failed to resize shell ", error);
+
+    throw error;
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").writeToShell>}
- */
-const writeImpl: CombinedCallback<IpcMainInvokeEventCallback, writeToShell> = (_, pid, content) => {
-  let shell = shells.get(pid);
+const writeImpl: CombinedCallback<IpcMainInvokeEventCallback, writeToShell> = (
+  _,
+  pid,
+  content,
+) => {
+  const shell = shells.get(pid);
   if (!shell) return;
 
   shell.write(content);
 };
 
 /**
- * Add all event listener
- * @param {import("electron").IpcMain} ipcMain
- */
-export const registerShellListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("shell:create", createImpl);
-  ipcMain.handle("shell:kill", killImpl);
-  ipcMain.handle("shell:resize", resizeImpl);
-  ipcMain.on("shell:write", writeImpl);
-};
-
-/**
  * Kills shells
  */
 export const cleanUpShells = () => {
-  let a = Array.from(shells.values());
-  let b = Array.from(shellDisposes.values());
+  const a = Array.from(shells.values());
+  const b = Array.from(shellDisposes.values());
 
   b.forEach((x) => {
     x.forEach((y) => {
@@ -191,4 +179,49 @@ export const cleanUpShells = () => {
     logger.info("Killed shell " + x.pid);
     x.kill();
   });
+};
+
+/**
+ * All events for shell operations
+ */
+export interface ShellEvents {
+  "shell:create": {
+    args: [directory: string];
+    return: number;
+  };
+
+  "shell:kill": {
+    args: [pid: number];
+    return: Promise<boolean>;
+  };
+
+  "shell:resize": {
+    args: [pid: number, col: number, row: number];
+    return: void;
+  };
+
+  "shell:write": {
+    args: [pid: number, content: string];
+    return: Promise<boolean>;
+  };
+
+  "shell:change": {
+    args: [pid: number, chunk: string];
+    return: void;
+  };
+
+  "shell:exit": {
+    args: [pid: number, exit: { exitCode: number; signal?: number }];
+    return: void;
+  };
+}
+
+/**
+ * Add all event listener
+ */
+export const registerShellListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("shell:create", createImpl);
+  typedIpcMain.handle("shell:kill", killImpl);
+  typedIpcMain.on("shell:resize", resizeImpl);
+  typedIpcMain.on("shell:write", writeImpl);
 };

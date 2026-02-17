@@ -21,12 +21,14 @@ npm run start
 as the other files adds `export {}` at the end breaking it in the browser. Hence we use the default ts config for backend code and the preload specific ts config for the browser code 
 of `preload.ts`
 - Instead of coping over the node_modules specific packages just copy all the source code with the node_module naming like how vscode does it so
+- Migrated from jsdoc to ts
+- Use typed icp main and ipc render pattern now we get full type saftey for channels and what args they recieve / get, each module exports it's events / channels and args
 
 # Building
 
 Steps we need todo 
 
-- Build the ts code 
+- Build the ts code using module config for other code and then common js for preload
 - Copy over `.env`, `node_modules` deps, `package.json` and binary's `bin/**`
 
 ```bash

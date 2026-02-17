@@ -1,7 +1,12 @@
 import { loadEnvFile } from "node:process";
 import { registerProtocols } from "./protocol.js";
 import path from "node:path";
-import { app, BrowserWindow, ipcMain, protocol } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  protocol,
+} from "electron";
 import { logger } from "./logger.js";
 import {
   startCommandServer,
@@ -47,13 +52,13 @@ const createWindow = () => {
     },
   });
 
-  let mode = process.env["MODE"];
+  const mode = process.env["MODE"];
   if (!mode) {
     logger.error(".env does not contain .env value MODE");
     throw new Error(".env");
   }
 
-  let devUIPort = process.env["DEV_UI_PORT"];
+  const devUIPort = process.env["DEV_UI_PORT"];
   if (!devUIPort) {
     logger.error(".env does not contain .env value DEV_UI_PORT");
     throw new Error(".env");

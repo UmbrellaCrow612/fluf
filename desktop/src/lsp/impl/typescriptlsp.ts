@@ -2,7 +2,11 @@ import type {
   Position,
   TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
-import type { ILanguageServerStopAllResult, languageId } from "../../type.js";
+import type {
+  ILanguageServer,
+  ILanguageServerStopAllResult,
+  languageId,
+} from "../../type.js";
 import { TypeScriptProcess } from "../typescript-process.js";
 import { getTypescriptServerPath } from "../../packing.js";
 import path from "node:path";
@@ -18,7 +22,7 @@ const { protocol } = server;
  * @implements {ILanguageServer}
  *
  */
-export class TypeScriptLanguageServer {
+export class TypeScriptLanguageServer implements ILanguageServer {
   /**
    * The specific language id for exmaple `typescript`
    * @type {import("../../type").languageId | null}
@@ -42,9 +46,6 @@ export class TypeScriptLanguageServer {
     this.#languageId = languageId;
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerStart}
-   */
   async Start(workSpaceFolder: string) {
     if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
       throw new Error("workSpaceFolder must be a non-empty string");
@@ -53,7 +54,7 @@ export class TypeScriptLanguageServer {
       throw new Error("languageId must be a non-empty string");
 
     try {
-      let exePath = getTypescriptServerPath();
+      const exePath = getTypescriptServerPath();
       if (!exePath) {
         throw new Error("No typescript exe path");
       }
@@ -98,9 +99,6 @@ export class TypeScriptLanguageServer {
     }
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerStop}
-   */
   async Stop(workSpaceFolder: string) {
     if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
       throw new Error("workSpaceFolder must be a non-empty string");
@@ -145,9 +143,6 @@ export class TypeScriptLanguageServer {
     }
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerCompletion}
-   */
   async Completion(
     workSpaceFolder: string,
     filePath: string,
@@ -194,7 +189,7 @@ export class TypeScriptLanguageServer {
       /**
        * @type {import("typescript").server.protocol.CompletionsRequestArgs}
        */
-      let params: import("typescript").server.protocol.CompletionsRequestArgs =
+      const params: import("typescript").server.protocol.CompletionsRequestArgs =
         {
           file: path.normalize(path.resolve(filePath)),
           line: position.line + 1, // typescript server uses 1-based line numbers
@@ -204,7 +199,7 @@ export class TypeScriptLanguageServer {
       /**
        * @type {import("typescript").server.protocol.CompletionInfoResponse["body"]}
        */
-      let responseBody: import("typescript").server.protocol.CompletionInfoResponse["body"] =
+      const responseBody: import("typescript").server.protocol.CompletionInfoResponse["body"] =
         await process.SendRequest(protocol.CommandTypes.CompletionInfo, params);
 
       if (!responseBody) {
@@ -214,7 +209,7 @@ export class TypeScriptLanguageServer {
       /**
        * @type {import("vscode-languageserver-types").CompletionList}
        */
-      let lspCompletionResponse: import("vscode-languageserver-types").CompletionList =
+      const lspCompletionResponse: import("vscode-languageserver-types").CompletionList =
         {
           isIncomplete: true,
           items: responseBody.entries.map((entry) => {
@@ -236,9 +231,6 @@ export class TypeScriptLanguageServer {
     }
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerDidChangeTextDocument}
-   */
   DidChangeTextDocument(
     workSpaceFolder: string,
     filePath: string,
@@ -294,9 +286,6 @@ export class TypeScriptLanguageServer {
     }
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerDidCloseTextDocument}
-   */
   DidCloseTextDocument(workSpaceFolder: string, filePath: string) {
     if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
       throw new Error("workSpaceFolder must be a non-empty string");
@@ -340,9 +329,6 @@ export class TypeScriptLanguageServer {
     }
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerDidOpenTextDocument}
-   */
   DidOpenTextDocument(
     workspaceFolder: string,
     filePath: string,
@@ -401,16 +387,10 @@ export class TypeScriptLanguageServer {
     }
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerGetWorkspaceFolders}
-   */
   GetWorkspaceFolders() {
     return Array.from(this.#workSpaceProcessMap.keys());
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerHover}
-   */
   async Hover(workSpaceFolder: string, filePath: string, position: Position) {
     if (typeof workSpaceFolder !== "string" || workSpaceFolder.trim() === "")
       throw new Error("workSpaceFolder must be a non-empty string");
@@ -453,7 +433,7 @@ export class TypeScriptLanguageServer {
       /**
        * @type {import("typescript").server.protocol.FileLocationRequestArgs}
        */
-      let params: import("typescript").server.protocol.FileLocationRequestArgs =
+      const params: import("typescript").server.protocol.FileLocationRequestArgs =
         {
           file: path.normalize(path.resolve(filePath)),
           line: position.line + 1, // typescript server uses 1-based line numbers
@@ -463,7 +443,7 @@ export class TypeScriptLanguageServer {
       /**
        * @type {import("typescript").server.protocol.QuickInfoResponse["body"]}
        */
-      let responseBody: import("typescript").server.protocol.QuickInfoResponse["body"] =
+      const responseBody: import("typescript").server.protocol.QuickInfoResponse["body"] =
         await process.SendRequest(protocol.CommandTypes.Quickinfo, params);
 
       if (!responseBody) {
@@ -473,7 +453,7 @@ export class TypeScriptLanguageServer {
       /**
        * @type {import("vscode-languageserver-types").MarkupContent}
        */
-      let content: import("vscode-languageserver-types").MarkupContent = {
+      const content: import("vscode-languageserver-types").MarkupContent = {
         kind: "markdown",
         value: `${responseBody.displayString} \n ${responseBody.documentation}`, // TODO Fix for UI rendering
       };
@@ -481,7 +461,7 @@ export class TypeScriptLanguageServer {
       /**
        * @type {import("vscode-languageserver-types").Hover}
        */
-      let hoverLspResponse: import("vscode-languageserver-types").Hover = {
+      const hoverLspResponse: import("vscode-languageserver-types").Hover = {
         contents: content,
         range: {
           start: {
@@ -511,22 +491,16 @@ export class TypeScriptLanguageServer {
     }
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerIsRunning}
-   */
   IsRunning(workSpaceFolder: string) {
     const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
     const process = this.#workSpaceProcessMap.get(_workSpaceFolder);
     return process ? process.IsRunning() : false;
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerStopAll}
-   */
   async StopAll() {
-    let wsfs = Array.from(this.#workSpaceProcessMap.keys());
+    const wsfs = Array.from(this.#workSpaceProcessMap.keys());
     /** @type {import("../../type").ILanguageServerStopAllResult[]} */
-    let result: ILanguageServerStopAllResult[] = [];
+    const result: ILanguageServerStopAllResult[] = [];
 
     for (const wsf of wsfs) {
       result.push({
@@ -538,10 +512,7 @@ export class TypeScriptLanguageServer {
     return result;
   }
 
-  /**
-   * @type {import("../../type").ILanguageServerDefinition}
-   */
-  Definition() {
-    throw new Error("Not impl");
+  async Definition() {
+    return null;
   }
 }
