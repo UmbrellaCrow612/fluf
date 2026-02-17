@@ -10,6 +10,7 @@ import type {
   gitApi,
   ILanguageServerClient,
   IpcRendererEventCallback,
+  onShellExitCallback,
   pathApi,
   ripgrepApi,
   shellApi,
@@ -217,17 +218,20 @@ const shellApi: shellApi = {
   },
 
   onExit: (pid, callback) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param  {number} id
-     */
-    const listener = (_: any, id: any) => {
-      if (pid === id) callback();
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      onShellExitCallback
+    > = (_, id) => {
+      if (pid === id) {
+        callback(id);
+      }
     };
 
-    ipcRenderer.on("shell:exit", listener);
+    typedIpcRender.on("shell:exit", listener);
 
-    return () => ipcRenderer.removeListener("shell:exit", listener);
+    return () => {
+      typedIpcRender.removeListener("shell:exit", listener);
+    };
   },
 };
 

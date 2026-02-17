@@ -209,6 +209,11 @@ export interface ShellEvents {
     args: [pid: number, chunk: string];
     return: void;
   };
+
+  "shell:exit": {
+    args: [pid: number, exit: { exitCode: number; signal?: number }];
+    return: void;
+  };
 }
 
 /**

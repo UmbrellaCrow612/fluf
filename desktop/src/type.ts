@@ -656,15 +656,11 @@ export type writeToShell = (pid: number, content: string) => void;
 /**
  * Resize a shell col and row
  */
-export type resizeShell = (
-  pid: number,
-  col: number,
-  row: number,
-) => void;
+export type resizeShell = (pid: number, col: number, row: number) => void;
 /**
  * Run custom logic when a shell outputs stuff to it's stdout
  */
-export type shellChangeCallback = (pid:number, chunk: string) => void;
+export type shellChangeCallback = (pid: number, chunk: string) => void;
 /**
  * Listen to changes for a specific shell and get it's output stream
  */
@@ -673,9 +669,16 @@ export type onShellChange = (
   callback: shellChangeCallback,
 ) => voidCallback;
 /**
+ * Callback that runs when a shell exists
+ */
+export type onShellExitCallback = (pid:number) => void;
+/**
  * Listen to when a shell exists either by user typeing exit or other reason
  */
-export type onShellExit = (pid: number, callback: voidCallback) => voidCallback;
+export type onShellExit = (
+  pid: number,
+  callback: onShellExitCallback,
+) => voidCallback;
 /**
  * Contains all the method to interact with shell's for terminals to use
  */
@@ -1128,7 +1131,7 @@ export type storeChange = (
 /**
  * The shape of the callback that runs when a specific key changes
  */
-export type storeChangeCallback = (key:string, newContent: string) => void;
+export type storeChangeCallback = (key: string, newContent: string) => void;
 /**
  * Creates a new key with content or overrides an existing one with the same key
  */

@@ -36,7 +36,7 @@ type EventMap<T> = Record<keyof T, EventDefinition>;
 /**
  * Extract just the argument tuple from an event definition
  */
-type ArgsOf<T> = T extends { args: infer A } ? A : never;
+export type ArgsOf<T> = T extends { args: infer A } ? A : never;
 
 /**
  * Extract the return type from an event definition (defaults to void)
