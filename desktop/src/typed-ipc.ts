@@ -2,7 +2,7 @@
  * Inspired by event emitter pattern from node events
  *
  * Extends the pattern of IpcMain and IpcRenderer types with full type safety.
- * 
+ *
  * NOTE: Should only expose / import types only, and not expose or use any module's, this is purley typescript code types to help's typescript complier
  */
 
@@ -19,6 +19,7 @@ import type { PathEvents } from "./path.js";
 import type { GitEvents } from "./git.js";
 import type { FSearchEvents } from "./fsearch.js";
 import type { FSEvents } from "./fs.js";
+import type { FileXEvents } from "./file-x.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -177,4 +178,5 @@ export type ApplicationEvents = StoreEvents &
   PathEvents &
   GitEvents &
   FSearchEvents &
-  FSEvents;
+  FSEvents &
+  FileXEvents;

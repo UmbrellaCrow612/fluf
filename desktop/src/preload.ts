@@ -1,6 +1,6 @@
 /**
  * Preload script that is loaded in the browser / attached to the window object to access the api's defined.
- * 
+ *
  * SHOULD NOT USE ANY OTHER TS/JS MODULE CODE OR ANY BUILT IN NODE MODULES DRECTLY HERE AS THEY WILL FAIL
  * TO LOAD IN THE BROWSER.
  */
@@ -50,7 +50,7 @@ const commandServer: commandServer = {
 };
 
 const fileXApi: fileXApi = {
-  open: (...args) => ipcRenderer.invoke("filex:open", ...args),
+  open: (...args) => typedIpcRender.invoke("filex:open", ...args),
 };
 
 const lspClient: ILanguageServerClient = {

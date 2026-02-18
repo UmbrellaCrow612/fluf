@@ -2,7 +2,7 @@
  * Contains all the code needed for file-x custom file explorer to work
  */
 
-import { BrowserWindow, type IpcMain } from "electron";
+import { BrowserWindow } from "electron";
 import path from "path";
 import { logger } from "./logger.js";
 import type {
@@ -11,13 +11,13 @@ import type {
   IpcMainInvokeEventCallback,
 } from "./type.js";
 import { fileURLToPath } from "url";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
  * Global ref to file x window used for sending events without being coupled to incoming events
- * @type {import("electron").BrowserWindow | null}
  */
 let fileXWindow: BrowserWindow | null = null;
 
@@ -66,8 +66,6 @@ const createFileXWindow = async () => {
 
 /**
  * Creates a file x window if one is not already created
- *
- * @type {import("./type").CombinedCallback<IpcMainInvokeEventCallback, fileXOpen>}
  */
 const openFileXWindowImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
@@ -84,15 +82,15 @@ const openFileXWindowImpl: CombinedCallback<
       fileXWindow.focus();
       fileXWindow.show();
 
-      return true
+      return true;
     } else {
       logger.info("Opened file x window");
       await createFileXWindow();
-      return true
+      return true;
     }
   } catch (error) {
-    logger.error("Failed to open or bring window to front: ", error)
-    return false
+    logger.error("Failed to open or bring window to front: ", error);
+    return false;
   }
 };
 
@@ -100,13 +98,15 @@ const openFileXWindowImpl: CombinedCallback<
  * Contains all file x event operations
  */
 export interface FileXEvents {
-  
+  "filex:open": {
+    args: [];
+    return: boolean;
+  };
 }
 
 /**
  * Register all file x related listeners
- * @param {import("electron").IpcMain} ipcMain
  */
-export const registerFileXListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("filex:open", openFileXWindowImpl);
+export const registerFileXListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("filex:open", openFileXWindowImpl);
 };
