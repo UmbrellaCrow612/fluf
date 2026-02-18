@@ -1,14 +1,12 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
 import path from "path";
 import fs from "fs/promises";
-import type {
-  languageId,
-  LanguageServerNotificationResponse,
-} from "../type.js";
+import type { languageId } from "../type.js";
 import { logger } from "../logger.js";
 import { broadcastToAll } from "../broadcast.js";
 import { createUri } from "./uri.js";
 import { server } from "typescript";
+import type { NotificationMessage } from "vscode-languageserver-protocol";
 const { protocol } = server;
 
 /**
@@ -569,17 +567,24 @@ export class TypeScriptProcess {
         return;
       }
 
-      broadcastToAll("lsp:notification", {
+      let rpcNotification: NotificationMessage = {
+        jsonrpc: "2.0",
         method: notification.event,
-        params: notification.body,
-        languageId: this.#languageId,
-        workSpaceFolder: this.#workSpaceFolder,
-      });
+        params: {},
+      };
+
+      broadcastToAll(
+        "lsp:notification",
+        rpcNotification,
+        this.#languageId,
+        this.#workSpaceFolder,
+      );
 
       // We convert it to LSP textDocument/publishDiagnostics
       if (notification.event === "semanticDiag") {
         /** @type {import("typescript").server.protocol.DiagnosticEventBody} */
-        const body = notification.body;
+        const body: import("typescript").server.protocol.DiagnosticEventBody =
+          notification.body;
 
         /**
          * This the type UI expects with common JSON rpc publish diag
@@ -608,16 +613,13 @@ export class TypeScriptProcess {
             }),
           };
 
-        /** @type {import("../type").LanguageServerNotificationResponse} */
-        const notificationData: LanguageServerNotificationResponse = {
-          languageId: this.#languageId,
-          workSpaceFolder: this.#workSpaceFolder,
-          params: lspResponse,
-        };
+        rpcNotification.params = lspResponse;
 
         broadcastToAll(
-          `lsp:notification:textDocument/publishDiagnostics`,
-          notificationData,
+          "lsp:notification",
+          rpcNotification,
+          this.#languageId,
+          this.#workSpaceFolder,
         );
       }
     } catch (error) {
