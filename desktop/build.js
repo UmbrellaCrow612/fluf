@@ -28,7 +28,7 @@ function runCommand([cmd, args]) {
 
 async function copyTypesFile() {
   const sourcePath = "./src/type.ts";
-  const destPath = "../ui/gen/type.ts";
+  const destPath = "../ui/src/gen/type.ts";
 
   try {
     await mkdir(dirname(destPath), { recursive: true });

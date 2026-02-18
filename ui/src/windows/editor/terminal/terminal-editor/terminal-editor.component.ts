@@ -135,7 +135,7 @@ export class TerminalEditorComponent implements OnDestroy {
       return;
     }
 
-    this.changeunSub = this.api.shellApi.onChange(pid, (chunk) => {
+    this.changeunSub = this.api.shellApi.onChange(pid, (_, chunk) => {
       this.terminal?.write(chunk, () => {
         this.saveTerminalBuffer();
       });
