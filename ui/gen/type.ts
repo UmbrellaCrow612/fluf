@@ -1,3 +1,8 @@
+import type {
+  NotificationMessage,
+  ResponseMessage,
+} from "vscode-languageserver-protocol";
+
 /**
  * A generic type that merges the parameters of two callbacks
  * and uses the return type of the second.
@@ -168,6 +173,7 @@ export type selectFolder = () => Promise<
  * Specific function you want to run when it changes
  */
 export type onFsChangeCallback = (
+  pathLike: string,
   event: import("fs/promises").FileChangeInfo<string>,
 ) => void;
 /**
@@ -325,7 +331,7 @@ export type pathJoin = (...args: string[]) => Promise<string>;
 /**
  * Get the path seperator calls path.sep
  */
-export type pathSep = () => Promise<string>;
+export type pathSep = () => Promise<"\\" | "/">;
 /**
  * Method to fix a filepath
  */
@@ -656,15 +662,11 @@ export type writeToShell = (pid: number, content: string) => void;
 /**
  * Resize a shell col and row
  */
-export type resizeShell = (
-  pid: number,
-  col: number,
-  row: number,
-) => Promise<boolean>;
+export type resizeShell = (pid: number, col: number, row: number) => void;
 /**
  * Run custom logic when a shell outputs stuff to it's stdout
  */
-export type shellChangeCallback = (chunk: string) => void;
+export type shellChangeCallback = (pid: number, chunk: string) => void;
 /**
  * Listen to changes for a specific shell and get it's output stream
  */
@@ -673,9 +675,16 @@ export type onShellChange = (
   callback: shellChangeCallback,
 ) => voidCallback;
 /**
+ * Callback that runs when a shell exists
+ */
+export type onShellExitCallback = (pid: number) => void;
+/**
  * Listen to when a shell exists either by user typeing exit or other reason
  */
-export type onShellExit = (pid: number, callback: voidCallback) => voidCallback;
+export type onShellExit = (
+  pid: number,
+  callback: onShellExitCallback,
+) => voidCallback;
 /**
  * Contains all the method to interact with shell's for terminals to use
  */
@@ -1048,32 +1057,17 @@ export type ILanguageServerClientDidOpenTextDocument = (
  * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
  */
 export type LanguageServerOnDataCallback = (
-  response:
-    | import("vscode-languageserver-protocol").ResponseMessage
-    | import("vscode-languageserver-protocol").NotificationMessage,
+  response: ResponseMessage,
+  languageId: languageId,
+  workspace: string,
 ) => void;
-/**
- * Shape of data sent when a notification has been parsed and contains information about which language, workspace and content it is
- */
-export type LanguageServerNotificationResponse = {
-  /**
-   * - The specific language this is for
-   */
-  languageId: languageId;
-  /**
-   * - The specific work space this is for
-   */
-  workSpaceFolder: string;
-  /**
-   * - The shape of params for the given method
-   */
-  params: import("vscode-languageserver-protocol").NotificationMessage["params"];
-};
 /**
  * The callback to run when a notification has been parsed
  */
 export type LanguageServerOnNotificationCallback = (
-  result: LanguageServerNotificationResponse,
+  notification: NotificationMessage,
+  languageId: languageId,
+  workspace: string,
 ) => void;
 /**
  * The callback to run when a response produces a error
@@ -1128,7 +1122,7 @@ export type storeChange = (
 /**
  * The shape of the callback that runs when a specific key changes
  */
-export type storeChangeCallback = (key:string, newContent: string) => void;
+export type storeChangeCallback = (key: string, newContent: string) => void;
 /**
  * Creates a new key with content or overrides an existing one with the same key
  */

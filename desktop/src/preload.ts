@@ -30,7 +30,7 @@ import type {
   storeChangeCallback,
 } from "./type.js";
 
-import { contextBridge, ipcRenderer } from "electron";
+const { contextBridge, ipcRenderer } = require("electron"); // NOTE - DO NOT MAKE MODULE BASED AS IT LOADED BY ELECTRON AND NEEDS TO BE COMMON JS
 import type { TypedIpcRenderer } from "./typed-ipc.js";
 
 /**
