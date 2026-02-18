@@ -13,7 +13,6 @@ import type {
   IpcMainInvokeEventCallback,
 } from "./type.js";
 import { binPath } from "./packing.js";
-import type { IpcMain } from "electron";
 import type { TypedIpcMain } from "./typed-ipc.js";
 
 /** @type {import("./type").fsearchOptions} */

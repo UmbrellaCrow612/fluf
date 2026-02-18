@@ -16,6 +16,7 @@ import type { RipGrepEvents } from "./ripgrep.js";
 import type { PathEvents } from "./path.js";
 import type { GitEvents } from "./git.js";
 import type { FSearchEvents } from "./fsearch.js";
+import type { FSEvents } from "./fs.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -173,4 +174,5 @@ export type ApplicationEvents = StoreEvents &
   RipGrepEvents &
   PathEvents &
   GitEvents &
-  FSearchEvents;
+  FSearchEvents &
+  FSEvents;

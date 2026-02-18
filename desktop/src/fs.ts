@@ -1,10 +1,10 @@
 /*
- * Contains all code related to file or folder methods su8ch as those using fs
+ * Contains all code related to file or folder methods such as those using fs
  */
 
 import path from "path";
 import fs from "fs/promises";
-import { dialog, BrowserWindow, type IpcMain } from "electron";
+import { dialog, BrowserWindow } from "electron";
 import type { Dirent } from "fs";
 import type {
   CombinedCallback,
@@ -29,6 +29,7 @@ import type {
 } from "./type.js";
 import { logger } from "./logger.js";
 import { broadcastToAll } from "./broadcast.js";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
  * Contains a map of specific path and it's abort controller to stop the watcher for it
@@ -295,9 +296,6 @@ const readDirImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsRemove>}
- */
 const removeImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   fsRemove
@@ -316,9 +314,6 @@ const removeImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsExists>}
- */
 const existsImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   fsExists
@@ -342,9 +337,6 @@ const existsImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createFile>}
- */
 const createFileImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   createFile
@@ -363,9 +355,6 @@ const createFileImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").writeToFile>}
- */
 const writeToFileImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   writeToFile
@@ -374,8 +363,6 @@ const writeToFileImpl: CombinedCallback<
     if (!filePath || !fileContent) return false;
 
     const p = path.normalize(path.resolve(filePath));
-
-    await fs.access(p);
 
     await fs.writeFile(p, fileContent, { encoding: "utf-8" });
 
@@ -386,23 +373,16 @@ const writeToFileImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").readFile>}
- */
-const readFileImpl: CombinedCallback<
-  IpcMainInvokeEventCallback,
-  readFile
-> = async (_, filePath) => {
+const readFileImpl: CombinedCallback<IpcMainInvokeEventCallback, readFile> = (
+  _,
+  filePath,
+) => {
   try {
-    if (!filePath) return "";
-
-    const p = path.normalize(path.resolve(filePath));
-
-    await fs.access(p);
-
-    return await fs.readFile(p, { encoding: "utf-8" });
+    return fs.readFile(path.normalize(path.resolve(filePath)), {
+      encoding: "utf-8",
+    });
   } catch (error) {
-    logger.error("Failed to read file");
+    logger.error("Failed to read file ", filePath);
 
     throw error;
   }
@@ -501,28 +481,6 @@ const countItemsInDirectoryImpl: CombinedCallback<
 };
 
 /**
- * Registers all fs related listeners
- * @param {import("electron").IpcMain} ipcMain
- */
-export const registerFsListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("file:read", readFileImpl);
-  ipcMain.handle("file:write", writeToFileImpl);
-  ipcMain.handle("file:create", createFileImpl);
-  ipcMain.handle("fs:exists", existsImpl);
-  ipcMain.handle("fs:remove", removeImpl);
-  ipcMain.handle("dir:read", readDirImpl);
-  ipcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
-  ipcMain.handle("dir:create", createDirImpl);
-  ipcMain.handle("dir:select", selectFolderImpl);
-  ipcMain.handle("dir:items:count", countItemsInDirectoryImpl);
-  ipcMain.on("fs:watch", watchImpl);
-  ipcMain.on("fs:unwatch", unwatchImpl);
-  ipcMain.handle("file:save:to", saveToImpl);
-  ipcMain.handle("file:select", selectFileImpl);
-  ipcMain.handle("path:node", getPathAsNodeImpl);
-};
-
-/**
  * If any directory are being watch or files stop listening to them
  */
 export const cleanUpWatchers = () => {
@@ -532,4 +490,51 @@ export const cleanUpWatchers = () => {
     x.abort("Application ended cleaning up");
     logger.info("Cleaned up watcher ", x.signal.reason);
   });
+};
+
+/**
+ * Contains all file system event operations
+ */
+export interface FSEvents {
+  "file:read": {
+    args: [pathLike: string];
+    return: string;
+  };
+  "file:write": {
+    args: [pathLike: string, newContent: string];
+    return: boolean;
+  };
+  "file:create": {
+    args: [pathLike: string];
+    return: boolean;
+  };
+  "fs:exists": {
+    args: [pathLike: string];
+    return: boolean;
+  };
+  "fs:remove": {
+    args: [pathLike: string];
+    return: boolean;
+  };
+}
+
+/**
+ * Registers all fs related listeners
+ */
+export const registerFsListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("file:read", readFileImpl);
+  typedIpcMain.handle("file:write", writeToFileImpl);
+  typedIpcMain.handle("file:create", createFileImpl);
+  typedIpcMain.handle("fs:exists", existsImpl);
+  typedIpcMain.handle("fs:remove", removeImpl);
+  // ipcMain.handle("dir:read", readDirImpl);
+  // ipcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
+  // ipcMain.handle("dir:create", createDirImpl);
+  // ipcMain.handle("dir:select", selectFolderImpl);
+  // ipcMain.handle("dir:items:count", countItemsInDirectoryImpl);
+  // ipcMain.on("fs:watch", watchImpl);
+  // ipcMain.on("fs:unwatch", unwatchImpl);
+  // ipcMain.handle("file:save:to", saveToImpl);
+  // ipcMain.handle("file:select", selectFileImpl);
+  // ipcMain.handle("path:node", getPathAsNodeImpl);
 };
