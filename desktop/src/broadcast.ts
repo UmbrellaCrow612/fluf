@@ -19,8 +19,7 @@ export const broadcastToAll = <K extends keyof ApplicationEvents>(
   const allWebContents = webContents.getAllWebContents();
   allWebContents.forEach((wc) => {
     if (!wc.isDestroyed()) {
-      // Type assertion needed because Electron's webContents.send isn't generic
-      (wc.send as (channel: string, ...args: any[]) => void)(channel, ...args);
+      wc.send(channel, ...args);
     } else {
       logger.warn(
         `trying to send ipc message for channel ${String(channel)} but the given window is destroyed`,

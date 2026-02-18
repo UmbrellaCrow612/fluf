@@ -42,7 +42,7 @@ const setStoreItemImpl: CombinedCallback<
 
     logger.info("Set store item at path: ", filePath);
 
-    broadcastToAll(`store:key:${key}:changed`, content);
+    broadcastToAll("store:changed", key, content);
   } catch (error) {
     logger.error("Failed to set store key: ", key, error);
 

@@ -12,8 +12,8 @@ import type {
   ripGrepResult,
   ripgrepSearch,
 } from "./type.js";
-import type { IpcMain } from "electron";
 import { binPath } from "./packing.js";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
  * Parses ripgrep --vimgrep stdout and converts it to structured objects
@@ -176,9 +176,6 @@ async function searchWithRipGrep(
   });
 }
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").ripgrepSearch>}
- */
 const searchImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ripgrepSearch
@@ -187,9 +184,18 @@ const searchImpl: CombinedCallback<
 };
 
 /**
- * Register ripgrep listeners
- * @param {import("electron").IpcMain} ipcMain
+ * All events offered by ripgrep
  */
-export const registerRipgrepListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("ripgrep:search", searchImpl);
+export interface RipGrepEvents {
+  "ripgrep:search": {
+    args: [options: ripgrepArgsOptions];
+    return: Promise<ripGrepResult[]>;
+  };
+}
+
+/**
+ * Register ripgrep listeners
+ */
+export const registerRipgrepListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("ripgrep:search", searchImpl);
 };

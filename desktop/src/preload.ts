@@ -133,7 +133,7 @@ const lspClient: ILanguageServerClient = {
 };
 
 const ripgrepApi: ripgrepApi = {
-  search: (...args) => ipcRenderer.invoke("ripgrep:search", ...args),
+  search: (...args) => typedIpcRender.invoke("ripgrep:search", ...args),
 };
 
 const chromeWindowApi: chromeWindowApi = {

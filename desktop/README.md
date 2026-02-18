@@ -10,7 +10,6 @@ npm run binman
 npm run start
 ```
 
-
 # Style 
 
 - Write jsdoc and it's type for all methods as well as typescript types
