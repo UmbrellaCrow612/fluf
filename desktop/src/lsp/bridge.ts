@@ -19,6 +19,11 @@ import type {
   languageId,
 } from "../type.js";
 import type { TypedIpcMain } from "../typed-ipc.js";
+import type {
+  CompletionList,
+  Definition,
+  Hover,
+} from "vscode-languageserver-protocol";
 
 const languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer("go"));
@@ -68,9 +73,6 @@ const stopLspImpl: CombinedCallback<
   return lsp.Stop(wsf);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidChangeTextDocument>}
- */
 const docChangedImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidChangeTextDocument
@@ -84,9 +86,6 @@ const docChangedImpl: CombinedCallback<
   lsp.DidChangeTextDocument(workSpaceFolder, filePath, version, changes);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidOpenTextDocument>}
- */
 const openDocImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidOpenTextDocument
@@ -119,9 +118,6 @@ const isRunningImpl: CombinedCallback<
   return Promise.resolve(lsp.IsRunning(workSpaceFolder));
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidCloseTextDocument>}
- */
 const closeDocImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidCloseTextDocument
@@ -135,9 +131,6 @@ const closeDocImpl: CombinedCallback<
   lsp.DidCloseTextDocument(workSpaceFolder, filePath);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientHover>}
- */
 const hoverDocImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientHover
@@ -155,9 +148,6 @@ const hoverDocImpl: CombinedCallback<
   return lsp.Hover(workSpaceFolder, filePath, position);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientCompletion>}
- */
 const completionImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientCompletion
@@ -177,9 +167,6 @@ const completionImpl: CombinedCallback<
   return lsp.Completion(workSpaceFolder, filePath, position);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientDefinition>}
- */
 const definitionImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientDefinition
@@ -215,6 +202,57 @@ export interface LanguageServerProtocolEvents {
     args: [workspace: string, languageId: languageId];
     return: boolean;
   };
+  "lsp:document:hover": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      position: import("vscode-languageserver-protocol").Position,
+    ];
+    return: Hover | null;
+  };
+  "lsp:document:completion": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      position: import("vscode-languageserver-protocol").Position,
+    ];
+    return: CompletionList | null;
+  };
+  "lsp:document:definition": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      position: import("vscode-languageserver-protocol").Position,
+    ];
+    return: Definition | null;
+  };
+  "lsp:document:open": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      version: number,
+      documentText: string,
+    ];
+    return: void;
+  };
+  "lsp:document:change": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      version: number,
+      changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
+    ];
+    return: void;
+  };
+  "lsp:document:close": {
+    args: [workSpaceFolder: string, languageId: languageId, filePath: string];
+    return: void;
+  };
 }
 
 /**
@@ -225,11 +263,11 @@ export const registerLanguageServerListener = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("lsp:stop", stopLspImpl);
   typedIpcMain.handle("lsp:is:running", isRunningImpl);
 
-  // ipcMain.handle("lsp:document:hover", hoverDocImpl);
-  // ipcMain.handle("lsp:document:completion", completionImpl);
-  // ipcMain.handle("lsp:document:definition", definitionImpl);
+  typedIpcMain.handle("lsp:document:hover", hoverDocImpl);
+  typedIpcMain.handle("lsp:document:completion", completionImpl);
+  typedIpcMain.handle("lsp:document:definition", definitionImpl);
 
-  // ipcMain.on("lsp:document:open", openDocImpl);
-  // ipcMain.on("lsp:document:change", docChangedImpl);
-  // ipcMain.on("lsp:document:close", closeDocImpl);
+  typedIpcMain.on("lsp:document:open", openDocImpl);
+  typedIpcMain.on("lsp:document:change", docChangedImpl);
+  typedIpcMain.on("lsp:document:close", closeDocImpl);
 };

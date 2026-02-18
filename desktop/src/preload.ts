@@ -54,9 +54,9 @@ const fileXApi: fileXApi = {
 };
 
 const lspClient: ILanguageServerClient = {
-  start: (...args) => ipcRenderer.invoke("lsp:start", ...args),
-  stop: (...args) => ipcRenderer.invoke("lsp:stop", ...args),
-  isRunning: (...args) => ipcRenderer.invoke("lsp:is:running", ...args),
+  start: (...args) => typedIpcRender.invoke("lsp:start", ...args),
+  stop: (...args) => typedIpcRender.invoke("lsp:stop", ...args),
+  isRunning: (...args) => typedIpcRender.invoke("lsp:is:running", ...args),
 
   onData: (callback) => {
     /**
@@ -122,17 +122,17 @@ const lspClient: ILanguageServerClient = {
   },
 
   didChangeTextDocument: (...args) =>
-    ipcRenderer.send("lsp:document:change", ...args),
+    typedIpcRender.send("lsp:document:change", ...args),
   didOpenTextDocument: (...args) =>
-    ipcRenderer.send("lsp:document:open", ...args),
+    typedIpcRender.send("lsp:document:open", ...args),
   didCloseTextDocument: (...args) =>
-    ipcRenderer.send("lsp:document:close", ...args),
+    typedIpcRender.send("lsp:document:close", ...args),
 
-  hover: (...args) => ipcRenderer.invoke("lsp:document:hover", ...args),
+  hover: (...args) => typedIpcRender.invoke("lsp:document:hover", ...args),
   completion: (...args) =>
-    ipcRenderer.invoke("lsp:document:completion", ...args),
+    typedIpcRender.invoke("lsp:document:completion", ...args),
   definition: (...args) =>
-    ipcRenderer.invoke("lsp:document:definition", ...args),
+    typedIpcRender.invoke("lsp:document:definition", ...args),
 };
 
 const ripgrepApi: ripgrepApi = {
