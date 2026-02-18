@@ -28,7 +28,7 @@ export function registerImageProtocol(protocol: Protocol) {
  * @param {string} ext
  * @returns {string}
  */
-function getMimeType(ext:string) {
+function getMimeType(ext:string): string {
   switch (ext) {
     case ".png":
       return "image/png";

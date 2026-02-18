@@ -1,7 +1,7 @@
 /**
  * Uses IPC contract defined in flufy-ipc-contract to allow other applications to interact with it
  */
-import { IPCServer } from "flufy-ipc-contract";
+import { IPCServer, type OpenFileRequest } from "flufy-ipc-contract";
 import { logger } from "../logger.js";
 import { broadcastToAll } from "../broadcast.js";
 
@@ -40,6 +40,16 @@ export const startCommandServer = (): Promise<void> => {
 
   return server.start();
 };
+
+/**
+ * Command server event operations
+ */
+export interface CommandServerEvents {
+  "command:open:file": {
+    args: [request: OpenFileRequest];
+    return: void;
+  };
+}
 
 /**
  * Stops the command server

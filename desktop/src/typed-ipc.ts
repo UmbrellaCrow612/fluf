@@ -1,7 +1,9 @@
 /**
  * Inspired by event emitter pattern from node events
  *
- * Extends the pattern of IpcMain and IpcRenderer types with full type safety
+ * Extends the pattern of IpcMain and IpcRenderer types with full type safety.
+ *
+ * NOTE: Should only expose / import types only, and not expose or use any module's, this is purley typescript code types to help's typescript complier
  */
 
 import {
@@ -13,6 +15,14 @@ import type { StoreEvents } from "./store.js";
 import type { WindowEvents } from "./window.js";
 import type { ShellEvents } from "./shell.js";
 import type { RipGrepEvents } from "./ripgrep.js";
+import type { PathEvents } from "./path.js";
+import type { GitEvents } from "./git.js";
+import type { FSearchEvents } from "./fsearch.js";
+import type { FSEvents } from "./fs.js";
+import type { FileXEvents } from "./file-x.js";
+import type { ClipboardEvents } from "./clipboard.js";
+import type { LanguageServerProtocolEvents } from "./lsp/bridge.js";
+import type { CommandServerEvents } from "./command-server/server.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -99,8 +109,10 @@ interface IpcMain<T extends EventMap<T>> {
   removeHandler<K extends keyof T>(channel: K): void;
 }
 
+/**
+ * Typed version of electrons IPC main with full type safety
+ */
 export type TypedIpcMain = IpcMain<ApplicationEvents>;
-
 
 /**
  * Maps the type definition of ipc render but with event emitter style event map passed to it
@@ -162,4 +174,15 @@ export type TypedIpcRenderer = IpcRenderer<ApplicationEvents>;
 /**
  * Contains all fluffy channels and their arguments + return types for IPC
  */
-export type ApplicationEvents = StoreEvents & WindowEvents & ShellEvents & RipGrepEvents;
+export type ApplicationEvents = StoreEvents &
+  WindowEvents &
+  ShellEvents &
+  RipGrepEvents &
+  PathEvents &
+  GitEvents &
+  FSearchEvents &
+  FSEvents &
+  FileXEvents &
+  ClipboardEvents &
+  LanguageServerProtocolEvents &
+  CommandServerEvents;

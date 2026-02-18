@@ -1,3 +1,10 @@
+/**
+ * Preload script that is loaded in the browser / attached to the window object to access the api's defined.
+ *
+ * SHOULD NOT USE ANY OTHER TS/JS MODULE CODE OR ANY BUILT IN NODE MODULES DRECTLY HERE AS THEY WILL FAIL
+ * TO LOAD IN THE BROWSER.
+ */
+
 import type {
   chromeWindowApi,
   clipboardApi,
@@ -9,7 +16,11 @@ import type {
   fsearchApi,
   gitApi,
   ILanguageServerClient,
+  ILanguageServerClientOnReadyCallback,
   IpcRendererEventCallback,
+  LanguageServerOnDataCallback,
+  LanguageServerOnNotificationCallback,
+  onFsChangeCallback,
   onShellExitCallback,
   pathApi,
   ripgrepApi,
@@ -19,7 +30,7 @@ import type {
   storeChangeCallback,
 } from "./type.js";
 
-import { contextBridge, ipcRenderer } from "electron";
+const { contextBridge, ipcRenderer } = require("electron"); // NOTE - DO NOT MAKE MODULE BASED AS IT LOADED BY ELECTRON AND NEEDS TO BE COMMON JS
 import type { TypedIpcRenderer } from "./typed-ipc.js";
 
 /**
@@ -27,109 +38,103 @@ import type { TypedIpcRenderer } from "./typed-ipc.js";
  */
 const typedIpcRender = ipcRenderer as TypedIpcRenderer;
 
-/**
- * This script is attached to the UI source code window object on load.
- * Hence you should not directly expose any Node specific packages or binarys here as it will fail to load them.
- */
-
 const commandServer: commandServer = {
   onOpenFile: (callback) => {
     const l = async (_: any, req: any) => {
       await callback(req);
     };
 
-    ipcRenderer.on("command:open:file", l);
+    typedIpcRender.on("command:open:file", l);
 
     return () => {
-      ipcRenderer.removeListener("command:open:file", l);
+      typedIpcRender.removeListener("command:open:file", l);
     };
   },
 };
 
 const fileXApi: fileXApi = {
-  open: (...args) => ipcRenderer.invoke("filex:open", ...args),
+  open: (...args) => typedIpcRender.invoke("filex:open", ...args),
 };
 
 const lspClient: ILanguageServerClient = {
-  start: (...args) => ipcRenderer.invoke("lsp:start", ...args),
-  stop: (...args) => ipcRenderer.invoke("lsp:stop", ...args),
-  isRunning: (...args) => ipcRenderer.invoke("lsp:is:running", ...args),
+  start: (...args) => typedIpcRender.invoke("lsp:start", ...args),
+  stop: (...args) => typedIpcRender.invoke("lsp:stop", ...args),
+  isRunning: (...args) => typedIpcRender.invoke("lsp:is:running", ...args),
 
   onData: (callback) => {
-    /**
-     * @param {*} _
-     * @param {*} object
-     */
-    const l = (_: any, object: any) => {
-      callback(object);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      LanguageServerOnDataCallback
+    > = (_, response, langId, wsf) => {
+      callback(response, langId, wsf);
     };
 
-    ipcRenderer.on("lsp:data", l);
+    typedIpcRender.on("lsp:data", listener);
 
     return () => {
-      ipcRenderer.removeListener("lsp:data", l);
+      typedIpcRender.removeListener("lsp:data", listener);
     };
   },
 
   onNotifications: (callback) => {
-    /**
-     * @param {*} _
-     * @param {*} data
-     */
-    const l = (_: any, data: any) => {
-      callback(data);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      LanguageServerOnNotificationCallback
+    > = (_, notification, langId, wsf) => {
+      callback(notification, langId, wsf);
     };
 
-    ipcRenderer.on("lsp:notification", l);
+    typedIpcRender.on("lsp:notification", listener);
 
     return () => {
-      ipcRenderer.removeListener("lsp:on:notification", l);
+      typedIpcRender.removeListener("lsp:notification", listener);
     };
   },
 
   onNotification: (method, callback) => {
-    /**
-     * @param {*} _
-     * @param {*} data
-     */
-    const l = (_: any, data: any) => {
-      callback(data);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      LanguageServerOnNotificationCallback
+    > = (_, notification, langId, wsf) => {
+      if (notification.method === method) {
+        callback(notification, langId, wsf);
+      }
     };
 
-    ipcRenderer.on(`lsp:notification:${method}`, l);
+    typedIpcRender.on("lsp:notification", listener);
 
     return () => {
-      ipcRenderer.removeListener(`lsp:notification:${method}`, l);
+      typedIpcRender.removeListener("lsp:notification", listener);
     };
   },
 
   onReady: (callback) => {
-    /**
-     * @type {import("./type.js").CombinedCallback<import("./type.js").IpcRendererEventCallback, import("./type.js").ILanguageServerClientOnReadyCallback>}
-     */
-    const list = (_: any, languageId: any, workSpaceFolder: any) => {
-      callback(languageId, workSpaceFolder);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      ILanguageServerClientOnReadyCallback
+    > = (_, langId, wsf) => {
+      callback(langId, wsf);
     };
 
-    ipcRenderer.on("lsp:on:ready", list);
+    typedIpcRender.on("lsp:on:ready", listener);
 
     return () => {
-      ipcRenderer.removeListener("lsp:on:ready", list);
+      typedIpcRender.removeListener("lsp:on:ready", listener);
     };
   },
 
   didChangeTextDocument: (...args) =>
-    ipcRenderer.send("lsp:document:change", ...args),
+    typedIpcRender.send("lsp:document:change", ...args),
   didOpenTextDocument: (...args) =>
-    ipcRenderer.send("lsp:document:open", ...args),
+    typedIpcRender.send("lsp:document:open", ...args),
   didCloseTextDocument: (...args) =>
-    ipcRenderer.send("lsp:document:close", ...args),
+    typedIpcRender.send("lsp:document:close", ...args),
 
-  hover: (...args) => ipcRenderer.invoke("lsp:document:hover", ...args),
+  hover: (...args) => typedIpcRender.invoke("lsp:document:hover", ...args),
   completion: (...args) =>
-    ipcRenderer.invoke("lsp:document:completion", ...args),
+    typedIpcRender.invoke("lsp:document:completion", ...args),
   definition: (...args) =>
-    ipcRenderer.invoke("lsp:document:definition", ...args),
+    typedIpcRender.invoke("lsp:document:definition", ...args),
 };
 
 const ripgrepApi: ripgrepApi = {
@@ -146,53 +151,51 @@ const chromeWindowApi: chromeWindowApi = {
 };
 
 const fsApi: fsApi = {
-  readFile: (...args) => ipcRenderer.invoke("file:read", ...args),
-  write: (...args) => ipcRenderer.invoke("file:write", ...args),
-  createFile: (...args) => ipcRenderer.invoke("file:create", ...args),
-  exists: (...args) => ipcRenderer.invoke("fs:exists", ...args),
-  remove: (...args) => ipcRenderer.invoke("fs:remove", ...args),
-  readDir: (...args) => ipcRenderer.invoke("dir:read", ...args),
-  createDirectory: (...args) => ipcRenderer.invoke("dir:create", ...args),
-  selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
-  getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
+  readFile: (...args) => typedIpcRender.invoke("file:read", ...args),
+  write: (...args) => typedIpcRender.invoke("file:write", ...args),
+  createFile: (...args) => typedIpcRender.invoke("file:create", ...args),
+  exists: (...args) => typedIpcRender.invoke("fs:exists", ...args),
+  remove: (...args) => typedIpcRender.invoke("fs:remove", ...args),
+  readDir: (...args) => typedIpcRender.invoke("dir:read", ...args),
+  createDirectory: (...args) => typedIpcRender.invoke("dir:create", ...args),
+  selectFolder: (...args) => typedIpcRender.invoke("dir:select", ...args),
+  getNode: (...args) => typedIpcRender.invoke("fs:path:as:node", ...args),
   fuzzyFindDirectorys: (...args) =>
-    ipcRenderer.invoke("dir:fuzzy:find", ...args),
+    typedIpcRender.invoke("dir:fuzzy:find", ...args),
   countItemsInDirectory: (...args) =>
-    ipcRenderer.invoke("dir:items:count", ...args),
+    typedIpcRender.invoke("dir:items:count", ...args),
 
   onChange: (path, callback) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param {string} changedPath - The dir changed
-     * @param {import("fs/promises").FileChangeInfo<string>} event
-     */
-    const listener = (_: any, changedPath: any, event: any) => {
-      if (path === changedPath) {
-        callback(event);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      onFsChangeCallback
+    > = (_, pathLike, event) => {
+      if (pathLike === path) {
+        callback(path, event);
       }
     };
 
-    ipcRenderer.on("fs:change", listener);
+    typedIpcRender.on("fs:change", listener);
 
-    ipcRenderer.send("fs:watch", path);
+    typedIpcRender.send("fs:watch", path);
 
     return () => {
-      ipcRenderer.removeListener("fs:change", listener);
+      typedIpcRender.removeListener("fs:change", listener);
     };
   },
 
-  stopWatching: (...args) => ipcRenderer.send("fs:unwatch", ...args),
-  saveTo: (...args) => ipcRenderer.invoke("file:save:to", ...args),
-  selectFile: (...args) => ipcRenderer.invoke("file:select", ...args),
+  stopWatching: (...args) => typedIpcRender.send("fs:unwatch", ...args),
+  saveTo: (...args) => typedIpcRender.invoke("file:save:to", ...args),
+  selectFile: (...args) => typedIpcRender.invoke("file:select", ...args),
 };
 
 const pathApi: pathApi = {
-  normalize: (...args) => ipcRenderer.invoke("path:normalize", ...args),
-  relative: (...args) => ipcRenderer.invoke("path:relative", ...args),
-  sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
-  join: (...args) => ipcRenderer.invoke("path:join", ...args),
-  isAbsolute: (...args) => ipcRenderer.invoke("path:isabsolute", ...args),
-  getRootPath: (...args) => ipcRenderer.invoke("path:root", ...args),
+  normalize: (...args) => typedIpcRender.invoke("path:normalize", ...args),
+  relative: (...args) => typedIpcRender.invoke("path:relative", ...args),
+  sep: (...args) => typedIpcRender.invoke("path:sep", ...args),
+  join: (...args) => typedIpcRender.invoke("path:join", ...args),
+  isAbsolute: (...args) => typedIpcRender.invoke("path:is:absolute", ...args),
+  getRootPath: (...args) => typedIpcRender.invoke("path:root", ...args),
 };
 
 const shellApi: shellApi = {
@@ -236,18 +239,19 @@ const shellApi: shellApi = {
 };
 
 const gitApi: gitApi = {
-  hasGit: (...args) => ipcRenderer.invoke("has:git", ...args),
-  isGitInitialized: (...args) => ipcRenderer.invoke("git:is:init", ...args),
-  initializeGit: (...args) => ipcRenderer.invoke("git:init", ...args),
-  gitStatus: (...args) => ipcRenderer.invoke("git:status", ...args),
+  hasGit: (...args) => typedIpcRender.invoke("has:git", ...args),
+  isGitInitialized: (...args) => typedIpcRender.invoke("git:is:init", ...args),
+  initializeGit: (...args) => typedIpcRender.invoke("git:init", ...args),
+  gitStatus: (...args) => typedIpcRender.invoke("git:status", ...args),
 };
 
 const fsearchApi: fsearchApi = {
-  search: (...args) => ipcRenderer.invoke("fsearch", ...args),
+  search: (...args) => typedIpcRender.invoke("fsearch", ...args),
 };
 
 const clipboardApi: clipboardApi = {
-  writeImage: (...args) => ipcRenderer.invoke("clipboard:write:image", ...args),
+  writeImage: (...args) =>
+    typedIpcRender.invoke("clipboard:write:image", ...args),
 };
 
 const storeApi: storeApi = {

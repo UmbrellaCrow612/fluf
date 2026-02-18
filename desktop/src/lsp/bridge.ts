@@ -1,4 +1,3 @@
-import type { IpcMain } from "electron";
 import { logger } from "../logger.js";
 import { GoLanguageServer } from "./impl/golsp.js";
 import { PythonLanguageServer } from "./impl/pythonlsp.js";
@@ -17,14 +16,23 @@ import type {
   ILanguageServerClientStop,
   IpcMainEventCallback,
   IpcMainInvokeEventCallback,
+  languageId,
 } from "../type.js";
+import type { TypedIpcMain } from "../typed-ipc.js";
+import type {
+  CompletionList,
+  Definition,
+  Hover,
+  NotificationMessage,
+  ResponseMessage,
+} from "vscode-languageserver-protocol";
 
 const languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer("go"));
 languageServerManager.Register("python", new PythonLanguageServer("python"));
 languageServerManager.Register(
   "typescript",
-  new TypeScriptLanguageServer("typescript") as any,
+  new TypeScriptLanguageServer("typescript"),
 );
 
 /**
@@ -35,15 +43,12 @@ export const stopAllLanguageServers = async () => {
 
   for (const lsp of lsps) {
     const result = await lsp.StopAll();
-    result.forEach(x  => {
-      logger.info(x.workSpaceFolder, x.result)
-    })
+    result.forEach((x) => {
+      logger.info(x.workSpaceFolder, x.result);
+    });
   }
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStart>}
- */
 const startImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientStart
@@ -57,9 +62,6 @@ const startImpl: CombinedCallback<
   return lsp.Start(wsf);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStop>}
- */
 const stopLspImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientStop
@@ -73,9 +75,6 @@ const stopLspImpl: CombinedCallback<
   return lsp.Stop(wsf);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidChangeTextDocument>}
- */
 const docChangedImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidChangeTextDocument
@@ -89,9 +88,6 @@ const docChangedImpl: CombinedCallback<
   lsp.DidChangeTextDocument(workSpaceFolder, filePath, version, changes);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidOpenTextDocument>}
- */
 const openDocImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidOpenTextDocument
@@ -111,9 +107,6 @@ const openDocImpl: CombinedCallback<
   );
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientIsRunning>}
- */
 const isRunningImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientIsRunning
@@ -127,9 +120,6 @@ const isRunningImpl: CombinedCallback<
   return Promise.resolve(lsp.IsRunning(workSpaceFolder));
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainEventCallback, import("../type").ILanguageServerClientDidCloseTextDocument>}
- */
 const closeDocImpl: CombinedCallback<
   IpcMainEventCallback,
   ILanguageServerClientDidCloseTextDocument
@@ -143,9 +133,6 @@ const closeDocImpl: CombinedCallback<
   lsp.DidCloseTextDocument(workSpaceFolder, filePath);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientHover>}
- */
 const hoverDocImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientHover
@@ -163,9 +150,6 @@ const hoverDocImpl: CombinedCallback<
   return lsp.Hover(workSpaceFolder, filePath, position);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientCompletion>}
- */
 const completionImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientCompletion
@@ -185,9 +169,6 @@ const completionImpl: CombinedCallback<
   return lsp.Completion(workSpaceFolder, filePath, position);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientDefinition>}
- */
 const definitionImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientDefinition
@@ -208,19 +189,107 @@ const definitionImpl: CombinedCallback<
 };
 
 /**
- * Register all LSP related IPC channels needed for LSP to work
- * @param {import("electron").IpcMain} ipcMain
+ * Contains all lsp event operations
  */
-export const registerLanguageServerListener = (ipcMain: IpcMain) => {
-  ipcMain.handle("lsp:start", startImpl);
-  ipcMain.handle("lsp:stop", stopLspImpl);
-  ipcMain.handle("lsp:is:running", isRunningImpl);
+export interface LanguageServerProtocolEvents {
+  "lsp:start": {
+    args: [workspace: string, languageId: languageId];
+    return: boolean;
+  };
+  "lsp:stop": {
+    args: [workspace: string, languageId: languageId];
+    return: boolean;
+  };
+  "lsp:is:running": {
+    args: [workspace: string, languageId: languageId];
+    return: boolean;
+  };
+  "lsp:document:hover": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      position: import("vscode-languageserver-protocol").Position,
+    ];
+    return: Hover | null;
+  };
+  "lsp:document:completion": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      position: import("vscode-languageserver-protocol").Position,
+    ];
+    return: CompletionList | null;
+  };
+  "lsp:document:definition": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      position: import("vscode-languageserver-protocol").Position,
+    ];
+    return: Definition | null;
+  };
+  "lsp:document:open": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      version: number,
+      documentText: string,
+    ];
+    return: void;
+  };
+  "lsp:document:change": {
+    args: [
+      workSpaceFolder: string,
+      languageId: languageId,
+      filePath: string,
+      version: number,
+      changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
+    ];
+    return: void;
+  };
+  "lsp:document:close": {
+    args: [workSpaceFolder: string, languageId: languageId, filePath: string];
+    return: void;
+  };
+  "lsp:on:ready": {
+    args: [languageId: languageId, workspace: string];
+    return: void;
+  };
+  "lsp:data": {
+    args: [
+      response: ResponseMessage,
+      languageId: languageId,
+      workspace: string,
+    ];
+    return: void;
+  };
+  "lsp:notification": {
+    args: [
+      notification: NotificationMessage,
+      languageId: languageId,
+      workspace: string,
+    ];
+    return: void;
+  };
+}
 
-  ipcMain.handle("lsp:document:hover", hoverDocImpl);
-  ipcMain.handle("lsp:document:completion", completionImpl);
-  ipcMain.handle("lsp:document:definition", definitionImpl);
+/**
+ * Register all LSP related IPC channels needed for LSP to work
+ */
+export const registerLanguageServerListener = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("lsp:start", startImpl);
+  typedIpcMain.handle("lsp:stop", stopLspImpl);
+  typedIpcMain.handle("lsp:is:running", isRunningImpl);
 
-  ipcMain.on("lsp:document:open", openDocImpl);
-  ipcMain.on("lsp:document:change", docChangedImpl);
-  ipcMain.on("lsp:document:close", closeDocImpl);
+  typedIpcMain.handle("lsp:document:hover", hoverDocImpl);
+  typedIpcMain.handle("lsp:document:completion", completionImpl);
+  typedIpcMain.handle("lsp:document:definition", definitionImpl);
+
+  typedIpcMain.on("lsp:document:open", openDocImpl);
+  typedIpcMain.on("lsp:document:change", docChangedImpl);
+  typedIpcMain.on("lsp:document:close", closeDocImpl);
 };

@@ -1,11 +1,8 @@
 import { spawn } from "child_process";
-import { copyFile, mkdir, rename, rm } from "fs/promises";
+import { copyFile, mkdir, rename, rm, readFile, writeFile } from "fs/promises";
 import { dirname } from "path";
 
-const commands = [
-  ["npx", ["tsc", "-p", ".\\tsconfig.json"]],
-  ["npx", ["tsc", "-p", ".\\tsconfig.preload.json"]],
-];
+const commands = [["npx", ["tsc", "-p", ".\\tsconfig.json"]]];
 
 // Helper function to run a command and return a Promise
 function runCommand([cmd, args]) {
@@ -42,19 +39,31 @@ async function copyTypesFile() {
   }
 }
 
-async function movePreloadFile() {
-  const sourcePath = "./dist/preload/preload.js";
-  const destPath = "./dist/preload.js";
-  const preloadDir = "./dist/preload";
+// WE do this becuase when generating it adds export {} at the end breaking preload load in browser
+async function FixDistPreload() {
+  const filePath = "./dist/preload.js";
 
   try {
-    await rename(sourcePath, destPath);
-    console.log(`\n✓ Moved ${sourcePath} to ${destPath}`);
+    const content = await readFile(filePath, "utf-8");
+    const lines = content.split("\n");
 
-    await rm(preloadDir, { recursive: true, force: true });
-    console.log(`✓ Deleted ${preloadDir} directory`);
+    // Filter out lines matching export { ... } pattern
+    const filteredLines = lines.filter(
+      (line) => !/export\s*\{[^}]*\}/.test(line),
+    );
+
+    const removedCount = lines.length - filteredLines.length;
+
+    if (removedCount > 0) {
+      await writeFile(filePath, filteredLines.join("\n"));
+      console.log(
+        `\n✓ Removed ${removedCount} export line(s) from ${filePath}`,
+      );
+    } else {
+      console.log(`\nℹ No export lines found in ${filePath}`);
+    }
   } catch (err) {
-    throw new Error(`Failed to move preload file: ${err.message}`);
+    throw new Error(`Failed to fix preload file: ${err.message}`);
   }
 }
 
@@ -65,8 +74,8 @@ async function movePreloadFile() {
       await runCommand([cmd, args]);
     }
 
-    await movePreloadFile();
     await copyTypesFile();
+    await FixDistPreload();
 
     console.log("\nAll commands executed successfully!");
   } catch (err) {

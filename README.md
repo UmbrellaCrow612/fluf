@@ -35,9 +35,7 @@ A simple text editor written in electron and angular
 
 - Command palette - search files, change themes
 
-- Control the UI and window features via a CLI
-
-- Custom CLI for IPC communication between CLI and UI i.e can use the cli to change / perform actions in the UI
+- Custom IPC protocol to change the UI via IPC clients such as cli tools
 
 ---
 
