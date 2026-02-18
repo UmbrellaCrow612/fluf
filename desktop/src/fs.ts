@@ -167,9 +167,6 @@ const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fuzzyFindDirectorys>}
- */
 const fuzzyFindDirectorysImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   fuzzyFindDirectorys
@@ -247,9 +244,6 @@ const selectFolderImpl: CombinedCallback<
   });
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").createDirectory>}
- */
 const createDirImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   createDirectory
@@ -266,9 +260,6 @@ const createDirImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").readDir>}
- */
 const readDirImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   readDir
@@ -516,6 +507,18 @@ export interface FSEvents {
     args: [pathLike: string];
     return: boolean;
   };
+  "dir:read": {
+    args: [pathLike: string];
+    return: fileNode[];
+  };
+  "dir:fuzzy:find": {
+    args: [searchTerm: string];
+    return: string[];
+  };
+  "dir:create": {
+    args: [pathLike: string];
+    return: boolean;
+  };
 }
 
 /**
@@ -527,9 +530,9 @@ export const registerFsListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("file:create", createFileImpl);
   typedIpcMain.handle("fs:exists", existsImpl);
   typedIpcMain.handle("fs:remove", removeImpl);
-  // ipcMain.handle("dir:read", readDirImpl);
-  // ipcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
-  // ipcMain.handle("dir:create", createDirImpl);
+  typedIpcMain.handle("dir:read", readDirImpl);
+  typedIpcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
+  typedIpcMain.handle("dir:create", createDirImpl);
   // ipcMain.handle("dir:select", selectFolderImpl);
   // ipcMain.handle("dir:items:count", countItemsInDirectoryImpl);
   // ipcMain.on("fs:watch", watchImpl);
