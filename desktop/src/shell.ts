@@ -81,7 +81,9 @@ const createImpl: CombinedCallback<
         broadcastToAll("shell:exit", pty.pid, exit);
 
         const shell = shells.get(pty.pid);
-        shellDisposes.get(pty.pid)?.forEach((x) => x.dispose());
+        shellDisposes.get(pty.pid)?.forEach((x) => {
+          x.dispose();
+        });
         shellDisposes.delete(pty.pid);
 
         shell?.kill();
@@ -116,7 +118,9 @@ const killImpl: CombinedCallback<IpcMainInvokeEventCallback, killShell> = (
 
     shell.write("exit" + "\n");
 
-    disposes.forEach((x) => x.dispose());
+    disposes.forEach((x) => {
+      x.dispose();
+    });
 
     shell.kill();
 

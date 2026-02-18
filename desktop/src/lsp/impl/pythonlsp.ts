@@ -42,7 +42,7 @@ export class PythonLanguageServer
     version: number,
     text: string,
   ) {
-    return this._didOpenTextDocument(wsf, filePath, langId, version, text);
+    this._didOpenTextDocument(wsf, filePath, langId, version, text);
   }
 
   StopAll() {
@@ -55,11 +55,11 @@ export class PythonLanguageServer
     version: number,
     changes: TextDocumentContentChangeEvent[],
   ) {
-    return this._didChangeTextDocument(wsf, fp, version, changes);
+    this._didChangeTextDocument(wsf, fp, version, changes);
   }
 
   DidCloseTextDocument(wsf: string, fp: string) {
-    return this._didCloseTextDocument(wsf, fp);
+    this._didCloseTextDocument(wsf, fp);
   }
 
   Hover(workSpaceFolder: string, filePath: string, position: Position) {

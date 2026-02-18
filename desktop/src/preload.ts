@@ -123,12 +123,15 @@ const lspClient: ILanguageServerClient = {
     };
   },
 
-  didChangeTextDocument: (...args) =>
-    typedIpcRender.send("lsp:document:change", ...args),
-  didOpenTextDocument: (...args) =>
-    typedIpcRender.send("lsp:document:open", ...args),
-  didCloseTextDocument: (...args) =>
-    typedIpcRender.send("lsp:document:close", ...args),
+  didChangeTextDocument: (...args) => {
+    typedIpcRender.send("lsp:document:change", ...args);
+  },
+  didOpenTextDocument: (...args) => {
+    typedIpcRender.send("lsp:document:open", ...args);
+  },
+  didCloseTextDocument: (...args) => {
+    typedIpcRender.send("lsp:document:close", ...args);
+  },
 
   hover: (...args) => typedIpcRender.invoke("lsp:document:hover", ...args),
   completion: (...args) =>
@@ -144,10 +147,18 @@ const ripgrepApi: ripgrepApi = {
 const chromeWindowApi: chromeWindowApi = {
   isMaximized: (...args) =>
     typedIpcRender.invoke("window:is:maximized", ...args),
-  minimize: (...args) => typedIpcRender.send("window:minimize", ...args),
-  maximize: (...args) => typedIpcRender.send("window:maximize", ...args),
-  close: (...args) => typedIpcRender.send("window:close", ...args),
-  restore: (...args) => typedIpcRender.send("window:restore", ...args),
+  minimize: (...args) => {
+    typedIpcRender.send("window:minimize", ...args);
+  },
+  maximize: (...args) => {
+    typedIpcRender.send("window:maximize", ...args);
+  },
+  close: (...args) => {
+    typedIpcRender.send("window:close", ...args);
+  },
+  restore: (...args) => {
+    typedIpcRender.send("window:restore", ...args);
+  },
 };
 
 const fsApi: fsApi = {
@@ -184,7 +195,9 @@ const fsApi: fsApi = {
     };
   },
 
-  stopWatching: (...args) => typedIpcRender.send("fs:unwatch", ...args),
+  stopWatching: (...args) => {
+    typedIpcRender.send("fs:unwatch", ...args);
+  },
   saveTo: (...args) => typedIpcRender.invoke("file:save:to", ...args),
   selectFile: (...args) => typedIpcRender.invoke("file:select", ...args),
 };
@@ -201,8 +214,12 @@ const pathApi: pathApi = {
 const shellApi: shellApi = {
   create: (...args) => typedIpcRender.invoke("shell:create", ...args),
   kill: (...args) => typedIpcRender.invoke("shell:kill", ...args),
-  resize: (...args) => typedIpcRender.send("shell:resize", ...args),
-  write: (...args) => typedIpcRender.send("shell:write", ...args),
+  resize: (...args) => {
+    typedIpcRender.send("shell:resize", ...args);
+  },
+  write: (...args) => {
+    typedIpcRender.send("shell:write", ...args);
+  },
   onChange: (pid, callback) => {
     const listener: CombinedCallback<
       IpcRendererEventCallback,

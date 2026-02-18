@@ -45,7 +45,7 @@ const watcherAbortsMap: Map<string, AbortController> = new Map();
  */
 const mapDirItemsToFileNodes = async (
   basePath: string,
-  dirItems: Dirent<string>[],
+  dirItems: Dirent[],
 ) => {
   /** @type {import("./type").fileNode[]} */
   const filenodes: fileNode[] = [];

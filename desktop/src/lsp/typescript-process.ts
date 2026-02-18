@@ -567,7 +567,7 @@ export class TypeScriptProcess {
         return;
       }
 
-      let rpcNotification: NotificationMessage = {
+      const rpcNotification: NotificationMessage = {
         jsonrpc: "2.0",
         method: notification.event,
         params: {},

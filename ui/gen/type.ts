@@ -126,7 +126,7 @@ export type fsWatch = (fileOrFolderPath: string) => void;
  */
 export type saveTo = (
   content: string,
-  options?: Electron.SaveDialogOptions | undefined,
+  options?: Electron.SaveDialogOptions  ,
 ) => Promise<boolean>;
 /**
  * Reads the contents of a file.

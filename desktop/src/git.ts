@@ -159,9 +159,9 @@ function runGitCommand(
       clearTimeout(timeout);
 
       if (code !== 0) {
-        return reject(
+        reject(
           new Error(stderrData.trim() || `Git exited with code ${code}`),
-        );
+        ); return;
       }
 
       resolve(stdoutData.trim());
