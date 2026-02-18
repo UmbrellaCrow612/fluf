@@ -4,7 +4,7 @@
 
 import path from "path";
 import fs from "fs/promises";
-import { dialog, BrowserWindow } from "electron";
+import { dialog, BrowserWindow, type OpenDialogReturnValue } from "electron";
 import type { Dirent } from "fs";
 import type {
   CombinedCallback,
@@ -102,9 +102,7 @@ const saveToImpl: CombinedCallback<IpcMainInvokeEventCallback, saveTo> = async (
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").fsStopWatching>}
- */
+
 const unwatchImpl: CombinedCallback<IpcMainEventCallback, fsStopWatching> = (
   _,
   pp,
@@ -129,9 +127,6 @@ const unwatchImpl: CombinedCallback<IpcMainEventCallback, fsStopWatching> = (
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainEventCallback, import("./type").fsWatch>}
- */
 const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
   _,
   fileOrFolderPath,
@@ -232,14 +227,11 @@ const fuzzyFindDirectorysImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFolder>}
- */
 const selectFolderImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   selectFolder
-> = async () => {
-  return await dialog.showOpenDialog({
+> = () => {
+  return dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
 };
@@ -444,9 +436,6 @@ const getPathAsNodeImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").countItemsInDirectory>}
- */
 const countItemsInDirectoryImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   countItemsInDirectory
@@ -463,7 +452,9 @@ const countItemsInDirectoryImpl: CombinedCallback<
       return 0;
     }
 
-    return (await fs.readdir(norm)).length;
+    const items = await fs.readdir(norm);
+
+    return items.length;
   } catch (error) {
     logger.error("Failed to count items in direcotry: ", dirPath, error);
 
@@ -507,6 +498,18 @@ export interface FSEvents {
     args: [pathLike: string];
     return: boolean;
   };
+  "fs:watch": {
+    args: [pathLike: string];
+    return: void;
+  };
+  "fs:change": {
+    args: [pathLike: string, event: fs.FileChangeInfo<string>];
+    return: void;
+  };
+  "fs:unwatch": {
+    args: [pathLike: string];
+    return: void;
+  };
   "dir:read": {
     args: [pathLike: string];
     return: fileNode[];
@@ -518,6 +521,14 @@ export interface FSEvents {
   "dir:create": {
     args: [pathLike: string];
     return: boolean;
+  };
+  "dir:select": {
+    args: [];
+    return: OpenDialogReturnValue;
+  };
+  "dir:items:count": {
+    args: [pathLike: string];
+    return: number;
   };
 }
 
@@ -533,10 +544,10 @@ export const registerFsListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("dir:read", readDirImpl);
   typedIpcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
   typedIpcMain.handle("dir:create", createDirImpl);
-  // ipcMain.handle("dir:select", selectFolderImpl);
-  // ipcMain.handle("dir:items:count", countItemsInDirectoryImpl);
-  // ipcMain.on("fs:watch", watchImpl);
-  // ipcMain.on("fs:unwatch", unwatchImpl);
+  typedIpcMain.handle("dir:select", selectFolderImpl);
+  typedIpcMain.handle("dir:items:count", countItemsInDirectoryImpl);
+  typedIpcMain.on("fs:watch", watchImpl);
+  typedIpcMain.on("fs:unwatch", unwatchImpl);
   // ipcMain.handle("file:save:to", saveToImpl);
   // ipcMain.handle("file:select", selectFileImpl);
   // ipcMain.handle("path:node", getPathAsNodeImpl);
