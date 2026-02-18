@@ -43,7 +43,6 @@ A simple text editor written in electron and angular
 
 - **`UI/`** – Contains the frontend source code (built with **Angular**)
 - **`Desktop/`** – Contains the Electron desktop wrapper (built with **Electron** and **esbuild**)
-- **`Scripts/`** – Contains custom build scripts for packaging the Angular app with Electron
 - **`Packages`** - Contains shared packages / contracts / libarys
 ---
 
@@ -53,40 +52,6 @@ A simple text editor written in electron and angular
 2. Refer to the **Desktop** folder’s README for Electron-specific setup and running instructions.
 
 ---
-
-## **Building for Production**
-
-Under construction - after adding node pty and lsp support i need to fix it for new versions
-
-1. **Install script dependencies:**
-
-   ```bash
-   cd scripts
-   npm ci
-   ```
-
-2. **Set the build mode to production:**
-   - Open `desktop/.env`
-   - Change the value of `mode` to `prod`
-
-3. **Run the build script from the project root:**
-
-   ```bash
-   node .\scripts\build.js --platform=windows
-   ```
-
-4. **Verify the build:**
-   - Navigate to the `dist` folder
-   - Run:
-
-     ```bash
-     .\electron.exe
-     ```
-
-   - The app should open successfully.
-
-For now you can only build for x64 and the current OS your on as `homebridge node pty` downloads specific binarys based on machine and can't be configured
-so if you want to build for a specific platform you need to run the above script on said machine - for now github actions do that so in future after build publish the artifact for distribution
 
 # External libs maintained by me
 
