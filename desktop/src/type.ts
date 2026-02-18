@@ -168,6 +168,7 @@ export type selectFolder = () => Promise<
  * Specific function you want to run when it changes
  */
 export type onFsChangeCallback = (
+  pathLike: string,
   event: import("fs/promises").FileChangeInfo<string>,
 ) => void;
 /**
@@ -671,7 +672,7 @@ export type onShellChange = (
 /**
  * Callback that runs when a shell exists
  */
-export type onShellExitCallback = (pid:number) => void;
+export type onShellExitCallback = (pid: number) => void;
 /**
  * Listen to when a shell exists either by user typeing exit or other reason
  */

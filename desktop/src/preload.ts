@@ -10,6 +10,7 @@ import type {
   gitApi,
   ILanguageServerClient,
   IpcRendererEventCallback,
+  onFsChangeCallback,
   onShellExitCallback,
   pathApi,
   ripgrepApi,
@@ -146,44 +147,42 @@ const chromeWindowApi: chromeWindowApi = {
 };
 
 const fsApi: fsApi = {
-  readFile: (...args) => ipcRenderer.invoke("file:read", ...args),
-  write: (...args) => ipcRenderer.invoke("file:write", ...args),
-  createFile: (...args) => ipcRenderer.invoke("file:create", ...args),
-  exists: (...args) => ipcRenderer.invoke("fs:exists", ...args),
-  remove: (...args) => ipcRenderer.invoke("fs:remove", ...args),
-  readDir: (...args) => ipcRenderer.invoke("dir:read", ...args),
-  createDirectory: (...args) => ipcRenderer.invoke("dir:create", ...args),
-  selectFolder: (...args) => ipcRenderer.invoke("dir:select", ...args),
-  getNode: (...args) => ipcRenderer.invoke("path:node", ...args),
+  readFile: (...args) => typedIpcRender.invoke("file:read", ...args),
+  write: (...args) => typedIpcRender.invoke("file:write", ...args),
+  createFile: (...args) => typedIpcRender.invoke("file:create", ...args),
+  exists: (...args) => typedIpcRender.invoke("fs:exists", ...args),
+  remove: (...args) => typedIpcRender.invoke("fs:remove", ...args),
+  readDir: (...args) => typedIpcRender.invoke("dir:read", ...args),
+  createDirectory: (...args) => typedIpcRender.invoke("dir:create", ...args),
+  selectFolder: (...args) => typedIpcRender.invoke("dir:select", ...args),
+  getNode: (...args) => typedIpcRender.invoke("fs:path:as:node", ...args),
   fuzzyFindDirectorys: (...args) =>
-    ipcRenderer.invoke("dir:fuzzy:find", ...args),
+    typedIpcRender.invoke("dir:fuzzy:find", ...args),
   countItemsInDirectory: (...args) =>
-    ipcRenderer.invoke("dir:items:count", ...args),
+    typedIpcRender.invoke("dir:items:count", ...args),
 
   onChange: (path, callback) => {
-    /**
-     * @param {import("electron").IpcRendererEvent} _
-     * @param {string} changedPath - The dir changed
-     * @param {import("fs/promises").FileChangeInfo<string>} event
-     */
-    const listener = (_: any, changedPath: any, event: any) => {
-      if (path === changedPath) {
-        callback(event);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      onFsChangeCallback
+    > = (_, pathLike, event) => {
+      if (pathLike === path) {
+        callback(path, event);
       }
     };
 
-    ipcRenderer.on("fs:change", listener);
+    typedIpcRender.on("fs:change", listener);
 
-    ipcRenderer.send("fs:watch", path);
+    typedIpcRender.send("fs:watch", path);
 
     return () => {
-      ipcRenderer.removeListener("fs:change", listener);
+      typedIpcRender.removeListener("fs:change", listener);
     };
   },
 
-  stopWatching: (...args) => ipcRenderer.send("fs:unwatch", ...args),
-  saveTo: (...args) => ipcRenderer.invoke("file:save:to", ...args),
-  selectFile: (...args) => ipcRenderer.invoke("file:select", ...args),
+  stopWatching: (...args) => typedIpcRender.send("fs:unwatch", ...args),
+  saveTo: (...args) => typedIpcRender.invoke("file:save:to", ...args),
+  selectFile: (...args) => typedIpcRender.invoke("file:select", ...args),
 };
 
 const pathApi: pathApi = {
