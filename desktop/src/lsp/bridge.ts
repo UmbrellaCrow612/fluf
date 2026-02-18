@@ -17,14 +17,16 @@ import type {
   ILanguageServerClientStop,
   IpcMainEventCallback,
   IpcMainInvokeEventCallback,
+  languageId,
 } from "../type.js";
+import type { TypedIpcMain } from "../typed-ipc.js";
 
 const languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer("go"));
 languageServerManager.Register("python", new PythonLanguageServer("python"));
 languageServerManager.Register(
   "typescript",
-  new TypeScriptLanguageServer("typescript") as any,
+  new TypeScriptLanguageServer("typescript"),
 );
 
 /**
@@ -35,15 +37,12 @@ export const stopAllLanguageServers = async () => {
 
   for (const lsp of lsps) {
     const result = await lsp.StopAll();
-    result.forEach(x  => {
-      logger.info(x.workSpaceFolder, x.result)
-    })
+    result.forEach((x) => {
+      logger.info(x.workSpaceFolder, x.result);
+    });
   }
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStart>}
- */
 const startImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientStart
@@ -57,9 +56,6 @@ const startImpl: CombinedCallback<
   return lsp.Start(wsf);
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientStop>}
- */
 const stopLspImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientStop
@@ -111,9 +107,6 @@ const openDocImpl: CombinedCallback<
   );
 };
 
-/**
- * @type {import("../type").CombinedCallback<import("../type").IpcMainInvokeEventCallback, import("../type").ILanguageServerClientIsRunning>}
- */
 const isRunningImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   ILanguageServerClientIsRunning
@@ -208,19 +201,36 @@ const definitionImpl: CombinedCallback<
 };
 
 /**
- * Register all LSP related IPC channels needed for LSP to work
- * @param {import("electron").IpcMain} ipcMain
+ * Contains all lsp event operations
  */
-export const registerLanguageServerListener = (ipcMain: IpcMain) => {
-  ipcMain.handle("lsp:start", startImpl);
-  ipcMain.handle("lsp:stop", stopLspImpl);
-  ipcMain.handle("lsp:is:running", isRunningImpl);
+export interface LanguageServerProtocolEvents {
+  "lsp:start": {
+    args: [workspace: string, languageId: languageId];
+    return: boolean;
+  };
+  "lsp:stop": {
+    args: [workspace: string, languageId: languageId];
+    return: boolean;
+  };
+  "lsp:is:running": {
+    args: [workspace: string, languageId: languageId];
+    return: boolean;
+  };
+}
 
-  ipcMain.handle("lsp:document:hover", hoverDocImpl);
-  ipcMain.handle("lsp:document:completion", completionImpl);
-  ipcMain.handle("lsp:document:definition", definitionImpl);
+/**
+ * Register all LSP related IPC channels needed for LSP to work
+ */
+export const registerLanguageServerListener = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("lsp:start", startImpl);
+  typedIpcMain.handle("lsp:stop", stopLspImpl);
+  typedIpcMain.handle("lsp:is:running", isRunningImpl);
 
-  ipcMain.on("lsp:document:open", openDocImpl);
-  ipcMain.on("lsp:document:change", docChangedImpl);
-  ipcMain.on("lsp:document:close", closeDocImpl);
+  // ipcMain.handle("lsp:document:hover", hoverDocImpl);
+  // ipcMain.handle("lsp:document:completion", completionImpl);
+  // ipcMain.handle("lsp:document:definition", definitionImpl);
+
+  // ipcMain.on("lsp:document:open", openDocImpl);
+  // ipcMain.on("lsp:document:change", docChangedImpl);
+  // ipcMain.on("lsp:document:close", closeDocImpl);
 };

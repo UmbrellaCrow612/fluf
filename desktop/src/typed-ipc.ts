@@ -21,6 +21,7 @@ import type { FSearchEvents } from "./fsearch.js";
 import type { FSEvents } from "./fs.js";
 import type { FileXEvents } from "./file-x.js";
 import type { ClipboardEvents } from "./clipboard.js";
+import type { LanguageServerProtocolEvents } from "./lsp/bridge.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -181,4 +182,5 @@ export type ApplicationEvents = StoreEvents &
   FSearchEvents &
   FSEvents &
   FileXEvents &
-  ClipboardEvents;
+  ClipboardEvents &
+  LanguageServerProtocolEvents;
