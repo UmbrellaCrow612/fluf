@@ -3,7 +3,6 @@ import fs from "fs/promises";
 import path from "path";
 import type {
   languageId,
-  LanguageServerNotificationResponse,
   LanguageServerProtocolMethod,
 } from "../type.js";
 import { logger } from "../logger.js";
@@ -537,12 +536,21 @@ export class JsonRpcProcess {
     response: import("vscode-languageserver-protocol").ResponseMessage,
   ) {
     this._resolveRequests(response);
+    if (!this._languageId) {
+      logger.error("No language ID provided when calling handle");
+      throw new Error("No language ID provided when calling handle");
+    }
+    if (!this._workSpaceFolder) {
+      logger.error("No workspace folder provided when calling handle");
+      throw new Error("No workspace folder provided when calling handle");
+    }
 
-    broadcastToAll("lsp:data", {
-      response: response,
-      languageId: this._languageId,
-      workSpaceFolder: this._workSpaceFolder,
-    });
+    broadcastToAll(
+      "lsp:data",
+      response,
+      this._languageId,
+      this._workSpaceFolder,
+    );
 
     if (isNotificationMessage(response)) {
       this._handleNotificationMessage(response);
@@ -551,28 +559,18 @@ export class JsonRpcProcess {
 
   /**
    * Notify interested parties of a notification message from the LSP
-   * @param {any} notification - The notification message
-   * @returns {void} Nothing
    */
   private _handleNotificationMessage(notification: NotificationMessage): void {
     if (!this._languageId) throw new Error("No language id cannot send events");
     if (!this._workSpaceFolder)
       throw new Error("No workspace folder cannot send events");
 
-    broadcastToAll("lsp:notification", {
-      method: notification.method,
-      params: notification.params,
-      languageId: this._languageId,
-      workSpaceFolder: this._workSpaceFolder,
-    });
-
-    const notificationData: LanguageServerNotificationResponse = {
-      languageId: this._languageId,
-      workSpaceFolder: this._workSpaceFolder,
-      params: notification?.params,
-    };
-
-    broadcastToAll(`lsp:notification:${notification.method}`, notificationData);
+    broadcastToAll(
+      "lsp:notification",
+      notification,
+      this._languageId,
+      this._workSpaceFolder,
+    );
   }
 
   /**

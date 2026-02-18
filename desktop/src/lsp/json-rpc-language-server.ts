@@ -447,12 +447,13 @@ export class JsonRpcLanguageServer {
       }
 
       /** @type {import("vscode-languageserver-protocol").CompletionParams} */
-      const params: import("vscode-languageserver-protocol").CompletionParams = {
-        position,
-        textDocument: {
-          uri: createUri(filePath),
-        },
-      };
+      const params: import("vscode-languageserver-protocol").CompletionParams =
+        {
+          position,
+          textDocument: {
+            uri: createUri(filePath),
+          },
+        };
 
       return rc.SendRequest("textDocument/completion", params);
     } catch (error) {
@@ -514,12 +515,13 @@ export class JsonRpcLanguageServer {
       /**
        * @type {import("vscode-languageserver-protocol").DefinitionParams}
        */
-      const params: import("vscode-languageserver-protocol").DefinitionParams = {
-        position: position,
-        textDocument: {
-          uri: createUri(filePath),
-        },
-      };
+      const params: import("vscode-languageserver-protocol").DefinitionParams =
+        {
+          position: position,
+          textDocument: {
+            uri: createUri(filePath),
+          },
+        };
 
       return rc.SendRequest("textDocument/definition", params);
     } catch (error) {

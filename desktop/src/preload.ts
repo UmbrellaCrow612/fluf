@@ -16,7 +16,10 @@ import type {
   fsearchApi,
   gitApi,
   ILanguageServerClient,
+  ILanguageServerClientOnReadyCallback,
   IpcRendererEventCallback,
+  LanguageServerOnDataCallback,
+  LanguageServerOnNotificationCallback,
   onFsChangeCallback,
   onShellExitCallback,
   pathApi,
@@ -59,65 +62,64 @@ const lspClient: ILanguageServerClient = {
   isRunning: (...args) => typedIpcRender.invoke("lsp:is:running", ...args),
 
   onData: (callback) => {
-    /**
-     * @param {*} _
-     * @param {*} object
-     */
-    const l = (_: any, object: any) => {
-      callback(object);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      LanguageServerOnDataCallback
+    > = (_, response, langId, wsf) => {
+      callback(response, langId, wsf);
     };
 
-    ipcRenderer.on("lsp:data", l);
+    typedIpcRender.on("lsp:data", listener);
 
     return () => {
-      ipcRenderer.removeListener("lsp:data", l);
+      typedIpcRender.removeListener("lsp:data", listener);
     };
   },
 
   onNotifications: (callback) => {
-    /**
-     * @param {*} _
-     * @param {*} data
-     */
-    const l = (_: any, data: any) => {
-      callback(data);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      LanguageServerOnNotificationCallback
+    > = (_, notification, langId, wsf) => {
+      callback(notification, langId, wsf);
     };
 
-    ipcRenderer.on("lsp:notification", l);
+    typedIpcRender.on("lsp:notification", listener);
 
     return () => {
-      ipcRenderer.removeListener("lsp:on:notification", l);
+      typedIpcRender.removeListener("lsp:notification", listener);
     };
   },
 
   onNotification: (method, callback) => {
-    /**
-     * @param {*} _
-     * @param {*} data
-     */
-    const l = (_: any, data: any) => {
-      callback(data);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      LanguageServerOnNotificationCallback
+    > = (_, notification, langId, wsf) => {
+      if (notification.method === method) {
+        callback(notification, langId, wsf);
+      }
     };
 
-    ipcRenderer.on(`lsp:notification:${method}`, l);
+    typedIpcRender.on("lsp:notification", listener);
 
     return () => {
-      ipcRenderer.removeListener(`lsp:notification:${method}`, l);
+      typedIpcRender.removeListener("lsp:notification", listener);
     };
   },
 
   onReady: (callback) => {
-    /**
-     * @type {import("./type.js").CombinedCallback<import("./type.js").IpcRendererEventCallback, import("./type.js").ILanguageServerClientOnReadyCallback>}
-     */
-    const list = (_: any, languageId: any, workSpaceFolder: any) => {
-      callback(languageId, workSpaceFolder);
+    const listener: CombinedCallback<
+      IpcRendererEventCallback,
+      ILanguageServerClientOnReadyCallback
+    > = (_, langId, wsf) => {
+      callback(langId, wsf);
     };
 
-    ipcRenderer.on("lsp:on:ready", list);
+    typedIpcRender.on("lsp:on:ready", listener);
 
     return () => {
-      ipcRenderer.removeListener("lsp:on:ready", list);
+      typedIpcRender.removeListener("lsp:on:ready", listener);
     };
   },
 

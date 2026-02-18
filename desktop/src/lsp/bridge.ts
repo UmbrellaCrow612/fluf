@@ -23,6 +23,8 @@ import type {
   CompletionList,
   Definition,
   Hover,
+  NotificationMessage,
+  ResponseMessage,
 } from "vscode-languageserver-protocol";
 
 const languageServerManager = new LanguageServerManager();
@@ -251,6 +253,26 @@ export interface LanguageServerProtocolEvents {
   };
   "lsp:document:close": {
     args: [workSpaceFolder: string, languageId: languageId, filePath: string];
+    return: void;
+  };
+  "lsp:on:ready": {
+    args: [languageId: languageId, workspace: string];
+    return: void;
+  };
+  "lsp:data": {
+    args: [
+      response: ResponseMessage,
+      languageId: languageId,
+      workspace: string,
+    ];
+    return: void;
+  };
+  "lsp:notification": {
+    args: [
+      notification: NotificationMessage,
+      languageId: languageId,
+      workspace: string,
+    ];
     return: void;
   };
 }

@@ -1,3 +1,8 @@
+import type {
+  NotificationMessage,
+  ResponseMessage,
+} from "vscode-languageserver-protocol";
+
 /**
  * A generic type that merges the parameters of two callbacks
  * and uses the return type of the second.
@@ -1052,32 +1057,17 @@ export type ILanguageServerClientDidOpenTextDocument = (
  * Run logic when data has been parsed from a lsp - use as a general debug logger as it does not filter any message out
  */
 export type LanguageServerOnDataCallback = (
-  response:
-    | import("vscode-languageserver-protocol").ResponseMessage
-    | import("vscode-languageserver-protocol").NotificationMessage,
+  response: ResponseMessage,
+  languageId: languageId,
+  workspace: string,
 ) => void;
-/**
- * Shape of data sent when a notification has been parsed and contains information about which language, workspace and content it is
- */
-export type LanguageServerNotificationResponse = {
-  /**
-   * - The specific language this is for
-   */
-  languageId: languageId;
-  /**
-   * - The specific work space this is for
-   */
-  workSpaceFolder: string;
-  /**
-   * - The shape of params for the given method
-   */
-  params: import("vscode-languageserver-protocol").NotificationMessage["params"];
-};
 /**
  * The callback to run when a notification has been parsed
  */
 export type LanguageServerOnNotificationCallback = (
-  result: LanguageServerNotificationResponse,
+  notification: NotificationMessage,
+  languageId: languageId,
+  workspace: string,
 ) => void;
 /**
  * The callback to run when a response produces a error
