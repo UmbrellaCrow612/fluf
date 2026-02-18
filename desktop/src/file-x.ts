@@ -3,7 +3,7 @@
  */
 
 import { BrowserWindow } from "electron";
-import path from "path";
+import * as path from "node:path";
 import { logger } from "./logger.js";
 import type {
   CombinedCallback,

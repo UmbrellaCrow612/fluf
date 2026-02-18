@@ -2,8 +2,8 @@
  * Contains all code related to file or folder methods such as those using fs
  */
 
-import path from "path";
-import fs from "fs/promises";
+import * as path from "node:path";
+import * as fs from "node:fs/promises";
 import { dialog, BrowserWindow, type OpenDialogReturnValue } from "electron";
 import type { Dirent } from "fs";
 import type {

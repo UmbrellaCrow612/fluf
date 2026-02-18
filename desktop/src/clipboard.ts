@@ -2,8 +2,8 @@
  * Contains all clipboard API code
  */
 
-import path from "path";
-import fs from "fs/promises";
+import * as path from "node:path";
+import * as fs from "node:fs/promises";
 import { clipboard, nativeImage } from "electron";
 import type {
   CombinedCallback,
