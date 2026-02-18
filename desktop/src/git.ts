@@ -11,12 +11,13 @@ import type {
   gitSection,
   gitStatus,
   gitStatusResult,
+  hasGit,
   initializeGit,
   IpcMainInvokeEventCallback,
   isGitInitialized,
 } from "./type.js";
-import type { IpcMain } from "electron";
 import { logger } from "./logger.js";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
  * Parses the stdout from `git status` and returns a structured JSON object.
@@ -93,9 +94,7 @@ function parseGitStatus(stdout: string): gitStatusResult {
         /^(modified:|deleted:|new file:|renamed:|.+->.+)?\s*(.+)$/,
       );
       if (match) {
-        const status: any = match[1]
-          ? match[1].replace(":", "").trim()
-          : null;
+        const status: any = match[1] ? match[1].replace(":", "").trim() : null;
         const file = match[2] ? match[2].trim() : null;
 
         if (file) {
@@ -170,8 +169,7 @@ function runGitCommand(
   });
 }
 
-/** @type {import("./type").hasGit} */
-const hasGitImpl = async () => {
+const hasGitImpl: hasGit = async () => {
   try {
     const version = await runGitCommand(["--version"], process.cwd());
     return version.startsWith("git");
@@ -180,9 +178,6 @@ const hasGitImpl = async () => {
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").initializeGit>}
- */
 const gitInitImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   initializeGit
@@ -199,9 +194,6 @@ const gitInitImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").isGitInitialized>}
- */
 const igGitInit: CombinedCallback<
   IpcMainInvokeEventCallback,
   isGitInitialized
@@ -217,9 +209,6 @@ const igGitInit: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").gitStatus>}
- */
 const gitStatusImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   gitStatus
@@ -238,12 +227,33 @@ const gitStatusImpl: CombinedCallback<
 };
 
 /**
- * Registers all listeners and handlers for git
- * @param {import("electron").IpcMain} ipcMain
+ * All git event operations
  */
-export const registerGitListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("has:git", hasGitImpl);
-  ipcMain.handle("git:init", gitInitImpl);
-  ipcMain.handle("git:is:init", igGitInit);
-  ipcMain.handle("git:status", gitStatusImpl);
+export interface GitEvents {
+  "has:git": {
+    args: [];
+    return: boolean;
+  };
+  "git:init": {
+    args: [directory: string];
+    return: boolean;
+  };
+  "git:is:init": {
+    args: [directory: string];
+    return: boolean;
+  };
+  "git:status": {
+    args: [directory: string];
+    return: gitStatusResult | null;
+  };
+}
+
+/**
+ * Registers all listeners and handlers for git
+ */
+export const registerGitListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("has:git", hasGitImpl);
+  typedIpcMain.handle("git:init", gitInitImpl);
+  typedIpcMain.handle("git:is:init", igGitInit);
+  typedIpcMain.handle("git:status", gitStatusImpl);
 };

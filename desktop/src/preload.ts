@@ -236,10 +236,10 @@ const shellApi: shellApi = {
 };
 
 const gitApi: gitApi = {
-  hasGit: (...args) => ipcRenderer.invoke("has:git", ...args),
-  isGitInitialized: (...args) => ipcRenderer.invoke("git:is:init", ...args),
-  initializeGit: (...args) => ipcRenderer.invoke("git:init", ...args),
-  gitStatus: (...args) => ipcRenderer.invoke("git:status", ...args),
+  hasGit: (...args) => typedIpcRender.invoke("has:git", ...args),
+  isGitInitialized: (...args) => typedIpcRender.invoke("git:is:init", ...args),
+  initializeGit: (...args) => typedIpcRender.invoke("git:init", ...args),
+  gitStatus: (...args) => typedIpcRender.invoke("git:status", ...args),
 };
 
 const fsearchApi: fsearchApi = {

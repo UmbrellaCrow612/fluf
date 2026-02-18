@@ -14,6 +14,7 @@ import type { WindowEvents } from "./window.js";
 import type { ShellEvents } from "./shell.js";
 import type { RipGrepEvents } from "./ripgrep.js";
 import type { PathEvents } from "./path.js";
+import type { GitEvents } from "./git.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -166,4 +167,5 @@ export type ApplicationEvents = StoreEvents &
   WindowEvents &
   ShellEvents &
   RipGrepEvents &
-  PathEvents;
+  PathEvents &
+  GitEvents;
