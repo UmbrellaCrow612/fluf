@@ -97,6 +97,13 @@ const openFileXWindowImpl: CombinedCallback<
 };
 
 /**
+ * Contains all file x event operations
+ */
+export interface FileXEvents {
+  
+}
+
+/**
  * Register all file x related listeners
  * @param {import("electron").IpcMain} ipcMain
  */

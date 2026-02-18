@@ -1,7 +1,9 @@
 /**
  * Inspired by event emitter pattern from node events
  *
- * Extends the pattern of IpcMain and IpcRenderer types with full type safety
+ * Extends the pattern of IpcMain and IpcRenderer types with full type safety.
+ * 
+ * NOTE: Should only expose / import types only, and not expose or use any module's, this is purley typescript code types to help's typescript complier
  */
 
 import {
