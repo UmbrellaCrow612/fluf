@@ -1,3 +1,10 @@
+/**
+ * Preload script that is loaded in the browser / attached to the window object to access the api's defined.
+ * 
+ * SHOULD NOT USE ANY OTHER TS/JS MODULE CODE OR ANY BUILT IN NODE MODULES DRECTLY HERE AS THEY WILL FAIL
+ * TO LOAD IN THE BROWSER.
+ */
+
 import type {
   chromeWindowApi,
   clipboardApi,
@@ -27,11 +34,6 @@ import type { TypedIpcRenderer } from "./typed-ipc.js";
  * Fully typed version of ipc render
  */
 const typedIpcRender = ipcRenderer as TypedIpcRenderer;
-
-/**
- * This script is attached to the UI source code window object on load.
- * Hence you should not directly expose any Node specific packages or binarys here as it will fail to load them.
- */
 
 const commandServer: commandServer = {
   onOpenFile: (callback) => {
