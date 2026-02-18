@@ -22,7 +22,7 @@ export const broadcastToAll = <K extends keyof ApplicationEvents>(
       wc.send(channel, ...args);
     } else {
       logger.warn(
-        `trying to send ipc message for channel ${String(channel)} but the given window is destroyed`,
+        `trying to send ipc message for channel ${channel} but the given window is destroyed`,
       );
     }
   });
