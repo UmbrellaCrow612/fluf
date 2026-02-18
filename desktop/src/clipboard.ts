@@ -4,17 +4,15 @@
 
 import path from "path";
 import fs from "fs/promises";
-import { clipboard, nativeImage, type IpcMain } from "electron";
+import { clipboard, nativeImage } from "electron";
 import type {
   CombinedCallback,
   IpcMainInvokeEventCallback,
   writeImageToClipboard,
 } from "./type.js";
 import { logger } from "./logger.js";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").writeImageToClipboard>}
- */
 const copyImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   writeImageToClipboard
@@ -33,7 +31,6 @@ const copyImpl: CombinedCallback<
 
     const ext = path.extname(resolvedPath);
 
-    /** @type {Buffer} */
     let buffer = Buffer.alloc(0);
 
     switch (
@@ -66,9 +63,18 @@ const copyImpl: CombinedCallback<
 };
 
 /**
- * Registers all listeners and handlers for clipboard API
- * @param {import("electron").IpcMain} ipcMain
+ * Contains all clipboard event operations
  */
-export const registerClipboardListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("clipboard:write:image", copyImpl);
+export interface ClipboardEvents {
+  "clipboard:write:image": {
+    args: [pathLike: string];
+    return: boolean;
+  };
+}
+
+/**
+ * Registers all listeners and handlers for clipboard API
+ */
+export const registerClipboardListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("clipboard:write:image", copyImpl);
 };

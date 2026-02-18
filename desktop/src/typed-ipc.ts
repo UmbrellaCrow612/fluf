@@ -20,6 +20,7 @@ import type { GitEvents } from "./git.js";
 import type { FSearchEvents } from "./fsearch.js";
 import type { FSEvents } from "./fs.js";
 import type { FileXEvents } from "./file-x.js";
+import type { ClipboardEvents } from "./clipboard.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -179,4 +180,5 @@ export type ApplicationEvents = StoreEvents &
   GitEvents &
   FSearchEvents &
   FSEvents &
-  FileXEvents;
+  FileXEvents &
+  ClipboardEvents;

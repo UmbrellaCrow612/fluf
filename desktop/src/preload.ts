@@ -248,7 +248,8 @@ const fsearchApi: fsearchApi = {
 };
 
 const clipboardApi: clipboardApi = {
-  writeImage: (...args) => ipcRenderer.invoke("clipboard:write:image", ...args),
+  writeImage: (...args) =>
+    typedIpcRender.invoke("clipboard:write:image", ...args),
 };
 
 const storeApi: storeApi = {
