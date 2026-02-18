@@ -44,10 +44,10 @@ const commandServer: commandServer = {
       await callback(req);
     };
 
-    ipcRenderer.on("command:open:file", l);
+    typedIpcRender.on("command:open:file", l);
 
     return () => {
-      ipcRenderer.removeListener("command:open:file", l);
+      typedIpcRender.removeListener("command:open:file", l);
     };
   },
 };
