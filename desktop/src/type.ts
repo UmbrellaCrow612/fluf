@@ -325,7 +325,7 @@ export type pathJoin = (...args: string[]) => Promise<string>;
 /**
  * Get the path seperator calls path.sep
  */
-export type pathSep = () => Promise<string>;
+export type pathSep = () => Promise<"\\" | "/">;
 /**
  * Method to fix a filepath
  */

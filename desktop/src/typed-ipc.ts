@@ -13,6 +13,7 @@ import type { StoreEvents } from "./store.js";
 import type { WindowEvents } from "./window.js";
 import type { ShellEvents } from "./shell.js";
 import type { RipGrepEvents } from "./ripgrep.js";
+import type { PathEvents } from "./path.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -101,7 +102,6 @@ interface IpcMain<T extends EventMap<T>> {
 
 export type TypedIpcMain = IpcMain<ApplicationEvents>;
 
-
 /**
  * Maps the type definition of ipc render but with event emitter style event map passed to it
  */
@@ -162,4 +162,8 @@ export type TypedIpcRenderer = IpcRenderer<ApplicationEvents>;
 /**
  * Contains all fluffy channels and their arguments + return types for IPC
  */
-export type ApplicationEvents = StoreEvents & WindowEvents & ShellEvents & RipGrepEvents;
+export type ApplicationEvents = StoreEvents &
+  WindowEvents &
+  ShellEvents &
+  RipGrepEvents &
+  PathEvents;

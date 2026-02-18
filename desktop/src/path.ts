@@ -1,6 +1,7 @@
 /*
- * Contaisn path helpers utils
+ * Contains = path helpers utils
  */
+
 import path from "path";
 import os from "node:os";
 import type {
@@ -14,11 +15,8 @@ import type {
   relativePath,
 } from "./type.js";
 import { logger } from "./logger.js";
-import type { IpcMain } from "electron";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").normalizePath>}
- */
 const normImpl: CombinedCallback<IpcMainInvokeEventCallback, normalizePath> = (
   _,
   fp,
@@ -28,14 +26,11 @@ const normImpl: CombinedCallback<IpcMainInvokeEventCallback, normalizePath> = (
 
     return Promise.resolve(path.normalize(fp));
   } catch (error) {
-    logger.error("Failed to normalise path " + JSON.stringify(error));
+    logger.error("Failed to normalise path ", error);
     return Promise.resolve("");
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").relativePath>}
- */
 const relImpl: CombinedCallback<IpcMainInvokeEventCallback, relativePath> = (
   _,
   from,
@@ -54,16 +49,10 @@ const relImpl: CombinedCallback<IpcMainInvokeEventCallback, relativePath> = (
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathSep>}
- */
 const sepImpl: CombinedCallback<IpcMainInvokeEventCallback, pathSep> = () => {
   return Promise.resolve(path.sep);
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathJoin>}
- */
 const joinImpl: CombinedCallback<IpcMainInvokeEventCallback, pathJoin> = (
   _,
   ...args
@@ -71,9 +60,6 @@ const joinImpl: CombinedCallback<IpcMainInvokeEventCallback, pathJoin> = (
   return Promise.resolve(path.join(...args));
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").pathIsabsolute>}
- */
 const isAbs: CombinedCallback<IpcMainInvokeEventCallback, pathIsabsolute> = (
   _,
   p,
@@ -81,9 +67,6 @@ const isAbs: CombinedCallback<IpcMainInvokeEventCallback, pathIsabsolute> = (
   return Promise.resolve(path.isAbsolute(p));
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").getRootPath>}
- */
 const getRootPathImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   getRootPath
@@ -102,14 +85,43 @@ const getRootPathImpl: CombinedCallback<
 };
 
 /**
- * Register all path listeners
- * @param {import("electron").IpcMain} ipcMain
+ * All path event operations
  */
-export const registerPathListeners = (ipcMain: IpcMain) => {
-  ipcMain.handle("path:normalize", normImpl);
-  ipcMain.handle("path:relative", relImpl);
-  ipcMain.handle("path:sep", sepImpl);
-  ipcMain.handle("path:join", joinImpl);
-  ipcMain.handle("path:isabsolute", isAbs);
-  ipcMain.handle("path:root", getRootPathImpl);
+export interface PathEvents {
+  "path:normalize": {
+    args: [pathLike: string];
+    return: string;
+  };
+  "path:relative": {
+    args: [from: string, to: string];
+    return: string;
+  };
+  "path:sep": {
+    args: [];
+    return: "\\" | "/";
+  };
+  "path:join": {
+    args: [...string[]];
+    return: string;
+  };
+  "path:is:absolute": {
+    args: [pathLike: string];
+    return: boolean;
+  };
+  "path:root": {
+    args: [];
+    return: string;
+  };
+}
+
+/**
+ * Register all path listeners
+ */
+export const registerPathListeners = (typedIpcMain: TypedIpcMain) => {
+  typedIpcMain.handle("path:normalize", normImpl);
+  typedIpcMain.handle("path:relative", relImpl);
+  typedIpcMain.handle("path:sep", sepImpl);
+  typedIpcMain.handle("path:join", joinImpl);
+  typedIpcMain.handle("path:is:absolute", isAbs);
+  typedIpcMain.handle("path:root", getRootPathImpl);
 };

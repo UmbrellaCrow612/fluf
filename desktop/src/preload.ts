@@ -187,12 +187,12 @@ const fsApi: fsApi = {
 };
 
 const pathApi: pathApi = {
-  normalize: (...args) => ipcRenderer.invoke("path:normalize", ...args),
-  relative: (...args) => ipcRenderer.invoke("path:relative", ...args),
-  sep: (...args) => ipcRenderer.invoke("path:sep", ...args),
-  join: (...args) => ipcRenderer.invoke("path:join", ...args),
-  isAbsolute: (...args) => ipcRenderer.invoke("path:isabsolute", ...args),
-  getRootPath: (...args) => ipcRenderer.invoke("path:root", ...args),
+  normalize: (...args) => typedIpcRender.invoke("path:normalize", ...args),
+  relative: (...args) => typedIpcRender.invoke("path:relative", ...args),
+  sep: (...args) => typedIpcRender.invoke("path:sep", ...args),
+  join: (...args) => typedIpcRender.invoke("path:join", ...args),
+  isAbsolute: (...args) => typedIpcRender.invoke("path:is:absolute", ...args),
+  getRootPath: (...args) => typedIpcRender.invoke("path:root", ...args),
 };
 
 const shellApi: shellApi = {
