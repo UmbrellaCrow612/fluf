@@ -72,9 +72,6 @@ const mapDirItemsToFileNodes = async (
   return filenodes;
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").saveTo>}
- */
 const saveToImpl: CombinedCallback<IpcMainInvokeEventCallback, saveTo> = async (
   event,
   content,
@@ -101,7 +98,6 @@ const saveToImpl: CombinedCallback<IpcMainInvokeEventCallback, saveTo> = async (
     return false;
   }
 };
-
 
 const unwatchImpl: CombinedCallback<IpcMainEventCallback, fsStopWatching> = (
   _,
@@ -371,9 +367,6 @@ const readFileImpl: CombinedCallback<IpcMainInvokeEventCallback, readFile> = (
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").selectFile>}
- */
 const selectFileImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   selectFile
@@ -395,9 +388,6 @@ const selectFileImpl: CombinedCallback<
   }
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsGetNode>}
- */
 const getPathAsNodeImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   fsGetNode
@@ -490,6 +480,14 @@ export interface FSEvents {
     args: [pathLike: string];
     return: boolean;
   };
+  "file:save:to": {
+    args: [content: string, options: Electron.SaveDialogOptions | undefined];
+    return: boolean;
+  };
+  "file:select": {
+    args: [];
+    return: OpenDialogReturnValue | null;
+  };
   "fs:exists": {
     args: [pathLike: string];
     return: boolean;
@@ -509,6 +507,10 @@ export interface FSEvents {
   "fs:unwatch": {
     args: [pathLike: string];
     return: void;
+  };
+  "fs:path:as:node": {
+    args: [pathLike: string];
+    return: fileNode;
   };
   "dir:read": {
     args: [pathLike: string];
@@ -541,6 +543,7 @@ export const registerFsListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("file:create", createFileImpl);
   typedIpcMain.handle("fs:exists", existsImpl);
   typedIpcMain.handle("fs:remove", removeImpl);
+  typedIpcMain.handle("fs:path:as:node", getPathAsNodeImpl);
   typedIpcMain.handle("dir:read", readDirImpl);
   typedIpcMain.handle("dir:fuzzy:find", fuzzyFindDirectorysImpl);
   typedIpcMain.handle("dir:create", createDirImpl);
@@ -548,7 +551,6 @@ export const registerFsListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("dir:items:count", countItemsInDirectoryImpl);
   typedIpcMain.on("fs:watch", watchImpl);
   typedIpcMain.on("fs:unwatch", unwatchImpl);
-  // ipcMain.handle("file:save:to", saveToImpl);
-  // ipcMain.handle("file:select", selectFileImpl);
-  // ipcMain.handle("path:node", getPathAsNodeImpl);
+  typedIpcMain.handle("file:save:to", saveToImpl);
+  typedIpcMain.handle("file:select", selectFileImpl);
 };
