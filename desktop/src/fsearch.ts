@@ -14,6 +14,7 @@ import type {
 } from "./type.js";
 import { binPath } from "./packing.js";
 import type { IpcMain } from "electron";
+import type { TypedIpcMain } from "./typed-ipc.js";
 
 /** @type {import("./type").fsearchOptions} */
 const defaultSearchOptions: fsearchOptions = {
@@ -202,21 +203,27 @@ const searchWithFSearch = async (
   });
 };
 
-/**
- * @type {import("./type").CombinedCallback<import("./type").IpcMainInvokeEventCallback, import("./type").fsearch>}
- */
-const fsearchImpl: CombinedCallback<
-  IpcMainInvokeEventCallback,
-  fsearch
-> = async (_, options) => {
+const fsearchImpl: CombinedCallback<IpcMainInvokeEventCallback, fsearch> = (
+  _,
+  options,
+) => {
   const newOptions = { ...defaultSearchOptions, ...options };
-  return await searchWithFSearch(newOptions);
+  return searchWithFSearch(newOptions);
 };
 
 /**
- * Register fsearch listeners
- * @param {import("electron").IpcMain} ipcMain
+ * Contains all fsearch event operations
  */
-export function registerFsearchListeners(ipcMain: IpcMain) {
-  ipcMain.handle("fsearch", fsearchImpl);
+export interface FSearchEvents {
+  fsearch: {
+    args: [options: fsearchOptions];
+    return: fsearchResult[];
+  };
+}
+
+/**
+ * Register fsearch listeners
+ */
+export function registerFsearchListeners(typedIpcMain: TypedIpcMain) {
+  typedIpcMain.handle("fsearch", fsearchImpl);
 }

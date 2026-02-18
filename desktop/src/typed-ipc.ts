@@ -15,6 +15,7 @@ import type { ShellEvents } from "./shell.js";
 import type { RipGrepEvents } from "./ripgrep.js";
 import type { PathEvents } from "./path.js";
 import type { GitEvents } from "./git.js";
+import type { FSearchEvents } from "./fsearch.js";
 
 /**
  * Define events with their argument types AND return types for handlers
@@ -101,6 +102,9 @@ interface IpcMain<T extends EventMap<T>> {
   removeHandler<K extends keyof T>(channel: K): void;
 }
 
+/**
+ * Typed version of electrons IPC main with full type safety
+ */
 export type TypedIpcMain = IpcMain<ApplicationEvents>;
 
 /**
@@ -168,4 +172,5 @@ export type ApplicationEvents = StoreEvents &
   ShellEvents &
   RipGrepEvents &
   PathEvents &
-  GitEvents;
+  GitEvents &
+  FSearchEvents;

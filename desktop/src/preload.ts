@@ -243,7 +243,7 @@ const gitApi: gitApi = {
 };
 
 const fsearchApi: fsearchApi = {
-  search: (...args) => ipcRenderer.invoke("fsearch", ...args),
+  search: (...args) => typedIpcRender.invoke("fsearch", ...args),
 };
 
 const clipboardApi: clipboardApi = {
