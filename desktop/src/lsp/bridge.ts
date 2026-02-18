@@ -1,4 +1,3 @@
-import type { IpcMain } from "electron";
 import { logger } from "../logger.js";
 import { GoLanguageServer } from "./impl/golsp.js";
 import { PythonLanguageServer } from "./impl/pythonlsp.js";
