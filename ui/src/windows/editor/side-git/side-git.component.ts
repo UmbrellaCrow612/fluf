@@ -60,7 +60,7 @@ export class SideGitComponent implements OnInit, OnDestroy {
 
     this.gitStatusResult = await this.api.gitApi.gitStatus(this.selectedDir()!);
 
-    this.unSub = this.api.fsApi.onChange(this.selectedDir()!, (event) => {
+    this.unSub = this.api.fsApi.onChange(this.selectedDir()!, (_, event) => {
       this.runGitStatus(event);
     });
 
@@ -82,7 +82,7 @@ export class SideGitComponent implements OnInit, OnDestroy {
     this.isCreatingGitRepo = false;
     this.isGitInit = true;
 
-    this.unSub = this.api.fsApi.onChange(this.selectedDir()!, (event) => {
+    this.unSub = this.api.fsApi.onChange(this.selectedDir()!, (_, event) => {
       this.runGitStatus(event);
     });
   }
