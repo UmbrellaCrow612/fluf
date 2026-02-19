@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs/promises");
 const { runCmd } = require("./cmd-helper");
 const { Logger } = require("node-logy");
+const { cleanExit } = require("./logger-helper");
 
 const logger = new Logger({
   saveToLogFiles: true,
@@ -23,7 +24,7 @@ async function main() {
     await fs.access(DESKTOP_BASE_PATH);
   } catch (error) {
     logger.error("Failed to check if desktop base path exists: ", error);
-    process.exit(1);
+    await cleanExit(logger, 1);
   }
 
   logger.info("Running build desktop");
@@ -31,13 +32,12 @@ async function main() {
     await runCmd("npm", ["run", "build"], { cwd: DESKTOP_BASE_PATH });
   } catch (error) {
     logger.error("Failed to build desktop source code: ", error);
-    process.exit(1);
+    await cleanExit(logger, 1);
   }
 
   logger.info("Desktop build completed");
 
-  await logger.flush();
-  await logger.shutdown();
+  await cleanExit(logger);
 }
 
 main();

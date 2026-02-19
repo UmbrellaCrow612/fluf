@@ -10,10 +10,16 @@
 npm ci
 ```
 
+# Build example
+
+```bash
+npm run build
+```
+
 # Build proccess
 
 - Build desktop
-- Build UI 
+- Build UI
 - Combine them
 - Asar them
 - Download electron binarys

@@ -4,7 +4,9 @@
   "description": "Contains all out build scripts",
   "main": "entry.js",
   "type": "commonjs",
-  "scripts": {},
+  "scripts": {
+    "build": "node entry.js"
+  },
   "keywords": [
     "Build"
   ],
