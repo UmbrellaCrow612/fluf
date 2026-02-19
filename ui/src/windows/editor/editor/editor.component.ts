@@ -69,11 +69,9 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
         if (this.unSub) {
           this.unSub();
         }
-        this.unSub = this.api.fsApi.onChange(dirPath, (event) => {
-          if (event.eventType == 'change' || event.eventType == 'rename') {
+        this.unSub = this.api.fsApi.onChange(dirPath, () => {
             this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
             console.log('Directory changed ' + dirPath);
-          }
         });
       }
     });

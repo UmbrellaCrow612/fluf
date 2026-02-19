@@ -3,12 +3,8 @@
   "version": "0.0.1",
   "description": "Contains all our desktop specific code built with electron for flufy",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
-    "start": "node build.js && npx electron . --trace-warnings",
-    "build:linux": "node build.js linux",
-    "build:darwin": "node build.js darwin",
-    "build:windows": "node build.js windows",
+    "dev": "node build.js --dev && npx electron . --trace-warnings",
     "binman": "npx binman .",
     "binman:linux": "npx binman . --platforms=linux",
     "binman:windows": "npx binman . --platforms=win32",
@@ -22,19 +18,19 @@
     "@eslint/json": "^0.14.0",
     "@types/node": "^25.2.3",
     "electron": "^39.2.0",
-    "esbuild": "^0.25.10",
+    "esbuild": "0.25.12",
     "eslint": "^9.39.2",
     "globals": "^16.5.0",
     "pyright": "^1.1.407",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.55.0",
-    "umbr-binman": "^1.0.16",
     "vscode-languageserver-protocol": "^3.17.5"
   },
   "type": "module",
   "dependencies": {
     "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
     "flufy-ipc-contract": "^0.0.4",
-    "node-logy": "^0.2.0"
+    "node-logy": "^0.2.0",
+    "umbr-binman": "^1.0.16"
   }
 }

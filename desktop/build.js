@@ -1,6 +1,15 @@
 import { spawn } from "child_process";
-import { copyFile, mkdir, rename, rm, readFile, writeFile } from "fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "fs/promises";
 import { dirname } from "path";
+import * as esbuild from "esbuild";
+
+// Parse command line arguments
+const args = process.argv.slice(2);
+const isDev = args.includes("--dev");
+const isProd = args.includes("--prod") || (!isDev && !args.includes("--dev"));
+
+// Only minify in prod mode
+const shouldMinify = isProd;
 
 const commands = [["npx", ["tsc", "-p", ".\\tsconfig.json"]]];
 
@@ -28,7 +37,7 @@ function runCommand([cmd, args]) {
 
 async function copyTypesFile() {
   const sourcePath = "./src/type.ts";
-  const destPath = "../ui/gen/type.ts";
+  const destPath = "../ui/src/gen/type.ts";
 
   try {
     await mkdir(dirname(destPath), { recursive: true });
@@ -41,7 +50,7 @@ async function copyTypesFile() {
 
 // WE do this becuase when generating it adds export {} at the end breaking preload load in browser
 async function FixDistPreload() {
-  const filePath = "./dist/preload.js";
+  const filePath = "./staging/preload.js";
 
   try {
     const content = await readFile(filePath, "utf-8");
@@ -67,8 +76,64 @@ async function FixDistPreload() {
   }
 }
 
+// Run esbuild on staging/index.js to dist/index.js
+async function buildIndex() {
+  try {
+    console.log(
+      `\nBuilding staging/index.js -> dist/index.js${shouldMinify ? " (minified)" : " (unminified)"}...`,
+    );
+    await esbuild.build({
+      entryPoints: ["./staging/index.js"],
+      bundle: true,
+      minify: shouldMinify,
+      outfile: "dist/index.js",
+      platform: "node",
+      format: "esm",
+      external: [
+        "electron",
+        "@homebridge/node-pty-prebuilt-multiarch",
+        "node-logy",
+        "typescript",
+        "umbr-binman",
+      ],
+    });
+    console.log("✓ Built dist/index.js");
+  } catch (err) {
+    throw new Error(`Failed to build index: ${err.message}`);
+  }
+}
+
+// Run esbuild on staging/preload.js to dist/preload.js
+async function buildPreload() {
+  try {
+    console.log(
+      `\nBuilding staging/preload.js -> dist/preload.js${shouldMinify ? " (minified)" : " (unminified)"}...`,
+    );
+    await esbuild.build({
+      entryPoints: ["./staging/preload.js"],
+      bundle: true,
+      minify: shouldMinify,
+      outfile: "dist/preload.js",
+      platform: "node",
+      format: "esm",
+      external: ["electron"],
+    });
+    console.log("✓ Built dist/preload.js");
+  } catch (err) {
+    throw new Error(`Failed to build preload: ${err.message}`);
+  }
+}
+
 (async () => {
   try {
+    // Log build mode
+    console.log(`\n🔨 Build mode: ${isProd ? "PRODUCTION" : "DEVELOPMENT"}`);
+    if (isProd) {
+      console.log("   Minification enabled");
+    } else {
+      console.log("   Minification disabled");
+    }
+
     for (const [cmd, args] of commands) {
       console.log(`\nRunning: ${cmd} ${args.join(" ")}\n`);
       await runCommand([cmd, args]);
@@ -76,10 +141,12 @@ async function FixDistPreload() {
 
     await copyTypesFile();
     await FixDistPreload();
+    await buildIndex();
+    await buildPreload();
 
-    console.log("\nAll commands executed successfully!");
+    console.log("\n✅ All commands executed successfully!");
   } catch (err) {
-    console.error("\nCommand failed:", err.message);
+    console.error("\n❌ Command failed:", err.message);
     process.exit(1);
   }
 })();
