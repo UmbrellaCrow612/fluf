@@ -1,7 +1,8 @@
 import { spawn } from "child_process";
-import { copyFile, mkdir, readFile, writeFile } from "fs/promises";
+import { copyFile, mkdir, readFile, writeFile, cp } from "fs/promises";
 import { dirname } from "path";
 import * as esbuild from "esbuild";
+import { rm } from "fs/promises";
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -35,6 +36,23 @@ function runCommand([cmd, args]) {
   });
 }
 
+// Clean ./dist and ./staging folders if they exist
+async function clean() {
+  const folders = ["./dist", "./staging"];
+
+  for (const folder of folders) {
+    try {
+      await rm(folder, { recursive: true, force: true });
+      console.log(`✓ Removed ${folder}/`);
+    } catch (err) {
+      // If folder doesn't exist, that's fine
+      if (err.code !== "ENOENT") {
+        throw new Error(`Failed to remove ${folder}: ${err.message}`);
+      }
+    }
+  }
+}
+
 async function copyTypesFile() {
   const sourcePath = "./src/type.ts";
   const destPath = "../ui/src/gen/type.ts";
@@ -50,7 +68,7 @@ async function copyTypesFile() {
 
 // WE do this becuase when generating it adds export {} at the end breaking preload load in browser
 async function FixDistPreload() {
-  const filePath = "./staging/preload.js";
+  const filePath = isDev ? "./dist/preload.js" : "./staging/preload.js";
 
   try {
     const content = await readFile(filePath, "utf-8");
@@ -73,6 +91,17 @@ async function FixDistPreload() {
     }
   } catch (err) {
     throw new Error(`Failed to fix preload file: ${err.message}`);
+  }
+}
+
+// Copy staging to dist in dev mode, or run esbuild in prod
+async function copyStagingToDist() {
+  try {
+    console.log(`\nCopying staging/ to dist/ (dev mode - no bundling)...`);
+    await cp("./staging", "./dist", { recursive: true, force: true });
+    console.log("✓ Copied staging/ to dist/");
+  } catch (err) {
+    throw new Error(`Failed to copy staging to dist: ${err.message}`);
   }
 }
 
@@ -126,12 +155,14 @@ async function buildPreload() {
 
 (async () => {
   try {
+    await clean();
+
     // Log build mode
     console.log(`\n🔨 Build mode: ${isProd ? "PRODUCTION" : "DEVELOPMENT"}`);
     if (isProd) {
       console.log("   Minification enabled");
     } else {
-      console.log("   Minification disabled");
+      console.log("   Minification disabled (fast copy mode)");
     }
 
     for (const [cmd, args] of commands) {
@@ -140,9 +171,16 @@ async function buildPreload() {
     }
 
     await copyTypesFile();
-    await FixDistPreload();
-    await buildIndex();
-    await buildPreload();
+
+    if (isDev) {
+      // Dev mode: copy staging to dist, then fix preload in dist
+      await copyStagingToDist();
+      await FixDistPreload();
+    } else {
+      await FixDistPreload();
+      await buildIndex();
+      await buildPreload();
+    }
 
     console.log("\n✅ All commands executed successfully!");
   } catch (err) {
