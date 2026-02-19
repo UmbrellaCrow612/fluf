@@ -8,7 +8,8 @@
     "binman": "npx binman .",
     "binman:linux": "npx binman . --platforms=linux",
     "binman:windows": "npx binman . --platforms=win32",
-    "binman:darwin": "npx binman . --platforms=darwin"
+    "binman:darwin": "npx binman . --platforms=darwin",
+    "build": "node build.js"
   },
   "keywords": [],
   "author": "Yousaf Wazir",
