@@ -2,6 +2,7 @@ import { spawn } from "child_process";
 import { copyFile, mkdir, readFile, writeFile, cp } from "fs/promises";
 import { dirname } from "path";
 import * as esbuild from "esbuild";
+import { rm } from "fs/promises";
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -33,6 +34,23 @@ function runCommand([cmd, args]) {
       reject(err);
     });
   });
+}
+
+// Clean ./dist and ./staging folders if they exist
+async function clean() {
+  const folders = ["./dist", "./staging"];
+
+  for (const folder of folders) {
+    try {
+      await rm(folder, { recursive: true, force: true });
+      console.log(`✓ Removed ${folder}/`);
+    } catch (err) {
+      // If folder doesn't exist, that's fine
+      if (err.code !== "ENOENT") {
+        throw new Error(`Failed to remove ${folder}: ${err.message}`);
+      }
+    }
+  }
 }
 
 async function copyTypesFile() {
@@ -137,6 +155,8 @@ async function buildPreload() {
 
 (async () => {
   try {
+    await clean();
+
     // Log build mode
     console.log(`\n🔨 Build mode: ${isProd ? "PRODUCTION" : "DEVELOPMENT"}`);
     if (isProd) {
