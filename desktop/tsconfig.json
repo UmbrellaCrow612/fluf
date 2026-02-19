@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist",
+    "outDir": "./staging",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "esnext",
