@@ -3,6 +3,14 @@ import { copyFile, mkdir, readFile, writeFile } from "fs/promises";
 import { dirname } from "path";
 import * as esbuild from "esbuild";
 
+// Parse command line arguments
+const args = process.argv.slice(2);
+const isDev = args.includes("--dev");
+const isProd = args.includes("--prod") || (!isDev && !args.includes("--dev"));
+
+// Only minify in prod mode
+const shouldMinify = isProd;
+
 const commands = [["npx", ["tsc", "-p", ".\\tsconfig.json"]]];
 
 // Helper function to run a command and return a Promise
@@ -71,11 +79,13 @@ async function FixDistPreload() {
 // Run esbuild on staging/index.js to dist/index.js
 async function buildIndex() {
   try {
-    console.log("\nBuilding staging/index.js -> dist/index.js...");
+    console.log(
+      `\nBuilding staging/index.js -> dist/index.js${shouldMinify ? " (minified)" : " (unminified)"}...`,
+    );
     await esbuild.build({
       entryPoints: ["./staging/index.js"],
       bundle: true,
-      minify:true,
+      minify: shouldMinify,
       outfile: "dist/index.js",
       platform: "node",
       format: "esm",
@@ -96,10 +106,13 @@ async function buildIndex() {
 // Run esbuild on staging/preload.js to dist/preload.js
 async function buildPreload() {
   try {
-    console.log("\nBuilding staging/preload.js -> dist/preload.js...");
+    console.log(
+      `\nBuilding staging/preload.js -> dist/preload.js${shouldMinify ? " (minified)" : " (unminified)"}...`,
+    );
     await esbuild.build({
       entryPoints: ["./staging/preload.js"],
       bundle: true,
+      minify: shouldMinify,
       outfile: "dist/preload.js",
       platform: "node",
       format: "esm",
@@ -113,6 +126,14 @@ async function buildPreload() {
 
 (async () => {
   try {
+    // Log build mode
+    console.log(`\n🔨 Build mode: ${isProd ? "PRODUCTION" : "DEVELOPMENT"}`);
+    if (isProd) {
+      console.log("   Minification enabled");
+    } else {
+      console.log("   Minification disabled");
+    }
+
     for (const [cmd, args] of commands) {
       console.log(`\nRunning: ${cmd} ${args.join(" ")}\n`);
       await runCommand([cmd, args]);
@@ -123,9 +144,9 @@ async function buildPreload() {
     await buildIndex();
     await buildPreload();
 
-    console.log("\nAll commands executed successfully!");
+    console.log("\n✅ All commands executed successfully!");
   } catch (err) {
-    console.error("\nCommand failed:", err.message);
+    console.error("\n❌ Command failed:", err.message);
     process.exit(1);
   }
 })();
