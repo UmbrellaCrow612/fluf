@@ -531,7 +531,6 @@ export class TypeScriptProcess {
 
   /**
    * Send a response to UI if the response is a notification
-   * @param {any} notification - Notification received
    */
   #notify(notification: any) {
     if (typeof notification !== "object")
@@ -570,7 +569,7 @@ export class TypeScriptProcess {
       const rpcNotification: NotificationMessage = {
         jsonrpc: "2.0",
         method: notification.event,
-        params: {},
+        params: notification,
       };
 
       broadcastToAll(
@@ -580,15 +579,13 @@ export class TypeScriptProcess {
         this.#workSpaceFolder,
       );
 
-      // We convert it to LSP textDocument/publishDiagnostics
-      if (notification.event === "semanticDiag") {
-        /** @type {import("typescript").server.protocol.DiagnosticEventBody} */
+      // We convert it to LSP textDocument/publishDiagnostics for syntaxDiag ts equalivent
+      if (notification.event === "syntaxDiag") {
         const body: import("typescript").server.protocol.DiagnosticEventBody =
           notification.body;
 
         /**
          * This the type UI expects with common JSON rpc publish diag
-         * @type {import("vscode-languageserver-protocol").PublishDiagnosticsParams}
          */
         const lspResponse: import("vscode-languageserver-protocol").PublishDiagnosticsParams =
           {
@@ -614,6 +611,7 @@ export class TypeScriptProcess {
           };
 
         rpcNotification.params = lspResponse;
+        rpcNotification.method = "textDocument/publishDiagnostics"; // what UI expects for errors RPC spec
 
         broadcastToAll(
           "lsp:notification",
