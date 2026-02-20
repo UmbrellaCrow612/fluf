@@ -22,7 +22,7 @@ async function main() {
   try {
     await fs.promises.access(DESKTOP_BUILD_OUTPUT_PATH);
   } catch (error) {
-    logger.error("Desktop final build output path does not exit ", error);
+    logger.error("Desktop final build output path does not exist ", error);
     await cleanExit(logger, 1);
   }
 
@@ -30,7 +30,7 @@ async function main() {
   try {
     await fs.promises.access(UI_BUILD_OUTPUT_PATH);
   } catch (error) {
-    logger.error("UI final build output path does not exit ", error);
+    logger.error("UI final build output path does not exist ", error);
     await cleanExit(logger, 1);
   }
 
@@ -38,6 +38,26 @@ async function main() {
   try {
     await fs.promises.mkdir(STAGE_ONE_BASE_DIR, { recursive: true });
   } catch (error) {
+    await cleanExit(logger, 1);
+  }
+
+  logger.info("Copying desktop build output into stage one...");
+  try {
+    await fs.promises.cp(DESKTOP_BUILD_OUTPUT_PATH, `${STAGE_ONE_BASE_DIR}`, {
+      recursive: true,
+    });
+  } catch (error) {
+    logger.error("Failed to copy desktop build output: ", error);
+    await cleanExit(logger, 1);
+  }
+
+  logger.info("Copying UI build output into stage one...");
+  try {
+    await fs.promises.cp(UI_BUILD_OUTPUT_PATH, `${STAGE_ONE_BASE_DIR}`, {
+      recursive: true,
+    });
+  } catch (error) {
+    logger.error("Failed to copy UI build output: ", error);
     await cleanExit(logger, 1);
   }
 
