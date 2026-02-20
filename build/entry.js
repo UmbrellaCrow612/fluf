@@ -30,7 +30,17 @@ async function main() {
   }
 
   logger.info("Finished build proccess")
+
+  logger.info("Starting stage one")
+  try {
+    await runCmd("node", ["staging-one.js"])
+  } catch (error) {
+    logger.error("Failed stage one: ", error)
+    await cleanExit(logger, 1)
+  }
   
+
+  logger.info("Finished build")
   await cleanExit(logger)
 }
 
