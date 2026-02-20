@@ -5,6 +5,8 @@ Electron-based desktop application providing native system access (filesystem, s
 
 ## Quick Start
 
+- Copy `.env.example` -> to `.env` in same directory
+
 ```bash
 npm ci
 npm run dev      # Development build with source maps
