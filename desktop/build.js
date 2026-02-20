@@ -186,7 +186,7 @@ async function copyOverFilesToDist() {
       const destination = join(distDir, fileName);
       await copyFile(file, destination);
       console.log(`Copied ${file} → ${destination}`);
-    })
+    }),
   );
 }
 
@@ -210,9 +210,9 @@ async function copyOverFilesToDist() {
     await copyTypesFile();
 
     if (isDev) {
-      // Dev mode: copy staging to dist, then fix preload in dist
-      await copyStagingToDist();
+      await copyStagingToDist(); // we do this becuase it just offers better logging it is the same as the step below as it still poinbts to index.js on launch
       await FixDistPreload();
+      await copyOverFilesToDist();
     } else {
       await FixDistPreload();
       await buildIndex();
