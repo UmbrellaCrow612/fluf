@@ -2,9 +2,9 @@
   "name": "desktop",
   "version": "0.0.1",
   "description": "Contains all our desktop specific code built with electron for flufy",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
-    "dev": "node build.js --dev && npx electron . --trace-warnings",
+    "dev": "node build.js --dev && cd ./dist && npx electron . --trace-warnings",
     "prod": "node build.js && npx electron . --trace-warnings",
     "binman": "npx binman .",
     "build": "node build.js"

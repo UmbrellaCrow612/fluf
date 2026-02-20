@@ -21,8 +21,7 @@ npm run build
 
 - Build desktop
 - Build UI
-- Combine them
-- Asar them
-- Download electron binarys
-- Move the asar app into the binary
-- Final output
+- Combine them - Stage one
+- Asar them - Stage two
+- Download electron binarys - Stage three
+- Move the asar app into the binary eleectron downloaded - Stage four

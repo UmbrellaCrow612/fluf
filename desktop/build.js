@@ -5,11 +5,12 @@
  * - Build typescript code -> raw JS
  * - Minify with esbuild
  * - Download external binarys with binman
+ * - Copy needed files into dist
  */
 
 import { spawn } from "child_process";
 import { copyFile, mkdir, readFile, writeFile, cp } from "fs/promises";
-import { dirname } from "path";
+import { dirname, join, basename } from "path";
 import * as esbuild from "esbuild";
 import { rm } from "fs/promises";
 
@@ -22,7 +23,6 @@ const isProd = args.includes("--prod") || (!isDev && !args.includes("--dev"));
 const shouldMinify = isProd;
 
 const commands = [
-  ["npm", ["ci"]],
   ["npx", ["tsc"]],
   [
     "npx",
@@ -174,6 +174,22 @@ async function buildPreload() {
   }
 }
 
+async function copyOverFilesToDist() {
+  const filesToCopy = ["./.env", "package.json"];
+  const distDir = "./dist";
+
+  await mkdir(distDir, { recursive: true });
+
+  await Promise.all(
+    filesToCopy.map(async (file) => {
+      const fileName = basename(file);
+      const destination = join(distDir, fileName);
+      await copyFile(file, destination);
+      console.log(`Copied ${file} → ${destination}`);
+    })
+  );
+}
+
 (async () => {
   try {
     await clean();
@@ -201,6 +217,7 @@ async function buildPreload() {
       await FixDistPreload();
       await buildIndex();
       await buildPreload();
+      await copyOverFilesToDist();
     }
 
     console.log("\n✅ All commands executed successfully!");
