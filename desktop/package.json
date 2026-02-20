@@ -7,9 +7,6 @@
     "dev": "node build.js --dev && npx electron . --trace-warnings",
     "prod": "node build.js && npx electron . --trace-warnings",
     "binman": "npx binman .",
-    "binman:linux": "npx binman . --platforms=linux",
-    "binman:windows": "npx binman . --platforms=win32",
-    "binman:darwin": "npx binman . --platforms=darwin",
     "build": "node build.js"
   },
   "keywords": [],

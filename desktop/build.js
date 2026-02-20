@@ -1,3 +1,12 @@
+/**
+ * Self contained script to build desktop source code
+ *
+ * - Download deps
+ * - Build typescript code -> raw JS
+ * - Minify with esbuild
+ * - Download external binarys with binman
+ */
+
 import { spawn } from "child_process";
 import { copyFile, mkdir, readFile, writeFile, cp } from "fs/promises";
 import { dirname } from "path";
@@ -12,7 +21,19 @@ const isProd = args.includes("--prod") || (!isDev && !args.includes("--dev"));
 // Only minify in prod mode
 const shouldMinify = isProd;
 
-const commands = [["npx", ["tsc", "-p", ".\\tsconfig.json"]]];
+const commands = [
+  ["npm", ["ci"]],
+  ["npx", ["tsc"]],
+  [
+    "npx",
+    [
+      "binman",
+      ".",
+      `-platforms=${process.platform}`,
+      `-architectures=${process.arch}`,
+    ],
+  ],
+];
 
 // Helper function to run a command and return a Promise
 function runCommand([cmd, args]) {
@@ -36,9 +57,9 @@ function runCommand([cmd, args]) {
   });
 }
 
-// Clean ./dist and ./staging folders if they exist
+// Clean  folders if they exist
 async function clean() {
-  const folders = ["./dist", "./staging"];
+  const folders = ["./dist", "./staging", "./bin"];
 
   for (const folder of folders) {
     try {
@@ -166,7 +187,7 @@ async function buildPreload() {
     }
 
     for (const [cmd, args] of commands) {
-      console.log(`\nRunning: ${cmd} ${args.join(" ")}\n`);
+      console.log(`Running: ${cmd} ${args.join(" ")}`);
       await runCommand([cmd, args]);
     }
 
