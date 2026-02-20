@@ -15,7 +15,6 @@ const logger = new Logger({
 async function main() {
   logger.info("Started build desktop");
 
-  const DESKTOP_BASE_PATH = path.join(__dirname, "../", "desktop");
 
   logger.info("Desktop base path: ", DESKTOP_BASE_PATH);
 

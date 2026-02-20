@@ -1,6 +1,16 @@
+/**
+ * Self contained script to build desktop source code
+ *
+ * - Download deps
+ * - Build typescript code -> raw JS
+ * - Minify with esbuild
+ * - Download external binarys with binman
+ * - Copy needed files into dist
+ */
+
 import { spawn } from "child_process";
 import { copyFile, mkdir, readFile, writeFile, cp } from "fs/promises";
-import { dirname } from "path";
+import { dirname, join, basename } from "path";
 import * as esbuild from "esbuild";
 import { rm } from "fs/promises";
 
@@ -12,7 +22,18 @@ const isProd = args.includes("--prod") || (!isDev && !args.includes("--dev"));
 // Only minify in prod mode
 const shouldMinify = isProd;
 
-const commands = [["npx", ["tsc", "-p", ".\\tsconfig.json"]]];
+const commands = [
+  ["npx", ["tsc"]],
+  [
+    "npx",
+    [
+      "binman",
+      ".",
+      `-platforms=${process.platform}`,
+      `-architectures=${process.arch}`,
+    ],
+  ],
+];
 
 // Helper function to run a command and return a Promise
 function runCommand([cmd, args]) {
@@ -36,9 +57,9 @@ function runCommand([cmd, args]) {
   });
 }
 
-// Clean ./dist and ./staging folders if they exist
+// Clean  folders if they exist
 async function clean() {
-  const folders = ["./dist", "./staging"];
+  const folders = ["./dist", "./staging", "./bin"];
 
   for (const folder of folders) {
     try {
@@ -153,6 +174,22 @@ async function buildPreload() {
   }
 }
 
+async function copyOverFilesToDist() {
+  const filesToCopy = ["./.env", "package.json"];
+  const distDir = "./dist";
+
+  await mkdir(distDir, { recursive: true });
+
+  await Promise.all(
+    filesToCopy.map(async (file) => {
+      const fileName = basename(file);
+      const destination = join(distDir, fileName);
+      await copyFile(file, destination);
+      console.log(`Copied ${file} → ${destination}`);
+    }),
+  );
+}
+
 (async () => {
   try {
     await clean();
@@ -166,20 +203,21 @@ async function buildPreload() {
     }
 
     for (const [cmd, args] of commands) {
-      console.log(`\nRunning: ${cmd} ${args.join(" ")}\n`);
+      console.log(`Running: ${cmd} ${args.join(" ")}`);
       await runCommand([cmd, args]);
     }
 
     await copyTypesFile();
 
     if (isDev) {
-      // Dev mode: copy staging to dist, then fix preload in dist
-      await copyStagingToDist();
+      await copyStagingToDist(); // we do this becuase it just offers better logging it is the same as the step below as it still poinbts to index.js on launch
       await FixDistPreload();
+      await copyOverFilesToDist();
     } else {
       await FixDistPreload();
       await buildIndex();
       await buildPreload();
+      await copyOverFilesToDist();
     }
 
     console.log("\n✅ All commands executed successfully!");

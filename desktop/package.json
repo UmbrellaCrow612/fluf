@@ -2,14 +2,11 @@
   "name": "desktop",
   "version": "0.0.1",
   "description": "Contains all our desktop specific code built with electron for flufy",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
-    "dev": "node build.js --dev && npx electron . --trace-warnings",
-    "prod": "node build.js && npx electron . --trace-warnings",
+    "dev": "node build.js --dev && npx electron --trace-warnings ./dist",
+    "prod": "node build.js && npx electron --trace-warnings ./dist",
     "binman": "npx binman .",
-    "binman:linux": "npx binman . --platforms=linux",
-    "binman:windows": "npx binman . --platforms=win32",
-    "binman:darwin": "npx binman . --platforms=darwin",
     "build": "node build.js"
   },
   "keywords": [],
