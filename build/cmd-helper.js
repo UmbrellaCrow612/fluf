@@ -1,46 +1,29 @@
 const { spawn } = require("node:child_process");
 
 /**
- * Executes a command with arguments in an async pattern
- * @param {string} cmd - The command to execute
- * @param {string[]} args - Array of arguments for the command
- * @param {object} options - Optional spawn options (cwd, env, etc.)
- * @returns {Promise<{stdout: string, stderr: string, exitCode: number}>}
+ * @param {string} cmd
+ * @param {string[]} [args]
+ * @param {import("node:child_process").SpawnOptions} [options]
+ * @returns {Promise<void>}
  */
 function runCmd(cmd, args = [], options = {}) {
   return new Promise((resolve, reject) => {
+    /** @type {import("node:child_process").ChildProcess} */
     const child = spawn(cmd, args, {
       stdio: "inherit",
       shell: true,
       ...options,
     });
 
-    let stdout = "";
-    let stderr = "";
-
-    // Collect stdout data
-    child.stdout?.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    // Collect stderr data
-    child.stderr?.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    // Handle process completion
     child.on("close", (exitCode) => {
-      if (!exitCode) exitCode = 1;
-      resolve({
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
-        exitCode,
-      });
+      const code = exitCode ?? 1;
+      code !== 0
+        ? reject(new Error(`Command failed with exit code ${code}`))
+        : resolve();
     });
 
-    // Handle process errors (spawn failures)
-    child.on("error", (error) => {
-      reject(new Error(`Failed to spawn process: ${error.message}`));
+    child.on("error", (err) => {
+      reject(new Error(`Failed to spawn: ${err.message}`));
     });
   });
 }

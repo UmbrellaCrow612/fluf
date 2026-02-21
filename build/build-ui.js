@@ -3,6 +3,7 @@ const fs = require("fs/promises");
 const { runCmd } = require("./cmd-helper");
 const { Logger } = require("node-logy");
 const { cleanExit } = require("./logger-helper");
+const { UI_BASE_PATH } = require("./ui_uris");
 
 const logger = new Logger({
   saveToLogFiles: true,
@@ -14,8 +15,6 @@ const logger = new Logger({
  */
 async function main() {
   logger.info("Started build UI");
-
-  const UI_BASE_PATH = path.join(__dirname, "../", "ui");
 
   logger.info("UI base path: ", UI_BASE_PATH);
 

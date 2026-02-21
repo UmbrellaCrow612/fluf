@@ -3,6 +3,7 @@ const fs = require("fs/promises");
 const { runCmd } = require("./cmd-helper");
 const { Logger } = require("node-logy");
 const { cleanExit } = require("./logger-helper");
+const { DESKTOP_BASE_PATH } = require("./desktop_uris");
 
 const logger = new Logger({
   saveToLogFiles: true,
@@ -14,7 +15,6 @@ const logger = new Logger({
  */
 async function main() {
   logger.info("Started build desktop");
-
 
   logger.info("Desktop base path: ", DESKTOP_BASE_PATH);
 
