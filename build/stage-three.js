@@ -4,7 +4,9 @@ const fs = require("fs/promises");
 const {
   STAGE_THREE_DIST,
   ELECTRON_DIST_DOWNLOADED,
+  STAGE_THREE_DIST_RESOURCE,
 } = require("./stage_three_uris");
+const { STAGE_TWO_ASAR_PATH } = require("./stage_uris");
 
 const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
 
@@ -64,6 +66,14 @@ async function main() {
     }
 
     logger.info("Copied electron binarys to ", STAGE_THREE_DIST);
+
+    logger.info(
+      "Moving stage two app asar file to stage three from: ",
+      STAGE_TWO_ASAR_PATH,
+      " to: ",
+      STAGE_THREE_DIST_RESOURCE,
+    );
+
     await cleanExit(logger);
   } catch (error) {
     logger.error("Failed stage three: ", error);

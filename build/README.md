@@ -23,5 +23,4 @@ npm run build
 - Build UI
 - Combine them - Stage one
 - Asar them - Stage two
-- Download electron binarys - done by default via npm ci -> move them to root for packing - Stage three
-- Move asar app code into the binary eleectron downloaded - Stage four
+- Download electron binarys - done by default via npm ci -> move them to root for packing - Stage three -> move stage two asar file into it
