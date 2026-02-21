@@ -1,50 +1,70 @@
 const { Logger } = require("node-logy");
 const { cleanExit } = require("./logger-helper");
+const fs = require("fs/promises");
+const {
+  STAGE_THREE_DIST,
+  ELECTRON_DIST_DOWNLOADED,
+} = require("./stage_three_uris");
 
 const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
 
-const electronDownloadMap = {};
-
-const platforms = {
-  darwin: "darwin",
-  linux: "linux",
-  win32: "win32",
-};
-
-const archs = {
-  arm: "arm",
-  arm64: "arm64",
-  x64: "x64",
-};
-
 /**
  * Downloads the electron binarys based on the current platform that is running and arch
+ *
+ * NOTE having run npm ci needed eleectron binarys would have been downloaded to node modules for given machine
  */
 async function main() {
   try {
-    // @ts-ignore
-    if (!archs[process.arch]) {
-      logger.error(
-        "Current platform arch is not supported, supported are ",
-        archs,
-        "Provided: ",
-        process.arch,
-      );
+    logger.info("Started stage three");
 
+    try {
+      await fs.access(STAGE_THREE_DIST);
+      logger.info(`Found existing dist at ${STAGE_THREE_DIST}, deleting...`);
+      await fs.rm(STAGE_THREE_DIST, { recursive: true, force: true });
+      logger.info("Successfully deleted existing dist");
+    } catch (/** @type {any}*/ error) {
+      if (error.code !== "ENOENT") {
+        logger.error("STAGE_THREE_DIST error: ", error);
+        await cleanExit(logger, 1);
+      }
+      logger.info("No existing dist found, proceeding...");
+    }
+
+    try {
+      await fs.access(ELECTRON_DIST_DOWNLOADED);
+    } catch (error) {
+      logger.error(
+        "Failed to find electron binarys: ",
+        error,
+        ELECTRON_DIST_DOWNLOADED,
+      );
       await cleanExit(logger, 1);
     }
 
-    // @ts-ignore
-    if (!platforms[process.platform]) {
-      logger.error(
-        "Platform not supported, supported are: ",
-        platforms,
-        "Provided: ",
-        process.platform,
-      );
+    logger.info(
+      "Copying: ",
+      ELECTRON_DIST_DOWNLOADED,
+      "to: ",
+      STAGE_THREE_DIST,
+    );
 
+    try {
+      await fs.cp(ELECTRON_DIST_DOWNLOADED, STAGE_THREE_DIST, {
+        recursive: true,
+      });
+    } catch (error) {
+      logger.error(
+        "Failed to copy from: ",
+        ELECTRON_DIST_DOWNLOADED,
+        " to: ",
+        STAGE_THREE_DIST,
+        error,
+      );
       await cleanExit(logger, 1);
     }
+
+    logger.info("Copied electron binarys to ", STAGE_THREE_DIST);
+    await cleanExit(logger);
   } catch (error) {
     logger.error("Failed stage three: ", error);
     await cleanExit(logger, 1);

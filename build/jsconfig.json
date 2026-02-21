@@ -3,5 +3,6 @@
         "checkJs": true,
         "allowJs": true,
         "strict": true,
+        "types": ["node"]
     }
 }
