@@ -6,6 +6,7 @@ const {
   ELECTRON_DIST_DOWNLOADED,
   STAGE_THREE_DIST_RESOURCE,
 } = require("./stage_three_uris");
+const path = require("path")
 const { STAGE_TWO_ASAR_PATH } = require("./stage_uris");
 
 const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
@@ -73,6 +74,28 @@ async function main() {
       " to: ",
       STAGE_THREE_DIST_RESOURCE,
     );
+
+    try {
+      await fs.mkdir(STAGE_THREE_DIST_RESOURCE, { recursive: true });
+
+      const asarFileName = path.basename(STAGE_TWO_ASAR_PATH);
+      const destinationPath = path.join(
+        STAGE_THREE_DIST_RESOURCE,
+        asarFileName,
+      );
+
+      await fs.rename(STAGE_TWO_ASAR_PATH, destinationPath);
+      logger.info("Successfully moved ASAR file to: ", destinationPath);
+    } catch (error) {
+      logger.error(
+        "Failed to move ASAR file from: ",
+        STAGE_TWO_ASAR_PATH,
+        " to: ",
+        STAGE_THREE_DIST_RESOURCE,
+        error,
+      );
+      await cleanExit(logger, 1);
+    }
 
     await cleanExit(logger);
   } catch (error) {
