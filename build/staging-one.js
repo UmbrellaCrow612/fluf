@@ -34,6 +34,18 @@ async function main() {
     await cleanExit(logger, 1);
   }
 
+  logger.info("Cleaning previous stage one folder at: ", STAGE_ONE_BASE_DIR);
+  try {
+    await fs.promises.rm(STAGE_ONE_BASE_DIR, { recursive: true, force: true });
+  } catch (/** @type {any}*/ error) {
+    if (error.code === "ENOENT") {
+      logger.info("No previous stage one folder found, continuing...");
+    } else {
+      logger.error("Failed to clean stage one folder: ", error);
+      await cleanExit(logger, 1);
+    }
+  }
+
   logger.info("Creating staging one folder at: ", STAGE_ONE_BASE_DIR);
   try {
     await fs.promises.mkdir(STAGE_ONE_BASE_DIR, { recursive: true });

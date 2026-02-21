@@ -13,6 +13,7 @@
   "author": "Yousaf Wazir",
   "license": "ISC",
   "devDependencies": {
+    "@electron/asar": "^4.0.1",
     "node-logy": "^0.2.0"
   }
 }

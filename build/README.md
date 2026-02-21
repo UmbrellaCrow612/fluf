@@ -24,4 +24,4 @@ npm run build
 - Combine them - Stage one
 - Asar them - Stage two
 - Download electron binarys - Stage three
-- Move the asar app into the binary eleectron downloaded - Stage four
+- Move asar app code into the binary eleectron downloaded - Stage four

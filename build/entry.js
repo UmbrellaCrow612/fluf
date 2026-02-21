@@ -13,35 +13,42 @@ const logger = new Logger({
 async function main() {
   logger.info("Building source code ");
 
-  logger.info("Starting build process for UI");
+  logger.info("Starting build proccess for Desktop");
   try {
-    await runCmd("node", ["build-ui.js"])
-  } catch (error) {
-    logger.info("Build process for UI failed");
-    await cleanExit(logger, 1);
-  }
-
-  logger.info("Starting build proccess for Desktop")
-   try {
-    await runCmd("node", ["build-desktop.js"])
+    await runCmd("node", ["build-desktop.js"]);
   } catch (error) {
     logger.info("Build process for Desktop failed");
     await cleanExit(logger, 1);
   }
 
-  logger.info("Finished build proccess")
-
-  logger.info("Starting stage one")
+  logger.info("Starting build process for UI");
   try {
-    await runCmd("node", ["staging-one.js"])
+    await runCmd("node", ["build-ui.js"]);
   } catch (error) {
-    logger.error("Failed stage one: ", error)
-    await cleanExit(logger, 1)
+    logger.info("Build process for UI failed");
+    await cleanExit(logger, 1);
   }
-  
 
-  logger.info("Finished build")
-  await cleanExit(logger)
+  logger.info("Finished build proccess");
+
+  logger.info("Starting stage one");
+  try {
+    await runCmd("node", ["staging-one.js"]);
+  } catch (error) {
+    logger.error("Failed stage one: ", error);
+    await cleanExit(logger, 1);
+  }
+
+  logger.info("Starting stage two");
+  try {
+    await runCmd("node", ["staging-two.js"]);
+  } catch (error) {
+    logger.error("Failed stage two: ", error);
+    await cleanExit(logger, 1);
+  }
+
+  logger.info("Finished build");
+  await cleanExit(logger);
 }
 
 main();
