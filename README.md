@@ -27,7 +27,7 @@ A simple text editor written in electron and angular
 
 - Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones and custom TypeScript impl (UI errors etc)
 
-- Hover information and auto complete via LSP 
+- Hover information and auto complete via LSP
 
 - Go to definition
 
@@ -43,7 +43,9 @@ A simple text editor written in electron and angular
 
 - **`UI/`** – Contains the frontend source code (built with **Angular**)
 - **`Desktop/`** – Contains the Electron desktop wrapper (built with **Electron** and **esbuild**)
+- **`Build/`** - Build orchestration to build a final prod version of app combining all our custom code
 - **`Packages`** - Contains shared packages / contracts / libarys
+
 ---
 
 ## **Running the Project**
