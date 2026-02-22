@@ -5,10 +5,12 @@ const {
   DESKTOP_BIN_PATH,
   DESKTOP_PACKAGE_JSON_PATH,
   DESKTOP_NODE_MODULES_PATH,
+  DESKTOP_ENV_FILE,
 } = require("./desktop_uris");
 const {
   STAGE_THREE_DIST_RESOURCE_BIN,
   STAGE_THREE_DIST_RESOURCE_NODE_MODULES,
+  STAGE_THREE_DIST_RESOURCE,
 } = require("./stage_three_uris");
 const path = require("path");
 
@@ -49,6 +51,28 @@ async function main() {
       DESKTOP_BIN_PATH,
       " To: ",
       STAGE_THREE_DIST_RESOURCE_BIN,
+      error,
+    );
+    await cleanExit(logger, 1);
+  }
+
+  const envDestination = path.join(STAGE_THREE_DIST_RESOURCE, ".env");
+  logger.info(
+    "Copying .env into resoucres from: ",
+    DESKTOP_ENV_FILE,
+    " to: ",
+    envDestination,
+  );
+  try {
+    await fs.access(DESKTOP_ENV_FILE);
+
+    await fs.copyFile(DESKTOP_ENV_FILE, envDestination);
+  } catch (error) {
+    logger.error(
+      "Failed to copy desktop .env to resoucres from: ",
+      DESKTOP_ENV_FILE,
+      " to: ",
+      envDestination,
       error,
     );
     await cleanExit(logger, 1);

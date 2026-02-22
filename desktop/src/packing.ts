@@ -75,15 +75,3 @@ export const getPythonServerPath = (): string => {
         "langserver.index.js",
       );
 };
-
-/**
- * Get the path to the environment file (.env)
- * In dev: returns ./env relative to project root
- * In prod: returns path inside app.asar resources
- * @returns {string}
- */
-export const getEnvPath = (): string => {
-  return isPackaged()
-    ? path.join(process.resourcesPath, "app.asar", ".env")
-    : "./.env"
-};
