@@ -4,8 +4,12 @@ const fs = require("fs/promises");
 const {
   DESKTOP_BIN_PATH,
   DESKTOP_PACKAGE_JSON_PATH,
+  DESKTOP_NODE_MODULES_PATH,
 } = require("./desktop_uris");
-const { STAGE_THREE_DIST_RESOURCE_BIN, STAGE_THREE_DIST_RESOURCE_NODE_MODULES } = require("./stage_three_uris");
+const {
+  STAGE_THREE_DIST_RESOURCE_BIN,
+  STAGE_THREE_DIST_RESOURCE_NODE_MODULES,
+} = require("./stage_three_uris");
 const path = require("path");
 
 const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
@@ -95,13 +99,35 @@ async function main() {
   let deps = Object.keys(DesktopPackageJson.dependencies);
 
   for (const dependencie of deps) {
-    const destinationPath = path.join(STAGE_THREE_DIST_RESOURCE_NODE_MODULES, dependencie);
+    const destinationPath = path.join(
+      STAGE_THREE_DIST_RESOURCE_NODE_MODULES,
+      dependencie,
+    );
     logger.info(
       "Copying dependencie ",
       dependencie,
       " Over to ",
       destinationPath,
     );
+
+    try {
+      const fromPath = path.join(DESKTOP_NODE_MODULES_PATH, dependencie);
+
+      await fs.access(fromPath);
+
+      await fs.cp(fromPath, destinationPath, { recursive: true });
+
+      logger.info("Copied ", fromPath, " to: ", destinationPath);
+    } catch (error) {
+      logger.error(
+        "Failed to copy ",
+        dependencie,
+        " to: ",
+        destinationPath,
+        error,
+      );
+      await cleanExit(logger, 1);
+    }
   }
 
   await cleanExit(logger);
