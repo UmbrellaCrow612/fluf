@@ -43,6 +43,7 @@ export const getTypescriptServerPath = (): string => {
         process.resourcesPath,
         "node_modules",
         "typescript",
+        "lib",
         "tsserver.js",
       )
     : path.join(
