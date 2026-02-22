@@ -1,12 +1,7 @@
 import { loadEnvFile } from "node:process";
 import { registerProtocols } from "./protocol.js";
 import path from "node:path";
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  protocol,
-} from "electron";
+import { app, BrowserWindow, ipcMain, protocol } from "electron";
 import { logger } from "./logger.js";
 import {
   startCommandServer,
@@ -33,7 +28,6 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-loadEnvFile("./.env");
 registerProtocols();
 
 /**

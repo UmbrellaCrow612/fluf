@@ -45,7 +45,12 @@ export const binPath = (): string => {
  */
 export const getTypescriptServerPath = (): string => {
   return isPackaged()
-    ? path.join(process.resourcesPath, "typescript", "tsserver.js") // todo change to copy over node modules like vscode
+    ? path.join(
+        process.resourcesPath,
+        "node_modules",
+        "typescript",
+        "tsserver.js",
+      )
     : path.join(
         __dirname,
         "../",
@@ -62,7 +67,12 @@ export const getTypescriptServerPath = (): string => {
  */
 export const getPythonServerPath = (): string => {
   return isPackaged()
-    ? path.join(process.resourcesPath, "pyright", "langserver.index.js")
+    ? path.join(
+        process.resourcesPath,
+        "node_modules",
+        "pyright",
+        "langserver.index.js",
+      )
     : path.join(
         __dirname,
         "../",
