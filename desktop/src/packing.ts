@@ -5,23 +5,17 @@
 import path from "path";
 import { logger } from "./logger.js";
 import { fileURLToPath } from "url";
+import { app } from "electron";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-let electronApp;
-try {
-  ({ app: electronApp } = require("electron"));
-} catch {
-  electronApp = null; // Running outside Electron (e.g. tests, scripts)
-}
 
 /**
  * Checks if the application is packaged
  * @returns {boolean}
  */
 export const isPackaged = (): boolean => {
-  return electronApp ? electronApp.isPackaged : false;
+  return app.isPackaged
 };
 
 /**
@@ -80,4 +74,16 @@ export const getPythonServerPath = (): string => {
         "pyright",
         "langserver.index.js",
       );
+};
+
+/**
+ * Get the path to the environment file (.env)
+ * In dev: returns ./env relative to project root
+ * In prod: returns path inside app.asar resources
+ * @returns {string}
+ */
+export const getEnvPath = (): string => {
+  return isPackaged()
+    ? path.join(process.resourcesPath, "app.asar", ".env")
+    : "./.env"
 };

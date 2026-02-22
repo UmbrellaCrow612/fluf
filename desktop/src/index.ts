@@ -24,10 +24,14 @@ import {
 } from "./lsp/bridge.js";
 import { registerStoreListeners } from "./store.js";
 import { fileURLToPath } from "node:url";
+import { getEnvPath, isPackaged } from "./packing.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+logger.debug("ENV file is ", getEnvPath(), " packaged state is: ", isPackaged())
+loadEnvFile(getEnvPath())
 registerProtocols();
 
 /**
