@@ -11,6 +11,9 @@ const {
   STAGE_THREE_DIST_RESOURCE_BIN,
   STAGE_THREE_DIST_RESOURCE_NODE_MODULES,
   STAGE_THREE_DIST_RESOURCE,
+  STAGE_THREE_DIST,
+  STAGE_THREE_ELECTRON_EXE_PATH,
+  STAGE_THREE_FLUF_EXE_PATH,
 } = require("./stage_three_uris");
 const path = require("path");
 
@@ -56,7 +59,7 @@ async function main() {
     await cleanExit(logger, 1);
   }
 
-  const envDestination = path.join(STAGE_THREE_DIST_RESOURCE, ".env");
+  const envDestination = path.join(STAGE_THREE_DIST, ".env");
   logger.info(
     "Copying .env into resoucres from: ",
     DESKTOP_ENV_FILE,
@@ -152,6 +155,16 @@ async function main() {
       );
       await cleanExit(logger, 1);
     }
+  }
+
+  logger.info("Renaming electron exe at: ", STAGE_THREE_ELECTRON_EXE_PATH);
+  try {
+    await fs.access(STAGE_THREE_ELECTRON_EXE_PATH)
+    await fs.rename(STAGE_THREE_ELECTRON_EXE_PATH, STAGE_THREE_FLUF_EXE_PATH);
+    logger.info("Successfully renamed to fluf.exe");
+  } catch (error) {
+    logger.error("Failed to rename electron exe path ", error);
+    await cleanExit(logger, 1);
   }
 
   await cleanExit(logger);
