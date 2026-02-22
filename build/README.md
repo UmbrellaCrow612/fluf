@@ -23,5 +23,5 @@ npm run build
 - Build UI
 - Combine them - Stage one
 - Asar them - Stage two
-- Stage three -> Download eleectron binarys -> move asar file into resoucres
+- Stage three -> Download electron binarys -> move asar file into resoucres/
 - Stage four -> move desktop binarys into resoucres path and node_modules from desktop pack.json into resoucres
