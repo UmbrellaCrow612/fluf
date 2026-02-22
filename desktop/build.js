@@ -34,7 +34,7 @@ const CONFIG = {
     preload: { entry: "./staging/preload.js", out: "dist/preload.js" },
   },
   externals: {
-    index: [
+    index: [ // TODO read pack json and do it like that
       "electron",
       "@homebridge/node-pty-prebuilt-multiarch",
       "node-logy",

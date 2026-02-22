@@ -55,6 +55,14 @@ async function main() {
     await cleanExit(logger, 1);
   }
 
+  logger.info("Starting stage four");
+  try {
+    await runCmd("node", ["stage-four.js"]);
+  } catch (error) {
+    logger.error("Failed stage four: ", error);
+    await cleanExit(logger, 1);
+  }
+
   logger.info("Finished build");
   await cleanExit(logger);
 }

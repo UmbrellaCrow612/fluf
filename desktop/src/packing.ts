@@ -5,23 +5,17 @@
 import path from "path";
 import { logger } from "./logger.js";
 import { fileURLToPath } from "url";
+import { app } from "electron";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-let electronApp;
-try {
-  ({ app: electronApp } = require("electron"));
-} catch {
-  electronApp = null; // Running outside Electron (e.g. tests, scripts)
-}
 
 /**
  * Checks if the application is packaged
  * @returns {boolean}
  */
 export const isPackaged = (): boolean => {
-  return electronApp ? electronApp.isPackaged : false;
+  return app.isPackaged
 };
 
 /**
@@ -45,7 +39,12 @@ export const binPath = (): string => {
  */
 export const getTypescriptServerPath = (): string => {
   return isPackaged()
-    ? path.join(process.resourcesPath, "typescript", "tsserver.js") // todo change to copy over node modules like vscode
+    ? path.join(
+        process.resourcesPath,
+        "node_modules",
+        "typescript",
+        "tsserver.js",
+      )
     : path.join(
         __dirname,
         "../",
@@ -62,7 +61,12 @@ export const getTypescriptServerPath = (): string => {
  */
 export const getPythonServerPath = (): string => {
   return isPackaged()
-    ? path.join(process.resourcesPath, "pyright", "langserver.index.js")
+    ? path.join(
+        process.resourcesPath,
+        "node_modules",
+        "pyright",
+        "langserver.index.js",
+      )
     : path.join(
         __dirname,
         "../",
