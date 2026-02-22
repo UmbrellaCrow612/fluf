@@ -28,8 +28,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
-loadEnvFile(".env")
+loadEnvFile(".env");
 registerProtocols();
 
 /**
@@ -92,7 +91,7 @@ app.whenReady().then(async () => {
   registerStoreListeners(ipcMain);
 });
 
-app.on("before-quit", async () => {
+const appCleanUp = async () => {
   await stopCommandServer();
 
   await stopAllLanguageServers();
@@ -101,4 +100,18 @@ app.on("before-quit", async () => {
 
   await logger.flush();
   await logger.shutdown();
+};
+
+app.on("before-quit", async () => {
+  await appCleanUp();
+});
+
+process.on("SIGINT", async () => {
+  console.log("Caught SIGINT (Ctrl+C)");
+  await appCleanUp();
+});
+
+process.on("SIGTERM", async () => {
+  console.log("Caught SIGTERM");
+  await appCleanUp();
 });
