@@ -3,6 +3,7 @@ import { runCommand, safeExit, safeRun } from "./utils.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fs from "fs";
+import * as esbuild from "esbuild";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +19,31 @@ const typeFileDestiniation = path.join(__dirname, "../../ui/src/gen/type.ts");
 const preloadFilePath = path.join(stagingPath, "preload.js");
 const packageJsonPath = path.join(__dirname, "../package.json");
 const stagingIndexJsFilePath = path.join(stagingPath, "index.js");
+const stagingIndexJsFileDestinationPath = path.join(distPath, "index.js");
+const stagingPreloadJsFile = path.join(stagingPath, "preload.js");
+const stagingPreloadJsFileDestiniationPath = path.join(distPath, "preload.js");
+
+/** @type {string[]} */
+const staticFilePathsToCopy = [packageJsonPath];
+
+/**
+ * Bundle a file
+ * @param {string} targetPath - Path to the target file
+ * @param {string} outputPath - Path to the output path
+ * @param {string[]} externals - Array fo external modules not to bundle
+ * @returns {Promise<void>}
+ */
+async function bundleWithEsbuild(targetPath, outputPath, externals) {
+  await esbuild.build({
+    entryPoints: [targetPath],
+    bundle: true,
+    minify: true,
+    outfile: outputPath,
+    platform: "node",
+    format: "esm",
+    external: externals,
+  });
+}
 
 async function main() {
   logger.info("Building desktop source code");
@@ -148,9 +174,44 @@ async function main() {
   // Build index.js with esbuild
   logger.info(`bunderling ${stagingIndexJsFilePath}`);
   await safeRun(
-    async () => {},
+    async () => {
+      await bundleWithEsbuild(
+        stagingIndexJsFilePath,
+        stagingIndexJsFileDestinationPath,
+        packageJsonDeps,
+      );
+    },
     logger,
     `Failed to bundle ${stagingIndexJsFilePath}`,
+  );
+
+  // Build preload.js with esbuild
+  logger.info(`Bundlering ${stagingPreloadJsFile}`);
+  await safeRun(
+    async () => {
+      await bundleWithEsbuild(
+        stagingPreloadJsFile,
+        stagingPreloadJsFileDestiniationPath,
+        packageJsonDeps,
+      );
+    },
+    logger,
+    `Failed to bundle ${stagingPreloadJsFile}`,
+  );
+
+  // Copy static files
+  logger.info("Copying static files");
+  await safeRun(
+    async () => {
+      for (const filePath of staticFilePathsToCopy) {
+        const destPath = path.join(distPath, path.basename(filePath));
+        logger.info(`Copying file from: ${filePath} to: ${destPath}`);
+
+        await fs.promises.copyFile(filePath, destPath);
+      }
+    },
+    logger,
+    `Failed to copy static files`,
   );
 
   // Exit
