@@ -6,9 +6,9 @@ import { config } from "../config.js";
 const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
 
 async function main() {
-  logger.info("Building UI source code");
+  logger.info(`Building UI source code at ${config.ui.basePath}`);
 
-  // check UI base path exists
+  // Check if the UI base path exists
   await safeRun(
     async () => {
       await promises.access(config.ui.basePath);
@@ -37,10 +37,10 @@ async function main() {
       await promises.access(config.ui.distPath);
     },
     logger,
-    `UI dist does not exit at ${config.ui.distPath}`,
+    `UI dist directory does not exist at ${config.ui.distPath}`,
   );
 
-  logger.info("UI source code built");
+  logger.info("UI source code built successfully");
 
   // Exit
   await safeExit(logger, 0);

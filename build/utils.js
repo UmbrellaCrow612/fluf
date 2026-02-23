@@ -2,10 +2,11 @@ import { Logger } from "node-logy";
 import { spawn } from "node:child_process";
 
 /**
- * Safely run a peice of logic if fails then it will exit and perform cleanup needed
- * @param {() => Promise<void> | void} callback The logic to run
- * @param {Logger} logger - Logger instace
- * @param {string} errMessage - Message to show on failure
+ * Safely run a piece of logic.
+ * If it fails, it will exit and perform any necessary cleanup.
+ * @param {() => Promise<void> | void} callback - The logic to run.
+ * @param {Logger} logger - Logger instance.
+ * @param {string} errMessage - Message to show on failure.
  * @returns {Promise<void>}
  */
 export async function safeRun(callback, logger, errMessage) {
@@ -18,9 +19,9 @@ export async function safeRun(callback, logger, errMessage) {
 }
 
 /**
- * Safely shutdown logger so it does not hang the process and exit
- * @param {Logger} logger - The logger instace
- * @param {1 | 0} code - The exit code, zero is no err 1 is err
+ * Safely shut down the logger so it does not hang the process, then exit.
+ * @param {Logger} logger - The logger instance.
+ * @param {1 | 0} code - The exit code. Zero means no error; one indicates an error.
  * @returns {Promise<void>}
  */
 export async function safeExit(logger, code) {
@@ -30,23 +31,24 @@ export async function safeExit(logger, code) {
 }
 
 /**
- * Run a given command and wait for it to finish
- * @param {string} command - The commanbd to spawn
- * @param {string[]} args - Addtional arguments to pass to it
+ * Run a given command and wait for it to finish.
+ * @param {string} command - The command to run.
+ * @param {string[]} args - Additional arguments to pass to the command.
  * @param {import("node:child_process").SpawnOptionsWithoutStdio} options
- * @param {number} timeout - How long in seconds to wait beofre rejecting it in `seconds`
+ * @param {number} timeout - How long (in seconds) to wait before rejecting.
  * @returns {Promise<void>}
  */
 export function runCommand(command, args, options, timeout) {
   return new Promise((resolve, reject) => {
-    let spwn = spawn(command, args, {
+    const spwn = spawn(command, args, {
       stdio: "inherit",
       shell: true,
       ...options,
     });
+
     const tid = setTimeout(() => {
       spwn.kill();
-      reject(new Error("Command timeout out and took to long to exit"));
+      reject(new Error("Command timed out and took too long to exit"));
     }, timeout * 1000);
 
     spwn.on("error", (err) => {
@@ -60,7 +62,7 @@ export function runCommand(command, args, options, timeout) {
       if (exitCode === 0) {
         resolve();
       } else {
-        reject(new Error("Command exited with error code"));
+        reject(new Error("Command exited with a non-zero exit code"));
       }
     });
   });
