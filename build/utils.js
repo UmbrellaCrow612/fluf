@@ -52,15 +52,7 @@ export function runCommand(command, args, options, timeout) {
     spwn.on("error", (err) => {
       clearTimeout(tid);
       spwn.kill();
-      reject(
-        new Error(
-          "Spawned command invalid: " +
-            err.message +
-            err.cause +
-            err.name +
-            err.stack,
-        ),
-      );
+      reject(err);
     });
 
     spwn.on("exit", (exitCode) => {

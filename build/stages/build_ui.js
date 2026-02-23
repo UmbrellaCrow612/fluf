@@ -40,6 +40,8 @@ async function main() {
     `UI dist does not exit at ${config.ui.distPath}`,
   );
 
+  logger.info("UI source code built");
+
   // Exit
   await safeExit(logger, 0);
 }
