@@ -19,9 +19,9 @@ npm run build
 
 # Build proccess
 
-- Build desktop -> change .env MODE to prod
+- Build desktop
 - Build UI
-- Combine them - Stage one
-- Asar them - Stage two
-- Stage three -> Download electron binarys -> move asar file into resoucres/
-- Stage four -> move desktop binarys into resoucres path and node_modules from desktop pack.json into resoucres
+- Stage one: combine UI and desktop
+- Stage two: Asar them
+- Stage three: move electron binarys into stage three, move app asar into resources
+- Stage four: move desktop package.json deps node_modules into resources, move binarys into resources, move .env into stage three root
