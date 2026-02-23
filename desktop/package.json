@@ -4,8 +4,8 @@
   "description": "Contains all our desktop specific code built with electron for flufy",
   "main": "index.js",
   "scripts": {
-    "dev": "node build.js --dev && cd dist && npx electron --trace-warnings .",
-    "prod": "node build.js && cd dist && npx electron --trace-warnings .",
+    "dev": "node scripts/build.js --dev && cd dist && npx electron --trace-warnings .",
+    "prod": "node scripts/build.js && cd dist && npx electron --trace-warnings .",
     "binman": "npx binman .",
     "build": "node build.js"
   },

@@ -8,7 +8,14 @@ import * as esbuild from "esbuild";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
+const args = process.argv.slice(2);
+const isDev = args.includes("--dev");
+
+const logger = new Logger({
+  saveToLogFiles: true,
+  showCallSite: true,
+  callSiteOptions: { fullFilePath: true },
+});
 
 const distPath = path.join(__dirname, "../dist");
 const binPath = path.join(__dirname, "../bin");
@@ -22,9 +29,10 @@ const stagingIndexJsFilePath = path.join(stagingPath, "index.js");
 const stagingIndexJsFileDestinationPath = path.join(distPath, "index.js");
 const stagingPreloadJsFile = path.join(stagingPath, "preload.js");
 const stagingPreloadJsFileDestinationPath = path.join(distPath, "preload.js");
+const envFilePath = path.join(__dirname, "../.env");
 
 /** @type {string[]} */
-const staticFilePathsToCopy = [packageJsonPath];
+const staticFilePathsToCopy = [packageJsonPath, envFilePath];
 
 /**
  * Bundle a file.
@@ -166,33 +174,50 @@ async function main() {
     `Failed to read package.json at ${packageJsonPath}`,
   );
 
-  // Bundle index.js with esbuild
-  logger.info(`Bundling ${stagingIndexJsFilePath}`);
-  await safeRun(
-    async () => {
-      await bundleWithEsbuild(
-        stagingIndexJsFilePath,
-        stagingIndexJsFileDestinationPath,
-        packageJsonDeps,
-      );
-    },
-    logger,
-    `Failed to bundle ${stagingIndexJsFilePath}`,
-  );
+  if (isDev) {
+    // For dev we dont bundle it we just copy the stage -> dist
 
-  // Bundle preload.js with esbuild
-  logger.info(`Bundling ${stagingPreloadJsFile}`);
-  await safeRun(
-    async () => {
-      await bundleWithEsbuild(
-        stagingPreloadJsFile,
-        stagingPreloadJsFileDestinationPath,
-        packageJsonDeps,
-      );
-    },
-    logger,
-    `Failed to bundle ${stagingPreloadJsFile}`,
-  );
+    logger.info("Building for dev");
+
+    // Just copy over staging -> dist
+    await safeRun(
+      async () => {
+        await fs.promises.cp(stagingPath, distPath, { recursive: true });
+      },
+      logger,
+      `Failed to copy from: ${stagingPath} to: ${distPath}`,
+    );
+  } else {
+    logger.info("Building for production");
+
+    // Bundle index.js with esbuild
+    logger.info(`Bundling ${stagingIndexJsFilePath}`);
+    await safeRun(
+      async () => {
+        await bundleWithEsbuild(
+          stagingIndexJsFilePath,
+          stagingIndexJsFileDestinationPath,
+          packageJsonDeps,
+        );
+      },
+      logger,
+      `Failed to bundle ${stagingIndexJsFilePath}`,
+    );
+
+    // Bundle preload.js with esbuild
+    logger.info(`Bundling ${stagingPreloadJsFile}`);
+    await safeRun(
+      async () => {
+        await bundleWithEsbuild(
+          stagingPreloadJsFile,
+          stagingPreloadJsFileDestinationPath,
+          packageJsonDeps,
+        );
+      },
+      logger,
+      `Failed to bundle ${stagingPreloadJsFile}`,
+    );
+  }
 
   // Copy static files
   logger.info("Copying static files");
