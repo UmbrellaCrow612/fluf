@@ -18,6 +18,9 @@ export const config = {
   },
   ui: {
     basePath: uiBasePath,
-    distPath: path.join(uiBasePath, "dist"),
+    distPath: path.join(uiBasePath, "dist", "ui", "browser"),
   },
+  stageOne: {
+    basePath: path.join(__dirname, "../stage_one")
+  }
 };

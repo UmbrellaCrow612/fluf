@@ -30,6 +30,16 @@ async function main() {
     "Failed to build UI source code",
   );
 
+  // Run stage one
+  logger.info("Running stage one");
+  await safeRun(
+    async () => {
+      await runCommand("node", ["stages/stage_one.js"], {}, 60);
+    },
+    logger,
+    "Failed to run stage one",
+  );
+
   logger.info("Finished build orchestration");
 
   await safeExit(logger, 0);
