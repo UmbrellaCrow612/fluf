@@ -6,12 +6,15 @@ const __dirname = path.dirname(__filename);
 
 const uiBasePath = path.join(__dirname, "../", "ui");
 
+const desktopBasePath = path.join(__dirname, "../desktop")
+
 /**
  * Contains all config setting values such as path values for each module
  */
 export const config = {
   desktop: {
-    basePath: path.join(__dirname),
+    basePath: desktopBasePath,
+    distPath: path.join(desktopBasePath, "dist")
   },
   ui: {
     basePath: uiBasePath,

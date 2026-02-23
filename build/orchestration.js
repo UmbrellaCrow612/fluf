@@ -1,3 +1,38 @@
 /**
  * Acts as the scripts that runs needed scripts in order they need to be ran for a final build artifact to be produced
  */
+
+import { Logger } from "node-logy";
+import { runCommand, safeExit, safeRun } from "./utils.js";
+
+const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
+
+async function main() {
+  logger.info("Started source code build ");
+
+  // Build desktop first
+  logger.info("Building desktop source code");
+  await safeRun(
+    async () => {
+      await runCommand("node", ["stages/build_desktop.js"], {}, 60);
+    },
+    logger,
+    "Failed to build desktop source code",
+  );
+
+  // Build UI
+  logger.info("Building UI source code");
+  await safeRun(
+    async () => {
+      await runCommand("node", ["stages/build_ui.js"], {}, 60);
+    },
+    logger,
+    "Failed to build UI source code",
+  );
+
+  logger.info("Finished build orchestration");
+
+  await safeExit(logger, 0);
+}
+
+main();
