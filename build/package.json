@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Contains all out build scripts",
   "main": "entry.js",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "build": "node entry.js"
   },

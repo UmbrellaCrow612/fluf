@@ -1,8 +1,27 @@
 {
     "compilerOptions": {
         "checkJs": true,
+        "rootDir": ".",
         "allowJs": true,
         "strict": true,
-        "types": ["node"]
+        "types": [
+            "node"
+        ],
+        "verbatimModuleSyntax": true,
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        "noImplicitReturns": true,
+        "noImplicitOverride": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "jsx": "react-jsx",
+        "isolatedModules": true,
+        "noUncheckedSideEffectImports": true,
+        "moduleDetection": "force",
+        "skipLibCheck": true,
     }
 }
