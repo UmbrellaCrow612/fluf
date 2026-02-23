@@ -82,6 +82,19 @@ async function main() {
   );
 
   // rename exe path
+  logger.info(
+    `Renaming default exe from: ${config.stageThree.defaultExePath} to: ${config.stageThree.exePath}`,
+  );
+  await safeRun(
+    async () => {
+      await promises.rename(
+        config.stageThree.defaultExePath,
+        config.stageThree.exePath,
+      );
+    },
+    logger,
+    `Failed to rename default exe from: ${config.stageThree.defaultExePath} to: ${config.stageThree.exePath}`,
+  );
 
   // Exit
   await safeExit(logger, 0);

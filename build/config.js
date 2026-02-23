@@ -46,5 +46,6 @@ export const config = {
     ),
     appAsarPath: path.join(stageThreeBasePath, "resources", "app.asar"),
     defaultExePath: path.join(stageThreeBasePath, "electron.exe"),
+    exePath: path.join(stageThreeBasePath, "fluf.exe")
   },
 };
