@@ -50,6 +50,15 @@ async function main() {
     "Failed to run stage two",
   );
 
+  // Run stage three
+  await safeRun(
+    async () => {
+      await runCommand("node", ["stages/stage_three.js"], {}, 60);
+    },
+    logger,
+    "Failed to run stage three",
+  );
+
   logger.info("Finished build orchestration");
 
   await safeExit(logger, 0);

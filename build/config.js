@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 const uiBasePath = path.join(__dirname, "../", "ui");
 
 const desktopBasePath = path.join(__dirname, "../desktop");
+const desktopNodeModulesPath = path.join(desktopBasePath, "node_modules");
 
 const stageTwoBasePath = path.join(__dirname, "../stage_two");
 
@@ -20,8 +21,9 @@ export const config = {
     basePath: desktopBasePath,
     distPath: path.join(desktopBasePath, "dist"),
     packageJsonPath: path.join(desktopBasePath, "package.json"),
-    nodeModulesPath: path.join(desktopBasePath, "node_modules"),
+    nodeModulesPath: desktopNodeModulesPath,
     envPath: path.join(desktopBasePath, ".env"),
+    electronPath: path.join(desktopNodeModulesPath, "electron", "dist"),
   },
   ui: {
     basePath: uiBasePath,
@@ -37,5 +39,12 @@ export const config = {
   stageThree: {
     basePath: stageThreeBasePath,
     resourcePath: path.join(stageThreeBasePath, "resources"),
+    defaultAppPath: path.join(
+      stageThreeBasePath,
+      "resources",
+      "default_app.asar",
+    ),
+    appAsarPath: path.join(stageThreeBasePath, "resources", "app.asar"),
+    defaultExePath: path.join(stageThreeBasePath, "electron.exe"),
   },
 };

@@ -1,3 +1,90 @@
-// move electron binary from node_modules to stage_three
-// remove the default app if it exists
-// move the app asar file into resources
+import { Logger } from "node-logy";
+import { safeExit, safeRun } from "../utils.js";
+import { config } from "../config.js";
+import { promises } from "node:fs";
+
+const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
+
+async function main() {
+  logger.info("Started stage three");
+
+  // remove previous stage three
+  logger.info(
+    `Removing previous stage three path at: ${config.stageThree.basePath}`,
+  );
+  await safeRun(
+    async () => {
+      await promises.rm(config.stageThree.basePath, {
+        force: true,
+        recursive: true,
+      });
+    },
+    logger,
+    `Failed to remove previous stage three path at: ${config.stageThree.basePath}`,
+  );
+
+  // Check for electron binarys
+  logger.info(
+    `Checking if electron binarys exist at path: ${config.desktop.electronPath}`,
+  );
+  await safeRun(
+    async () => {
+      await promises.access(config.desktop.electronPath);
+    },
+    logger,
+    `Failed to check if electron binarys exist at path: ${config.desktop.electronPath}`,
+  );
+
+  // Copy electron binarys to stage three
+  logger.info(
+    `Copying electron from path: ${config.desktop.electronPath} to: ${config.stageThree.basePath}`,
+  );
+  await safeRun(
+    async () => {
+      await promises.mkdir(config.stageThree.basePath, { recursive: true });
+
+      await promises.cp(
+        config.desktop.electronPath,
+        config.stageThree.basePath,
+        { recursive: true },
+      );
+    },
+    logger,
+    `Failed to copy electron from path: ${config.desktop.electronPath} to: ${config.stageThree.basePath}`,
+  );
+
+  // remove default app asar
+  logger.info(`Removing default app path: ${config.stageThree.defaultAppPath}`);
+  await safeRun(
+    async () => {
+      await promises.rm(config.stageThree.defaultAppPath, {
+        force: true,
+        recursive: true,
+      });
+    },
+    logger,
+    `Failed to remove default app path: ${config.stageThree.defaultAppPath}`,
+  );
+
+  // move app asar to resource
+  logger.info(
+    `Copying from: ${config.stageTwo.asarFilePath} to: ${config.stageThree.appAsarPath}`,
+  );
+  await safeRun(
+    async () => {
+      await promises.copyFile(
+        config.stageTwo.asarFilePath,
+        config.stageThree.appAsarPath,
+      );
+    },
+    logger,
+    `Failed to copy from: ${config.stageTwo.asarFilePath} to: ${config.stageThree.appAsarPath}`,
+  );
+
+  // rename exe path
+
+  // Exit
+  await safeExit(logger, 0);
+}
+
+main();
