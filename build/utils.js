@@ -14,7 +14,9 @@ export async function safeRun(callback, logger, errMessage) {
     await callback();
   } catch (error) {
     logger.error(errMessage, error);
-    safeExit(logger, 1);
+    await logger.flush(); // we do this because calling safe run directly will continue the event loop a bit longer than directly calling it
+    await logger.shutdown();
+    process.exit(1);
   }
 }
 
