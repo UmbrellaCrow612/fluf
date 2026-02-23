@@ -15,22 +15,22 @@ const binPath = path.join(__dirname, "../bin");
 const stagingPath = path.join(__dirname, "../staging");
 
 const typeFilePath = path.join(__dirname, "../src/type.ts");
-const typeFileDestiniation = path.join(__dirname, "../../ui/src/gen/type.ts");
+const typeFileDestination = path.join(__dirname, "../../ui/src/gen/type.ts");
 const preloadFilePath = path.join(stagingPath, "preload.js");
 const packageJsonPath = path.join(__dirname, "../package.json");
 const stagingIndexJsFilePath = path.join(stagingPath, "index.js");
 const stagingIndexJsFileDestinationPath = path.join(distPath, "index.js");
 const stagingPreloadJsFile = path.join(stagingPath, "preload.js");
-const stagingPreloadJsFileDestiniationPath = path.join(distPath, "preload.js");
+const stagingPreloadJsFileDestinationPath = path.join(distPath, "preload.js");
 
 /** @type {string[]} */
 const staticFilePathsToCopy = [packageJsonPath];
 
 /**
- * Bundle a file
- * @param {string} targetPath - Path to the target file
- * @param {string} outputPath - Path to the output path
- * @param {string[]} externals - Array fo external modules not to bundle
+ * Bundle a file.
+ * @param {string} targetPath - Path to the target file.
+ * @param {string} outputPath - Path to the output file.
+ * @param {string[]} externals - Array of external modules not to bundle.
  * @returns {Promise<void>}
  */
 async function bundleWithEsbuild(targetPath, outputPath, externals) {
@@ -51,7 +51,7 @@ async function main() {
   logger.info(`Cleaning previous dist at ${distPath}`);
   await safeRun(
     async () => {
-      await fs.promises.rm(distPath, { recursive: true });
+      await fs.promises.rm(distPath, { recursive: true, force: true });
     },
     logger,
     `Failed to clean previous dist at ${distPath}`,
@@ -60,33 +60,33 @@ async function main() {
   logger.info(`Cleaning previous staging at ${stagingPath}`);
   await safeRun(
     async () => {
-      await fs.promises.rm(stagingPath, { recursive: true });
+      await fs.promises.rm(stagingPath, { recursive: true, force: true });
     },
     logger,
     `Failed to clean previous staging at ${stagingPath}`,
   );
 
-  logger.info(`Cleaning previous bin folder at: ${binPath}`);
+  logger.info(`Cleaning previous bin folder at ${binPath}`);
   await safeRun(
     async () => {
-      await fs.promises.rm(binPath, { recursive: true });
+      await fs.promises.rm(binPath, { recursive: true, force: true });
     },
     logger,
     `Failed to clean previous bin at ${binPath}`,
   );
 
-  // Build ts source code
-  logger.info("Building typescript source code into javascript");
+  // Build TypeScript source code
+  logger.info("Building TypeScript source code into JavaScript");
   await safeRun(
     async () => {
       await runCommand("npx", ["tsc"], {}, 60);
     },
     logger,
-    "Failed to run typescript compliation",
+    "Failed to run TypeScript compilation",
   );
 
-  // Download binary's
-  logger.info("Downloading binarys");
+  // Download binaries
+  logger.info("Downloading binaries");
   await safeRun(
     async () => {
       await runCommand(
@@ -102,24 +102,24 @@ async function main() {
       );
     },
     logger,
-    "Failed to run download binarys",
+    "Failed to download binaries",
   );
 
   // Copy type file to UI
   logger.info(
-    `Copying desktop types from: ${typeFilePath} to: ${typeFileDestiniation}`,
+    `Copying desktop types from ${typeFilePath} to ${typeFileDestination}`,
   );
   await safeRun(
     async () => {
       await fs.promises.access(typeFilePath);
-      await fs.promises.copyFile(typeFilePath, typeFileDestiniation);
+      await fs.promises.copyFile(typeFilePath, typeFileDestination);
     },
     logger,
-    `Failed to copy desktop types from: ${typeFilePath} to: ${typeFileDestiniation}`,
+    `Failed to copy desktop types from ${typeFilePath} to ${typeFileDestination}`,
   );
 
   // Fix preload script
-  logger.info(`Fixing preload js file at: ${preloadFilePath}`);
+  logger.info(`Fixing preload JS file at ${preloadFilePath}`);
   await safeRun(
     async () => {
       await fs.promises.access(preloadFilePath);
@@ -136,43 +136,38 @@ async function main() {
       }
     },
     logger,
-    `Failed to fix preload js file at: ${preloadFilePath}`,
+    `Failed to fix preload JS file at ${preloadFilePath}`,
   );
 
-  // Read package.json and get it's deps names as string array for example ["node-logy", "@homebridge", ....]
-  // So we can ignore them in esbuild bundle step
-  logger.info(`Reading package json file at ${packageJsonPath}`);
+  // Read package.json and get dependency names as an array
+  logger.info(`Reading package.json at ${packageJsonPath}`);
   /** @type {string[]} */
   let packageJsonDeps = [];
 
   await safeRun(
     async () => {
-      let fileContent = await fs.promises.readFile(packageJsonPath, {
-        encoding: "utf-8",
-      });
-      let asJson = JSON.parse(fileContent);
+      const fileContent = await fs.promises.readFile(packageJsonPath, "utf-8");
+      const asJson = JSON.parse(fileContent);
 
-      let depObject = asJson?.dependencies;
+      const depObject = asJson?.dependencies;
       if (!depObject) {
-        throw new Error("package.json does not have dependencies section");
+        throw new Error("package.json does not have a dependencies section");
       }
 
       packageJsonDeps = Object.keys(depObject);
 
       packageJsonDeps.forEach((dep) => {
         if (typeof dep !== "string") {
-          throw new Error(
-            "Not all package.json dependencies are string valuesF",
-          );
+          throw new Error("All package.json dependencies must be strings");
         }
       });
     },
     logger,
-    `Failed to read package json file at ${packageJsonPath}`,
+    `Failed to read package.json at ${packageJsonPath}`,
   );
 
-  // Build index.js with esbuild
-  logger.info(`bunderling ${stagingIndexJsFilePath}`);
+  // Bundle index.js with esbuild
+  logger.info(`Bundling ${stagingIndexJsFilePath}`);
   await safeRun(
     async () => {
       await bundleWithEsbuild(
@@ -185,13 +180,13 @@ async function main() {
     `Failed to bundle ${stagingIndexJsFilePath}`,
   );
 
-  // Build preload.js with esbuild
-  logger.info(`Bundlering ${stagingPreloadJsFile}`);
+  // Bundle preload.js with esbuild
+  logger.info(`Bundling ${stagingPreloadJsFile}`);
   await safeRun(
     async () => {
       await bundleWithEsbuild(
         stagingPreloadJsFile,
-        stagingPreloadJsFileDestiniationPath,
+        stagingPreloadJsFileDestinationPath,
         packageJsonDeps,
       );
     },
@@ -205,13 +200,12 @@ async function main() {
     async () => {
       for (const filePath of staticFilePathsToCopy) {
         const destPath = path.join(distPath, path.basename(filePath));
-        logger.info(`Copying file from: ${filePath} to: ${destPath}`);
-
+        logger.info(`Copying file from ${filePath} to ${destPath}`);
         await fs.promises.copyFile(filePath, destPath);
       }
     },
     logger,
-    `Failed to copy static files`,
+    "Failed to copy static files",
   );
 
   // Exit
