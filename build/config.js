@@ -8,6 +8,8 @@ const uiBasePath = path.join(__dirname, "../", "ui");
 
 const desktopBasePath = path.join(__dirname, "../desktop")
 
+const stageTwoBasePath = path.join(__dirname, "../stage_two")
+
 /**
  * Contains all config setting values such as path values for each module
  */
@@ -22,5 +24,9 @@ export const config = {
   },
   stageOne: {
     basePath: path.join(__dirname, "../stage_one")
+  },
+  stageTwo: {
+    basePath: stageTwoBasePath,
+    asarFilePath: path.join(stageTwoBasePath, "app.asar")
   }
 };
