@@ -1,9 +1,9 @@
 import { Logger } from "node-logy";
 import { promises } from "node:fs";
-import { safeExit, safeRun, runCommand } from "../utils.js";
+import { safeExit, safeRun, runCommand, nodeLogyOptions } from "../utils.js";
 import { config } from "../config.js";
 
-const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
+const logger = new Logger(nodeLogyOptions);
 
 async function main() {
   logger.info(`Building UI source code at ${config.ui.basePath}`);

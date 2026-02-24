@@ -1,10 +1,10 @@
 import { Logger } from "node-logy";
-import { safeExit, safeRun } from "../utils.js";
+import { nodeLogyOptions, safeExit, safeRun } from "../utils.js";
 import { config } from "../config.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
+const logger = new Logger(nodeLogyOptions);
 
 async function main() {
   logger.info("Started stage 4");

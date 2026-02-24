@@ -69,3 +69,18 @@ export function runCommand(command, args, options, timeout) {
     });
   });
 }
+
+const isGitHubAction = process.env["GITHUB_ACTIONS"] === "true";
+if (isGitHubAction) {
+  console.log("Running in CI: Applying specialized build logic...");
+} else {
+  console.log("Running locally: Using standard developer settings.");
+}
+/**
+ * Shared node logy config options
+ * @type {Partial<import("node-logy").LoggerOptions>}
+ */
+export const nodeLogyOptions = {
+  saveToLogFiles: !isGitHubAction,
+  showCallSite: true,
+};

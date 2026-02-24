@@ -3,9 +3,9 @@
  */
 
 import { Logger } from "node-logy";
-import { runCommand, safeExit, safeRun } from "./utils.js";
+import { nodeLogyOptions, runCommand, safeExit, safeRun } from "./utils.js";
 
-const logger = new Logger({ saveToLogFiles: true, showCallSite: true });
+const logger = new Logger(nodeLogyOptions);
 
 async function main() {
   logger.info("Started source code build ");
