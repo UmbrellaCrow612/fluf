@@ -14,7 +14,7 @@
   "devDependencies": {
     "@electron/asar": "^4.0.1",
     "@types/node": "^25.3.0",
-    "node-logy": "^0.2.0",
+    "node-logy": "^0.2.2",
     "typescript": "^5.9.3"
   }
 }
