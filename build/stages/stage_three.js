@@ -54,16 +54,15 @@ async function main() {
   );
 
   // remove default app asar
-  logger.info(`Removing default app path: ${config.stageThree.defaultAppPath}`);
+  logger.info(
+    `Removing default app path: ${config.stageThree.defaultAppAsarPath}`,
+  );
   await safeRun(
     async () => {
-      await promises.rm(config.stageThree.defaultAppPath, {
-        force: true,
-        recursive: true,
-      });
+      await promises.unlink(config.stageThree.defaultAppAsarPath);
     },
     logger,
-    `Failed to remove default app path: ${config.stageThree.defaultAppPath}`,
+    `Failed to remove default app path: ${config.stageThree.defaultAppAsarPath}`,
   );
 
   // move app asar to resource

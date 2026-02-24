@@ -12,6 +12,69 @@ const desktopNodeModulesPath = path.join(desktopBasePath, "node_modules");
 const stageTwoBasePath = path.join(__dirname, "../stage_two");
 
 const stageThreeBasePath = path.join(__dirname, "../stage_three");
+const stageThreeResourcePath =
+  process.platform === "darwin"
+    ? path.join(
+        stageThreeBasePath,
+        path.normalize("Electron.app/Contents/Resources"),
+      )
+    : path.join(stageThreeBasePath, "resources");
+
+const stageThreeDefaultAppAsarPath = path.join(
+  stageThreeResourcePath,
+  "default_app.asar",
+);
+
+const stageThreeFinalBuiltAppAsarPath = path.join(
+  stageThreeResourcePath,
+  "app.asar",
+);
+
+/**
+ * Get the path to the default exe of electron used to spawn the app
+ * @returns Path to the electron binary that spawns the app
+ */
+const stageThreeDefaultElectronBinaryPath = () => {
+  switch (process.platform) {
+    case "win32":
+      return path.join(stageThreeBasePath, "electron.exe");
+
+    case "darwin":
+      return path.join(
+        stageThreeBasePath,
+        path.normalize("Electron.app/Contents/MacOS/Electron"),
+      );
+
+    case "linux":
+      return path.join(stageThreeBasePath, "electron");
+
+    default:
+      throw new Error("Unhandled platform");
+  }
+};
+
+/**
+ * Get the path to the new renamed electron exe
+ * @returns The new path for the application electron exe renamed
+ */
+const stageThreeFinalExePath = () => {
+  switch (process.platform) {
+    case "win32":
+      return path.join(stageThreeBasePath, "fluf.exe");
+
+    case "darwin":
+      return path.join(
+        stageThreeBasePath,
+        path.normalize("Electron.app/Contents/MacOS/Fluf"),
+      );
+
+    case "linux":
+      return path.join(stageThreeBasePath, "fluf");
+
+    default:
+      throw new Error("Unhandled platform");
+  }
+};
 
 /**
  * Contains all config setting values such as path values for each module
@@ -24,7 +87,7 @@ export const config = {
     nodeModulesPath: desktopNodeModulesPath,
     envPath: path.join(desktopBasePath, ".env"),
     electronPath: path.join(desktopNodeModulesPath, "electron", "dist"),
-    binPath: path.join(desktopBasePath, "bin")
+    binPath: path.join(desktopBasePath, "bin"),
   },
   ui: {
     basePath: uiBasePath,
@@ -37,16 +100,15 @@ export const config = {
     basePath: stageTwoBasePath,
     asarFilePath: path.join(stageTwoBasePath, "app.asar"),
   },
+  /**
+   * Final folder contains the electron binarys and built application
+   */
   stageThree: {
     basePath: stageThreeBasePath,
-    resourcePath: path.join(stageThreeBasePath, "resources"),
-    defaultAppPath: path.join(
-      stageThreeBasePath,
-      "resources",
-      "default_app.asar",
-    ),
-    appAsarPath: path.join(stageThreeBasePath, "resources", "app.asar"),
-    defaultExePath: path.join(stageThreeBasePath, "electron.exe"),
-    exePath: path.join(stageThreeBasePath, "fluf.exe")
+    resourcePath: stageThreeResourcePath,
+    defaultAppAsarPath: stageThreeDefaultAppAsarPath,
+    appAsarPath: stageThreeFinalBuiltAppAsarPath,
+    defaultExePath: stageThreeDefaultElectronBinaryPath(),
+    exePath: stageThreeFinalExePath(),
   },
 };
