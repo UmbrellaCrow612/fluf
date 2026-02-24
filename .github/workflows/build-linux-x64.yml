@@ -1,0 +1,44 @@
+name: Build fluf for linux-x64
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            ui/package-lock.json
+            desktop/package-lock.json
+            build/package-lock.json
+
+      - name: Install UI Dependencies
+        run: npm i
+        working-directory: ./ui
+
+      - name: Install Desktop Dependencies
+        run: npm i
+        working-directory: ./desktop
+
+      - name: Install Build Tool Dependencies
+        run: npm i
+        working-directory: ./build
+
+      - name: Final Build Execution
+        run: npm run build
+        working-directory: ./build
+        env:
+          PLATFORM: linux
+          ARCH: x64
