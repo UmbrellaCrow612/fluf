@@ -25,15 +25,15 @@ jobs:
             build/package-lock.json
 
       - name: Install UI Dependencies
-        run: npm ci
+        run: npm i
         working-directory: ./ui
 
       - name: Install Desktop Dependencies
-        run: npm ci
+        run: npm i
         working-directory: ./desktop
 
       - name: Install Build Tool Dependencies
-        run: npm ci
+        run: npm i
         working-directory: ./build
 
       - name: Final Build Execution
