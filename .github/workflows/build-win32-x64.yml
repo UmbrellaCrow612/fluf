@@ -1,0 +1,30 @@
+name: Build fluf for win32-x64
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies in Build, UI, and Desktop
+        run: |
+          cd build && npm ci && cd ..
+          cd ui && npm ci && cd ..
+          cd desktop && npm ci && cd ..
+
+      - name: Final Build
+        run: |
+          cd build
+          npm run build
