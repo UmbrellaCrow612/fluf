@@ -30,6 +30,7 @@ const stagingIndexJsFileDestinationPath = path.join(distPath, "index.js");
 const stagingPreloadJsFile = path.join(stagingPath, "preload.js");
 const stagingPreloadJsFileDestinationPath = path.join(distPath, "preload.js");
 const envFilePath = path.join(__dirname, "../.env");
+const envExampleFilePath = path.join(__dirname, "../.env.example");
 
 /** @type {string[]} */
 const staticFilePathsToCopy = [packageJsonPath, envFilePath];
@@ -218,6 +219,20 @@ async function main() {
       `Failed to bundle ${stagingPreloadJsFile}`,
     );
   }
+
+  // Copy .env.example into .env
+  logger.info(
+    `Copying .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
+  );
+  await safeRun(
+    async () => {
+      await fs.promises.access(envExampleFilePath);
+      await fs.promises.copyFile(envExampleFilePath, envFilePath);
+      await fs.promises.access(envFilePath)
+    },
+    logger,
+    `Failed to copy .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
+  );
 
   // Copy static files
   logger.info("Copying static files");
