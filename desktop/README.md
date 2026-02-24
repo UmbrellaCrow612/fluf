@@ -21,3 +21,9 @@ Contains all out desktop api code written in typescript built using esbuild
 - Then either bundle it into a single file using esbuild for index and preload js or just copy the staging -> dist for better logs to see which file made the log but bascially the same
 - Then we copy static files needed for it to work in dist such as .env and package.json so electron nows which file is the one to launch
 - Then we run electron sindie the dist folder and it has eveything it needs to run
+
+
+## Typed ipc pattern 
+
+- Using typescript we now get full type safety for ipc render and ipc main as well as generic communication, this is done by mapping the functions offered by ipc and ipc render 
+and using event emitter style event map passed to it so we get errors and intelisense for channels and the exact params / types they need.
