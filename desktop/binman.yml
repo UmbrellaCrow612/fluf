@@ -6,7 +6,7 @@
         sha256: "1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599"
         pattern: "^rg$"
     darwin:
-      x64:
+      arm64:
         url: https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-apple-darwin.tar.gz
         sha256: "64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882"
         pattern: "^rg$"
@@ -24,7 +24,7 @@
         sha256: "787535a8a916864d7da280c385aaf4d6347c0c26fc4613c2dceb1a7b6261dce2"
         pattern: "(?i)^fsearch$"
     darwin:
-      x64:
+      arm64:
         url: https://github.com/UmbrellaCrow612/fsearch/releases/download/V0.01-6-g3ac8ef4-1-ge6242a7/fsearch_V0.01-6-g3ac8ef4-1-ge6242a7_darwin_amd64.zip
         sha256: "b2e7b014394a0eec5b820f802ed98fe70ad6a30d840775c7ed5fd68900c8f037"
         pattern: "(?i)^fsearch$"
@@ -42,7 +42,7 @@
         sha256: "f7163011d877bd16b611836f729da7ff0f44ffaa372caf9aea96cda4b3f9f59b"
         pattern: "^gopls$"
     darwin:
-      x64:
+      arm64:
         url: https://github.com/UmbrellaCrow612/go-tools/releases/download/v0.0.3/gopls-darwin-arm64.tar.gz
         sha256: "5ea718a1b0ee6ca6c12da6c7db093b378469e173ef9288adba65d43f5e2c3786"
         pattern: "^gopls$"
