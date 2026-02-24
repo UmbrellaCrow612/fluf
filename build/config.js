@@ -24,6 +24,7 @@ export const config = {
     nodeModulesPath: desktopNodeModulesPath,
     envPath: path.join(desktopBasePath, ".env"),
     electronPath: path.join(desktopNodeModulesPath, "electron", "dist"),
+    binPath: path.join(desktopBasePath, "bin")
   },
   ui: {
     basePath: uiBasePath,
