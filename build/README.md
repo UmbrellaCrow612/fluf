@@ -23,5 +23,5 @@ npm run build
 - Build UI
 - Stage one: combine UI and desktop
 - Stage two: Asar them
-- Stage three: move electron binarys into stage three, move app asar into resources
+- Stage three: move electron binarys into stage three, move app asar into resources, rename exe
 - Stage four: move desktop package.json deps node_modules into resources, move binarys into resources, move .env into stage three root
