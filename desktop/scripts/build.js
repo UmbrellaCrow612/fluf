@@ -228,7 +228,7 @@ async function main() {
     async () => {
       await fs.promises.access(envExampleFilePath);
       await fs.promises.copyFile(envExampleFilePath, envFilePath);
-      await fs.promises.access(envFilePath)
+      await fs.promises.access(envFilePath);
     },
     logger,
     `Failed to copy .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
