@@ -45,11 +45,11 @@ async function bundleWithEsbuild(targetPath, outputPath, externals) {
   await esbuild.build({
     entryPoints: [targetPath],
     bundle: true,
-    minify: true,
+    minify: false,
     outfile: outputPath,
     platform: "node",
     format: "esm",
-    external: externals,
+    external: ["electron", ...externals],
   });
 }
 
