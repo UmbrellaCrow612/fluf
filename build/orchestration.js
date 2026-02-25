@@ -4,7 +4,8 @@
 
 import { Logger } from "node-logy";
 import { nodeLogyOptions, safeExit, createSafeRunOptions } from "./utils.js";
-import { runCommand, safeRun } from "node-js-script-utils";
+
+import { runCommand, safeRun } from "node-github-actions";
 
 const logger = new Logger(nodeLogyOptions);
 

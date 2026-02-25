@@ -3,7 +3,7 @@ import { nodeLogyOptions, safeExit, createSafeRunOptions } from "../utils.js";
 import { config } from "../config.js";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { safeRun } from "node-js-script-utils";
+import { safeRun } from "node-github-actions";
 
 const logger = new Logger(nodeLogyOptions);
 

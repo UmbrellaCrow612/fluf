@@ -1,4 +1,4 @@
-import { isInsideGithubAction } from "node-js-script-utils";
+import { isInsideGithubAction } from "node-github-actions";
 
 /**
  * Creates a safe run options
@@ -6,7 +6,7 @@ import { isInsideGithubAction } from "node-js-script-utils";
  * @param {string} after
  * @param {string} errorMessage
  * @param {import("node-logy").Logger} logger
- * @returns {import("node-js-script-utils").SafeRunOptions}
+ * @returns {import("node-github-actions").SafeRunOptions}
  */
 export function createSafeRunOptions(before, after, errorMessage, logger) {
   return {
