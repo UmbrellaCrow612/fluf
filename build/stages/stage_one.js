@@ -1,7 +1,8 @@
 import { Logger } from "node-logy";
-import { nodeLogyOptions, safeExit, safeRun } from "../utils.js";
+import { nodeLogyOptions, safeExit, createSafeRunOptions } from "../utils.js";
 import { config } from "../config.js";
 import { promises } from "node:fs";
+import { safeRun } from "node-js-script-utils";
 
 const logger = new Logger(nodeLogyOptions);
 
@@ -9,9 +10,6 @@ async function main() {
   logger.info("Started stage one");
 
   // Remove previous stage one folder
-  logger.info(
-    `Removing previous stage one folder at: ${config.stageOne.basePath}`,
-  );
   await safeRun(
     async () => {
       await promises.rm(config.stageOne.basePath, {
@@ -19,8 +17,12 @@ async function main() {
         force: true,
       });
     },
-    logger,
-    `Failed to remove previous stage one folder at: ${config.stageOne.basePath}`,
+    createSafeRunOptions(
+      `Removing previous stage one folder at: ${config.stageOne.basePath}`,
+      "Previous stage one folder removed",
+      `Failed to remove previous stage one folder at: ${config.stageOne.basePath}`,
+      logger,
+    ),
   );
 
   // Verify desktop has a dist
@@ -28,8 +30,12 @@ async function main() {
     async () => {
       await promises.access(config.desktop.distPath);
     },
-    logger,
-    `Desktop does not have a dist at: ${config.desktop.distPath}`,
+    createSafeRunOptions(
+      `Verifying desktop dist exists at: ${config.desktop.distPath}`,
+      "Desktop dist verified",
+      `Desktop does not have a dist at: ${config.desktop.distPath}`,
+      logger,
+    ),
   );
 
   // Verify ui has a dist
@@ -37,14 +43,15 @@ async function main() {
     async () => {
       await promises.access(config.ui.distPath);
     },
-    logger,
-    `UI does not have a dist at: ${config.ui.distPath}`,
+    createSafeRunOptions(
+      `Verifying UI dist exists at: ${config.ui.distPath}`,
+      "UI dist verified",
+      `UI does not have a dist at: ${config.ui.distPath}`,
+      logger,
+    ),
   );
 
-  // combine them
-  logger.info(
-    `Copying files from: [${config.ui.distPath}, ${config.desktop.basePath}] to: ${config.stageOne.basePath}`,
-  );
+  // Combine them
   await safeRun(
     async () => {
       await promises.mkdir(config.stageOne.basePath, { recursive: true });
@@ -59,12 +66,18 @@ async function main() {
         recursive: true,
       });
     },
-    logger,
-    `Failed to copy files from: [${config.ui.distPath}, ${config.desktop.basePath}] to: ${config.stageOne.basePath}`,
+    createSafeRunOptions(
+      `Copying files from: [${config.ui.distPath}, ${config.desktop.distPath}] to: ${config.stageOne.basePath}`,
+      "Files copied successfully",
+      `Failed to copy files from: [${config.ui.distPath}, ${config.desktop.distPath}] to: ${config.stageOne.basePath}`,
+      logger,
+    ),
   );
 
+  logger.info("Stage one completed successfully");
+
   // Exit
-  await safeExit(logger, 0);
+  await safeExit(logger);
 }
 
 main();
