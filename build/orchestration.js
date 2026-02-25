@@ -3,51 +3,64 @@
  */
 
 import { Logger } from "node-logy";
-import { nodeLogyOptions, runCommand, safeExit, safeRun } from "./utils.js";
+import { nodeLogyOptions, safeExit, createSafeRunOptions } from "./utils.js";
+import { runCommand, safeRun } from "node-js-script-utils";
 
 const logger = new Logger(nodeLogyOptions);
 
 async function main() {
-  logger.info("Started source code build ");
+  logger.info("Started source code build");
 
   // Build desktop first
-  logger.info("Building desktop source code");
   await safeRun(
     async () => {
       await runCommand("node", ["stages/build_desktop.js"], {}, 60);
     },
-    logger,
-    "Failed to build desktop source code",
+    createSafeRunOptions(
+      "Building desktop source code",
+      "Desktop source code built successfully",
+      "Failed to build desktop source code",
+      logger,
+    ),
   );
 
   // Build UI
-  logger.info("Building UI source code");
   await safeRun(
     async () => {
       await runCommand("node", ["stages/build_ui.js"], {}, 60);
     },
-    logger,
-    "Failed to build UI source code",
+    createSafeRunOptions(
+      "Building UI source code",
+      "UI source code built successfully",
+      "Failed to build UI source code",
+      logger,
+    ),
   );
 
   // Run stage one
-  logger.info("Running stage one");
   await safeRun(
     async () => {
       await runCommand("node", ["stages/stage_one.js"], {}, 60);
     },
-    logger,
-    "Failed to run stage one",
+    createSafeRunOptions(
+      "Running stage one",
+      "Stage one completed successfully",
+      "Failed to run stage one",
+      logger,
+    ),
   );
 
   // Run stage two
-  logger.info("Starting stage two");
   await safeRun(
     async () => {
       await runCommand("node", ["stages/stage_two.js"], {}, 60);
     },
-    logger,
-    "Failed to run stage two",
+    createSafeRunOptions(
+      "Running stage two",
+      "Stage two completed successfully",
+      "Failed to run stage two",
+      logger,
+    ),
   );
 
   // Run stage three
@@ -55,8 +68,12 @@ async function main() {
     async () => {
       await runCommand("node", ["stages/stage_three.js"], {}, 60);
     },
-    logger,
-    "Failed to run stage three",
+    createSafeRunOptions(
+      "Running stage three",
+      "Stage three completed successfully",
+      "Failed to run stage three",
+      logger,
+    ),
   );
 
   // Run stage four
@@ -64,13 +81,17 @@ async function main() {
     async () => {
       await runCommand("node", ["stages/stage_four.js"], {}, 60);
     },
-    logger,
-    "Failed to run stage four",
+    createSafeRunOptions(
+      "Running stage four",
+      "Stage four completed successfully",
+      "Failed to run stage four",
+      logger,
+    ),
   );
 
   logger.info("Finished build orchestration");
 
-  await safeExit(logger, 0);
+  await safeExit(logger);
 }
 
 main();

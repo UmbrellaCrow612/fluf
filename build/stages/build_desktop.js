@@ -1,20 +1,24 @@
 import { Logger } from "node-logy";
 import { promises } from "node:fs";
-import { safeExit, safeRun, runCommand, nodeLogyOptions } from "../utils.js";
+import { createSafeRunOptions, nodeLogyOptions, safeExit } from "../utils.js";
 import { config } from "../config.js";
+
+import { runCommand, safeRun } from "node-js-script-utils";
 
 const logger = new Logger(nodeLogyOptions);
 
 async function main() {
-  logger.info(`Building desktop source code at ${config.desktop.basePath}`);
-
   // Check if the Desktop base path exists
   await safeRun(
     async () => {
       await promises.access(config.desktop.basePath);
     },
-    logger,
-    "Desktop base path does not exist",
+    createSafeRunOptions(
+      `Checking if desktop base path exists at ${config.desktop.basePath}`,
+      "Path found",
+      `Failed to find path: ${config.desktop.basePath}`,
+      logger,
+    ),
   );
 
   // Build Desktop source code
@@ -27,8 +31,12 @@ async function main() {
         60,
       );
     },
-    logger,
-    `Failed to build desktop source code at ${config.desktop.basePath}`,
+    createSafeRunOptions(
+      `Building desktop source code at ${config.desktop.basePath}`,
+      "Desktop build completed",
+      `Failed to build desktop source code at ${config.desktop.basePath}`,
+      logger,
+    ),
   );
 
   // Verify dist exists
@@ -36,14 +44,18 @@ async function main() {
     async () => {
       await promises.access(config.desktop.distPath);
     },
-    logger,
-    `Desktop dist directory does not exist at ${config.desktop.distPath}`,
+    createSafeRunOptions(
+      `Verifying desktop dist exists at ${config.desktop.distPath}`,
+      "Dist directory verified",
+      `Desktop dist directory does not exist at ${config.desktop.distPath}`,
+      logger,
+    ),
   );
 
   logger.info("Desktop source code built successfully");
 
   // Exit
-  await safeExit(logger, 0);
+  await safeExit(logger);
 }
 
 main();
