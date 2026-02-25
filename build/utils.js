@@ -42,6 +42,6 @@ export async function safeExit(logger) {
  * @type {Partial<import("node-logy").LoggerOptions>}
  */
 export const nodeLogyOptions = {
-  saveToLogFiles: isInsideGithubAction(),
+  saveToLogFiles: !isInsideGithubAction(),
   showCallSite: true,
 };
