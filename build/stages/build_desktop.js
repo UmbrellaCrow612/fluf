@@ -7,6 +7,15 @@ import { runCommand, safeRun } from "node-github-actions";
 
 const logger = new Logger(nodeLogyOptions);
 
+safeRun(async () => {}, {
+  exitFailCode: 1,
+  exitOnFailed: true,
+  onBefore: () => {},
+  onAfter: () => {},
+  onFail: (err) => {},
+  timeoutMs: 360,
+});
+
 async function main() {
   // Check if the Desktop base path exists
   await safeRun(
