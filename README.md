@@ -65,4 +65,5 @@ Libarys that i wrote to use in flufy and are generic
 - `umbr-dl` - Simple download npm package around a go binary
 - `umbr-zip` - Simple npm package wraps a go binary to zip and unzip folders really fast.
 - `umbr-key-master` Vanilla JS lib to listen to keyboard dom events combos and run logic with w3 spec
-- `node-logy` - Logger libary for node and adds logs to log files using async queue system
+- `node-logy` - Logger libary for node and adds logs to log files with extra's stuff i want - only about 15% slower than fatest one out there pino - handle 230K logs per second
+- `node-github-actions` - Offers easy utils for writing scripts in general and github action event load parsing and general helper method for working inside actions.
