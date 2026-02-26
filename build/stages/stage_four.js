@@ -1,94 +1,101 @@
 import { Logger } from "node-logy";
-import { nodeLogyOptions, safeExit, createSafeRunOptions } from "../utils.js";
-import { config } from "../config.js";
-import fs from "node:fs/promises";
+import { promises as fs } from "node:fs";
 import path from "node:path";
+import { nodeLogyOptions, safeExit } from "../utils.js";
+import { config } from "../config.js";
+
 import { safeRun } from "node-github-actions";
 
 const logger = new Logger(nodeLogyOptions);
 
-async function main() {
-  logger.info("Started stage 4");
+safeRun(
+  async () => {
+    // Read package.json and copy dependencies
+    logger.info(
+      `Reading desktop package.json at: ${config.desktop.packageJsonPath}`,
+    );
+    const fileContent = await fs.readFile(config.desktop.packageJsonPath, {
+      encoding: "utf-8",
+    });
+    const asJsonObject = JSON.parse(fileContent);
+    if (!asJsonObject?.dependencies) {
+      throw new Error(
+        "desktop package.json does not have a dependencies field",
+      );
+    }
 
-  // Read package json and get its deps, copy them over
-  await safeRun(
-    async () => {
-      const fileContent = await fs.readFile(config.desktop.packageJsonPath, {
-        encoding: "utf-8",
-      });
-      const asJsonObject = JSON.parse(fileContent);
-      if (!asJsonObject?.dependencies) {
-        throw new Error(
-          "desktop package.json does not have a dependencies field",
-        );
-      }
+    const entries = Object.keys(asJsonObject.dependencies);
 
-      const entries = Object.keys(asJsonObject.dependencies);
+    logger.info(
+      `Verifying stage three resources exist at: ${config.stageThree.resourcePath}`,
+    );
+    await fs.access(config.stageThree.resourcePath);
+    logger.info("Stage three resources verified");
 
-      await fs.access(config.stageThree.resourcePath);
+    for (const depName of entries) {
+      const depOriginalPath = path.join(
+        config.desktop.nodeModulesPath,
+        depName,
+      );
+      logger.info(`Verifying dependency exists at: ${depOriginalPath}`);
+      await fs.access(depOriginalPath);
+      logger.info("Dependency verified");
 
-      for (const depName of entries) {
-        const depOriginalPath = path.join(
-          config.desktop.nodeModulesPath,
-          depName,
-        );
-        await fs.access(depOriginalPath);
+      const depDestinationPath = path.join(
+        config.stageThree.resourcePath,
+        "node_modules",
+        depName,
+      );
 
-        const depDestinationPath = path.join(
-          config.stageThree.resourcePath,
-          "node_modules",
-          depName,
-        );
+      logger.info(
+        `Copying dependency from: ${depOriginalPath} to: ${depDestinationPath}`,
+      );
+      await fs.cp(depOriginalPath, depDestinationPath, { recursive: true });
+      logger.info("Dependency copied successfully");
+    }
+    logger.info("All dependencies copied successfully");
 
-        await fs.cp(depOriginalPath, depDestinationPath, { recursive: true });
-      }
+    // Copy bin to resources
+    const binDestinationPath = path.join(config.stageThree.resourcePath, "bin");
+    logger.info(`Verifying bin directory exists at: ${config.desktop.binPath}`);
+    await fs.access(config.desktop.binPath);
+    logger.info("Bin directory verified");
+
+    logger.info(
+      `Copying bin directory from: ${config.desktop.binPath} to: ${binDestinationPath}`,
+    );
+    await fs.cp(config.desktop.binPath, binDestinationPath, {
+      recursive: true,
+    });
+    logger.info("Bin directory copied successfully");
+
+    // Copy .env to root
+    const envDestPath = path.join(config.stageThree.basePath, ".env");
+    logger.info(`Verifying .env file exists at: ${config.desktop.envPath}`);
+    await fs.access(config.desktop.envPath);
+    logger.info(".env file verified");
+
+    logger.info(
+      `Copying .env file from: ${config.desktop.envPath} to: ${envDestPath}`,
+    );
+    await fs.copyFile(config.desktop.envPath, envDestPath);
+    logger.info(".env file copied successfully");
+
+    logger.info("Stage four completed successfully");
+  },
+  {
+    exitFailCode: 1,
+    exitOnFailed: true,
+    onBefore: () => {
+      logger.info("Started stage four");
     },
-    createSafeRunOptions(
-      `Reading desktop package.json and copying dependencies from: ${config.desktop.packageJsonPath}`,
-      "Dependencies copied successfully",
-      `Failed to process desktop package.json from: ${config.desktop.packageJsonPath}`,
-      logger,
-    ),
-  );
-
-  // Copy over bin to resources
-  const binDestinationPath = path.join(config.stageThree.resourcePath, "bin");
-  await safeRun(
-    async () => {
-      await fs.access(config.desktop.binPath);
-
-      await fs.cp(config.desktop.binPath, binDestinationPath, {
-        recursive: true,
-      });
+    onAfter: async () => {
+      await safeExit(logger);
     },
-    createSafeRunOptions(
-      `Copying over bin from: ${config.desktop.binPath} to: ${binDestinationPath}`,
-      "Bin directory copied successfully",
-      `Failed to copy over bin from: ${config.desktop.binPath} to: ${binDestinationPath}`,
-      logger,
-    ),
-  );
-
-  // Copy over env to root
-  const envDestPath = path.join(config.stageThree.basePath, ".env");
-  await safeRun(
-    async () => {
-      await fs.access(config.desktop.envPath);
-
-      await fs.copyFile(config.desktop.envPath, envDestPath);
+    onFail: async (err) => {
+      logger.error("Stage four failed ", err);
+      await safeExit(logger);
     },
-    createSafeRunOptions(
-      `Copying over .env file from: ${config.desktop.envPath} to: ${envDestPath}`,
-      ".env file copied successfully",
-      `Failed to copy over .env file from: ${config.desktop.envPath} to: ${envDestPath}`,
-      logger,
-    ),
-  );
-
-  logger.info("Stage 4 completed successfully");
-
-  // Exit
-  await safeExit(logger);
-}
-
-main();
+    timeoutMs: 3 * 60 * 1000,
+  },
+);

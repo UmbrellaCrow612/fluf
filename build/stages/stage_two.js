@@ -1,67 +1,56 @@
 import { Logger } from "node-logy";
-import { nodeLogyOptions, safeExit, createSafeRunOptions } from "../utils.js";
-import { config } from "../config.js";
 import { promises } from "node:fs";
+import { nodeLogyOptions, safeExit } from "../utils.js";
+import { config } from "../config.js";
 import { createPackage } from "@electron/asar";
 
 import { safeRun } from "node-github-actions";
 
 const logger = new Logger(nodeLogyOptions);
 
-async function main() {
-  logger.info("Started stage two");
+safeRun(
+  async () => {
+    // Remove previous stage two folder
+    logger.info(
+      `Removing previous stage two folder at: ${config.stageTwo.basePath}`,
+    );
+    await promises.rm(config.stageTwo.basePath, {
+      recursive: true,
+      force: true,
+    });
+    logger.info("Previous stage two folder removed");
 
-  // Remove previous asar file
-  await safeRun(
-    async () => {
-      await promises.rm(config.stageTwo.basePath, {
-        force: true,
-        recursive: true,
-      });
+    // Verify stage_one folder exists
+    logger.info(
+      `Verifying stage one folder exists at: ${config.stageOne.basePath}`,
+    );
+    await promises.access(config.stageOne.basePath);
+    logger.info("Stage one folder verified");
+
+    // ASAR the stage two
+    logger.info(
+      `Creating ASAR package from: ${config.stageOne.basePath} to: ${config.stageTwo.asarFilePath}`,
+    );
+    await promises.mkdir(config.stageTwo.basePath, { recursive: true });
+
+    await createPackage(config.stageOne.basePath, config.stageTwo.asarFilePath);
+    logger.info("ASAR package created successfully");
+
+    logger.info("Stage two completed successfully");
+  },
+  {
+    exitFailCode: 1,
+    exitOnFailed: true,
+    onBefore: () => {
+      logger.info("Started stage two");
     },
-    createSafeRunOptions(
-      `Removing previous stage two path at: ${config.stageTwo.basePath}`,
-      "Previous stage two path removed",
-      `Failed to remove previous stage two path at: ${config.stageTwo.basePath}`,
-      logger,
-    ),
-  );
-
-  // Verify stage_one folder exists
-  await safeRun(
-    async () => {
-      await promises.access(config.stageOne.basePath);
+    onAfter: async () => {
+      await safeExit(logger);
     },
-    createSafeRunOptions(
-      `Checking if stage one path exists at: ${config.stageOne.basePath}`,
-      "Stage one path verified",
-      `Stage one path does not exist at: ${config.stageOne.basePath}`,
-      logger,
-    ),
-  );
-
-  // ASAR the stage two
-  await safeRun(
-    async () => {
-      await promises.mkdir(config.stageTwo.basePath, { recursive: true });
-
-      await createPackage(
-        config.stageOne.basePath,
-        config.stageTwo.asarFilePath,
-      );
+    onFail: async (err) => {
+      logger.error("Stage two failed ", err);
+      await safeExit(logger);
     },
-    createSafeRunOptions(
-      `Performing ASAR for directory at: ${config.stageOne.basePath} to: ${config.stageTwo.asarFilePath}`,
-      "ASAR package created successfully",
-      `Failed to create ASAR package from: ${config.stageOne.basePath} to: ${config.stageTwo.asarFilePath}`,
-      logger,
-    ),
-  );
-
-  logger.info("Stage two completed successfully");
-
-  // Exit
-  await safeExit(logger);
-}
-
-main();
+    timeoutMs: 3 * 60 * 1000,
+  },
+);
