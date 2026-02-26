@@ -14,7 +14,7 @@
   "devDependencies": {
     "@electron/asar": "^4.0.1",
     "@types/node": "^25.3.0",
-    "node-github-actions": "^0.0.4",
+    "node-github-actions": "^0.0.5",
     "node-logy": "^0.2.3",
     "typescript": "^5.9.3"
   }

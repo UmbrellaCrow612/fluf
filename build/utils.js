@@ -27,14 +27,13 @@ export function createSafeRunOptions(before, after, errorMessage, logger) {
 }
 
 /**
- * Safely shut down the logger so it does not hang the process, then exit.
+ * Safely shut down the logger so it does not hang the process.
  * @param {import("node-logy").Logger} logger - The logger instance.
  * @returns {Promise<void>}
  */
 export async function safeExit(logger) {
   await logger.flush();
   await logger.shutdown();
-  process.exit();
 }
 
 /**
