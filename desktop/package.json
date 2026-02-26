@@ -20,6 +20,7 @@
     "esbuild": "0.25.12",
     "eslint": "^9.39.2",
     "globals": "^16.5.0",
+    "node-github-actions": "^0.0.5",
     "typescript-eslint": "^8.55.0",
     "vscode-languageserver-protocol": "^3.17.5"
   },

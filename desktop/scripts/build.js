@@ -1,9 +1,10 @@
 import { Logger } from "node-logy";
-import { runCommand, safeExit, safeRun } from "./utils.js";
+import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import fs from "fs";
 import * as esbuild from "esbuild";
+import { safeExit } from "./utils.js";
+import { runCommand, safeRun } from "node-github-actions";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,202 +55,143 @@ async function bundleWithEsbuild(targetPath, outputPath, externals) {
   });
 }
 
-async function main() {
-  logger.info("Building desktop source code");
+safeRun(
+  async () => {
+    logger.info("Building desktop source code");
 
-  logger.info(`Cleaning previous dist at ${distPath}`);
-  await safeRun(
-    async () => {
-      await fs.promises.rm(distPath, { recursive: true, force: true });
-    },
-    logger,
-    `Failed to clean previous dist at ${distPath}`,
-  );
+    // Clean previous dist
+    logger.info(`Cleaning previous dist at ${distPath}`);
+    await fs.rm(distPath, { recursive: true, force: true });
+    logger.info("Previous dist cleaned");
 
-  logger.info(`Cleaning previous staging at ${stagingPath}`);
-  await safeRun(
-    async () => {
-      await fs.promises.rm(stagingPath, { recursive: true, force: true });
-    },
-    logger,
-    `Failed to clean previous staging at ${stagingPath}`,
-  );
+    // Clean previous staging
+    logger.info(`Cleaning previous staging at ${stagingPath}`);
+    await fs.rm(stagingPath, { recursive: true, force: true });
+    logger.info("Previous staging cleaned");
 
-  logger.info(`Cleaning previous bin folder at ${binPath}`);
-  await safeRun(
-    async () => {
-      await fs.promises.rm(binPath, { recursive: true, force: true });
-    },
-    logger,
-    `Failed to clean previous bin at ${binPath}`,
-  );
+    // Clean previous bin folder
+    logger.info(`Cleaning previous bin folder at ${binPath}`);
+    await fs.rm(binPath, { recursive: true, force: true });
+    logger.info("Previous bin cleaned");
 
-  // Build TypeScript source code
-  logger.info("Building TypeScript source code into JavaScript");
-  await safeRun(
-    async () => {
-      await runCommand("npx", ["tsc"], {}, 60);
-    },
-    logger,
-    "Failed to run TypeScript compilation",
-  );
+    // Build TypeScript source code
+    logger.info("Building TypeScript source code into JavaScript");
+    await runCommand("npx", ["tsc"], {}, 60);
+    logger.info("TypeScript compilation completed");
 
-  // Download binaries
-  logger.info("Downloading binaries");
-  await safeRun(
-    async () => {
-      await runCommand(
-        "npx",
-        [
-          "binman",
-          ".",
-          `-platforms=${process.platform}`,
-          `-architectures=${process.arch}`,
-        ],
-        {},
-        60,
+    // Download binaries
+    logger.info("Downloading binaries");
+    await runCommand(
+      "npx",
+      [
+        "binman",
+        ".",
+        `-platforms=${process.platform}`,
+        `-architectures=${process.arch}`,
+      ],
+      {},
+      60,
+    );
+    logger.info("Binaries downloaded");
+
+    // Copy type file to UI
+    logger.info(
+      `Copying desktop types from ${typeFilePath} to ${typeFileDestination}`,
+    );
+    await fs.access(typeFilePath);
+    await fs.copyFile(typeFilePath, typeFileDestination);
+    logger.info("Desktop types copied");
+
+    // Fix preload script
+    logger.info(`Fixing preload JS file at ${preloadFilePath}`);
+    await fs.access(preloadFilePath);
+    const content = await fs.readFile(preloadFilePath, "utf-8");
+    const lines = content.split("\n");
+    const filteredLines = lines.filter(
+      (line) => !/export\s*\{[^}]*\}/.test(line),
+    );
+    const removedCount = lines.length - filteredLines.length;
+
+    if (removedCount > 0) {
+      await fs.writeFile(preloadFilePath, filteredLines.join("\n"));
+      logger.info(`Removed ${removedCount} export line(s) from preload`);
+    }
+    logger.info("Preload JS file fixed");
+
+    // Read package.json and get dependency names as an array
+    logger.info(`Reading package.json at ${packageJsonPath}`);
+    const fileContent = await fs.readFile(packageJsonPath, "utf-8");
+    const asJson = JSON.parse(fileContent);
+
+    const depObject = asJson?.dependencies;
+    if (!depObject) {
+      throw new Error("package.json does not have a dependencies section");
+    }
+
+    const packageJsonDeps = Object.keys(depObject);
+    logger.info(`Found ${packageJsonDeps.length} dependencies`);
+
+    if (isDev) {
+      logger.info("Building for dev");
+
+      // Just copy over staging -> dist
+      await fs.cp(stagingPath, distPath, { recursive: true });
+      logger.info("Copied staging to dist for dev build");
+    } else {
+      logger.info("Building for production");
+
+      // Bundle index.js with esbuild
+      logger.info(`Bundling ${stagingIndexJsFilePath}`);
+      await bundleWithEsbuild(
+        stagingIndexJsFilePath,
+        stagingIndexJsFileDestinationPath,
+        packageJsonDeps,
       );
-    },
-    logger,
-    "Failed to download binaries",
-  );
+      logger.info("Bundled index.js");
 
-  // Copy type file to UI
-  logger.info(
-    `Copying desktop types from ${typeFilePath} to ${typeFileDestination}`,
-  );
-  await safeRun(
-    async () => {
-      await fs.promises.access(typeFilePath);
-      await fs.promises.copyFile(typeFilePath, typeFileDestination);
-    },
-    logger,
-    `Failed to copy desktop types from ${typeFilePath} to ${typeFileDestination}`,
-  );
-
-  // Fix preload script
-  logger.info(`Fixing preload JS file at ${preloadFilePath}`);
-  await safeRun(
-    async () => {
-      await fs.promises.access(preloadFilePath);
-      const content = await fs.promises.readFile(preloadFilePath, "utf-8");
-      const lines = content.split("\n");
-      const filteredLines = lines.filter(
-        (line) => !/export\s*\{[^}]*\}/.test(line),
+      // Bundle preload.js with esbuild
+      logger.info(`Bundling ${stagingPreloadJsFile}`);
+      await bundleWithEsbuild(
+        stagingPreloadJsFile,
+        stagingPreloadJsFileDestinationPath,
+        packageJsonDeps,
       );
-      const removedCount = lines.length - filteredLines.length;
+      logger.info("Bundled preload.js");
+    }
 
-      if (removedCount > 0) {
-        await fs.promises.writeFile(preloadFilePath, filteredLines.join("\n"));
-        logger.info(`Removed ${removedCount} export line(s) from preload`);
-      }
-    },
-    logger,
-    `Failed to fix preload JS file at ${preloadFilePath}`,
-  );
-
-  // Read package.json and get dependency names as an array
-  logger.info(`Reading package.json at ${packageJsonPath}`);
-  /** @type {string[]} */
-  let packageJsonDeps = [];
-
-  await safeRun(
-    async () => {
-      const fileContent = await fs.promises.readFile(packageJsonPath, "utf-8");
-      const asJson = JSON.parse(fileContent);
-
-      const depObject = asJson?.dependencies;
-      if (!depObject) {
-        throw new Error("package.json does not have a dependencies section");
-      }
-
-      packageJsonDeps = Object.keys(depObject);
-
-      packageJsonDeps.forEach((dep) => {
-        if (typeof dep !== "string") {
-          throw new Error("All package.json dependencies must be strings");
-        }
-      });
-    },
-    logger,
-    `Failed to read package.json at ${packageJsonPath}`,
-  );
-
-  if (isDev) {
-    // For dev we dont bundle it we just copy the stage -> dist
-
-    logger.info("Building for dev");
-
-    // Just copy over staging -> dist
-    await safeRun(
-      async () => {
-        await fs.promises.cp(stagingPath, distPath, { recursive: true });
-      },
-      logger,
-      `Failed to copy from: ${stagingPath} to: ${distPath}`,
+    // Copy .env.example into .env
+    logger.info(
+      `Copying .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
     );
-  } else {
-    logger.info("Building for production");
+    await fs.access(envExampleFilePath);
+    await fs.copyFile(envExampleFilePath, envFilePath);
+    await fs.access(envFilePath);
+    logger.info(".env file created from example");
 
-    // Bundle index.js with esbuild
-    logger.info(`Bundling ${stagingIndexJsFilePath}`);
-    await safeRun(
-      async () => {
-        await bundleWithEsbuild(
-          stagingIndexJsFilePath,
-          stagingIndexJsFileDestinationPath,
-          packageJsonDeps,
-        );
-      },
-      logger,
-      `Failed to bundle ${stagingIndexJsFilePath}`,
-    );
+    // Copy static files
+    logger.info("Copying static files");
+    for (const filePath of staticFilePathsToCopy) {
+      const destPath = path.join(distPath, path.basename(filePath));
+      logger.info(`Copying file from ${filePath} to ${destPath}`);
+      await fs.copyFile(filePath, destPath);
+    }
+    logger.info("Static files copied");
 
-    // Bundle preload.js with esbuild
-    logger.info(`Bundling ${stagingPreloadJsFile}`);
-    await safeRun(
-      async () => {
-        await bundleWithEsbuild(
-          stagingPreloadJsFile,
-          stagingPreloadJsFileDestinationPath,
-          packageJsonDeps,
-        );
-      },
-      logger,
-      `Failed to bundle ${stagingPreloadJsFile}`,
-    );
-  }
-
-  // Copy .env.example into .env
-  logger.info(
-    `Copying .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
-  );
-  await safeRun(
-    async () => {
-      await fs.promises.access(envExampleFilePath);
-      await fs.promises.copyFile(envExampleFilePath, envFilePath);
-      await fs.promises.access(envFilePath);
+    logger.info("Desktop build completed successfully");
+  },
+  {
+    exitFailCode: 1,
+    exitOnFailed: true,
+    onBefore: () => {
+      logger.info("Started desktop build");
     },
-    logger,
-    `Failed to copy .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
-  );
-
-  // Copy static files
-  logger.info("Copying static files");
-  await safeRun(
-    async () => {
-      for (const filePath of staticFilePathsToCopy) {
-        const destPath = path.join(distPath, path.basename(filePath));
-        logger.info(`Copying file from ${filePath} to ${destPath}`);
-        await fs.promises.copyFile(filePath, destPath);
-      }
+    onAfter: async () => {
+      await safeExit(logger);
     },
-    logger,
-    "Failed to copy static files",
-  );
-
-  // Exit
-  await safeExit(logger, 0);
-}
-
-main();
+    onFail: async (err) => {
+      logger.error("Desktop build failed ", err);
+      await safeExit(logger);
+    },
+    timeoutMs: 3 * 60 * 1000,
+  },
+);
