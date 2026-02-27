@@ -159,14 +159,16 @@ safeRun(
       logger.info("Bundled preload.js");
     }
 
-    // Copy .env.example into .env
-    logger.info(
-      `Copying .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
-    );
-    await fs.access(envExampleFilePath);
-    await fs.copyFile(envExampleFilePath, envFilePath);
-    await fs.access(envFilePath);
-    logger.info(".env file created from example");
+    if (!isDev) {
+      // Copy .env.example into .env
+      logger.info(
+        `Copying .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
+      );
+      await fs.access(envExampleFilePath);
+      await fs.copyFile(envExampleFilePath, envFilePath);
+      await fs.access(envFilePath);
+      logger.info(".env file created from example");
+    }
 
     // Copy static files
     logger.info("Copying static files");
