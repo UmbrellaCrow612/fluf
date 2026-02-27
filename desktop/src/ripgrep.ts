@@ -4,7 +4,6 @@
 
 import fs from "fs";
 import { spawn } from "child_process";
-import binmanResolve from "umbr-binman";
 import type {
   CombinedCallback,
   IpcMainInvokeEventCallback,
@@ -14,6 +13,7 @@ import type {
 } from "./type.js";
 import { binPath } from "./packing.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
+import { binmanResolve } from "umbr-binman";
 
 /**
  * Parses ripgrep --vimgrep stdout and converts it to structured objects
@@ -140,8 +140,7 @@ function buildRipgrepArgs(options: ripgrepArgsOptions): string[] {
 async function searchWithRipGrep(
   options: ripgrepArgsOptions,
 ): Promise<ripGrepResult[]> {
-  const bpath = binPath();
-  const ripGrepPath = await binmanResolve("ripgrep", ["rg"], bpath);
+  const ripGrepPath = await binmanResolve(binPath(), "ripgrep", ["ripgrep"]);
 
   if (!ripGrepPath) throw new Error("Ripgrep path is undefined");
   if (!fs.existsSync(options.searchPath))

@@ -5,7 +5,7 @@ import type {
 import { binPath } from "../../packing.js";
 import type { ILanguageServer, languageId } from "../../type.js";
 import { JsonRpcLanguageServer } from "../json-rpc-language-server.js";
-import binmanResolve from "umbr-binman";
+import { binmanResolve } from "umbr-binman";
 
 /**
  * The go language server implementation using JSON rpc
@@ -16,7 +16,7 @@ export class GoLanguageServer
   implements ILanguageServer
 {
   async Start(workSpaceFolder: string) {
-    const exePath = await binmanResolve("gopls", ["gopls"], binPath());
+    const exePath = await binmanResolve(binPath(), "gopls", ["gopls"]);
     if (!exePath) {
       throw new Error("No gopls exe path");
     }

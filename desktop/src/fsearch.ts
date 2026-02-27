@@ -4,7 +4,6 @@
 
 import fs from "fs";
 import { spawn } from "child_process";
-import binmanResolve from "umbr-binman";
 import type {
   CombinedCallback,
   fsearch,
@@ -14,6 +13,7 @@ import type {
 } from "./type.js";
 import { binPath } from "./packing.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
+import { binmanResolve } from "umbr-binman";
 
 /** @type {import("./type").fsearchOptions} */
 const defaultSearchOptions: fsearchOptions = {
@@ -151,8 +151,7 @@ const buildArgs = (options: fsearchOptions) => {
 const searchWithFSearch = async (
   options: fsearchOptions,
 ): Promise<fsearchResult[]> => {
-  const bpath = binPath();
-  const exePath = await binmanResolve("fsearch", ["fsearch"], bpath);
+  const exePath = await binmanResolve(binPath(), "fsearch", ["fsearch"]);
 
   if (!exePath) throw new Error("fsearch executable not found");
   if (!fs.existsSync(options.directory))
