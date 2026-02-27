@@ -28,7 +28,7 @@
   "dependencies": {
     "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
     "flufy-ipc-contract": "^0.0.4",
-    "node-logy": "^0.2.2",
+    "node-logy": "^0.2.4",
     "pyright": "^1.1.408",
     "typescript": "^5.9.3",
     "umbr-binman": "^1.0.27"
