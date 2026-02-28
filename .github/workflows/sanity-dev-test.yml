@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  dev-build-sanity:
-    runs-on: ubuntu-latest
+  sanity-dev-test:
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -18,49 +18,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
-          cache-dependency-path: |
-            ui/package-lock.json
-            desktop/package-lock.json
-            test/sanity/package-lock.json
 
-      # ------------------------------
-      # UI dependencies
-      # ------------------------------
       - name: Install UI dependencies
-        run: |
-          rm -rf node_modules package-lock.json   # clean old files to avoid optional dep issues
-          npm install
+        run: npm i
         working-directory: ./ui
 
-      # ------------------------------
-      # Desktop dependencies
-      # ------------------------------
       - name: Install Desktop dependencies
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install
+        run: npm i
         working-directory: ./desktop
 
-      # ------------------------------
-      # Sanity test dependencies
-      # ------------------------------
+  
       - name: Install Sanity Test dependencies
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install
+        run: npm i
         working-directory: ./test/sanity
 
-      # ------------------------------
-      # Build desktop dev
-      # ------------------------------
       - name: Build desktop dev
         run: npm run build:dev
         working-directory: ./desktop
 
-      # ------------------------------
-      # Run Playwright Sanity Tests
-      # ------------------------------
       - name: Run Playwright Sanity Tests
         run: npx playwright test
         working-directory: ./test/sanity
