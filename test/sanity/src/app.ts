@@ -1,5 +1,5 @@
 import fs from "fs";
-import type { ElectronApplication, Page } from "@playwright/test";
+import type { ElectronApplication } from "@playwright/test";
 import path from "node:path";
 import { _electron as electron } from "@playwright/test";
 import { logger } from "./logger.js";
@@ -9,19 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Ref to electron app
- */
-export let electronApp: ElectronApplication;
-
-/**
- * Ref to the main window i.e first window shown in electron application
- */
-export let mainWindow: Page;
-
-/**
  * Launches the electron application so we have a ref to use in tests
  */
-export async function launchElectronApp() {
+export async function launchElectronApp(): Promise<ElectronApplication> {
   const desktopDir = path.join(__dirname, "../../../desktop");
   const mainPath = path.join(desktopDir, "dist/index.js");
 
@@ -35,18 +25,13 @@ export async function launchElectronApp() {
     throw new Error(`Main file not found: ${mainPath}`);
   }
 
-  electronApp = await electron.launch({
+  return electron.launch({
     args: [mainPath],
     cwd: desktopDir,
   });
-
-  mainWindow = await electronApp.firstWindow();
-  mainWindow.on("console", (msg) => {
-    logger.info(`${msg.type()}: ${msg.text()}`);
-  });
 }
 
-export async function closeElectronApp() {
+export async function closeElectronApp(app: ElectronApplication) {
   logger.info("Attempting to close electron app");
-  electronApp?.close();
+  app?.close();
 }

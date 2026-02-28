@@ -7,6 +7,7 @@
           class="fluf_btn fluf_btn_primary fluf_btn_sm"
           [matMenuTriggerFor]="menu"
           [ariaLabel]="item.tooltip"
+          [id]="'top_bar_actions_' + item.label"
         >
           {{ item.label }}
         </button>
