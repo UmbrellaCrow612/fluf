@@ -20,15 +20,19 @@ jobs:
           node-version: "22"
 
       - name: Install UI dependencies
-        run: npm i --no-optional
+        run: npm i
         working-directory: ./ui
 
       - name: Install Desktop dependencies
-        run: npm i --no-optional
+        run: npm i
         working-directory: ./desktop
 
       - name: Install Sanity Test dependencies
-        run: npm i --no-optional
+        run: npm i
+        working-directory: ./test/sanity
+
+      - name: Install rollup for sanity
+        run: npm i @rollup/rollup-linux-x64-gnu
         working-directory: ./test/sanity
 
       - name: Build desktop dev
