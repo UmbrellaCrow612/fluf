@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 
-import { form, Field } from '@angular/forms/signals';
+import { form } from '@angular/forms/signals';
 import { NgComponentOutlet } from '@angular/common';
 import { Command } from './type';
 import { CommandPaletteCommandList } from './commands';
@@ -22,7 +22,7 @@ import { CommandPaletteCommandList } from './commands';
  */
 @Component({
   selector: 'app-command-palette',
-  imports: [Field, NgComponentOutlet],
+  imports: [NgComponentOutlet],
   templateUrl: './command-palette.component.html',
   styleUrl: './command-palette.component.css',
 })
