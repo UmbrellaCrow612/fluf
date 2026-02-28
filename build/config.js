@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 /**
  * Used as the base all stages go into
  */
-const baseStageBuildOutputFolder = path.join(__dirname, "../build-output")
+const baseStageBuildOutputFolder = path.join(__dirname, "build-output")
 
 const uiBasePath = path.join(__dirname, "../", "ui");
 
