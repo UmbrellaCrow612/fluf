@@ -26,7 +26,7 @@ export async function launchElectronApp(): Promise<ElectronApplication> {
   }
 
   return electron.launch({
-    args: [mainPath],
+    args: [mainPath, "--headles"],
     cwd: desktopDir,
   });
 }

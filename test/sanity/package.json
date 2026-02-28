@@ -2,7 +2,7 @@
   "name": "sanity",
   "version": "1.0.0",
   "scripts": {
-    "start": "cd ../../ui && npm run start"
+    "test": "npx playwright test"
   },
   "keywords": [],
   "author": "Yousaf Wazir",

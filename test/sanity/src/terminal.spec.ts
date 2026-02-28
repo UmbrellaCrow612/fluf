@@ -23,6 +23,7 @@ test.describe("Terminal tests", () => {
   });
 
   test("Terminal is created", async () => {
+    // TODO: change ti so we select a directory first 
     await mainWindow.locator("#top_bar_actions_Terminal").click();
     await mainWindow.getByRole("menuitem", { name: "New terminal" }).click();
     await expect(
