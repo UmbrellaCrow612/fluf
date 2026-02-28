@@ -8,7 +8,7 @@ on:
 
 jobs:
   dev-build-sanity:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -29,10 +29,6 @@ jobs:
 
       - name: Install Sanity Test dependencies
         run: npm i
-        working-directory: ./test/sanity
-
-      - name: Install rollup for sanity
-        run: npm i @rollup/rollup-linux-x64-gnu
         working-directory: ./test/sanity
 
       - name: Build desktop dev
