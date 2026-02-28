@@ -11,8 +11,8 @@ npx playwright install # Downloads browsers
 
 # Runinng
 
+- Run UI -> `npm ci`
 - Build desktop -> `cd into desktop -> npm ci -> npm run build:dev`
-- Run UI -> `cd into UI -> npm ci -> npm run start`
 
 ```bash
 npm run tests
@@ -40,3 +40,4 @@ node .\scripts\electron-codegen.mjs
   edits and check if said file was created and has the content etc
 - We basically point to the complied desktop code after building it and setting the cwd to the project becuase of .env stuff and treat it as runnign desktop project normally
 - Writing tests - use the playwright code gen toolkit but we need to have a small workaround and use custom scritp to launch the viwer run `node .\scripts\electron-codegen.mjs`
+- This project will as part of playwright config cd into UI and run the web server

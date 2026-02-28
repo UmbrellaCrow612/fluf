@@ -6,13 +6,18 @@ export default defineConfig({
   forbidOnly: !!process.env["CI"],
   retries: process.env["CI"] ? 2 : 0,
   workers: process.env["CI"] ? 1 : (undefined as unknown as number),
-  reporter: [['html', { open: 'never' }]], 
+  reporter: [["html", { open: "never" }]],
   use: {
     trace: "on-first-retry",
     video: {
       mode: "on-first-retry",
       size: { width: 640, height: 480 },
     },
-    
+  },
+  webServer: {
+    command: "npm run start",
+    url: "http://localhost:4200/", 
+    reuseExistingServer: !process.env["CI"],
+    timeout: 120 * 1000,
   },
 });
