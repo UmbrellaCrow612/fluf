@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from "fs";
 import {
   test,
   expect,
@@ -17,19 +17,23 @@ test.describe("Electron App", () => {
   let page: Page;
 
   test.beforeAll(async () => {
-    // Go up 4 levels: src/ → sanity/ → test/ → fluf/ → then into desktop/
-    const mainPath = path.join(__dirname, "../../../desktop/dist/index.js");
-    
-    // Debug: verify path
-    console.log("Trying path:", mainPath);
-    console.log("Exists?", fs.existsSync(mainPath));
-    
+    // Path to desktop project root (where package.json is)
+    const desktopDir = path.join(__dirname, "../../../desktop");
+    const mainPath = path.join(desktopDir, "dist/index.js");
+
+    // Debug: verify paths
+    console.log("Desktop dir:", desktopDir);
+    console.log("Main path:", mainPath);
+    console.log("Desktop exists?", fs.existsSync(desktopDir));
+    console.log("Main exists?", fs.existsSync(mainPath));
+
     if (!fs.existsSync(mainPath)) {
       throw new Error(`Main file not found: ${mainPath}`);
     }
 
     electronApp = await electron.launch({
       args: [mainPath],
+      cwd: desktopDir,
     });
 
     page = await electronApp.firstWindow();
