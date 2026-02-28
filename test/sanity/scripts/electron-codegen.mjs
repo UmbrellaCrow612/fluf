@@ -7,6 +7,10 @@ import fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * ASSUMES: you ran build desktop and are running UI
+ */
+
 (async () => {
   // Path to desktop project root
   const desktopDir = path.join(__dirname, "../../../desktop");
@@ -27,7 +31,7 @@ const __dirname = path.dirname(__filename);
 
   // Get the first window
   const page = await electronApp.firstWindow();
-  
+
   // Enable console logging
   page.on("console", (msg) => console.log("PAGE LOG:", msg.text()));
 

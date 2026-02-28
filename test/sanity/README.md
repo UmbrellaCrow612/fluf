@@ -5,22 +5,24 @@ Contains end to end tests using playwright to test core functionality
 # Set up
 
 ```bash
-npx playwright install # Downloads browsers
 npm ci
+npx playwright install # Downloads browsers
 ```
 
 # Runinng
 
-- Build desktop -> `cd into desktop -> npm ci -> npm run build`
+- Build desktop -> `cd into desktop -> npm ci -> npm run build:dev`
 - Run UI -> `cd into UI -> npm ci -> npm run start`
 
 ```bash
 npm run tests
 ```
 
+It is basically how we run it in development
+
 # Code gen
 
-Build it 
+Build it
 
 ```bash
 cd into build => npm run build

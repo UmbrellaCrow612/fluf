@@ -31,7 +31,6 @@ const stagingIndexJsFileDestinationPath = path.join(distPath, "index.js");
 const stagingPreloadJsFile = path.join(stagingPath, "preload.js");
 const stagingPreloadJsFileDestinationPath = path.join(distPath, "preload.js");
 const envFilePath = path.join(__dirname, "../.env");
-const envExampleFilePath = path.join(__dirname, "../.env.example");
 
 /** @type {string[]} */
 const staticFilePathsToCopy = [packageJsonPath, envFilePath];
@@ -159,15 +158,20 @@ safeRun(
       logger.info("Bundled preload.js");
     }
 
-    if (!isDev) {
-      // Copy .env.example into .env
-      logger.info(
-        `Copying .env.example contents from ${envExampleFilePath} to: ${envFilePath}`,
+    if (isDev) {
+      logger.info("Created .env file in dev mode ", envFilePath);
+      await fs.writeFile(
+        envFilePath,
+        "MODE=dev\nDEV_UI_PORT=http://localhost:4200/",
+        { encoding: "utf-8" },
       );
-      await fs.access(envExampleFilePath);
-      await fs.copyFile(envExampleFilePath, envFilePath);
-      await fs.access(envFilePath);
-      logger.info(".env file created from example");
+    } else {
+      logger.info("Created .env file in prod mode ", envFilePath);
+      await fs.writeFile(
+        envFilePath,
+        "MODE=prod\nDEV_UI_PORT=http://localhost:4200/",
+        { encoding: "utf-8" },
+      );
     }
 
     // Copy static files
