@@ -6,7 +6,12 @@ Contains end to end tests using playwright to test core functionality
 
 ```bash
 npm ci
-npx playwright install # Downloads browsers
+```
+
+Somtimes you need to install the browsers 
+
+```bash
+npx playwright install
 ```
 
 # Runinng

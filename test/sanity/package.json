@@ -13,6 +13,8 @@
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.3.2",
     "electron": "^40.6.1",
+    "node-github-actions": "^0.0.5",
+    "node-logy": "^0.2.4",
     "typescript": "^5.9.3"
   }
 }
