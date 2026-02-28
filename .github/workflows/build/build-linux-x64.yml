@@ -1,4 +1,4 @@
-name: Build fluf for win32-x64
+name: Build fluf for linux-x64
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -39,6 +39,3 @@ jobs:
       - name: Final Build Execution
         run: npm run build
         working-directory: ./build
-        env:
-          PLATFORM: win32
-          ARCH: x64
