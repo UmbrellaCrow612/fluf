@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  dev-build-sanity:
-    runs-on: ubuntu-latest
+  sanity-dev-test:
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -20,15 +20,16 @@ jobs:
           node-version: "22"
 
       - name: Install UI dependencies
-        run: npm i --no-optional
+        run: npm i
         working-directory: ./ui
 
       - name: Install Desktop dependencies
-        run: npm i --no-optional
+        run: npm i
         working-directory: ./desktop
 
+  
       - name: Install Sanity Test dependencies
-        run: npm i --no-optional
+        run: npm i
         working-directory: ./test/sanity
 
       - name: Build desktop dev
