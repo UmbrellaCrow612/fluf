@@ -6,6 +6,7 @@
         class="search-input"
         placeholder="Type a command or search..."
         autofocus
+        [field]="searchFrom.term"
         (input)="onInput()"
         (focus)="onInput()"
       />
