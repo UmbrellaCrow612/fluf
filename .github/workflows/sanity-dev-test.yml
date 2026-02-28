@@ -25,15 +25,15 @@ jobs:
             test/sanity/package-lock.json
 
       - name: Install UI dependencies
-        run: npm ci
+        run: npm i
         working-directory: ./ui
 
       - name: Install Desktop dependencies
-        run: npm ci
+        run: npm i
         working-directory: ./desktop
 
       - name: Install Sanity Test dependencies
-        run: npm ci
+        run: npm i
         working-directory: ./test/sanity
 
       - name: Build desktop dev
