@@ -1,9 +1,9 @@
 # **Flufy**
 
-![Flufy UI Preview](assets/demo.gif)
-![Flufy UI Markdown](assets/markdown_preview.gif)
-![Flufy python](assets/python_lsp.gif)
-![Flufy filex](assets/filex_demo.gif)
+![Flufy UI Preview](public/demo.gif)
+![Flufy UI Markdown](public/markdown_preview.gif)
+![Flufy python](public/python_lsp.gif)
+![Flufy filex](public/filex_demo.gif)
 
 A simple text editor written in electron and angular
 
@@ -44,7 +44,9 @@ A simple text editor written in electron and angular
 - **`UI/`** – Contains the frontend source code (built with **Angular**)
 - **`Desktop/`** – Contains the Electron desktop wrapper (built with **Electron** and **esbuild**)
 - **`Build/`** - Build orchestration to build a final prod version of app combining all our custom code
-- **`Packages`** - Contains shared packages / contracts / libarys
+- **`Packages/`** - Contains shared packages / contracts / libarys
+- **`test/`** - Contains all our tests such as unit, sanity etc
+- **`public/`** - Just contains files for readme to use
 
 ---
 

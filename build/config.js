@@ -4,14 +4,19 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * Used as the base all stages go into
+ */
+const baseStageBuildOutputFolder = path.join(__dirname, "build-output")
+
 const uiBasePath = path.join(__dirname, "../", "ui");
 
 const desktopBasePath = path.join(__dirname, "../desktop");
 const desktopNodeModulesPath = path.join(desktopBasePath, "node_modules");
 
-const stageTwoBasePath = path.join(__dirname, "../stage_two");
+const stageTwoBasePath = path.join(baseStageBuildOutputFolder, "stage_two");
 
-const stageThreeBasePath = path.join(__dirname, "../stage_three");
+const stageThreeBasePath = path.join(baseStageBuildOutputFolder, "stage_three");
 const stageThreeResourcePath =
   process.platform === "darwin"
     ? path.join(
@@ -94,7 +99,7 @@ export const config = {
     distPath: path.join(uiBasePath, "dist", "ui", "browser"),
   },
   stageOne: {
-    basePath: path.join(__dirname, "../stage_one"),
+    basePath: path.join(baseStageBuildOutputFolder, "stage_one"),
   },
   stageTwo: {
     basePath: stageTwoBasePath,
