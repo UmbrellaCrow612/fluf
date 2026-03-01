@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "cd ../../ui && npm run start",
-    "test": "npx playwright test"
+    "test": "node scripts/start.js",
+    "test:prod": "node scripts/start.js --production-build"
   },
   "keywords": [],
   "author": "Yousaf Wazir",

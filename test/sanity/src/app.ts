@@ -10,6 +10,9 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Launches the electron application so we have a ref to use in tests
+ * 
+ * In Development test points to the dist index file 
+ * In prod points to the built exe path
  */
 export async function launchElectronApp(
   testFolder?: string,
@@ -24,7 +27,15 @@ export async function launchElectronApp(
   const buildMainExe = path.join(buildOutputDir, "fluf.exe");
 
   // Switch between testing dev build and production build
-  const testProdBuild = true; // TODO - accept env flag
+  let testProdBuild: boolean = false;
+
+  const expectedEnv = process.env["PRODUCTION"];
+  if (!expectedEnv || typeof expectedEnv !== "string") {
+    throw new Error("Did not recieve PRODUCTION env value cannot continue");
+  }
+  if (expectedEnv === "true") {
+    testProdBuild = true;
+  }
 
   if (testProdBuild) {
     logger.info("Testing against prod build");
