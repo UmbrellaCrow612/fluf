@@ -23,21 +23,20 @@ export async function launchElectronApp(
   );
   const buildMainExe = path.join(buildOutputDir, "fluf.exe");
 
-  // switch between testing dev build
+  // Switch between testing dev build and production build
   const testProdBuild = true; // TODO - accept env flag
 
-
   if (testProdBuild) {
-    logger.info("Testing agaisnt prod build");
+    logger.info("Testing against prod build");
     logger.info("Paths used: ", buildOutputDir, buildMainExe);
 
     if (!fs.existsSync(buildOutputDir) || !fs.existsSync(buildMainExe)) {
       throw new Error(
-        `Test agaisnt production build paths not found at ${buildOutputDir} ${buildMainExe}`,
+        `Test against production build paths not found at ${buildOutputDir} ${buildMainExe}`,
       );
     }
   } else {
-    logger.info("Testing agaisnt dev build");
+    logger.info("Testing against dev build");
     logger.info("Paths used: ", desktopDir, desktopMainPath);
 
     if (!fs.existsSync(desktopMainPath)) {
@@ -46,7 +45,7 @@ export async function launchElectronApp(
   }
 
   const launchOptions: Parameters<typeof electron.launch>[0] = {
-    args: [desktopMainPath, "--headless"],
+    args: [desktopMainPath, "--headless"], // NOTE: We pass --headless because even thou it is not officially supported it still works for our use case as of this commit, should it no longer work simple remove the flag.
     cwd: testProdBuild ? buildOutputDir : desktopDir,
   };
 
@@ -57,7 +56,7 @@ export async function launchElectronApp(
   const app = await electron.launch(launchOptions);
 
   if (testFolder) {
-    // In tests we cant use picker native so we return a value for UI and backend to use
+    // In tests we can't use native picker so we return a value for UI and backend to use
     logger.info("Mocking showOpenDialog, returning: " + testFolder);
 
     await app.evaluate(async ({ dialog }, folderPath) => {
