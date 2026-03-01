@@ -63,3 +63,4 @@ node .\scripts\electron-codegen.mjs
 - We basically point to the compiled desktop code after building it and set the cwd to the project because of .env stuff, and treat it as running the desktop project normally.
 - Writing tests: use the Playwright codegen toolkit, but we need to have a small workaround and use a custom script to launch the viewer; run `node .\scripts\electron-codegen.mjs`.
 - This project will, as part of the Playwright config, `cd` into UI and run the web server.
+- Testing dev build why use `build:dev` becuase it loads the web server instead of local file, we test final artifact by building and packing it, this treats it the samne as running it locally with `npm run dev` as the test in playwright will start the web server so it loads it from there, however in production it loads it locally.
