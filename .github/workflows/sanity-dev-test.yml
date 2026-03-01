@@ -33,7 +33,7 @@ jobs:
         working-directory: ./test/sanity
 
       - name: Build desktop dev
-        run: npm run build:dev
+        run: npm run build
         working-directory: ./desktop
 
       - name: Run Playwright Sanity Tests
