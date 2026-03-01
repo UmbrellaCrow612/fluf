@@ -37,6 +37,7 @@ registerProtocols();
  * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
  */
 const createWindow = () => {
+
   const window = new BrowserWindow({
     width: 800,
     minWidth: 800,

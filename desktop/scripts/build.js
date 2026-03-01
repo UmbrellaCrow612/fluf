@@ -162,14 +162,14 @@ safeRun(
       logger.info("Created .env file in dev mode ", envFilePath);
       await fs.writeFile(
         envFilePath,
-        "MODE=dev\nDEV_UI_PORT=http://localhost:4200/",
+        "MODE=dev\nDEV_UI_PORT=http://localhost:4200/\nTEST=false",
         { encoding: "utf-8" },
       );
     } else {
       logger.info("Created .env file in prod mode ", envFilePath);
       await fs.writeFile(
         envFilePath,
-        "MODE=prod\nDEV_UI_PORT=http://localhost:4200/",
+        "MODE=prod\nDEV_UI_PORT=http://localhost:4200/\nTEST=false",
         { encoding: "utf-8" },
       );
     }

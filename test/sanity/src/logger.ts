@@ -7,6 +7,6 @@ export const logger = new Logger({
   saveToLogFiles: false,
   showCallSite: true,
   callSiteOptions: {
-    fullFilePath: true,
+    fullFilePath: false,
   },
 });
