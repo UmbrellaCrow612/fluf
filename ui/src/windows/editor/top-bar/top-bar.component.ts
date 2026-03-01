@@ -16,6 +16,11 @@ type topBarItem = {
   /** Extra info  */
   tooltip: string;
 
+  /**
+   * String value
+   */
+  id: string;
+
   /** List of children to show in the menu */
   children: {
     /** Text to render */
@@ -23,6 +28,11 @@ type topBarItem = {
 
     /** Method to run when clicked */
     onClick: (() => void) | (() => Promise<void>);
+
+    /**
+     * String value
+     */
+    id: string;
   }[];
 };
 
@@ -35,7 +45,9 @@ type topBarItem = {
 export class TopBarComponent implements OnInit, OnDestroy {
   private readonly _api = getElectronApi();
   private readonly appContext = inject(EditorContextService);
-  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
+  private readonly inMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
 
   /**
    * Holds window maximized state
@@ -90,6 +102,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
     {
       label: 'File',
       tooltip: 'Open a file or folder',
+      id: 'file',
       children: [
         {
           label: 'Open folder',
@@ -103,6 +116,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
             this.appContext.editorMainActiveElement.set(null);
             this.appContext.fileExplorerActiveFileOrFolder.set(null);
           },
+          id: 'file',
         },
 
         {
@@ -114,17 +128,20 @@ export class TopBarComponent implements OnInit, OnDestroy {
             this.appContext.editorMainActiveElement.set(null);
             this.appContext.fileExplorerActiveFileOrFolder.set(null);
           },
+          id: 'exit',
         },
       ],
     },
     {
       label: 'View',
+      id: 'view',
       children: [
         {
           label: 'Command Palette',
           onClick: () => {
             this.inMemoryContextService.showCommandPalette.update((x) => !x);
           },
+          id: 'cmd_pal',
         },
         {
           label: 'Problems',
@@ -132,6 +149,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
             this.appContext.displayFileEditorBottom.set(true);
             this.appContext.fileEditorBottomActiveElement.set('problems');
           },
+          id: 'problems',
         },
         {
           label: 'Terminal',
@@ -139,42 +157,49 @@ export class TopBarComponent implements OnInit, OnDestroy {
             this.appContext.displayFileEditorBottom.set(true);
             this.appContext.fileEditorBottomActiveElement.set('terminal');
           },
+          id: 'terminal',
         },
         {
           label: 'File explorer',
           onClick: () => {
             this.appContext.sideBarActiveElement.set('file-explorer');
           },
+          id: 'file_explor',
         },
         {
           label: 'Search',
           onClick: () => {
             this.appContext.sideBarActiveElement.set('search');
           },
+          id: 'search',
         },
         {
           label: 'Search folders',
           onClick: () => {
             this.appContext.sideBarActiveElement.set('search-folders');
           },
+          id: 'search_folder',
         },
         {
           label: 'Search files',
           onClick: () => {
             this.appContext.sideBarActiveElement.set('search-files');
           },
+          id: 'search_file',
         },
         {
           label: 'Version control',
           onClick: () => {
             this.appContext.sideBarActiveElement.set('source-control');
           },
+          id: 'version_control',
         },
       ],
       tooltip: 'Hanldes UI view',
     },
     {
       label: 'Terminal',
+      id: 'terminal',
       children: [
         {
           label: 'New terminal',
@@ -187,6 +212,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
               this.inMemoryContextService.createTerminal.update((x) => x + 1);
             }, 200);
           },
+          id: 'new_terminal',
         },
       ],
       tooltip: 'Hanldes UI view',

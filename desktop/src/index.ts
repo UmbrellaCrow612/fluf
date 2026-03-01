@@ -24,17 +24,20 @@ import {
 } from "./lsp/bridge.js";
 import { registerStoreListeners } from "./store.js";
 import { fileURLToPath } from "node:url";
+import { getEnvValues, validateEnv } from "./env.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 loadEnvFile(".env");
+validateEnv();
 registerProtocols();
 
 /**
  * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
  */
 const createWindow = () => {
+
   const window = new BrowserWindow({
     width: 800,
     minWidth: 800,
@@ -47,25 +50,13 @@ const createWindow = () => {
     },
   });
 
-  const mode = process.env["MODE"];
-  if (!mode) {
-    logger.error(".env does not contain .env value MODE");
-    throw new Error(".env");
-  }
+  let enValues = getEnvValues();
 
-  const devUIPort = process.env["DEV_UI_PORT"];
-  if (!devUIPort) {
-    logger.error(".env does not contain .env value DEV_UI_PORT");
-    throw new Error(".env");
-  }
-
-  if (mode === "dev") {
+  if (enValues.MODE === "dev") {
     // In dev we can just load the running app on the website port it is running on instead of loading it from file system works the same
-    logger.info(
-      "Running dev mode loading website from " + process.env["DEV_UI_PORT"],
-    );
+    logger.info("Running dev mode loading website from ", enValues.DEV_UI_PORT);
 
-    window.loadURL(devUIPort);
+    window.loadURL(enValues.DEV_UI_PORT);
   } else {
     logger.info("Running application from build index.html");
     window.loadFile("index.html");

@@ -12,6 +12,7 @@ import type {
 } from "./type.js";
 import { fileURLToPath } from "url";
 import type { TypedIpcMain } from "./typed-ipc.js";
+import { getEnvValues } from "./env.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,18 +38,7 @@ const createFileXWindow = async () => {
     },
   });
 
-  const mode = process.env["MODE"];
-  if (!mode) {
-    logger.error(".env does not contain .env value MODE");
-    throw new Error(".env");
-  }
-
-  const devUIPort = process.env["DEV_UI_PORT"];
-
-  if (!devUIPort) {
-    logger.error(".env does not contain .env value DEV_UI_PORT");
-    throw new Error(".env");
-  }
+  let envValues = getEnvValues();
 
   fileXWindow.on("closed", () => {
     if (fileXWindow?.isDestroyed()) {
@@ -57,8 +47,8 @@ const createFileXWindow = async () => {
     }
   });
 
-  if (mode === "dev") {
-    await fileXWindow.loadURL(`${devUIPort}#/file-x`);
+  if (envValues.MODE === "dev") {
+    await fileXWindow.loadURL(`${envValues.DEV_UI_PORT}#/file-x`);
   } else {
     await fileXWindow.loadFile("index.html", { hash: "file-x" });
   }

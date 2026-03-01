@@ -6,26 +6,38 @@ Contains end to end tests using playwright to test core functionality
 
 ```bash
 npm ci
-npx playwright install # Downloads browsers
+```
+
+Somtimes you need to install the browsers 
+
+```bash
+npx playwright install
 ```
 
 # Runinng
 
 - Run UI -> `npm ci`
 - Build desktop -> `cd into desktop -> npm ci -> npm run build:dev`
+- Testing via cli cmd make sure your not running UI as this will run it in web server
 
 ```bash
-npm run tests
+ npx playwright test
 ```
 
 It is basically how we run it in development
 
-# Code gen
+# Code gen workflow
 
 Build it
 
 ```bash
-cd into build => npm run build
+cd into build => npm run build:dev
+```
+
+Run UI 
+
+```bash
+cd UI -> npm run start
 ```
 
 Use custom script to help with writing the test steps:
