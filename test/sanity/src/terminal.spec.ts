@@ -11,24 +11,29 @@ import { closeElectronApp, launchElectronApp } from "./app.js";
 import fs from "node:fs/promises";
 import { logger } from "./logger.js";
 
-let app: ElectronApplication;
-let mainWindow: Page;
-let testPath: string; 
-
 test.describe("Terminal tests", () => {
-  test.beforeAll(async () => {
+  // Use test.beforeEach instead of test.beforeAll
+  // Variables are now scoped per-test instead of shared
+  let app: ElectronApplication;
+  let mainWindow: Page;
+  let testPath: string;
+
+  test.beforeEach(async () => {
+    // Create unique temp folder for each test
     const tempPrefix = path.join(os.tmpdir(), "terminal_test_folder-");
     testPath = await fs.mkdtemp(tempPrefix);
     logger.info("Creating temporary folder path at: ", testPath);
 
+    // Launch fresh Electron app for each test
     app = await launchElectronApp(testPath);
     mainWindow = await app.firstWindow();
   });
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
+    // Close app after each test
     await closeElectronApp(app);
 
-    // Clean up temp directory recursively, ignore errors if it doesn't exist
+    // Clean up temp directory
     try {
       await fs.rm(testPath, { recursive: true, force: true });
       logger.info("Removing temporary directory path at: ", testPath);
