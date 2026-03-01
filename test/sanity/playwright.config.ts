@@ -4,15 +4,15 @@ export default defineConfig({
   testDir: "./src",
   fullyParallel: true,
   forbidOnly: !!process.env["CI"],
-  retries: process.env["CI"] ? 2 : 0,
-  workers: process.env["CI"] ? 1 : (undefined as unknown as number),
+  workers: 1,
   reporter: [["html", { open: "never" }]],
   use: {
-    trace: "on-first-retry",
-    video: {
-      mode: "on-first-retry",
-      size: { width: 640, height: 480 },
+    trace: "retain-on-failure",
+    video: "retain-on-failure",
+    screenshot: {
+      mode: "on-first-failure",
     },
+    headless: true,
   },
   webServer: {
     command: "npm run start",

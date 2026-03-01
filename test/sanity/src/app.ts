@@ -50,5 +50,5 @@ export async function launchElectronApp(
 
 export async function closeElectronApp(app: ElectronApplication) {
   logger.info("Attempting to close electron app");
-  app?.close();
+  await app?.close();
 }
