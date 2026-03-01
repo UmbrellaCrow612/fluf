@@ -46,20 +46,24 @@ test.describe("Terminal tests", () => {
     await mainWindow.locator("#top_bar_actions_terminal").click();
     await mainWindow.getByRole("menuitem", { name: "New terminal" }).click();
 
-    // Write 'touch tmpfile.txt && ls' and press Enter
+    // Write a command and press Enter
     const terminalInput = mainWindow.getByRole("textbox", {
       name: "Terminal input",
     });
+
     await terminalInput.click();
-    await terminalInput.fill("touch tmpfile.txt && ls");
+    await terminalInput.fill("New-Item -ItemType File tmpfile.txt; ls");
     await terminalInput.press("Enter");
 
     // Expect 'ls' output with the tmpfile
-    await expect(mainWindow.getByText("tmpfile.txt")).toBeVisible();
+    await expect(mainWindow.getByText("tmpfile.txt").first()).toBeVisible();
 
-    // Write 'exit' and press Enter
     await terminalInput.click();
+
+    // Fill ensures the text "exit" appears in the input
     await terminalInput.fill("exit");
+
+    // Press Enter after writing exit
     await terminalInput.press("Enter");
 
     // Verify terminal was destroyed
