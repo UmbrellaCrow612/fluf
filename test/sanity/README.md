@@ -1,43 +1,43 @@
 # Sanity
 
-Contains end to end tests using playwright to test core functionality
+Contains end-to-end tests using Playwright to test core functionality.
 
-# Set up
+# Setup
 
 ```bash
 npm ci
 ```
 
-Somtimes you need to install the browsers 
+Sometimes you need to install the browsers:
 
 ```bash
 npx playwright install
 ```
 
-# Runinng
+# Running
 
-- Run UI -> `npm ci`
-- Build desktop -> `cd into desktop -> npm ci -> npm run build:dev`
-- Testing via cli cmd make sure your not running UI as this will run it in web server
+- Run UI → `npm ci`
+- Build desktop → `cd` into desktop → `npm ci` → `npm run build:dev`
+- Note: you do not need to run the UI project; just install its deps → Playwright web server will run it for us.
 
 ```bash
- npx playwright test
+npx playwright test
 ```
 
-It is basically how we run it in development
+It is basically how we run it in development.
 
-# Code gen workflow
+# Codegen workflow
 
-Build it
+Build it:
 
 ```bash
-cd into build => npm run build:dev
+cd build => npm run build:dev
 ```
 
-Run UI 
+Run UI:
 
 ```bash
-cd UI -> npm run start
+cd UI => npm run start
 ```
 
 Use custom script to help with writing the test steps:
@@ -48,8 +48,7 @@ node .\scripts\electron-codegen.mjs
 
 # Notes
 
-- This a node js project so treat it as a ndoe project you have acess to node api's and also those of playwright so you can do stuff in UI for example file
-  edits and check if said file was created and has the content etc
-- We basically point to the complied desktop code after building it and setting the cwd to the project becuase of .env stuff and treat it as runnign desktop project normally
-- Writing tests - use the playwright code gen toolkit but we need to have a small workaround and use custom scritp to launch the viwer run `node .\scripts\electron-codegen.mjs`
-- This project will as part of playwright config cd into UI and run the web server
+- This is a Node.js project, so treat it as a Node project. You have access to Node APIs and also those of Playwright, so you can do stuff in the UI—for example, file edits—and check if said file was created and has the content, etc.
+- We basically point to the compiled desktop code after building it and set the cwd to the project because of .env stuff, and treat it as running the desktop project normally.
+- Writing tests: use the Playwright codegen toolkit, but we need to have a small workaround and use a custom script to launch the viewer; run `node .\scripts\electron-codegen.mjs`.
+- This project will, as part of the Playwright config, `cd` into UI and run the web server.
