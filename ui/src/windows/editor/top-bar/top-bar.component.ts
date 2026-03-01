@@ -206,6 +206,9 @@ export class TopBarComponent implements OnInit, OnDestroy {
           onClick: () => {
             this.appContext.displayFileEditorBottom.set(true);
             this.appContext.fileEditorBottomActiveElement.set('terminal');
+            this.inMemoryContextService.resetEditorBottomPanelDragHeight.update(
+              (x) => x + 1,
+            );
 
             setTimeout(() => {
               // we need a slight delay for UI to catch up
