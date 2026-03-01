@@ -26,6 +26,12 @@ npx playwright test
 
 It is basically how we run it in development.
 
+# Running agaisnt production build
+
+- Steps from beofre above up until running tests
+- `cd` -> `build` -> Run build `npm run build`
+- Inside sanity run -> `npm run test:prod` test agaisnt the built outpu final app
+
 # Codegen workflow
 
 Build it:
@@ -45,7 +51,6 @@ Use custom script to help with writing the test steps:
 ```bash
 node .\scripts\electron-codegen.mjs
 ```
-
 
 # Writing tests
 

@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: [["html", { open: "never" }]],
   use: {
     trace: "retain-on-failure",
-    video: "retain-on-failure",
+    video: "on",
     screenshot: {
       mode: "on-first-failure",
     },

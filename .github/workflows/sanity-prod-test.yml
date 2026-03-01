@@ -1,4 +1,4 @@
-name: Dev Build Sanity Test for Fluf
+name: Prod Build Sanity Test for Fluf
 
 on:
   push:
@@ -27,15 +27,18 @@ jobs:
         run: npm i
         working-directory: ./desktop
 
-  
       - name: Install Sanity Test dependencies
         run: npm i
         working-directory: ./test/sanity
 
-      - name: Build desktop dev
+      - name: Install build dependencies
+        run: npm i
+        working-directory: ./build
+
+      - name: Build production application
         run: npm run build
-        working-directory: ./desktop
+        working-directory: "./build"
 
       - name: Run Playwright Sanity Tests
-        run: npm run test
+        run: npm run test:prod
         working-directory: ./test/sanity
