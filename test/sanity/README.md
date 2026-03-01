@@ -46,6 +46,12 @@ Use custom script to help with writing the test steps:
 node .\scripts\electron-codegen.mjs
 ```
 
+
+# Writing tests
+
+- Use codegen above steps
+- Use defined custom `test` `fixture.ts` as it scafolds enviroment for each test needs
+
 # Notes
 
 - This is a Node.js project, so treat it as a Node project. You have access to Node APIs and also those of Playwright, so you can do stuff in the UI—for example, file edits—and check if said file was created and has the content, etc.
