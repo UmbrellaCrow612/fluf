@@ -15,24 +15,49 @@ export async function launchElectronApp(
   testFolder?: string,
 ): Promise<ElectronApplication> {
   const desktopDir = path.join(__dirname, "../../../desktop");
-  const mainPath = path.join(desktopDir, "dist/index.js");
+  const desktopMainPath = path.join(desktopDir, "dist/index.js");
 
-  // Debug: verify paths
-  logger.info("Desktop dir:", desktopDir);
-  logger.info("Main path:", mainPath);
-  logger.info("Desktop exists?", fs.existsSync(desktopDir));
-  logger.info("Main exists?", fs.existsSync(mainPath));
+  const buildOutputDir = path.join(
+    __dirname,
+    "../../../build/build-output/stage_three",
+  );
+  const buildMainExe = path.join(buildOutputDir, "fluf.exe");
 
-  if (!fs.existsSync(mainPath)) {
-    throw new Error(`Main file not found: ${mainPath}`);
+  // switch between testing dev build
+  const testProdBuild = true; // TODO - accept env flag
+
+
+  if (testProdBuild) {
+    logger.info("Testing agaisnt prod build");
+    logger.info("Paths used: ", buildOutputDir, buildMainExe);
+
+    if (!fs.existsSync(buildOutputDir) || !fs.existsSync(buildMainExe)) {
+      throw new Error(
+        `Test agaisnt production build paths not found at ${buildOutputDir} ${buildMainExe}`,
+      );
+    }
+  } else {
+    logger.info("Testing agaisnt dev build");
+    logger.info("Paths used: ", desktopDir, desktopMainPath);
+
+    if (!fs.existsSync(desktopMainPath)) {
+      throw new Error(`Main file not found: ${desktopMainPath}`);
+    }
   }
 
-  const app = await electron.launch({
-    args: [mainPath, "--headless"], // NOTE: We pass --headless becuase even for it is not officaly supported it still works for our use case as of this commit, should it no longer work simpley remove the flag.
-    cwd: desktopDir,
-  });
+  const launchOptions: Parameters<typeof electron.launch>[0] = {
+    args: [desktopMainPath, "--headless"],
+    cwd: testProdBuild ? buildOutputDir : desktopDir,
+  };
+
+  if (testProdBuild) {
+    launchOptions.executablePath = buildMainExe;
+  }
+
+  const app = await electron.launch(launchOptions);
 
   if (testFolder) {
+    // In tests we cant use picker native so we return a value for UI and backend to use
     logger.info("Mocking showOpenDialog, returning: " + testFolder);
 
     await app.evaluate(async ({ dialog }, folderPath) => {
