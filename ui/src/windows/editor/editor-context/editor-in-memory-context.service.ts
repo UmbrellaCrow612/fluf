@@ -16,7 +16,8 @@ export class EditorInMemoryContextService {
   /**
    * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
    */
-  readonly refreshDirectory = signal<EditorInMemoryAppContext['refreshDirectory']>(0);
+  readonly refreshDirectory =
+    signal<EditorInMemoryAppContext['refreshDirectory']>(0);
 
   /**
    * Exposes problems signal
@@ -48,18 +49,25 @@ export class EditorInMemoryContextService {
   /**
    * Exposes terminalBuffers signal
    */
-  readonly terminalBuffers = signal<EditorInMemoryAppContext['terminalBuffers']>(
-    new Map(),
-  );
+  readonly terminalBuffers = signal<
+    EditorInMemoryAppContext['terminalBuffers']
+  >(new Map());
 
   /**
    * Exposes createTerminal signal
    */
-  readonly createTerminal = signal<EditorInMemoryAppContext['createTerminal']>(0);
+  readonly createTerminal =
+    signal<EditorInMemoryAppContext['createTerminal']>(0);
 
   /**
    * Exposes showCommandPalette signal
    */
   readonly showCommandPalette =
     signal<EditorInMemoryAppContext['showCommandPalette']>(false);
+
+  /**
+   * Exposes resetEditorBottomPanelDragHeight signal
+   */
+  readonly resetEditorBottomPanelDragHeight =
+    signal<EditorInMemoryAppContext['resetEditorBottomPanelDragHeight']>(0);
 }

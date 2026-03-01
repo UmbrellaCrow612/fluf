@@ -54,7 +54,9 @@ import { voidCallback } from '../../../gen/type';
 })
 export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly appContext = inject(EditorContextService);
-  private readonly inMemoryContextService = inject(EditorInMemoryContextService);
+  private readonly inMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
   private readonly api = getElectronApi();
   private readonly keyService = inject(HotKeyService);
   private readonly themeService = inject(ThemeService);
@@ -70,9 +72,46 @@ export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
           this.unSub();
         }
         this.unSub = this.api.fsApi.onChange(dirPath, () => {
-            this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
-            console.log('Directory changed ' + dirPath);
+          this.inMemoryContextService.refreshDirectory.update((p) => p + 1);
+          console.log('Directory changed ' + dirPath);
         });
+      }
+    });
+
+    effect(() => { // TODO MAKE CLEANER
+      console.log('[resetEditorBottomPanelDragHeight] effect ran');
+      const updateCount =
+        this.inMemoryContextService.resetEditorBottomPanelDragHeight();
+
+      if (updateCount > 0 && this.mainResizer) {
+        // Dispose existing resizer to remove drag handles
+        this.mainResizer.dispose();
+
+        // Reset to default flex values of 1 for each panel
+        const defaultFlex = { firstChild: 1, secondChild: 1 };
+
+        const mainContainer = document.getElementById('main_resize_container');
+        if (mainContainer) {
+          this.mainResizer = new ResizerTwo({
+            container: mainContainer as HTMLDivElement,
+            direction: 'vertical',
+            initalFlex: defaultFlex,
+            minFlex: { firstChild: 0.4, secondChild: 0.4 },
+            handleStyles: {
+              height: '6px',
+              background: '--bg-primary',
+              boxShadow: '--shadow-md',
+              cursor: 'row-resize',
+            },
+          });
+
+          // Re-attach event listener to save state
+          this.mainResizer.on(() => {
+            const values = this.mainResizer!.getFlexValues();
+            localStorage.setItem('editor_main_resizer', JSON.stringify(values));
+            this.inMemoryContextService.editorResize.update((x) => x + 1);
+          });
+        }
       }
     });
   }

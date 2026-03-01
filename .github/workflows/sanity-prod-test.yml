@@ -1,4 +1,4 @@
-name: Dev Build Sanity Test for Fluf
+name: Prod Build Sanity Test for Fluf
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  sanity-dev-test:
+  sanity-prod-test:
     runs-on: windows-latest
 
     steps:
@@ -26,15 +26,19 @@ jobs:
       - name: Install Desktop dependencies
         run: npm i
         working-directory: ./desktop
-  
+
       - name: Install Sanity Test dependencies
         run: npm i
         working-directory: ./test/sanity
 
-      - name: Build desktop dev build
-        run: npm run build:dev
-        working-directory: ./desktop
+      - name: Install build dependencies
+        run: npm i
+        working-directory: ./build
 
-      - name: Run Playwright Sanity Tests Agaisnt development build
-        run: npm run test
+      - name: Build production application
+        run: npm run build
+        working-directory: "./build"
+
+      - name: Run Playwright Sanity Tests Agaisnt Production
+        run: npm run test:prod
         working-directory: ./test/sanity

@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: [["html", { open: "never" }]],
   use: {
     trace: "retain-on-failure",
-    video: "retain-on-failure",
+    video: "on",
     screenshot: {
       mode: "on-first-failure",
     },
@@ -20,4 +20,5 @@ export default defineConfig({
     reuseExistingServer: !process.env["CI"],
     timeout: 120 * 1000,
   },
+  timeout: 15000,
 });

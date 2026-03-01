@@ -155,4 +155,9 @@ export type EditorInMemoryAppContext = {
    * Used to indicate if the command palette should be visible or not
    */
   showCommandPalette: boolean;
+
+  /**
+   * Used as a way to react to when iut's value changes to be greater than 0 then it means reset the resize pane;l height to be back at 50%
+   */
+  resetEditorBottomPanelDragHeight: number;
 };
