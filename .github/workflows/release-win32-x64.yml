@@ -3,23 +3,23 @@ name: Test Release Upload
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger for tags like v0.1.0, v1.0.0
+      - 'v*.*.*'
+
+permissions:
+  contents: write  # Allows creating/updating releases
 
 jobs:
   test-release:
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Checkout code
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      # 2️⃣ Create a test file to upload
       - name: Create example file
         run: echo "Hello! This is a test release." > example-file.txt
 
-      # 3️⃣ Upload the file to a release
       - name: Release
         uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
         with:
           files: example-file.txt
