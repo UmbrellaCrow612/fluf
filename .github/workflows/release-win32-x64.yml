@@ -12,33 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
+      # TEST: Create a test directory and file
+      - name: Create Test Artifact
+        run: |
+          mkdir test-release
+          echo "Test release artifact" > test-release/README.txt
+          echo "Build time: $(Get-Date)" >> test-release/README.txt
+          Compress-Archive -Path test-release/* -DestinationPath test-release.zip
 
-      - name: Install UI Dependencies
-        run: npm i
-        working-directory: ./ui
-
-      - name: Install Desktop Dependencies
-        run: npm i
-        working-directory: ./desktop
-
-      - name: Install Build Tool Dependencies
-        run: npm i
-        working-directory: ./build
-
-      - name: Final Build Execution
-        run: npm run build
-        working-directory: ./build
-
-      - name: Package Stage Three
-        run: Compress-Archive -Path ./build/build-output/stage_three/* -DestinationPath ./build/build-output/fluf-win32-x64.zip
-
+      # TEST: Upload using the CORRECT action
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: ./build/build-output/fluf-win32-x64.zip
+          files: test-release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
