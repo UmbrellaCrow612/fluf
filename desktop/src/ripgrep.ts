@@ -140,7 +140,7 @@ function buildRipgrepArgs(options: ripgrepArgsOptions): string[] {
 async function searchWithRipGrep(
   options: ripgrepArgsOptions,
 ): Promise<ripGrepResult[]> {
-  const ripGrepPath = await binmanResolve(binPath(), "ripgrep", ["ripgrep"]);
+  const ripGrepPath = await binmanResolve(binPath(), "ripgrep", ["rg"]);
 
   if (!ripGrepPath) throw new Error("Ripgrep path is undefined");
   if (!fs.existsSync(options.searchPath))

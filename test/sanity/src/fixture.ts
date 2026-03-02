@@ -10,9 +10,24 @@ import {
 import { logger } from "./logger.js";
 import { closeElectronApp, launchElectronApp } from "./app.js";
 
+/**
+ * Custom fixture fields for electron to work
+ */
 type ElectronFixtures = {
+
+  /**
+   * Holds a ref to the electron app launched
+   */
   app: ElectronApplication;
+
+  /**
+   * Holds a ref to the main window from the app
+   */
   mainWindow: Page;
+
+  /**
+   * Random test path created for the application to use in tests
+   */
   testPath: string;
 };
 
@@ -20,6 +35,10 @@ type ElectronFixtures = {
  * Use this to write tests for the application
  */
 export const test = base.extend<ElectronFixtures>({
+
+  /**
+   * Used to obtain the test path
+   */
   testPath: async ({}, use) => {
     logger.info("testPath fixture started");
 
@@ -41,6 +60,9 @@ export const test = base.extend<ElectronFixtures>({
     }
   },
 
+  /**
+   * Used to obtain the application 
+   */
   app: async ({ testPath }, use) => {
     logger.info("App fixture started");
 
@@ -57,10 +79,17 @@ export const test = base.extend<ElectronFixtures>({
     logger.info("App fixture cleanup finished");
   },
 
+  /**
+   * Used to obtain the main window
+   */
   mainWindow: async ({ app }, use) => {
     logger.info("Obtaining main window");
     const mainWindow = await app.firstWindow();
     logger.info("Main window obtained");
+
+    mainWindow.on("console", (mess) => {
+      logger.info("Page: ", mess.text());
+    });
 
     logger.info("Calling mainWindow use");
     await use(mainWindow);
