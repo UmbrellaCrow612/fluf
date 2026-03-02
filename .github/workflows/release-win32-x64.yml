@@ -1,0 +1,49 @@
+name: Build & Release fluf for win32-x64
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install UI Dependencies
+        run: npm i
+        working-directory: ./ui
+
+      - name: Install Desktop Dependencies
+        run: npm i
+        working-directory: ./desktop
+
+      - name: Install Build Tool Dependencies
+        run: npm i
+        working-directory: ./build
+
+      - name: Final Build Execution
+        run: npm run build
+        working-directory: ./build
+
+      - name: Package Stage Three
+        run: Compress-Archive -Path ./build/build-output/stage_three/* -DestinationPath ./build/build-output/fluf-win32-x64.zip
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/build-output/fluf-win32-x64.zip
+          asset_name: fluf-win32-x64.zip
+          asset_content_type: application/zip
