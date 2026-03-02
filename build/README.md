@@ -25,3 +25,11 @@ npm run build
 - Stage two: Asar them
 - Stage three: move electron binarys into stage three, move app asar into resources, rename exe
 - Stage four: move desktop package.json deps node_modules into resources, move binarys into resources, move .env into stage three root
+
+
+# Example taring build output 
+
+```powershell
+PS C:\dev\fluf\build\build-output> tar -czf fluf-win32-x64.tar.gz -C stage_three .
+PS C:\dev\fluf\build\build-output> 
+```
