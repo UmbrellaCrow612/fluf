@@ -1,4 +1,4 @@
-name: Test Release Upload
+name: Release fluf-win32-x64 
 
 on:
   push:
@@ -6,20 +6,42 @@ on:
       - 'v*.*.*'
 
 permissions:
-  contents: write  # Allows creating/updating releases
+  contents: write 
 
 jobs:
   test-release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Create example file
-        run: echo "Hello! This is a test release." > example-file.txt
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install UI Dependencies
+        run: npm i
+        working-directory: ./ui
+
+      - name: Install Desktop Dependencies
+        run: npm i
+        working-directory: ./desktop
+
+      - name: Install Build Tool Dependencies
+        run: npm i
+        working-directory: ./build
+
+      - name: Final Build Execution
+        run: npm run build
+        working-directory: ./build
+
+      - name: Create tar.gz Archive
+        run: tar -czf fluf-win32-x64.tar.gz -C stage_three .
+        working-directory: "./build/build-output"
 
       - name: Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          files: example-file.txt
+          files: ./build/build-output/fluf-win32-x64.tar.gz
