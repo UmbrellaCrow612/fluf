@@ -1,4 +1,4 @@
-name: Release fluf-win32-x64 
+name: Release fluf-darwin-arm64 
 
 on:
   push:
@@ -9,8 +9,8 @@ permissions:
   contents: write 
 
 jobs:
-  build-release-fluf-win32-x64:
-    runs-on: windows-latest
+  build-release-fluf-darwin-arm64:
+    runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -37,11 +37,11 @@ jobs:
         working-directory: ./build
 
       - name: Create tar.gz Archive
-        run: tar -czf fluf-win32-x64.tar.gz -C stage_three .
+        run: tar -czf fluf-darwin-arm64.tar.gz -C stage_three .
         working-directory: "./build/build-output"
 
       - name: Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          files: ./build/build-output/fluf-win32-x64.tar.gz
+          files: ./build/build-output/fluf-darwin-arm64.tar.gz
