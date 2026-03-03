@@ -13,6 +13,8 @@ const __dirname = path.dirname(__filename);
  * 
  * In Development test points to the dist index file 
  * In prod points to the built exe path
+ * 
+ * @see https://playwright.dev/docs/api/class-electron
  */
 export async function launchElectronApp(
   testFolder?: string,

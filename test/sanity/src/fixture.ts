@@ -33,6 +33,8 @@ type ElectronFixtures = {
 
 /**
  * Use this to write tests for the application
+ * 
+ * @see https://playwright.dev/docs/test-fixtures#with-fixtures
  */
 export const test = base.extend<ElectronFixtures>({
 
