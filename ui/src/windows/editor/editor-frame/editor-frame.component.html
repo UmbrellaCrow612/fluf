@@ -3,7 +3,23 @@
 
   <div class="editor_frame_action_with_menus">
     <div class="editor_frame_actions">
-      <span>foo</span>
+      @for (item of editorFrameActionWithMenus; track $index) {
+        <button
+          matButton
+          [matMenuTriggerFor]="menu"
+          [ariaLabel]="item.tooltip"
+          [id]="'editor_frame_action_with_menu' + item.id"
+        >
+          {{ item.label }}
+        </button>
+        <mat-menu #menu="matMenu">
+          @for (child of item.children; track $index) {
+            <button mat-menu-item (click)="child.onClick()">
+              <span>{{ child.label }}</span>
+            </button>
+          }
+        </mat-menu>
+      }
     </div>
   </div>
 
@@ -14,7 +30,7 @@
     <button matIconButton matTooltip="Maximize" matTooltip="Maximize">
       <mat-icon>crop_square</mat-icon>
     </button>
-    <button mat-icon-button matTooltip="Close" matTooltip="Close">
+    <button mat-icon-button matTooltip="Close" matTooltip="Close" (click)="closeWindow()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
