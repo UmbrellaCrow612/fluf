@@ -1,0 +1,21 @@
+.editor_frame_container {
+  display: flex;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.editor_frame_action_with_menus {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  padding-left: 5px;
+}
+
+.editor_frame_actions {
+  -webkit-app-region: no-drag;
+  display: flex;
+  gap: 3px;
+}
+
+.editor_frame_title {
+}
