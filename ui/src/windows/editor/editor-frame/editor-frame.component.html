@@ -3,7 +3,7 @@
 
   <div class="editor_frame_action_with_menus">
     <div class="editor_frame_actions">
-      @for (item of editorFrameActionWithMenus; track $index) {
+      @for (item of editorFrameActionWithMenus(); track $index) {
         <button
           matButton
           [matMenuTriggerFor]="menu"
@@ -24,13 +24,21 @@
   </div>
 
   <div class="editor_frame_actions">
-    <button matIconButton aria-label="Minimize editor" matTooltip="Minimize">
+    <button matIconButton aria-label="Minimize editor" matTooltip="Minimize" (click)="minimizeWindow()">
       <mat-icon>minimize</mat-icon>
     </button>
-    <button matIconButton matTooltip="Maximize" matTooltip="Maximize">
-      <mat-icon>crop_square</mat-icon>
+    <button
+      matIconButton
+      [matTooltip]="isMaximized() ? 'Restore' : 'Maximize'"
+      (click)="maximizerOrRestoreWindow()"
+    >
+      @if (isMaximized()) {
+        <mat-icon>filter_none</mat-icon>
+      } @else {
+        <mat-icon>crop_square</mat-icon>
+      }
     </button>
-    <button mat-icon-button matTooltip="Close" matTooltip="Close" (click)="closeWindow()">
+    <button mat-icon-button matTooltip="Close" (click)="closeWindow()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
