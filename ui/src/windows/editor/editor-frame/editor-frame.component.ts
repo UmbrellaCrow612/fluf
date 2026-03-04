@@ -7,7 +7,6 @@ import { getElectronApi } from '../../../utils';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { MatMenuModule } from '@angular/material/menu';
-import { A11yModule } from '@angular/cdk/a11y';
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -60,7 +59,6 @@ type EditorFrameActionWithMenus = {
     MatIconModule,
     MatTooltipModule,
     MatMenuModule,
-    A11yModule,
   ],
   templateUrl: './editor-frame.component.html',
   styleUrl: './editor-frame.component.css',
