@@ -2,9 +2,11 @@ import {
   AfterViewInit,
   Component,
   computed,
+  effect,
   inject,
   Signal,
   Type,
+  untracked,
 } from '@angular/core';
 import { EditorMainContentManagerComponent } from '../editor-main-content-manager/editor-main-content-manager.component';
 import { EditorSidebarComponent } from '../editor-sidebar/editor-sidebar.component';
@@ -33,109 +35,98 @@ import { sideBarActiveElement } from '../editor-context/type';
   templateUrl: './editor-main-content.component.html',
   styleUrl: './editor-main-content.component.css',
 })
-export class EditorMainContentComponent implements AfterViewInit {
+export class EditorMainContentComponent {
   private readonly editorContextService = inject(EditorContextService);
 
   private resizer: Resizer | null = null;
-  private reopenHandle: ResizerReOpenHandle | null = null;
-  /** When sidebar is unrendred due to collpase via dragging for re opening we just want to use the one that was active beofre */
-  private inMemPreviousSideBarComponent: sideBarActiveElement | null = null;
   private sharedHandleStyles: Record<string, string> = {
     width: '6px',
     cursor: 'col-resize',
   };
 
-  /**
-   * Renders the re open handle when user collpased the left panel either by dragging or is undrendred i.e render when single element the main component
-   */
-  private renderRezierReOpenHandle() {
-    if (this.reopenHandle) {
-      this.reopenHandle.dispose();
-    }
+  private renderResizeHandleTimeout: NodeJS.Timeout | null = null;
 
-    console.log('[EditorMainContentComponent] re open handle render');
-    let mainContentContainerElement: HTMLDivElement | null =
-      document.getElementById(
-        'editor_main_content_wrapper',
-      ) as HTMLDivElement | null;
-    if (!mainContentContainerElement) {
-      throw new Error('editor_main_content_container not found');
-    }
+  constructor() {
+    effect(() => {
+      let should = this.shouldRenderSideBarComponent();
+
+      if (should) {
+        untracked(() => {
+          this.renderResizeHandle();
+        });
+      } else {
+        this.disposeResizer();
+      }
+    });
   }
 
   /**
    * Renders the resize handle between two elements disposihnhg of previous one
    */
   private renderResizeHandle() {
-    if (!this.shouldRenderSideBarComponent()) {
-      return;
-    } // only render handle when there are two components
-
-    console.log('[EditorMainContentComponent] resize handle render');
-    let mainContentContainerElement: HTMLDivElement | null =
-      document.getElementById(
-        'editor_main_content_wrapper',
-      ) as HTMLDivElement | null;
-    if (!mainContentContainerElement) {
-      throw new Error('editor_main_content_container not found');
+    if (this.renderResizeHandleTimeout) {
+      clearTimeout(this.renderResizeHandleTimeout);
     }
 
-    if (this.resizer) {
-      this.resizer.dispose();
-      this.resizer = null;
-    }
+    this.renderResizeHandleTimeout = setTimeout(() => {
+      console.log('[EditorMainContentComponent] resize handle render');
+      let mainContentContainerElement: HTMLDivElement | null =
+        document.getElementById(
+          'editor_main_content_wrapper',
+        ) as HTMLDivElement | null;
+      if (!mainContentContainerElement) {
+        throw new Error('editor_main_content_container not found');
+      }
 
-    this.resizer = new Resizer(
-      {
-        container: mainContentContainerElement,
-        classNames: ['resize_handle_base'],
-        direction: 'horizontal',
-        handleStyles: this.sharedHandleStyles,
-        minFlex: 0.3,
-        storageKey: 'editor_main_content_component_resize_handle_key',
-      },
-      {
-        onBeginDrag: () => {
-          console.log('[onBeginDrag]');
-        },
-        onDrag: (flexValues) => {
-          // todo call resize terminal here other callbacks
-        },
-        onDragFinished: (flexValues) => {
-          console.log(`[onDragFinished] ${flexValues}`);
-        },
-        onDragPastMin: (side, pixelsPast) => {
-          if (side === 'left' && pixelsPast > 200) {
-            console.log(
-              '[onDragPastMin] unrendering side bar component as it went past 125 pixels',
-            );
-            this.resizer?.dispose();
-            this.resizer = null;
+      if (this.resizer) {
+        this.resizer.dispose();
+        this.resizer = null;
+      }
 
-            this.inMemPreviousSideBarComponent =
-              this.editorContextService.sideBarActiveElement();
-            this.editorContextService.sideBarActiveElement.set(null);
-          }
+      this.resizer = new Resizer(
+        {
+          container: mainContentContainerElement,
+          classNames: ['resize_handle_base'],
+          direction: 'horizontal',
+          handleStyles: this.sharedHandleStyles,
+          minFlex: 0.3,
+          storageKey: 'editor_main_content_component_resize_handle_key',
         },
-      },
-    );
+        {
+          onBeginDrag: () => {
+            console.log('[onBeginDrag]');
+          },
+          onDrag: (flexValues) => {
+            // todo call resize terminal here other callbacks
+          },
+          onDragFinished: (flexValues) => {
+            console.log(`[onDragFinished] ${flexValues}`);
+          },
+          onDragPastMin: (side, pixelsPast) => {
+            if (side === 'left' && pixelsPast > 200) {
+              console.log(
+                '[onDragPastMin] unrendering side bar component as it went past 125 pixels',
+              );
+              this.disposeResizer();
+
+              this.editorContextService.sideBarActiveElement.set(null);
+            }
+          },
+        },
+      );
+    });
   }
 
-  public ngAfterViewInit(): void {
-    this.renderResizeHandle();
-  }
+  private disposeResizer = () => {
+    this.resizer?.dispose();
+    this.resizer = null;
+  };
 
   /**
    * Determins if the side bar component should be rendered if a specific component to render is present, also removes or add handle
    */
   public shouldRenderSideBarComponent: Signal<boolean> = computed(() => {
     let should = this.editorContextService.sideBarActiveElement() !== null;
-    if (!should) {
-      this.resizer?.dispose();
-      this.resizer = null;
-    } else {
-      this.renderRezierReOpenHandle();
-    }
     return should;
   });
 
@@ -211,7 +202,6 @@ export class EditorMainContentComponent implements AfterViewInit {
     const componentToRender =
       this.renderableSideBarElements.find((x) => x.condition())?.component ??
       null;
-    this.renderResizeHandle();
     return componentToRender;
   });
 }
