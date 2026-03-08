@@ -14,4 +14,5 @@ import { EditorFooterComponent } from "../editor-footer/editor-footer.component"
 })
 export class EditorMainComponent {
 
+  
 }

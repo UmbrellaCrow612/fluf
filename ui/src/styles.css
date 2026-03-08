@@ -167,6 +167,21 @@ body {
   background-color: var(--bg-hover);
 }
 
+.resize_handle_base {
+  background-color: var(--bg-tertiary);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.resize_handle_base:hover {
+  background-color: var(--bg-hover);
+  box-shadow: 0 0 0 1px var(--border-hover);
+}
+
+.resize_handle_base:active {
+  background-color: var(--bg-active);
+  box-shadow: 0 0 0 2px var(--border-focus);
+}
+
 /* ============================================
    FLUF BUTTON SYSTEM
    Reusable button classes using design tokens
