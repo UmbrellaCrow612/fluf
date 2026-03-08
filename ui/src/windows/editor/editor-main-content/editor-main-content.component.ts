@@ -20,6 +20,7 @@ import { SideGitComponent } from '../side-git/side-git.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { Resizer, ResizerReOpenHandle } from 'umbr-resizer-two';
+import { sideBarActiveElement } from '../editor-context/type';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -43,6 +44,8 @@ export class EditorMainContentComponent {
     cursor: 'col-resize',
   };
   private openHandle: ResizerReOpenHandle | null = null;
+
+  private previousSideBarActiveElement: sideBarActiveElement | null = null;
 
   private renderResizeHandleTimeout: NodeJS.Timeout | null = null;
   private renderOpenHandleTimeout: NodeJS.Timeout | null = null;
@@ -71,7 +74,7 @@ export class EditorMainContentComponent {
     }
 
     this.renderOpenHandleTimeout = setTimeout(() => {
-       console.log('[EditorMainContentComponent] render open handle');
+      console.log('[EditorMainContentComponent] render open handle');
       let mainContentContainerElement: HTMLDivElement | null =
         document.getElementById(
           'editor_main_content_wrapper',
@@ -80,12 +83,29 @@ export class EditorMainContentComponent {
         throw new Error('editor_main_content_container not found');
       }
 
-      this.openHandle = new ResizerReOpenHandle({
-        container: mainContentContainerElement,
-        classNames: ['resize_handle_base'],
-        handleStyles: this.sharedHandleStyles,
-        position: 'left',
-      });
+      this.openHandle = new ResizerReOpenHandle(
+        {
+          container: mainContentContainerElement,
+          classNames: ['resize_handle_base'],
+          handleStyles: this.sharedHandleStyles,
+          position: 'left',
+        },
+        {
+          onDrag: (pixels) => {
+            if (pixels > 200) {
+              console.log(
+                '[ResizerReOpenHandle.onDrag] unrendering open handle as it went past 200px',
+              );
+
+              this.disposeOpenHandle();
+
+              this.editorContextService.sideBarActiveElement.set(
+                this.previousSideBarActiveElement,
+              );
+            }
+          },
+        },
+      );
     }, 5);
   }
 
@@ -136,9 +156,12 @@ export class EditorMainContentComponent {
           onDragPastMin: (side, pixelsPast) => {
             if (side === 'left' && pixelsPast > 200) {
               console.log(
-                '[onDragPastMin] unrendering side bar component as it went past 125 pixels',
+                '[onDragPastMin] unrendering side bar component as it went past 200 pixels',
               );
               this.disposeResizer();
+
+              this.previousSideBarActiveElement =
+                this.editorContextService.sideBarActiveElement();
 
               this.editorContextService.sideBarActiveElement.set(null);
             }
