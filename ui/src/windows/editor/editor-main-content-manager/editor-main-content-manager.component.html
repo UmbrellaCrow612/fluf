@@ -1,6 +1,9 @@
-<div>
-    <!-- Top bar files -->
-     <!-- main editor pdf etc-->
-     <!-- bottom terminal etc-->
-      main manager
+<div class="editor_main_content_manager_container">
+  @if (shouldRenderOpenFiles()) {
+    <app-editor-open-files />
+  }
+  <div> <!-- todo add handle-->
+    <div>ng component here</div>
+    <div>just a if then bottom component renders here</div>
+  </div>
 </div>
