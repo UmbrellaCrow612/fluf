@@ -20,7 +20,6 @@ import { SideGitComponent } from '../side-git/side-git.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { Resizer, ResizerReOpenHandle } from 'umbr-resizer-two';
-import { sideBarActiveElement } from '../editor-context/type';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -43,8 +42,10 @@ export class EditorMainContentComponent {
     width: '6px',
     cursor: 'col-resize',
   };
+  private openHandle: ResizerReOpenHandle | null = null;
 
   private renderResizeHandleTimeout: NodeJS.Timeout | null = null;
+  private renderOpenHandleTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
     effect(() => {
@@ -55,15 +56,45 @@ export class EditorMainContentComponent {
           this.renderResizeHandle();
         });
       } else {
-        this.disposeResizer();
+        untracked(() => {
+          this.renderOpenHandle();
+        });
       }
     });
+  }
+
+  private renderOpenHandle() {
+    this.disposeResizer();
+
+    if (this.renderOpenHandleTimeout) {
+      clearTimeout(this.renderOpenHandleTimeout);
+    }
+
+    this.renderOpenHandleTimeout = setTimeout(() => {
+       console.log('[EditorMainContentComponent] render open handle');
+      let mainContentContainerElement: HTMLDivElement | null =
+        document.getElementById(
+          'editor_main_content_wrapper',
+        ) as HTMLDivElement | null;
+      if (!mainContentContainerElement) {
+        throw new Error('editor_main_content_container not found');
+      }
+
+      this.openHandle = new ResizerReOpenHandle({
+        container: mainContentContainerElement,
+        classNames: ['resize_handle_base'],
+        handleStyles: this.sharedHandleStyles,
+        position: 'left',
+      });
+    }, 5);
   }
 
   /**
    * Renders the resize handle between two elements disposihnhg of previous one
    */
-  private renderResizeHandle() {
+  private renderResizeHandle = () => {
+    this.disposeOpenHandle();
+
     if (this.renderResizeHandleTimeout) {
       clearTimeout(this.renderResizeHandleTimeout);
     }
@@ -115,11 +146,16 @@ export class EditorMainContentComponent {
         },
       );
     });
-  }
+  };
 
   private disposeResizer = () => {
     this.resizer?.dispose();
     this.resizer = null;
+  };
+
+  private disposeOpenHandle = () => {
+    this.openHandle?.dispose();
+    this.openHandle = null;
   };
 
   /**
