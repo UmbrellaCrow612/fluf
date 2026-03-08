@@ -17,7 +17,8 @@ import { SideFolderSearchComponent } from '../side-folder-search/side-folder-sea
 import { SideGitComponent } from '../side-git/side-git.component';
 import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
 import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
-import { Resizer } from 'umbr-resizer-two';
+import { Resizer, ResizerReOpenHandle } from 'umbr-resizer-two';
+import { sideBarActiveElement } from '../editor-context/type';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -36,6 +37,31 @@ export class EditorMainContentComponent implements AfterViewInit {
   private readonly editorContextService = inject(EditorContextService);
 
   private resizer: Resizer | null = null;
+  private reopenHandle: ResizerReOpenHandle | null = null;
+  /** When sidebar is unrendred due to collpase via dragging for re opening we just want to use the one that was active beofre */
+  private inMemPreviousSideBarComponent: sideBarActiveElement | null = null;
+  private sharedHandleStyles: Record<string, string> = {
+    width: '6px',
+    cursor: 'col-resize',
+  };
+
+  /**
+   * Renders the re open handle when user collpased the left panel either by dragging or is undrendred i.e render when single element the main component
+   */
+  private renderRezierReOpenHandle() {
+    if (this.reopenHandle) {
+      this.reopenHandle.dispose();
+    }
+
+    console.log('[EditorMainContentComponent] re open handle render');
+    let mainContentContainerElement: HTMLDivElement | null =
+      document.getElementById(
+        'editor_main_content_wrapper',
+      ) as HTMLDivElement | null;
+    if (!mainContentContainerElement) {
+      throw new Error('editor_main_content_container not found');
+    }
+  }
 
   /**
    * Renders the resize handle between two elements disposihnhg of previous one
@@ -56,6 +82,7 @@ export class EditorMainContentComponent implements AfterViewInit {
 
     if (this.resizer) {
       this.resizer.dispose();
+      this.resizer = null;
     }
 
     this.resizer = new Resizer(
@@ -63,10 +90,7 @@ export class EditorMainContentComponent implements AfterViewInit {
         container: mainContentContainerElement,
         classNames: ['resize_handle_base'],
         direction: 'horizontal',
-        handleStyles: {
-          width: '6px',
-          cursor: "col-resize"
-        },
+        handleStyles: this.sharedHandleStyles,
         minFlex: 0.3,
         storageKey: 'editor_main_content_component_resize_handle_key',
       },
@@ -81,7 +105,17 @@ export class EditorMainContentComponent implements AfterViewInit {
           console.log(`[onDragFinished] ${flexValues}`);
         },
         onDragPastMin: (side, pixelsPast) => {
-          console.log(`[onDragPastMin] ${side} ${pixelsPast}`);
+          if (side === 'left' && pixelsPast > 200) {
+            console.log(
+              '[onDragPastMin] unrendering side bar component as it went past 125 pixels',
+            );
+            this.resizer?.dispose();
+            this.resizer = null;
+
+            this.inMemPreviousSideBarComponent =
+              this.editorContextService.sideBarActiveElement();
+            this.editorContextService.sideBarActiveElement.set(null);
+          }
         },
       },
     );
@@ -98,6 +132,9 @@ export class EditorMainContentComponent implements AfterViewInit {
     let should = this.editorContextService.sideBarActiveElement() !== null;
     if (!should) {
       this.resizer?.dispose();
+      this.resizer = null;
+    } else {
+      this.renderRezierReOpenHandle();
     }
     return should;
   });
