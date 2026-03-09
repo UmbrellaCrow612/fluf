@@ -1,6 +1,5 @@
 import { Component, computed, inject, Signal } from '@angular/core';
 import { EditorContextService } from '../editor-context/editor-context.service';
-import { combineLatest } from 'rxjs';
 import { EditorOpenFilesComponent } from "../editor-open-files/editor-open-files.component";
 
 /**
