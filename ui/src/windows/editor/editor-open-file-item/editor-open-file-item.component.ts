@@ -37,7 +37,7 @@ export class EditorOpenFileItemComponent {
     return (
       this.fileIconListMapNames.find(
         (x) => x.fileExtension == this.fileNode().extension,
-      )?.iconName ?? 'docs'
+      )?.iconName ?? 'description'
     );
   });
 
@@ -46,6 +46,14 @@ export class EditorOpenFileItemComponent {
       {
         fileExtension: '.html',
         iconName: 'html',
+      },
+      {
+        fileExtension: '.css',
+        iconName: 'css',
+      },
+      {
+        fileExtension: '.js',
+        iconName: 'javascript',
       },
     ];
 
