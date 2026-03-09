@@ -1,0 +1,20 @@
+<div class="editor_open_files_file_item" [class.active]="isActive()" (click)="selectFileTabItem($event)">
+  <mat-icon>
+    {{ fileIcon() }}
+  </mat-icon>
+  <div class="file_item_name_container">
+    <span class="file_item_name">
+      {{ fileNode().name }}
+    </span>
+  </div>
+
+  <button
+    matIconButton
+    aria-label="Close file"
+    matTooltip="Close file"
+    [class.active]="isActive()"
+    (click)="closeFileTabItem($event)"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
