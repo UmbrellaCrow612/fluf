@@ -39,7 +39,7 @@ export class EditorContextService {
       directoryFileNodes: this.directoryFileNodes(),
       displayFileEditorBottom: this.displayFileEditorBottom(),
       editorMainActiveElement: this.editorMainActiveElement(),
-      fileEditorBottomActiveElement: this.fileEditorBottomActiveElement(),
+      editorBottomActiveElement: this.editorBottomActiveElement(),
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
       openFiles: this.openFiles(),
       selectedDirectoryPath: this.selectedDirectoryPath(),
@@ -120,9 +120,9 @@ export class EditorContextService {
   /**
    * Exposes fileEditorBottomActiveElement signal
    */
-  readonly fileEditorBottomActiveElement = signal<
-    EditorAppContext['fileEditorBottomActiveElement']
-  >(this.restoreField('fileEditorBottomActiveElement', null));
+  readonly editorBottomActiveElement = signal<
+    EditorAppContext['editorBottomActiveElement']
+  >(this.restoreField('editorBottomActiveElement', null));
 
   /**
    * Exposes the editorMainActiveElement signal

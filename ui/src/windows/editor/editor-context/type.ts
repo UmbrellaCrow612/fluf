@@ -17,7 +17,7 @@ export type sideBarActiveElement =
 /**
  * The current active element to be rendered in the bottom editor pop up
  */
-export type fileEditorBottomActiveElement = 'terminal' | 'problems';
+export type editorBottomActiveElement = 'terminal' | 'problems' | null;
 
 /**
  * All the components it can render in the middle of the text editor
@@ -87,7 +87,7 @@ export type EditorAppContext = {
   /**
    * The current active element in the file editor bottom container
    */
-  fileEditorBottomActiveElement: fileEditorBottomActiveElement | null;
+  editorBottomActiveElement: editorBottomActiveElement;
 
   /**
    * Represents the main component to render in the middle of the text editor such as the file text editor or other components

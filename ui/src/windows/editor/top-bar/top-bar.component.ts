@@ -147,7 +147,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
           label: 'Problems',
           onClick: () => {
             this.appContext.displayFileEditorBottom.set(true);
-            this.appContext.fileEditorBottomActiveElement.set('problems');
+            this.appContext.editorBottomActiveElement.set('problems');
           },
           id: 'problems',
         },
@@ -155,7 +155,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
           label: 'Terminal',
           onClick: () => {
             this.appContext.displayFileEditorBottom.set(true);
-            this.appContext.fileEditorBottomActiveElement.set('terminal');
+            this.appContext.editorBottomActiveElement.set('terminal');
           },
           id: 'terminal',
         },
@@ -205,7 +205,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
           label: 'New terminal',
           onClick: () => {
             this.appContext.displayFileEditorBottom.set(true);
-            this.appContext.fileEditorBottomActiveElement.set('terminal');
+            this.appContext.editorBottomActiveElement.set('terminal');
             this.inMemoryContextService.resetEditorBottomPanelDragHeight.update(
               (x) => x + 1,
             );

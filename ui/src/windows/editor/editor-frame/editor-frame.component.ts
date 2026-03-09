@@ -169,7 +169,7 @@ export class EditorFrameComponent implements OnInit {
             label: 'Problems',
             onClick: () => {
               this.editorContextService.displayFileEditorBottom.set(true);
-              this.editorContextService.fileEditorBottomActiveElement.set(
+              this.editorContextService.editorBottomActiveElement.set(
                 'problems',
               );
             },
@@ -179,7 +179,7 @@ export class EditorFrameComponent implements OnInit {
             label: 'Terminal',
             onClick: () => {
               this.editorContextService.displayFileEditorBottom.set(true);
-              this.editorContextService.fileEditorBottomActiveElement.set(
+              this.editorContextService.editorBottomActiveElement.set(
                 'terminal',
               );
             },
@@ -239,7 +239,7 @@ export class EditorFrameComponent implements OnInit {
             label: 'New terminal',
             onClick: () => {
               this.editorContextService.displayFileEditorBottom.set(true);
-              this.editorContextService.fileEditorBottomActiveElement.set(
+              this.editorContextService.editorBottomActiveElement.set(
                 'terminal',
               );
               this.editorInMemoryContextService.resetEditorBottomPanelDragHeight.update(

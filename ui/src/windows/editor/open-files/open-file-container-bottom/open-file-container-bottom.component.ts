@@ -1,6 +1,6 @@
 import { Component, computed, inject, Signal, Type } from '@angular/core';
 import { EditorContextService } from '../../editor-context/editor-context.service';
-import { fileEditorBottomActiveElement } from '../../editor-context/type';
+import { editorBottomActiveElement } from '../../editor-context/type';
 import { TerminalComponent } from '../../terminal/terminal.component';
 import { NgComponentOutlet } from '@angular/common';
 import { ProblemsComponent } from '../../problems/problems.component';
@@ -8,7 +8,7 @@ import { Renderable } from '../../ngComponentOutlet/type';
 
 type btn = {
   label: string;
-  element: fileEditorBottomActiveElement;
+  element: editorBottomActiveElement;
 };
 
 @Component({
@@ -20,7 +20,7 @@ type btn = {
 export class OpenFileContainerBottomComponent {
   private readonly appContext = inject(EditorContextService);
 
-  activeEl = computed(() => this.appContext.fileEditorBottomActiveElement());
+  activeEl = computed(() => this.appContext.editorBottomActiveElement());
 
   renderComponents: Renderable[] = [
     {
@@ -49,6 +49,6 @@ export class OpenFileContainerBottomComponent {
   ];
 
   buttonClicked(option: btn) {
-    this.appContext.fileEditorBottomActiveElement.set(option.element);
+    this.appContext.editorBottomActiveElement.set(option.element);
   }
 }
