@@ -1,11 +1,18 @@
-<div class="editor_open_files_container">
+<div class="editor_open_files_container scroll_bar">
+
+  <!-- Add active if file is active -->
   <div class="editor_open_files_file_item">
-    <mat-icon>home</mat-icon>
+    <mat-icon>
+      {{ fileIcon() }}
+    </mat-icon>
     <div class="file_item_name_container">
-      <span class="file_item_name">Lorem, ipsum dolor. Lorem, ipsum dolor.</span>
-      <div class="file_item_tracking">U</div>
+      <span class="file_item_name"
+        >Lorem, ipsum dolor. Lorem, ipsum dolor.</span
+      >
     </div>
-    <button matIconButton aria-label="CLose file" matTooltip="Close file">
+
+     <!-- Add active if file is active opicaity is one for active ones -->
+    <button matIconButton aria-label="Close file" matTooltip="Close file">
       <mat-icon>close</mat-icon>
     </button>
   </div>

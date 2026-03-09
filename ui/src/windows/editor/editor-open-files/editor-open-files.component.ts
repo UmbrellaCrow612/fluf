@@ -23,4 +23,22 @@ export class EditorOpenFilesComponent {
   public readonly currentOpenFiles: Signal<fileNode[]> = computed(() => {
     return this.editorContextService.openFiles() ?? [];
   });
+
+  /**
+   * The icon name displayed for the given file based on it's extension computed once
+   */
+  public fileIcon: Signal<string> = computed(() => {
+    return (
+      this.fileIconListMapNames.find((x) => x.fileExtension == '.html')
+        ?.iconName ?? 'file'
+    );
+  });
+
+  private fileIconListMapNames: { fileExtension: string; iconName: string }[] =
+    [
+      {
+        fileExtension: '.html',
+        iconName: 'html',
+      },
+    ];
 }
