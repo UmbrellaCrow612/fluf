@@ -1,9 +1,17 @@
-import { Component, computed, inject, Signal, Type } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  Signal,
+  Type,
+} from '@angular/core';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { EditorOpenFilesComponent } from '../editor-open-files/editor-open-files.component';
 import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
+import { Resizer } from 'umbr-resizer-two';
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -21,6 +29,56 @@ import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/
 })
 export class EditorMainContentManagerComponent {
   private readonly editorContextService = inject(EditorContextService);
+
+  private resizer: Resizer | null = null;
+  private resizerTimeout: NodeJS.Timeout | undefined = undefined;
+
+  constructor() {
+    effect(() => {
+      console.log('[EditorMainContentManagerComponent] effect ran');
+      let shouldRenderBottomSection =
+        this.editorContextService.displayFileEditorBottom();
+      if (shouldRenderBottomSection) {
+        this.renderResizer();
+      } else {
+        this.disposeResizer();
+      }
+    });
+  }
+
+  private renderResizer = () => {
+    clearTimeout(this.resizerTimeout);
+
+    this.resizerTimeout = setTimeout(() => {
+      const container = document.getElementById(
+        'editor_main_content_manager_central_container',
+      ) as HTMLDivElement;
+
+      if (!container) {
+        throw new Error(
+          'Cannot render resizer as container is missing from DOM',
+        );
+      }
+
+      this.resizer = new Resizer({
+        container,
+        classNames: ['resize_handle_base'],
+        direction: 'vertical',
+        handleStyles: {
+          height: '6px',
+          cursor: 'row-resize',
+        },
+        minFlex: 0.3,
+        storageKey: 'editor_main_content_manager_component_resizer_key',
+      });
+    }, 10);
+  };
+
+  private disposeResizer = () => {
+    this.resizer?.dispose();
+    this.resizer = null;
+    clearTimeout(this.resizerTimeout);
+  };
 
   /**
    * Indicates if we should render the component that displays all current open files in the editor
