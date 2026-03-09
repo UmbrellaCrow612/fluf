@@ -17,3 +17,4 @@ Understand flex - we use flex for layout and filling so to get overflow properly
 - Component render with extra angular html element like `<angular_html_tag>actual html of component<angular_html_tag>` so inside of the component
   add `:host {display:flex; min-height:0; min-width:0;}` so overflow works properly, whenever you get broken over flow it is becuase this rule has been broken in the chain of HTML 
   heirarchy use dev tools to find the tag and apply said styles all the way down
+  - Use signals for all private and public fields used in UI as using function calls for computing UI text or other stuff run every angular cycle wasting compute and slowing app
