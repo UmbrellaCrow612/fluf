@@ -40,5 +40,13 @@
     </div>
   }
 }
-
 <!---->
+
+@if (fileNode().mode === "default" && fileNode().children.length > 0) {
+  @for (node of fileNode().children; track $index) {
+    <app-editor-file-explorer-tree-item
+      [fileNode]="node"
+      [depth]="depth() + 1"
+    />
+  }
+}
