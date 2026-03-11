@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { getElectronApi } from '../../utils';
 import { OpenFileInFileX } from '../../windows/FileX/utils';
-import { OpenNodeInEditor } from '../../windows/editor/file-explorer/helper';
 import { EditorContextService } from '../../windows/editor/editor-context/editor-context.service';
+import { CoreEditorService } from '../../windows/editor/core/services/core-editor.service';
 
 /**
  * Acts as the central, framework-agnostic location where we register
@@ -24,7 +24,7 @@ import { EditorContextService } from '../../windows/editor/editor-context/editor
 })
 export class CommandServerService {
   private readonly electronApi = getElectronApi();
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly coreEditorService = inject(CoreEditorService);
 
   /**
    * Registers all command-server logic.
@@ -41,7 +41,7 @@ export class CommandServerService {
         if (node.isDirectory) {
           return;
         } else {
-          OpenNodeInEditor(node, this.editorContextService);
+          this.coreEditorService.OpenFileNodeInEditor(node);
         }
       }
     });

@@ -12,12 +12,6 @@ import { EditorSidebarComponent } from '../editor-sidebar/editor-sidebar.compone
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
-import { FileExplorerComponent } from '../file-explorer/file-explorer.component';
-import { SideSearchComponent } from '../side-search/side-search.component';
-import { SideFolderSearchComponent } from '../side-folder-search/side-folder-search.component';
-import { SideGitComponent } from '../side-git/side-git.component';
-import { SideFileSearchComponent } from '../side-file-search/side-file-search.component';
-import { SelectDirectoryComponent } from '../file-explorer/select-directory/select-directory.component';
 import { Resizer } from 'umbr-resizer-two';
 
 /**
@@ -53,7 +47,7 @@ export class EditorMainContentComponent {
           this.renderResizeHandle();
         });
       } else {
-        this.disposeResizer()
+        this.disposeResizer();
       }
     });
   }
@@ -139,59 +133,7 @@ export class EditorMainContentComponent {
   /**
    * List of all components that can be rendered in the side bar
    */
-  private renderableSideBarElements: Renderable[] = [
-    {
-      component: FileExplorerComponent,
-      condition: computed(() => {
-        return (
-          this.editorContextService.sideBarActiveElement() == 'file-explorer' &&
-          this.hasSelectedDirectory()
-        );
-      }),
-    },
-    {
-      component: SideSearchComponent,
-      condition: computed(() => {
-        return (
-          this.editorContextService.sideBarActiveElement() == 'search' &&
-          this.hasSelectedDirectory()
-        );
-      }),
-    },
-    {
-      component: SideFolderSearchComponent,
-      condition: computed(() => {
-        return (
-          this.editorContextService.sideBarActiveElement() ==
-            'search-folders' && this.hasSelectedDirectory()
-        );
-      }),
-    },
-    {
-      component: SideGitComponent,
-      condition: computed(() => {
-        return (
-          this.editorContextService.sideBarActiveElement() ==
-            'source-control' && this.hasSelectedDirectory()
-        );
-      }),
-    },
-    {
-      component: SideFileSearchComponent,
-      condition: computed(() => {
-        return (
-          this.editorContextService.sideBarActiveElement() == 'search-files' &&
-          this.hasSelectedDirectory()
-        );
-      }),
-    },
-    {
-      component: SelectDirectoryComponent,
-      condition: computed(() => {
-        return !this.hasSelectedDirectory();
-      }),
-    },
-  ];
+  private renderableSideBarElements: Renderable[] = [];
 
   /**
    * Holds the current component to render for the side bar based on what is the active element

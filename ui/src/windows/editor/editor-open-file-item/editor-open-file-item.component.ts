@@ -4,8 +4,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { removeNodeIfExists } from '../file-explorer/fileNode';
-import { OpenNodeInEditor } from '../file-explorer/helper';
+import { removeNodeIfExists } from '../core/file-node-helpers';
+import { CoreEditorService } from '../core/services/core-editor.service';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -15,6 +15,7 @@ import { OpenNodeInEditor } from '../file-explorer/helper';
 })
 export class EditorOpenFileItemComponent {
   private readonly editorContextService = inject(EditorContextService);
+  private readonly coreEditorService = inject(CoreEditorService);
 
   /**
    * Input file node to render for the given item
@@ -70,7 +71,7 @@ export class EditorOpenFileItemComponent {
 
     let nextAvNode: fileNode | null = openfiles[0];
     if (nextAvNode) {
-      OpenNodeInEditor(nextAvNode, this.editorContextService);
+      this.coreEditorService.OpenFileNodeInEditor(nextAvNode);
     }
   }
 
@@ -78,6 +79,6 @@ export class EditorOpenFileItemComponent {
    * Selects the given tab item node as the new active
    */
   public selectFileTabItem(event: Event) {
-    OpenNodeInEditor(this.fileNode(), this.editorContextService);
+    this.coreEditorService.OpenFileNodeInEditor(this.fileNode());
   }
 }
