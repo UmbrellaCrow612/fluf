@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { EditorFileExplorerTreeItemComponent } from '../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component';
 import { fileNode } from '../../../gen/type';
+import { EditorContextService } from '../editor-context/editor-context.service';
 
 /**
  * Main component in file explorer that renders the actual file nodes in a tree / file pattern:
@@ -23,21 +24,12 @@ import { fileNode } from '../../../gen/type';
   styleUrl: './editor-file-explorer-tree.component.css',
 })
 export class EditorFileExplorerTreeComponent {
-  // todo take input of tree items
+  private readonly editorContextService = inject(EditorContextService);
 
-  exampleFileNodes: fileNode[] = [
-    {
-      children: [],
-      expanded: false,
-      extension: '',
-      isDirectory: true,
-      lastModified: '',
-      mode: 'default',
-      name: 'lorem',
-      parentName: 'p',
-      parentPath: 'parent',
-      path: 'C:\\dev\\fluf\\ui\\src\\windows\\editor',
-      size: 1,
-    },
-  ];
+  /**
+   * Keeps track of the nodes for the selected directory
+   */
+  public selectedDirectoryFileNodes: Signal<fileNode[]> = computed(() => {
+    return this.editorContextService.directoryFileNodes() ?? [];
+  });
 }

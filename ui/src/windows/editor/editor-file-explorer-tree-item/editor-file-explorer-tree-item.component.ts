@@ -109,6 +109,7 @@ export class EditorFileExplorerTreeItemComponent {
 
       const copy = structuredClone(node);
       copy.children = children;
+      copy.expanded = true
 
       const nodes = this.editorContextService.directoryFileNodes() ?? [];
       const success = replaceFileNode(nodes, node, copy);

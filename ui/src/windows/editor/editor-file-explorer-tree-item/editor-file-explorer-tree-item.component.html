@@ -35,14 +35,14 @@
   }
   <!---->
   @if (!isFetchingChildren() && fetchingChildrenError()) {
-    <div>
+    <div [style.paddingLeft]="paddingLeftValue()">
       {{ fetchingChildrenError() }}
     </div>
   }
 }
 <!---->
 
-@if (fileNode().mode === "default" && fileNode().children.length > 0) {
+@if (fileNode().mode === "default" && fileNode().children.length > 0 && fileNode().expanded) {
   @for (node of fileNode().children; track $index) {
     <app-editor-file-explorer-tree-item
       [fileNode]="node"

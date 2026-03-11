@@ -1,5 +1,5 @@
 <div class="editor_file_explorer_tree_container scroll_bar">
-  @for (node of exampleFileNodes; track $index) {
-    <app-editor-file-explorer-tree-item [fileNode]="node" [depth]="0"/>
+  @for (node of selectedDirectoryFileNodes(); track node.path) {
+    <app-editor-file-explorer-tree-item [fileNode]="node" [depth]="0" />
   }
 </div>

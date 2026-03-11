@@ -25,9 +25,10 @@ export class CoreEditorService {
 
     const openFiles = this.editorContextService.openFiles() ?? [];
     addFileNodeIfNotExists(openFiles, target);
+    this.editorContextService.openFiles.set(structuredClone(openFiles))
 
-    this.editorContextService.currentOpenFileInEditor.set(target);
-    this.editorContextService.fileExplorerActiveFileOrFolder.set(target);
+    this.editorContextService.currentOpenFileInEditor.set(structuredClone(target));
+    this.editorContextService.fileExplorerActiveFileOrFolder.set(structuredClone(target));
 
     // TODO change based on extension
     this.editorContextService.editorMainActiveElement.set('text-file-editor');
