@@ -13,6 +13,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { CoreEditorService } from '../core/services/core-editor.service';
 import { replaceFileNode } from '../core/file-node-helpers';
+import { getElectronApi } from '../../../utils';
 
 /**
  * Used to render a given file node content and it's children
@@ -26,6 +27,7 @@ import { replaceFileNode } from '../core/file-node-helpers';
 export class EditorFileExplorerTreeItemComponent {
   private readonly editorContextService = inject(EditorContextService);
   private readonly coreEditorService = inject(CoreEditorService);
+  private readonly electronApi = getElectronApi();
 
   /**
    * File node to render
@@ -103,9 +105,18 @@ export class EditorFileExplorerTreeItemComponent {
     try {
       this.isFetchingChildren.set(true);
 
-      await this.delay();
+      const children = await this.electronApi.fsApi.readDir(node.path);
 
-      throw new Error("Yo")
+      const copy = structuredClone(node);
+      copy.children = children;
+
+      const nodes = this.editorContextService.directoryFileNodes() ?? [];
+      const success = replaceFileNode(nodes, node, copy);
+      if (!success) {
+        console.error('Failed to replce node ', JSON.stringify(node));
+      }
+
+      this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
     } catch (error: any) {
       console.error('Failed to fetch children for node ', error);
       this.fetchingChildrenError.set(
@@ -114,13 +125,5 @@ export class EditorFileExplorerTreeItemComponent {
     } finally {
       this.isFetchingChildren.set(false);
     }
-  }
-
-  private delay() {
-    return new Promise((res) => {
-      setTimeout(() => {
-        res(true);
-      }, 5000);
-    });
   }
 }
