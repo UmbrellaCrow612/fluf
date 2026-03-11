@@ -102,6 +102,18 @@ export class EditorFileExplorerTreeItemComponent {
       return;
     }
 
+    if (node.children.length > 0) {
+      const nodes = this.editorContextService.directoryFileNodes() ?? [];
+      const copy = structuredClone(node);
+      copy.expanded = true;
+      const success = replaceFileNode(nodes, node, copy);
+      if (!success) {
+        console.error('Failed to replce node ', JSON.stringify(node));
+      }
+      this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+      return;
+    }
+
     try {
       this.isFetchingChildren.set(true);
 
@@ -109,7 +121,7 @@ export class EditorFileExplorerTreeItemComponent {
 
       const copy = structuredClone(node);
       copy.children = children;
-      copy.expanded = true
+      copy.expanded = true;
 
       const nodes = this.editorContextService.directoryFileNodes() ?? [];
       const success = replaceFileNode(nodes, node, copy);
