@@ -25,17 +25,19 @@ import { fileNode } from '../../../gen/type';
 export class EditorFileExplorerTreeComponent {
   // todo take input of tree items
 
-  exampleFileNode: fileNode = {
-    children: [],
-    expanded: false,
-    extension: '.py',
-    isDirectory: true,
-    lastModified: '',
-    mode: 'default',
-    name: 'example foo bar bazz rim too boo soo noo.py',
-    parentName: 'parent folder',
-    parentPath: 'parent',
-    path: '/path',
-    size: 1,
-  };
+  exampleFileNodes: fileNode[] = [
+    {
+      children: [],
+      expanded: false,
+      extension: '',
+      isDirectory: true,
+      lastModified: '',
+      mode: 'default',
+      name: 'lorem',
+      parentName: 'p',
+      parentPath: 'parent',
+      path: 'C:\\dev\\fluf\\ui\\src\\windows\\editor',
+      size: 1,
+    },
+  ];
 }

@@ -14,6 +14,10 @@
   background-color: var(--bg-hover);
 }
 
+.editor_file_explorer_tree_item.active {
+  background-color: var(--bg-active);
+}
+
 .editor_file_explorer_tree_item_name {
   flex: 1;
   min-height: 0;

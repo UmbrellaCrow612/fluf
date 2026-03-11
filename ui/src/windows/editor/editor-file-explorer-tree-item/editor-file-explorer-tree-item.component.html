@@ -1,9 +1,12 @@
 @if (fileNode().mode === "default") {
   <div
     class="editor_file_explorer_tree_item"
+    [class.active]="isActive()"
     [matTooltip]="fileNode().path"
-    [matTooltipShowDelay]="matTooltipShowDelayInMilliseconds"
+    [matTooltipShowDelay]="matTooltipShowDelayInMilliseconds()"
     tabindex="0"
+    (click)="selectTreeItem()"
+    [style.paddingLeft]="paddingLeftValue()"
   >
     @if (fileNode().isDirectory) {
       <mat-icon
@@ -24,6 +27,18 @@
       {{ fileNode().name }}
     </span>
   </div>
+
+  <!---->
+
+  @if (isFetchingChildren() && !fetchingChildrenError()) {
+    <div [style.paddingLeft]="paddingLeftValue()">Loading</div>
+  }
+  <!---->
+  @if (!isFetchingChildren() && fetchingChildrenError()) {
+    <div>
+      {{ fetchingChildrenError() }}
+    </div>
+  }
 }
 
 <!---->

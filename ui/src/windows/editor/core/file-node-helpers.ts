@@ -7,7 +7,10 @@ import { normalizePath } from './path-uri-helpers';
  * @param target The node to remove
  * @returns Nothing - modifies the orginal array
  */
-export function removeFileNodeIfExists(nodes: fileNode[], target: fileNode): void {
+export function removeFileNodeIfExists(
+  nodes: fileNode[],
+  target: fileNode,
+): void {
   const index = nodes.findIndex(
     (node) => normalizePath(node.path) === normalizePath(target.path),
   );
@@ -32,4 +35,31 @@ export function addFileNodeIfNotExists(
   if (!exists) {
     nodes.push(target);
   }
+}
+
+/**
+ * Recursively search through nodes and their children to replace a matching node
+ * @param nodes The list of nodes to search through
+ * @param target The node to replace (matched by path)
+ * @param replacement The node to replace it with
+ * @returns True if the node was found and replaced, false otherwise
+ */
+export function replaceFileNode(
+  nodes: fileNode[],
+  target: fileNode,
+  replacement: fileNode,
+): boolean {
+  for (let i = 0; i < nodes.length; i++) {
+    if (normalizePath(nodes[i].path) === normalizePath(target.path)) {
+      nodes[i] = replacement;
+      return true;
+    }
+
+    if (nodes[i].children?.length > 0) {
+      const replaced = replaceFileNode(nodes[i].children, target, replacement);
+      if (replaced) return true;
+    }
+  }
+
+  return false;
 }

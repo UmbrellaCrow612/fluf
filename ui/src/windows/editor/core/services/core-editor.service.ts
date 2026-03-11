@@ -18,10 +18,16 @@ export class CoreEditorService {
    * @returns Nothing
    */
   OpenFileNodeInEditor(target: fileNode): void {
+    if (target.isDirectory) {
+      console.error('Cannot open a directory in the editor');
+      return;
+    }
+
     const openFiles = this.editorContextService.openFiles() ?? [];
     addFileNodeIfNotExists(openFiles, target);
 
     this.editorContextService.currentOpenFileInEditor.set(target);
+    this.editorContextService.fileExplorerActiveFileOrFolder.set(target);
 
     // TODO change based on extension
     this.editorContextService.editorMainActiveElement.set('text-file-editor');
