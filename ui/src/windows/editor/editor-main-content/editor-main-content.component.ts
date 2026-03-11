@@ -13,6 +13,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { Resizer } from 'umbr-resizer-two';
+import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file-explorer.component';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -81,7 +82,7 @@ export class EditorMainContentComponent {
           classNames: ['resize_handle_base'],
           direction: 'horizontal',
           handleStyles: this.sharedHandleStyles,
-          minFlex: 0.3,
+          minFlex: 0.4,
           storageKey: 'editor_main_content_component_resize_handle_key',
         },
         {
@@ -133,7 +134,16 @@ export class EditorMainContentComponent {
   /**
    * List of all components that can be rendered in the side bar
    */
-  private renderableSideBarElements: Renderable[] = [];
+  private renderableSideBarElements: Renderable[] = [
+    {
+      component: EditorFileExplorerComponent,
+      condition: computed(() => {
+        return (
+          this.editorContextService.sideBarActiveElement() === 'file-explorer'
+        );
+      }),
+    },
+  ];
 
   /**
    * Holds the current component to render for the side bar based on what is the active element

@@ -1,10 +1,18 @@
-import { Component, computed, inject, input, Signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  OnInit,
+  signal,
+  Signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { removeNodeIfExists } from '../core/file-node-helpers';
+import { removeFileNodeIfExists } from '../core/file-node-helpers';
 import { CoreEditorService } from '../core/services/core-editor.service';
 
 @Component({
@@ -13,14 +21,28 @@ import { CoreEditorService } from '../core/services/core-editor.service';
   templateUrl: './editor-open-file-item.component.html',
   styleUrl: './editor-open-file-item.component.css',
 })
-export class EditorOpenFileItemComponent {
+export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorContextService = inject(EditorContextService);
   private readonly coreEditorService = inject(CoreEditorService);
+
+  ngOnInit(): void {
+    this.openFileTooltip.set(this.fileNode().path);
+  }
 
   /**
    * Input file node to render for the given item
    */
   public fileNode = input.required<fileNode>();
+
+  /**
+   * Holds the tooltip for hover information
+   */
+  public openFileTooltip = signal('');
+
+  /**
+   * How long it takes for the parent tooltip to show
+   */
+  public tooltTipDelayInMs = 750
 
   /**
    * Keep track if the given file tab is the one open / active
@@ -65,7 +87,7 @@ export class EditorOpenFileItemComponent {
     event.stopPropagation();
 
     let openfiles = this.editorContextService.openFiles() ?? [];
-    removeNodeIfExists(openfiles, this.fileNode());
+    removeFileNodeIfExists(openfiles, this.fileNode());
 
     this.editorContextService.openFiles.set(structuredClone(openfiles));
 

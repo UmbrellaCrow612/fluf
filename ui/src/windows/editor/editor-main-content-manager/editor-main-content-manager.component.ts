@@ -108,5 +108,7 @@ export class EditorMainContentManagerComponent {
     },
   );
 
-  private mainContentRenderableComponents: Renderable[] = [];
+  private mainContentRenderableComponents: Renderable[] = [
+  
+  ];
 }

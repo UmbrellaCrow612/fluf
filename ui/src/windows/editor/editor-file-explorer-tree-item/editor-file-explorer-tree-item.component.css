@@ -1,0 +1,6 @@
+.editor_file_explorer_tree_item {
+  padding: 3px;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}

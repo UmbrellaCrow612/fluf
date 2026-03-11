@@ -1,4 +1,10 @@
-<div class="editor_open_files_file_item" [class.active]="isActive()" (click)="selectFileTabItem($event)">
+<div
+  class="editor_open_files_file_item"
+  [class.active]="isActive()"
+  (click)="selectFileTabItem($event)"
+  [matTooltip]="openFileTooltip()"
+  [matTooltipShowDelay]="tooltTipDelayInMs"
+>
   <mat-icon>
     {{ fileIcon() }}
   </mat-icon>
@@ -12,6 +18,7 @@
     matIconButton
     aria-label="Close file"
     matTooltip="Close file"
+    (mouseenter)="$event.stopPropagation()"
     [class.active]="isActive()"
     (click)="closeFileTabItem($event)"
   >

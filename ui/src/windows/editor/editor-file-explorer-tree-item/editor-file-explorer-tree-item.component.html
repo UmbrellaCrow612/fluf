@@ -1,0 +1,18 @@
+@if (fileNode().mode === "default") {
+  <div
+    class="editor_file_explorer_tree_item"
+    [matTooltip]="fileNode().path"
+    [matTooltipShowDelay]="matTooltipShowDelayInMilliseconds"
+  >
+    @if (fileNode().isDirectory) {
+      mat icon
+    }
+
+    <!---->
+    <span class="tree_item_name">
+      {{ fileNode().name }}
+    </span>
+  </div>
+}
+
+<!---->

@@ -7,7 +7,7 @@ import { normalizePath } from './path-uri-helpers';
  * @param target The node to remove
  * @returns Nothing - modifies the orginal array
  */
-export function removeNodeIfExists(nodes: fileNode[], target: fileNode): void {
+export function removeFileNodeIfExists(nodes: fileNode[], target: fileNode): void {
   const index = nodes.findIndex(
     (node) => normalizePath(node.path) === normalizePath(target.path),
   );
