@@ -82,7 +82,7 @@ export class EditorMainContentComponent {
           classNames: ['resize_handle_base'],
           direction: 'horizontal',
           handleStyles: this.sharedHandleStyles,
-          minFlex: 0.4,
+          minFlex: 0.3,
           storageKey: 'editor_main_content_component_resize_handle_key',
         },
         {

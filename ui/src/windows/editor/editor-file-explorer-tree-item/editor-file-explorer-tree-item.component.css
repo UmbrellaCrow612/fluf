@@ -3,4 +3,22 @@
   display: flex;
   min-height: 0;
   min-width: 0;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  user-select: none;
+}
+
+.editor_file_explorer_tree_item:hover {
+  background-color: var(--bg-hover);
+}
+
+.editor_file_explorer_tree_item_name {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }

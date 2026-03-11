@@ -3,13 +3,24 @@
     class="editor_file_explorer_tree_item"
     [matTooltip]="fileNode().path"
     [matTooltipShowDelay]="matTooltipShowDelayInMilliseconds"
+    tabindex="0"
   >
     @if (fileNode().isDirectory) {
-      mat icon
+      <mat-icon
+        [fontIcon]="
+          fileNode().expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
+        "
+      />
     }
 
     <!---->
-    <span class="tree_item_name">
+    <mat-icon
+      [ariaLabel]="fileNode().isDirectory ? 'folder' : 'file'"
+      [fontIcon]="fileNode().isDirectory ? 'folder' : 'description'"
+    />
+
+    <!---->
+    <span class="editor_file_explorer_tree_item_name">
       {{ fileNode().name }}
     </span>
   </div>
