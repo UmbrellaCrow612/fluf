@@ -21,13 +21,19 @@ import {
 } from '../core/file-node-helpers';
 import { getElectronApi } from '../../../utils';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 
 /**
  * Used to render a given file node content and it's children
  */
 @Component({
   selector: 'app-editor-file-explorer-tree-item',
-  imports: [MatTooltipModule, MatIconModule],
+  imports: [MatTooltipModule, MatIconModule, ReactiveFormsModule],
   templateUrl: './editor-file-explorer-tree-item.component.html',
   styleUrl: './editor-file-explorer-tree-item.component.css',
 })
@@ -35,7 +41,9 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly editorContextService = inject(EditorContextService);
   private readonly coreEditorService = inject(CoreEditorService);
   private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryContextService = inject(EditorInMemoryContextService)
+  private readonly editorInMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
 
   /**
    * Refrence to the UI element that is rendered when the mode of the file node is set to create a file or folder
@@ -77,6 +85,16 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   public fetchingChildrenError = signal<string | null>('');
 
   /**
+   * Keeps track when creating a file or folder in the system
+   */
+  public isCreatingFileOrFolder = signal(false);
+
+  /**
+   * Keeps track of any errors that occured when creating file or folder in the system
+   */
+  public createFileOrFolderError = signal<string | null>(null);
+
+  /**
    * Keeps track if the given item is active either by being select or open in the editor view
    */
   public isActive: Signal<boolean> = computed(() => {
@@ -87,8 +105,65 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     return normalizePath(this.fileNode().path) === normalizePath(node.path);
   });
 
+  /**
+   * Holds the state for the create file or folder form
+   */
+  public createInputForm = new FormGroup({
+    /**
+     * The name of the file or folder to create
+     */
+    name: new FormControl(
+      { value: '', disabled: this.isCreatingFileOrFolder() },
+      {
+        validators: [Validators.required],
+      },
+    ),
+  });
+
   ngAfterViewInit() {
     this.focusUserIntoCreateInput();
+  }
+
+  /**
+   * Gets errors for create input name field
+   */
+  public getCreateInputError(): string {
+    const control = this.createInputForm.get('name');
+    if (control?.hasError('required')) return 'Name is required';
+    return '';
+  }
+
+  /**
+   * Attempts to create a file ro folder in the system from the form values
+   */
+  public createFileOrFolder(event: Event) {
+    event.preventDefault();
+
+    this.createFileOrFolderError.set(null);
+
+    if (this.isCreatingFileOrFolder()) {
+      return;
+    }
+
+    if (this.createInputForm.invalid) {
+      this.createFileOrFolderError.set(
+        `Form invalid ${this.getCreateInputError()}`,
+      );
+      return;
+    }
+
+    try {
+      this.isCreatingFileOrFolder.set(true);
+
+      throw new Error('Yo');
+    } catch (error: any) {
+      console.error('Failed to create file or folder ', error);
+      this.createFileOrFolderError.set(
+        `Failed to crerate file or folder ${error?.message}`,
+      );
+    } finally {
+      this.isCreatingFileOrFolder.set(false);
+    }
   }
 
   /**
@@ -115,7 +190,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     const nodes = this.editorContextService.directoryFileNodes() ?? [];
     removeCreateFileNodes(nodes);
     this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
-    this.editorInMemoryContextService.isCreateFileOrFolderActive.set(null)
+    this.editorInMemoryContextService.isCreateFileOrFolderActive.set(null);
   }
 
   /**

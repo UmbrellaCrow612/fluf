@@ -33,6 +33,7 @@
 
 .create_tree_item_form {
   display: flex;
+  gap: 3px;
   align-items: center;
   padding: 2px 8px 2px 4px;
   background: transparent;
@@ -76,4 +77,9 @@
   border-color: var(--border-error);
   color: var(--text-error);
   box-shadow: 0 0 0 2px rgba(255, 85, 85, 0.15);
+}
+
+
+.create_tree_item_form_error{
+  color: var(--text-error);
 }

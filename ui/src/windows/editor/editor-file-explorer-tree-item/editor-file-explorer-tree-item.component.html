@@ -54,12 +54,33 @@
 
 <!---->
 @if (fileNode().mode === "createFile" || fileNode().mode === "createFolder") {
-  <form class="create_tree_item_form">
+  <form
+    class="create_tree_item_form"
+    [style.paddingLeft]="paddingLeftValue()"
+    [formGroup]="createInputForm"
+    (ngSubmit)="createFileOrFolder($event)"
+  >
+    <mat-icon
+      [ariaLabel]="
+        fileNode().mode === 'createFile' ? 'Create file' : 'Create folder'
+      "
+      [fontIcon]="fileNode().isDirectory ? 'folder' : 'description'"
+    />
     <input
       type="text"
       class="create_tree_item_input"
       #create_tree_item_input
       (blur)="removeCreateNodes()"
+      formControlName="name"
     />
   </form>
+
+  @if (!isCreatingFileOrFolder() && createFileOrFolderError()) {
+    <div
+      class="create_tree_item_form_error"
+      [style.paddingLeft]="paddingLeftValue()"
+    >
+      {{ createFileOrFolderError() }}
+    </div>
+  }
 }
