@@ -136,7 +136,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   /**
    * Attempts to create a file ro folder in the system from the form values
    */
-  public createFileOrFolder(event: Event) {
+  public async createFileOrFolder(event: Event) {
     event.preventDefault();
 
     this.createFileOrFolderError.set(null);
@@ -155,7 +155,31 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     try {
       this.isCreatingFileOrFolder.set(true);
 
-      throw new Error('Yo');
+      const fileOrFolderName = this.createInputForm.controls.name.value!;
+      const pathToCreate = await this.electronApi.pathApi.join(
+        this.fileNode().path,
+        fileOrFolderName,
+      );
+      const exists = await this.electronApi.fsApi.exists(pathToCreate);
+      if (exists) {
+        const errMessage =
+          this.fileNode().mode === 'createFile'
+            ? 'File already exists'
+            : 'Folder already exists';
+        throw new Error(errMessage);
+      }
+
+      if (this.fileNode().mode === 'createFile') {
+        const res = await this.electronApi.fsApi.createFile(pathToCreate);
+        if (!res) {
+          throw new Error('Failed to create file');
+        }
+      } else {
+        const res = await this.electronApi.fsApi.createDirectory(pathToCreate);
+        if (!res) {
+          throw new Error('Failed to create folder');
+        }
+      }
     } catch (error: any) {
       console.error('Failed to create file or folder ', error);
       this.createFileOrFolderError.set(

@@ -41,7 +41,7 @@ export class EditorFileExplorerComponent {
       mode: 'default',
       name: '',
       parentName: '',
-      parentPath: '',
+      parentPath: this.editorContextService.selectedDirectoryPath()!,
       path: this.editorContextService.selectedDirectoryPath()!,
       size: 1,
     };
@@ -77,6 +77,13 @@ export class EditorFileExplorerComponent {
    */
   public createFile() {
     this.editorInMemoryContextService.isCreateFileOrFolderActive.set(true)
+
+    // read acvtive node then 
+    // either create it in the parent node children 
+    // or create itr in root
+    // or create it in the child of the active node 
+
+    // when creating it the we need to pass the propeties across from it correctly 
   }
 
   /**
