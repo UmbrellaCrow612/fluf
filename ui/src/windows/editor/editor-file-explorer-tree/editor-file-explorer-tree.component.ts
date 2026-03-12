@@ -44,7 +44,7 @@ export class EditorFileExplorerTreeComponent {
       name: '',
       parentName: '',
       parentPath: '',
-      path: '',
+      path: 'C:\\dev\\fluf\\ui\\src\\windows',
       size: 1,
     },
   ];

@@ -180,6 +180,10 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
           throw new Error('Failed to create folder');
         }
       }
+
+      console.log('created at path ', pathToCreate);
+
+      this.removeCreateNodes();
     } catch (error: any) {
       console.error('Failed to create file or folder ', error);
       this.createFileOrFolderError.set(
