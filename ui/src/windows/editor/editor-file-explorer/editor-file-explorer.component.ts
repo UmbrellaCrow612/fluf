@@ -82,6 +82,7 @@ export class EditorFileExplorerComponent {
     // either create it in the parent node children 
     // or create itr in root
     // or create it in the child of the active node 
+    // basically set path to the correct value then create the node with correc path needed for it to work as it will us node.path/${value}
 
     // when creating it the we need to pass the propeties across from it correctly 
   }
