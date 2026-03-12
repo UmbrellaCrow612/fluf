@@ -239,6 +239,8 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       return;
     }
 
+    this.editorContextService.fileExplorerActiveFileOrFolder.set(node)
+    
     if (node.expanded) {
       const nodes = this.editorContextService.directoryFileNodes() ?? [];
       const copy = structuredClone(node);

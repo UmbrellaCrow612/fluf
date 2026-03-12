@@ -64,7 +64,7 @@
       [ariaLabel]="
         fileNode().mode === 'createFile' ? 'Create file' : 'Create folder'
       "
-      [fontIcon]="fileNode().isDirectory ? 'folder' : 'description'"
+      [fontIcon]="fileNode().mode === 'createFile' ? 'description' : 'folder'"
     />
     <input
       type="text"

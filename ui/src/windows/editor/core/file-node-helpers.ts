@@ -2,6 +2,18 @@ import { fileNode } from '../../../gen/type';
 import { normalizePath } from './path-uri-helpers';
 
 /**
+ * Collapse all nodes at the first layer by clearing their children and setting expanded to false
+ * @param nodes The list of nodes to collapse
+ * @returns Nothing - modifies the original array
+ */
+export function collapseFileNodeFirstLayer(nodes: fileNode[]): void {
+  for (const node of nodes) {
+    node.children = [];
+    node.expanded = false;
+  }
+}
+
+/**
  * Remove a target node by it's path
  * @param nodes The list of nodes to remove the target node from
  * @param target The node to remove
@@ -65,14 +77,46 @@ export function replaceFileNode(
 }
 
 /**
- * Remove all nodes with mode 'createFile' or 'createFolder' from the list
+ * Recursively remove all nodes with mode 'createFile' or 'createFolder' from the tree
  * @param nodes The list of nodes to filter
  * @returns Nothing - modifies the original array
  */
 export function removeCreateFileNodes(nodes: fileNode[]): void {
   for (let i = nodes.length - 1; i >= 0; i--) {
+    if (nodes[i].children?.length > 0) {
+      removeCreateFileNodes(nodes[i].children);
+    }
+
     if (nodes[i].mode === 'createFile' || nodes[i].mode === 'createFolder') {
       nodes.splice(i, 1);
     }
   }
+}
+
+/**
+ * Find a node by its path (recursively searches through children)
+ * @param nodes The list of nodes to search through
+ * @param path The path to search for
+ * @returns The matching node or undefined if not found
+ */
+export function findFileNodeByPath(
+  nodes: fileNode[],
+  path: string,
+): fileNode | undefined {
+  const normalizedTargetPath = normalizePath(path);
+
+  for (const node of nodes) {
+    if (normalizePath(node.path) === normalizedTargetPath) {
+      return node;
+    }
+
+    if (node.children?.length > 0) {
+      const found = findFileNodeByPath(node.children, path);
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return undefined;
 }

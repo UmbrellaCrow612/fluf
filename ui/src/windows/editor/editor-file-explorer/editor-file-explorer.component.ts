@@ -3,10 +3,12 @@ import { EditorFileExplorerTreeComponent } from '../editor-file-explorer-tree/ed
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { fileNode } from '../../../gen/type';
+import { fileNode, fileNodeMode } from '../../../gen/type';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { collapseFileNodeFirstLayer, findFileNodeByPath, replaceFileNode } from '../core/file-node-helpers';
+import { A11yModule } from '@angular/cdk/a11y';
 
 /**
  * Renders a file explorer with the current files and folders in the select directory
@@ -18,6 +20,7 @@ import { EditorInMemoryContextService } from '../editor-context/editor-in-memory
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
+    A11yModule,
   ],
   templateUrl: './editor-file-explorer.component.html',
   styleUrl: './editor-file-explorer.component.css',
@@ -27,6 +30,29 @@ export class EditorFileExplorerComponent {
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
   );
+
+  /**
+   * Creates a simple node that represents a node that will render as a create node for a file or folder
+   */
+  private createFileOrFolderNode(
+    path: string,
+    parentPath: string,
+    mode: fileNodeMode,
+  ): fileNode {
+    return {
+      children: [],
+      expanded: false,
+      extension: '',
+      isDirectory: false,
+      lastModified: '',
+      mode: mode,
+      name: '',
+      parentName: '',
+      parentPath: parentPath,
+      path: path,
+      size: 0,
+    };
+  }
 
   /**
    * Keep track of the root node i.e the select directory as the root node, used when creating files or folders in the root level
@@ -73,18 +99,59 @@ export class EditorFileExplorerComponent {
   );
 
   /**
+   * Collapses the nodes to root
+   */
+  public collapseDirectoryNodes() {
+    const nodes = this.editorContextService.directoryFileNodes() ?? [];
+    collapseFileNodeFirstLayer(nodes)
+    this.editorContextService.directoryFileNodes.set(structuredClone(nodes))
+  }
+
+  /**
    * Creates a file node of mode createFile in the tree at the focused file explorer tree item
    */
-  public createFile() {
-    this.editorInMemoryContextService.isCreateFileOrFolderActive.set(true)
+  public createNode(event: Event, mode: fileNodeMode) {
+    event.stopPropagation()
 
-    // read acvtive node then 
-    // either create it in the parent node children 
-    // or create itr in root
-    // or create it in the child of the active node 
-    // basically set path to the correct value then create the node with correc path needed for it to work as it will us node.path/${value}
+    this.editorInMemoryContextService.isCreateFileOrFolderActive.set(true);
 
-    // when creating it the we need to pass the propeties across from it correctly 
+    const rootPath = normalizePath(
+      this.editorContextService.selectedDirectoryPath()!,
+    );
+    const nodes = this.editorContextService.directoryFileNodes() ?? [];
+    const activeNode =
+      this.editorContextService.fileExplorerActiveFileOrFolder() ??
+      this.rootNode();
+    const copy = structuredClone(activeNode);
+
+    // Determine the target directory path where the new node will be created
+    const targetDirPath = copy.isDirectory ? copy.path : copy.parentPath;
+
+    // Handle special case: If the active node path is the root select directory then we just push onto top level
+    if (normalizePath(targetDirPath) === rootPath) {
+      nodes.push(
+        this.createFileOrFolderNode(targetDirPath, targetDirPath, mode),
+      );
+
+      this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+      return;
+    }
+
+    // Find the parent node to add the new node to
+    const parentNode = findFileNodeByPath(nodes, targetDirPath);
+    if (!parentNode) {
+      console.error('Could not find parent node for creating new file/folder');
+      return;
+    }
+
+    const parentCopyNode = structuredClone(parentNode);
+
+    parentCopyNode.children.push(
+      this.createFileOrFolderNode(targetDirPath, targetDirPath, mode),
+    );
+
+    replaceFileNode(nodes, parentNode, parentCopyNode);
+    this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
   }
 
   /**

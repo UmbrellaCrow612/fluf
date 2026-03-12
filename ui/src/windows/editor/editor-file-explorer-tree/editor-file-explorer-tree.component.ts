@@ -32,20 +32,4 @@ export class EditorFileExplorerTreeComponent {
   public selectedDirectoryFileNodes: Signal<fileNode[]> = computed(() => {
     return this.editorContextService.directoryFileNodes() ?? [];
   });
-
-  public testNodes: fileNode[] = [
-    {
-      mode: 'createFile',
-      children: [],
-      expanded: false,
-      extension: '',
-      isDirectory: false,
-      lastModified: '',
-      name: '',
-      parentName: '',
-      parentPath: '',
-      path: 'C:\\dev\\fluf\\ui\\src\\windows',
-      size: 1,
-    },
-  ];
 }
