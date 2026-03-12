@@ -19,6 +19,16 @@ Understand flex - we use flex for layout and filling so to get overflow properly
   heirarchy use dev tools to find the tag and apply said styles all the way down
   - Use signals for all private and public fields used in UI as using function calls for computing UI text or other stuff run every angular cycle wasting compute and slowing app
 - Inside classes define DI first then fields that hold state then function defs after 
+- For active, error, loading css use the parent css name then add a `.active` etc state based on what your doing instead of making a whole new css for example:
+```css
+.parent {}
+
+.parent.active {}
+
+.parent.error {}
+```
+- Use angular `[class.className]` syntax to apply them
+- Whenever you compare paths normlize them first
 
 # Docs
 

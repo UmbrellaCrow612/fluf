@@ -1,9 +1,18 @@
-<div class="editor_file_explorer_container">
+<div
+  class="editor_file_explorer_container"
+  (click)="focusFileExplorerRoot()"
+  [class.active]="isRootNodeActive()"
+>
   <div class="editor_file_explorer_top_container">
     <span class="editor_file_explorer_title"> File explorer </span>
 
     <div class="editor_file_explorer_actions scroll_bar">
-      <button matIconButton aria-label="New file" matTooltip="New File">
+      <button
+        matIconButton
+        aria-label="New file"
+        matTooltip="New File"
+        (click)="createFile()"
+      >
         <mat-icon>note_add</mat-icon>
       </button>
       <button matIconButton aria-label="New folder" matTooltip="New Folder">

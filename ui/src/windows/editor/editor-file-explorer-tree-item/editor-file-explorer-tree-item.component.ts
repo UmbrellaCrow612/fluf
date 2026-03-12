@@ -118,15 +118,15 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   /**
    * Selects the given tree item node as the new active node i.e opening it explorer if it is a file or expanding it if it is a folder
    */
-  public async selectTreeItem() {
+  public async selectTreeItem(event: Event) {
+    event.stopPropagation();
+
     if (this.isFetchingChildren()) {
       return;
     }
     this.fetchingChildrenError.set(null);
 
     const node = this.fileNode();
-
-    this.editorContextService.fileExplorerActiveFileOrFolder.set(node);
 
     if (!node.isDirectory) {
       this.coreEditorService.OpenFileNodeInEditor(node);

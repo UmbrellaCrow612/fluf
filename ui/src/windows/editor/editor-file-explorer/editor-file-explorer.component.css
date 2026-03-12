@@ -14,6 +14,11 @@
   min-width: 0;
 }
 
+.editor_file_explorer_container.active {
+  border: 1px solid var(--border-focus);
+  border-radius: 2px;
+}
+
 .editor_file_explorer_top_container {
   padding: 10px;
   display: flex;

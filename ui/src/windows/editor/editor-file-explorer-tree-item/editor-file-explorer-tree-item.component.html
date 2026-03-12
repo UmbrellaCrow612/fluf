@@ -5,7 +5,7 @@
     [matTooltip]="fileNode().path"
     [matTooltipShowDelay]="matTooltipShowDelayInMilliseconds()"
     tabindex="0"
-    (click)="selectTreeItem()"
+    (click)="selectTreeItem($event)"
     [style.paddingLeft]="paddingLeftValue()"
   >
     @if (fileNode().isDirectory) {
