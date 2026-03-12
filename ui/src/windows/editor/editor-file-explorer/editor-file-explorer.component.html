@@ -12,6 +12,7 @@
         aria-label="New file"
         matTooltip="New File"
         (click)="createFile()"
+        [disabled]="shouldDisableFileExplorerActions()"
       >
         <mat-icon>note_add</mat-icon>
       </button>

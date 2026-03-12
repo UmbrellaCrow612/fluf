@@ -20,6 +20,7 @@ import {
   replaceFileNode,
 } from '../core/file-node-helpers';
 import { getElectronApi } from '../../../utils';
+import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 
 /**
  * Used to render a given file node content and it's children
@@ -34,6 +35,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly editorContextService = inject(EditorContextService);
   private readonly coreEditorService = inject(CoreEditorService);
   private readonly electronApi = getElectronApi();
+  private readonly editorInMemoryContextService = inject(EditorInMemoryContextService)
 
   /**
    * Refrence to the UI element that is rendered when the mode of the file node is set to create a file or folder
@@ -113,6 +115,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     const nodes = this.editorContextService.directoryFileNodes() ?? [];
     removeCreateFileNodes(nodes);
     this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorInMemoryContextService.isCreateFileOrFolderActive.set(null)
   }
 
   /**
