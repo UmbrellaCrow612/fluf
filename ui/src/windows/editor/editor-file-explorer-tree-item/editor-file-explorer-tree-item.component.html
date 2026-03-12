@@ -39,14 +39,27 @@
       {{ fetchingChildrenError() }}
     </div>
   }
-}
-<!---->
 
-@if (fileNode().mode === "default" && fileNode().children.length > 0 && fileNode().expanded) {
-  @for (node of fileNode().children; track $index) {
-    <app-editor-file-explorer-tree-item
-      [fileNode]="node"
-      [depth]="depth() + 1"
-    />
+  <!---->
+
+  @if (fileNode().children.length > 0 && fileNode().expanded) {
+    @for (node of fileNode().children; track $index) {
+      <app-editor-file-explorer-tree-item
+        [fileNode]="node"
+        [depth]="depth() + 1"
+      />
+    }
   }
+}
+
+<!---->
+@if (fileNode().mode === "createFile" || fileNode().mode === "createFolder") {
+  <form class="create_tree_item_form">
+    <input
+      type="text"
+      class="create_tree_item_input"
+      #create_tree_item_input
+      (blur)="removeCreateNodes()"
+    />
+  </form>
 }

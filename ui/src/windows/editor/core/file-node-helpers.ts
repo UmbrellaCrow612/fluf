@@ -63,3 +63,16 @@ export function replaceFileNode(
 
   return false;
 }
+
+/**
+ * Remove all nodes with mode 'createFile' or 'createFolder' from the list
+ * @param nodes The list of nodes to filter
+ * @returns Nothing - modifies the original array
+ */
+export function removeCreateFileNodes(nodes: fileNode[]): void {
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    if (nodes[i].mode === 'createFile' || nodes[i].mode === 'createFolder') {
+      nodes.splice(i, 1);
+    }
+  }
+}

@@ -26,3 +26,54 @@
   overflow: hidden;
   white-space: nowrap;
 }
+
+/* ============================================
+   CREATE TREE ITEM FORM
+   ============================================ */
+
+.create_tree_item_form {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px 2px 4px;
+  background: transparent;
+}
+
+.create_tree_item_input {
+  width: 100%;
+  padding: 3px 6px;
+
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-focus);
+  border-radius: 3px;
+  outline: none;
+
+  font-family: var(--code-editor-font-family);
+  font-size: var(--code-editor-font-size);
+  line-height: var(--code-editor-line-height);
+  color: var(--text-primary);
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.create_tree_item_input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.create_tree_item_input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px rgba(189, 147, 249, 0.2);
+}
+
+.create_tree_item_input:hover:not(:focus) {
+  border-color: var(--border-hover);
+}
+
+.create_tree_item_input.error {
+  border-color: var(--border-error);
+  color: var(--text-error);
+  box-shadow: 0 0 0 2px rgba(255, 85, 85, 0.15);
+}

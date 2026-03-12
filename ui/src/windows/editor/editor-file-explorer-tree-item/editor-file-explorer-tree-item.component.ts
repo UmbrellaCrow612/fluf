@@ -1,10 +1,13 @@
 import {
+  AfterViewInit,
   Component,
   computed,
+  ElementRef,
   inject,
   input,
   signal,
   Signal,
+  viewChild,
 } from '@angular/core';
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -12,7 +15,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { CoreEditorService } from '../core/services/core-editor.service';
-import { replaceFileNode } from '../core/file-node-helpers';
+import {
+  removeCreateFileNodes,
+  replaceFileNode,
+} from '../core/file-node-helpers';
 import { getElectronApi } from '../../../utils';
 
 /**
@@ -24,10 +30,17 @@ import { getElectronApi } from '../../../utils';
   templateUrl: './editor-file-explorer-tree-item.component.html',
   styleUrl: './editor-file-explorer-tree-item.component.css',
 })
-export class EditorFileExplorerTreeItemComponent {
+export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly editorContextService = inject(EditorContextService);
   private readonly coreEditorService = inject(CoreEditorService);
   private readonly electronApi = getElectronApi();
+
+  /**
+   * Refrence to the UI element that is rendered when the mode of the file node is set to create a file or folder
+   */
+  private createInput = viewChild<ElementRef<HTMLInputElement>>(
+    'create_tree_item_input',
+  );
 
   /**
    * File node to render
@@ -71,6 +84,36 @@ export class EditorFileExplorerTreeItemComponent {
     }
     return normalizePath(this.fileNode().path) === normalizePath(node.path);
   });
+
+  ngAfterViewInit() {
+    this.focusUserIntoCreateInput();
+  }
+
+  /**
+   * Trys to focus the user focus into the create input if the file node mode is to create
+   */
+  private focusUserIntoCreateInput = (): void => {
+    const mode = this.fileNode().mode;
+    if (mode === 'createFile' || mode == 'createFolder') {
+      const input = this.createInput()?.nativeElement;
+      if (!input) {
+        console.error(
+          'Cannot find create input even thou it should be rendered',
+        );
+        return;
+      }
+      input.focus();
+    }
+  };
+
+  /**
+   * Attempts to remove all file nodes in the tree that are of mode create
+   */
+  public removeCreateNodes() {
+    const nodes = this.editorContextService.directoryFileNodes() ?? [];
+    removeCreateFileNodes(nodes);
+    this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+  }
 
   /**
    * Selects the given tree item node as the new active node i.e opening it explorer if it is a file or expanding it if it is a folder
