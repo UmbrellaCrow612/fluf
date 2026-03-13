@@ -59,6 +59,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
 
   constructor() {
     effect(async () => {
+      console.log('[EditorFileExplorerTreeComponent] refresh effect ran');
       const refreshCount = this.editorInMemoryContextService.refreshDirectory();
       const selectedPath = untracked(() =>
         this.editorContextService.selectedDirectoryPath(),
@@ -69,9 +70,10 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
     });
 
     effect(async () => {
+      console.log('[EditorFileExplorerTreeComponent] merge effect ran');
       this.error.set(null);
 
-      const currentPath = this.editorContextService.selectedDirectoryPath();
+      const currentPath = this.editorContextService.selectedDirectoryPath(); // dep
       if (!currentPath) {
         this.error.set(`No selected directory`);
         return;
@@ -79,7 +81,9 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
 
       this.selectedDirectoryUnsub?.();
 
-      const existingNodes = this.editorContextService.directoryFileNodes();
+      const existingNodes = untracked(() =>
+        this.editorContextService.directoryFileNodes(),
+      );
 
       if (currentPath !== this.previousSelectedDirectory) {
         if (this.previousSelectedDirectory) {
@@ -93,9 +97,9 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
 
         this.selectedDirectoryUnsub = this.electronApi.fsApi.onChange(
           this.previousSelectedDirectory,
-          () => {
+          (path, event) => {
             console.log(
-              `Directory changed at path ${this.previousSelectedDirectory}`,
+              `[EditorFileExplorerTreeComponent] Directory changed at path ${path} ${event}`,
             );
             this.editorInMemoryContextService.refreshDirectory.update(
               (x) => x + 1,
@@ -104,8 +108,10 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
         );
 
         if (existingNodes && existingNodes.length > 0) {
+          console.log('Merging latest nodes');
           await this.mergeDirectoryNodes(this.previousSelectedDirectory);
         } else {
+          console.log('Fetching nodes latests');
           await this.fetchDirectoryNodes(this.previousSelectedDirectory);
         }
       }
@@ -121,7 +127,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
    * @param path - The selected directory path to fetch and set the global selected directory nodes
    */
   private mergeDirectoryNodes = async (path: string) => {
-    const current = this.selectedDirectoryFileNodes();
+    const current = untracked(() => this.selectedDirectoryFileNodes());
     const latest = await this.electronApi.fsApi.readDir(path);
     const updated = await this.mergeDirectoryNodesImpl(current, latest);
     this.editorContextService.directoryFileNodes.set(updated);
