@@ -16,7 +16,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { CoreEditorService } from '../core/services/core-editor.service';
 import {
-  removeCreateFileNodes,
+  removeTempoaryFileNodes,
   replaceFileNode,
 } from '../core/file-node-helpers';
 import { getElectronApi } from '../../../utils';
@@ -192,10 +192,9 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       }
 
       console.log('created at path ', pathToCreate);
-
-      this.removeCreateNodes();
+      this.deleteTemporaryNodes();
     } catch (error: any) {
-      console.error('Failed to create file or folder ', error);
+      console.error('Failed to create / rename file or folder ', error);
       this.createOrRenameFileOrFolderError.set(
         `Failed to crerate file or folder ${error?.message}`,
       );
@@ -211,34 +210,40 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private async handleRename(newName: string): Promise<void> {
     const orginalName = this.fileNode().name;
 
-    try {
-      if (newName === orginalName) {
-        // no change so we just ignore
-        return;
-      }
-
-      const parentPath = await this.electronApi.pathApi.dirname(
-        this.fileNode().path,
-      );
-      const newPath = await this.electronApi.pathApi.join(parentPath, newName);
-
-      const exists = await this.electronApi.fsApi.exists(newPath);
-      if (exists) {
-        throw new Error(
-          this.fileNode().isDirectory
-            ? 'A folder with this name already exists'
-            : 'A file with this name already exists',
-        );
-      }
-
-      await this.electronApi.fsApi.rename(node.path, newPath);
-    } catch (error: any) {
-      this.createOrRenameFileOrFolderError.set(
-        `Failed to rename ${orginalName} to ${newName} ${error?.message}`,
-      );
-    } finally {
-      this.removeCreateNodes();
+    if (newName === orginalName) {
+      // no change so we just ignore
+      return;
     }
+
+    const parentPath = await this.electronApi.pathApi.dirname(
+      this.fileNode().path,
+    );
+    const newPath = await this.electronApi.pathApi.join(parentPath, newName);
+
+    const exists = await this.electronApi.fsApi.exists(newPath);
+    if (exists) {
+      throw new Error(
+        this.fileNode().isDirectory
+          ? 'A folder with this name already exists'
+          : 'A file with this name already exists',
+      );
+    }
+
+    const suc = await this.electronApi.fsApi.rename(
+      this.fileNode().path,
+      newPath,
+    );
+    if (!suc) {
+      throw new Error(
+        this.fileNode().isDirectory
+          ? 'Folder rename failed'
+          : 'File reanem failed',
+      );
+    }
+
+    this.deleteTemporaryNodes();
+
+    console.log(`Reanmed node`);
   }
 
   /**
@@ -269,11 +274,11 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   }
 
   /**
-   * Attempts to remove all file nodes in the tree that are of mode create
+   * Attempts to remove all file nodes in the tree that are not default i.e create rename etc
    */
-  public removeCreateNodes() {
+  public deleteTemporaryNodes() {
     const nodes = this.editorContextService.directoryFileNodes() ?? [];
-    removeCreateFileNodes(nodes);
+    removeTempoaryFileNodes(nodes);
     this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
     this.editorInMemoryContextService.isCreateFileOrFolderActive.set(null);
   }

@@ -459,13 +459,20 @@ const fsRenameImpl: CombinedCallback<
     const normToPath = path.normalize(toPath);
 
     await fs.access(normFrom); // make sure target exists
-    await fs.access(normToPath); // make sure to path doesnt already exit
+    try {
+      await fs.access(normToPath);
+    } catch (error: any) {
+      // make sure to path doesnt already exit i.e not found is good case
+      if (error.code !== "ENOENT") {
+        throw error; // Re-throw permission errors, etc.
+      }
+    }
 
     await fs.rename(normFrom, normToPath);
 
     return true;
   } catch (error) {
-    logger.error(`Failed to rename from: ${fromPath} to: ${toPath}`);
+    logger.error(`Failed to rename from: ${fromPath} to: ${toPath} `, error);
     return false;
   }
 };

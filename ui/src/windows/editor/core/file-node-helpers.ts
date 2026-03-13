@@ -77,17 +77,17 @@ export function replaceFileNode(
 }
 
 /**
- * Recursively remove all nodes with mode 'createFile' or 'createFolder' from the tree
+ * Recursively remove all nodes with none default mode i.e create file folder rename etc
  * @param nodes The list of nodes to filter
  * @returns Nothing - modifies the original array
  */
-export function removeCreateFileNodes(nodes: fileNode[]): void {
+export function removeTempoaryFileNodes(nodes: fileNode[]): void {
   for (let i = nodes.length - 1; i >= 0; i--) {
     if (nodes[i].children?.length > 0) {
-      removeCreateFileNodes(nodes[i].children);
+      removeTempoaryFileNodes(nodes[i].children);
     }
 
-    if (nodes[i].mode === 'createFile' || nodes[i].mode === 'createFolder') {
+    if (nodes[i].mode !== 'default') {
       nodes.splice(i, 1);
     }
   }

@@ -102,7 +102,15 @@ export type fsApi = {
    * - Count the amount of items a directory has - not recusive just the top layer of items count.
    */
   countItemsInDirectory: countItemsInDirectory;
+  /**
+   * Rename a path from to
+   */
+  rename: fsRename
 };
+/**
+ * Rename a path from one path to a given path
+ */
+export type fsRename = (fromPath: string, toPath: string) => Promise<boolean>;
 /**
  * Counts the number of items in a given directory quickly
  */
@@ -126,7 +134,7 @@ export type fsWatch = (fileOrFolderPath: string) => void;
  */
 export type saveTo = (
   content: string,
-  options?: Electron.SaveDialogOptions  ,
+  options?: Electron.SaveDialogOptions,
 ) => Promise<boolean>;
 /**
  * Reads the contents of a file.
@@ -317,12 +325,12 @@ export type pathApi = {
   /**
    * Calls path dirname
    */
-  dirname: pathDirname
+  dirname: pathDirname;
 };
 /**
- * Calls path dirname on the given path 
+ * Calls path dirname on the given path
  */
-export type pathDirname = (pathLike:string) => Promise<string>
+export type pathDirname = (pathLike: string) => Promise<string>;
 /**
  * Gets the root path based on the platform for windows it will return somthing like `C:\` and on others like linux
  * `/`
