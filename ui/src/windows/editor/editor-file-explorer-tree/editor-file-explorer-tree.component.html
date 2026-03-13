@@ -1,5 +1,14 @@
-<div class="editor_file_explorer_tree_container scroll_bar">
-  @for (node of selectedDirectoryFileNodes(); track node.path) {
-    <app-editor-file-explorer-tree-item [fileNode]="node" [depth]="0" />
-  }
-</div>
+@if (!error()) {
+  <div class="editor_file_explorer_tree_container scroll_bar">
+    @for (node of selectedDirectoryFileNodes(); track node.path) {
+      <app-editor-file-explorer-tree-item [fileNode]="node" [depth]="0" />
+    }
+  </div>
+}
+<!---->
+
+@if (error()) {
+  <div>
+    {{ error() }}
+  </div>
+}

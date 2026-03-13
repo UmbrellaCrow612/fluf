@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject } from '@angular/core';
 import { EditorFrameComponent } from '../editor-frame/editor-frame.component';
 import { EditorMainContentComponent } from '../editor-main-content/editor-main-content.component';
 import { EditorFooterComponent } from '../editor-footer/editor-footer.component';

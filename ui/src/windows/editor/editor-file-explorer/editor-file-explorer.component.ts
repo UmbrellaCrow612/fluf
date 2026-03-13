@@ -1,4 +1,9 @@
-import { Component, computed, inject, Signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  Signal,
+} from '@angular/core';
 import { EditorFileExplorerTreeComponent } from '../editor-file-explorer-tree/editor-file-explorer-tree.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,7 +12,11 @@ import { fileNode, fileNodeMode } from '../../../gen/type';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
-import { collapseFileNodeFirstLayer, findFileNodeByPath, replaceFileNode } from '../core/file-node-helpers';
+import {
+  collapseFileNodeFirstLayer,
+  findFileNodeByPath,
+  replaceFileNode,
+} from '../core/file-node-helpers';
 import { A11yModule } from '@angular/cdk/a11y';
 
 /**
@@ -103,15 +112,15 @@ export class EditorFileExplorerComponent {
    */
   public collapseDirectoryNodes() {
     const nodes = this.editorContextService.directoryFileNodes() ?? [];
-    collapseFileNodeFirstLayer(nodes)
-    this.editorContextService.directoryFileNodes.set(structuredClone(nodes))
+    collapseFileNodeFirstLayer(nodes);
+    this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
   }
 
   /**
    * Creates a file node of mode createFile in the tree at the focused file explorer tree item
    */
   public createNode(event: Event, mode: fileNodeMode) {
-    event.stopPropagation()
+    event.stopPropagation();
 
     this.editorInMemoryContextService.isCreateFileOrFolderActive.set(true);
 
