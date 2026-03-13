@@ -9,6 +9,7 @@ import type {
   getRootPath,
   IpcMainInvokeEventCallback,
   normalizePath,
+  pathDirname,
   pathIsabsolute,
   pathJoin,
   pathSep,
@@ -84,6 +85,20 @@ const getRootPathImpl: CombinedCallback<
   return Promise.resolve("/");
 };
 
+const pathDirnameImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  pathDirname
+> = async (_, pathLike) => {
+  try {
+    const norm = path.normalize(pathLike);
+    return path.dirname(norm);
+  } catch (error) {
+    logger.error("Failed to get dirname of path: ", pathLike);
+
+    throw error;
+  }
+};
+
 /**
  * All path event operations
  */
@@ -112,6 +127,10 @@ export interface PathEvents {
     args: [];
     return: string;
   };
+  "path:dirname": {
+    args: [pathLike: string];
+    return: string;
+  };
 }
 
 /**
@@ -124,4 +143,5 @@ export const registerPathListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("path:join", joinImpl);
   typedIpcMain.handle("path:is:absolute", isAbs);
   typedIpcMain.handle("path:root", getRootPathImpl);
+  typedIpcMain.handle("path:dirname", pathDirnameImpl);
 };

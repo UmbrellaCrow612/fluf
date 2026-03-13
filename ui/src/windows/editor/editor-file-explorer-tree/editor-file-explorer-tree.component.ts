@@ -3,6 +3,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   OnDestroy,
   signal,
   Signal,
@@ -204,4 +205,20 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
   public selectedDirectoryFileNodes: Signal<fileNode[]> = computed(() => {
     return this.editorContextService.directoryFileNodes() ?? [];
   });
+
+  testNodes: fileNode[] = [
+    {
+      children: [],
+      expanded: false,
+      name: 'foo.example',
+      extension: '.foo',
+      isDirectory: false,
+      lastModified: '',
+      mode: 'rename',
+      parentName: '',
+      parentPath: '',
+      path: 'foo',
+      size: 1,
+    },
+  ];
 }

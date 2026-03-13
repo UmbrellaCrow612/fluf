@@ -240,7 +240,7 @@ export type fileNode = {
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
  * that the given node is going to be rendered as a editor to create said file or folder
  */
-export type fileNodeMode = "createFile" | "createFolder" | "default";
+export type fileNodeMode = "createFile" | "createFolder" | "rename" | "default";
 /**
  * Contains all utils related to the electron chroium window
  */
@@ -314,7 +314,15 @@ export type pathApi = {
    * - Get the root path of the system such as  `C:\` or `/` based on the system
    */
   getRootPath: getRootPath;
+  /**
+   * Calls path dirname
+   */
+  dirname: pathDirname
 };
+/**
+ * Calls path dirname on the given path 
+ */
+export type pathDirname = (pathLike:string) => Promise<string>
 /**
  * Gets the root path based on the platform for windows it will return somthing like `C:\` and on others like linux
  * `/`

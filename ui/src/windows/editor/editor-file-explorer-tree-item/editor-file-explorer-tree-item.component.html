@@ -1,3 +1,4 @@
+<!-- Render normal node -->
 @if (fileNode().mode === "default") {
   <div
     class="editor_file_explorer_tree_item"
@@ -52,13 +53,13 @@
   }
 }
 
-<!---->
-@if (fileNode().mode === "createFile" || fileNode().mode === "createFolder") {
+<!--Render create \ rename node -->
+@if (fileNode().mode !== "default") {
   <form
     class="create_tree_item_form"
     [style.paddingLeft]="paddingLeftValue()"
     [formGroup]="createInputForm"
-    (ngSubmit)="createFileOrFolder($event)"
+    (ngSubmit)="createOrRenameFileOrFolder($event)"
   >
     <mat-icon
       [ariaLabel]="
@@ -75,12 +76,12 @@
     />
   </form>
 
-  @if (!isCreatingFileOrFolder() && createFileOrFolderError()) {
+  @if (!isCreatingOrRenamingFileOrFolder() && createOrRenameFileOrFolderError()) {
     <div
       class="create_tree_item_form_error"
       [style.paddingLeft]="paddingLeftValue()"
     >
-      {{ createFileOrFolderError() }}
+      {{ createOrRenameFileOrFolderError() }}
     </div>
   }
 }

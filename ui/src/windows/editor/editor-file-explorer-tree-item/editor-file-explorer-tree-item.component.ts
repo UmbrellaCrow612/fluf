@@ -87,12 +87,12 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   /**
    * Keeps track when creating a file or folder in the system
    */
-  public isCreatingFileOrFolder = signal(false);
+  public isCreatingOrRenamingFileOrFolder = signal(false);
 
   /**
-   * Keeps track of any errors that occured when creating file or folder in the system
+   * Keeps track of any errors that occured when creating file or folder in the system or renaming it
    */
-  public createFileOrFolderError = signal<string | null>(null);
+  public createOrRenameFileOrFolderError = signal<string | null>(null);
 
   /**
    * Keeps track if the given item is active either by being select or open in the editor view
@@ -113,7 +113,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
      * The name of the file or folder to create
      */
     name: new FormControl(
-      { value: '', disabled: this.isCreatingFileOrFolder() },
+      { value: '', disabled: this.isCreatingOrRenamingFileOrFolder() },
       {
         validators: [Validators.required],
       },
@@ -122,6 +122,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.focusUserIntoCreateInput();
+    this.setInitalInputValue();
   }
 
   /**
@@ -134,28 +135,37 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   }
 
   /**
-   * Attempts to create a file ro folder in the system from the form values
+   * Attempts to create a file or folder in the system from the form values or rename it
    */
-  public async createFileOrFolder(event: Event) {
+  public async createOrRenameFileOrFolder(event: Event) {
     event.preventDefault();
 
-    this.createFileOrFolderError.set(null);
+    this.createOrRenameFileOrFolderError.set(null);
 
-    if (this.isCreatingFileOrFolder()) {
+    if (this.isCreatingOrRenamingFileOrFolder()) {
       return;
     }
 
     if (this.createInputForm.invalid) {
-      this.createFileOrFolderError.set(
+      this.createOrRenameFileOrFolderError.set(
         `Form invalid ${this.getCreateInputError()}`,
       );
       return;
     }
 
     try {
-      this.isCreatingFileOrFolder.set(true);
+      this.isCreatingOrRenamingFileOrFolder.set(true);
 
       const fileOrFolderName = this.createInputForm.controls.name.value!;
+
+      // Handle rename mode
+      if (this.fileNode().mode === 'rename') {
+        await this.handleRename(fileOrFolderName);
+        return;
+      }
+
+      // Handle create new file or folder
+
       const pathToCreate = await this.electronApi.pathApi.join(
         this.fileNode().path,
         fileOrFolderName,
@@ -186,11 +196,48 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       this.removeCreateNodes();
     } catch (error: any) {
       console.error('Failed to create file or folder ', error);
-      this.createFileOrFolderError.set(
+      this.createOrRenameFileOrFolderError.set(
         `Failed to crerate file or folder ${error?.message}`,
       );
     } finally {
-      this.isCreatingFileOrFolder.set(false);
+      this.isCreatingOrRenamingFileOrFolder.set(false);
+    }
+  }
+
+  /**
+   * Attempts to rename the given file name to the new one
+   * @param newName The new name of the file
+   */
+  private async handleRename(newName: string): Promise<void> {
+    const orginalName = this.fileNode().name;
+
+    try {
+      if (newName === orginalName) {
+        // no change so we just ignore
+        return;
+      }
+
+      const parentPath = await this.electronApi.pathApi.dirname(
+        this.fileNode().path,
+      );
+      const newPath = await this.electronApi.pathApi.join(parentPath, newName);
+
+      const exists = await this.electronApi.fsApi.exists(newPath);
+      if (exists) {
+        throw new Error(
+          this.fileNode().isDirectory
+            ? 'A folder with this name already exists'
+            : 'A file with this name already exists',
+        );
+      }
+
+      await this.electronApi.fsApi.rename(node.path, newPath);
+    } catch (error: any) {
+      this.createOrRenameFileOrFolderError.set(
+        `Failed to rename ${orginalName} to ${newName} ${error?.message}`,
+      );
+    } finally {
+      this.removeCreateNodes();
     }
   }
 
@@ -199,7 +246,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    */
   private focusUserIntoCreateInput = (): void => {
     const mode = this.fileNode().mode;
-    if (mode === 'createFile' || mode == 'createFolder') {
+    if (mode !== 'default') {
       const input = this.createInput()?.nativeElement;
       if (!input) {
         console.error(
@@ -210,6 +257,16 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       input.focus();
     }
   };
+
+  /**
+   * Sets the inital value of the create input if it exists, on rename set the inital file node value name as the input value name.
+   */
+  private setInitalInputValue() {
+    const mode = this.fileNode().mode;
+    if (mode === 'rename') {
+      this.createInputForm.controls.name.setValue(this.fileNode().name);
+    }
+  }
 
   /**
    * Attempts to remove all file nodes in the tree that are of mode create
@@ -239,8 +296,8 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       return;
     }
 
-    this.editorContextService.fileExplorerActiveFileOrFolder.set(node)
-    
+    this.editorContextService.fileExplorerActiveFileOrFolder.set(node);
+
     if (node.expanded) {
       const nodes = this.editorContextService.directoryFileNodes() ?? [];
       const copy = structuredClone(node);

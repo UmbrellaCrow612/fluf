@@ -200,6 +200,7 @@ const fsApi: fsApi = {
   },
   saveTo: (...args) => typedIpcRender.invoke("file:save:to", ...args),
   selectFile: (...args) => typedIpcRender.invoke("file:select", ...args),
+  rename: (...args) => typedIpcRender.invoke("fs:rename", ...args),
 };
 
 const pathApi: pathApi = {
@@ -209,6 +210,7 @@ const pathApi: pathApi = {
   join: (...args) => typedIpcRender.invoke("path:join", ...args),
   isAbsolute: (...args) => typedIpcRender.invoke("path:is:absolute", ...args),
   getRootPath: (...args) => typedIpcRender.invoke("path:root", ...args),
+  dirname: (...args) => typedIpcRender.invoke("path:dirname", ...args),
 };
 
 const shellApi: shellApi = {
