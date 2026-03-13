@@ -1,9 +1,4 @@
-import {
-  Component,
-  computed,
-  inject,
-  Signal,
-} from '@angular/core';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { EditorFileExplorerTreeComponent } from '../editor-file-explorer-tree/editor-file-explorer-tree.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -114,6 +109,13 @@ export class EditorFileExplorerComponent {
     const nodes = this.editorContextService.directoryFileNodes() ?? [];
     collapseFileNodeFirstLayer(nodes);
     this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+  }
+
+  /**
+   * Updates state to trigger a refresh / re read of the select directory manually by the user
+   */
+  public refreshDirectory() {
+    this.editorInMemoryContextService.refreshDirectory.update((x) => x + 1);
   }
 
   /**

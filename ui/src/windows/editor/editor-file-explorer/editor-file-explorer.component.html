@@ -25,7 +25,12 @@
       >
         <mat-icon>create_new_folder</mat-icon>
       </button>
-      <button matIconButton aria-label="Refresh" matTooltip="Refresh">
+      <button
+        matIconButton
+        aria-label="Refresh"
+        matTooltip="Refresh"
+        (click)="refreshDirectory()"
+      >
         <mat-icon>refresh</mat-icon>
       </button>
       <button
