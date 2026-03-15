@@ -12,6 +12,7 @@ import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
 import { Resizer } from 'umbr-resizer-two';
+import { useEffect } from '../../../lib/useEffect';
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -34,16 +35,20 @@ export class EditorMainContentManagerComponent {
   private resizerTimeout: NodeJS.Timeout | undefined = undefined;
 
   constructor() {
-    effect(() => {
-      console.log('[EditorMainContentManagerComponent] effect ran');
-      let shouldRenderBottomSection =
-        this.editorContextService.displayFileEditorBottom();
-      if (shouldRenderBottomSection) {
-        this.renderResizer();
-      } else {
-        this.disposeResizer();
-      }
-    });
+    useEffect(
+      (_, should) => {
+        console.log('[EditorMainContentManagerComponent] MainContentManagerResizer effect ran');
+        if (should) {
+          this.renderResizer();
+        } else {
+          this.disposeResizer();
+        }
+      },
+      [this.editorContextService.displayFileEditorBottom],
+      {
+        debugName: 'MainContentManagerResizer',
+      },
+    );
   }
 
   private renderResizer = () => {
@@ -108,7 +113,5 @@ export class EditorMainContentManagerComponent {
     },
   );
 
-  private mainContentRenderableComponents: Renderable[] = [
-  
-  ];
+  private mainContentRenderableComponents: Renderable[] = [];
 }

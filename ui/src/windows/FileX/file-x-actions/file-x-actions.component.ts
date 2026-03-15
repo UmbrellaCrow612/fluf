@@ -3,8 +3,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
-import { voidCallback } from '../../../gen/type';
-import { ConfirmationService } from '../../../app/confirmation/confirmation.service';
 import { FileXCreateFileOrFolderValues } from '../types';
 
 /**
@@ -42,7 +40,6 @@ export class FileXActionsComponent {
   private readonly fileXInMemoryContextService = inject(
     FileXInMemoryContextService,
   );
-  private readonly confirmationService = inject(ConfirmationService);
 
   /**
    * Signal becuase it should only render once i.e doesnt change
@@ -72,12 +69,7 @@ export class FileXActionsComponent {
       onClick: async () => {
         let selectedItems = this.fileXInMemoryContextService.selectedItems();
         try {
-          let shouldDelete = await this.confirmationService.ask(
-            `Are you sure you want to delete ${selectedItems.length} items`,
-          );
-          if (shouldDelete) {
-            // run delete logic
-          }
+          
         } catch (error) {
           console.error(error); // promise rejects
         }
