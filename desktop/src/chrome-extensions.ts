@@ -1,5 +1,5 @@
 /**
- * Contains code related to chrome extension loading and usage for the application
+ * Contains code related to chrome extension loading and usage for the application, for our use case they are development concerns so we dont bundle them in production.
  */
 
 import { session } from "electron";
@@ -18,12 +18,12 @@ const extensionIds: string[] = [ANGULAR_DEVTOOLS_ID];
  * Load Chrome extensions in dev mode
  */
 export const loadExtensions = async () => {
-  logger.info("Loading extensions");
   const env = getEnvValues();
-
   if (env.MODE !== "dev") {
     return;
   }
+
+  logger.info("Loading extensions");
 
   try {
     // Dynamic import for ESM compatibility
@@ -50,6 +50,10 @@ export const loadExtensions = async () => {
  * Unload all loaded extensions using Electron's native API
  */
 export const unloadExtensions = () => {
+  const env = getEnvValues();
+  if (env.MODE !== "dev") {
+    return;
+  }
   logger.info(`Unloading ${extensionIds.length} extension(s)`);
 
   const failedExtensionIds: string[] = [];
