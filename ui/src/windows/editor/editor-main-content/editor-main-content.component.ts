@@ -14,6 +14,7 @@ import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { Resizer } from 'umbr-resizer-two';
 import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file-explorer.component';
+import { useEffect } from '../../../lib/useEffect';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -40,17 +41,16 @@ export class EditorMainContentComponent {
   private renderResizeHandleTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
-    effect(() => {
-      let should = this.shouldRenderSideBarComponent();
-
-      if (should) {
-        untracked(() => {
+    useEffect(
+      (_, should) => {
+        if (should) {
           this.renderResizeHandle();
-        });
-      } else {
-        this.disposeResizer();
-      }
-    });
+        } else {
+          this.disposeResizer();
+        }
+      },
+      [this.shouldRenderSideBarComponent],
+    );
   }
 
   /**
