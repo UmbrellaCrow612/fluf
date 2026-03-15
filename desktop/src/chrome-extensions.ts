@@ -26,7 +26,7 @@ export const loadExtensions = async () => {
   logger.info("Loading extensions");
 
   try {
-    // Dynamic import for ESM compatibility
+    // Dynamic import for ESM compatibility makes sure we don't bundle / require it in production as it will not be shipped with it 
     const { installExtension } = await import("electron-devtools-installer");
 
     for (const extensionId of extensionIds) {
