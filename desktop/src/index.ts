@@ -25,6 +25,7 @@ import {
 import { registerStoreListeners } from "./store.js";
 import { fileURLToPath } from "node:url";
 import { getEnvValues, validateEnv } from "./env.js";
+import { loadExtensions, unloadExtensions } from "./chrome-extensions.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +38,7 @@ registerProtocols();
  * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
  */
 const createWindow = () => {
+  let enValues = getEnvValues();
 
   const window = new BrowserWindow({
     width: 800,
@@ -47,10 +49,9 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       plugins: true,
+      sandbox: enValues.MODE !== "dev",
     },
   });
-
-  let enValues = getEnvValues();
 
   if (enValues.MODE === "dev") {
     // In dev we can just load the running app on the website port it is running on instead of loading it from file system works the same
@@ -64,6 +65,8 @@ const createWindow = () => {
 };
 
 app.whenReady().then(async () => {
+  await loadExtensions();
+
   createWindow();
   await startCommandServer();
 
@@ -83,6 +86,8 @@ app.whenReady().then(async () => {
 });
 
 const appCleanUp = async () => {
+  unloadExtensions();
+
   await stopCommandServer();
 
   await stopAllLanguageServers();
