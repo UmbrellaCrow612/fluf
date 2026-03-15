@@ -15,6 +15,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 import { getElectronApi } from '../../../utils';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
+import { useEffect } from '../../../lib/useEffect';
 
 /**
  * Main component in file explorer that renders the actual file nodes in a tree / file pattern:
@@ -59,64 +60,68 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
   public error = signal<string | null>(null);
 
   constructor() {
-    effect(async () => {
-      console.log('[EditorFileExplorerTreeComponent] refresh effect ran');
-      const refreshCount = this.editorInMemoryContextService.refreshDirectory();
-      const selectedPath = untracked(() =>
-        this.editorContextService.selectedDirectoryPath(),
-      );
-      if (refreshCount > 0 && selectedPath) {
-        await this.mergeDirectoryNodes(selectedPath);
-      }
-    });
+    useEffect(
+      async (_, count) => {
+        console.log('[EditorFileExplorerTreeComponent] refresh effect ran');
+        const selectedPath = this.editorContextService.selectedDirectoryPath();
 
-    effect(async () => {
-      console.log('[EditorFileExplorerTreeComponent] merge effect ran');
-      this.error.set(null);
+        if (count > 0 && selectedPath) {
+          await this.mergeDirectoryNodes(selectedPath);
+        }
+      },
+      [this.editorInMemoryContextService.refreshDirectory],
+      {
+        debugName: 'RefreshNodes',
+      },
+    );
 
-      const currentPath = this.editorContextService.selectedDirectoryPath(); // dep
-      if (!currentPath) {
-        this.error.set(`No selected directory`);
-        return;
-      }
+    useEffect(
+      async (_, selectedDir) => {
+        console.log('[EditorFileExplorerTreeComponent] merge effect ran');
+        this.error.set(null);
 
-      this.selectedDirectoryUnsub?.();
-
-      const existingNodes = untracked(() =>
-        this.editorContextService.directoryFileNodes(),
-      );
-
-      if (currentPath !== this.previousSelectedDirectory) {
-        if (this.previousSelectedDirectory) {
-          console.log(
-            `Stopped watching at path ${this.previousSelectedDirectory}`,
-          );
-          this.electronApi.fsApi.stopWatching(this.previousSelectedDirectory);
+        if (!selectedDir) {
+          this.error.set(`No selected directory`);
+          return;
         }
 
-        this.previousSelectedDirectory = currentPath;
+        this.selectedDirectoryUnsub?.();
 
-        this.selectedDirectoryUnsub = this.electronApi.fsApi.onChange(
-          this.previousSelectedDirectory,
-          (path, event) => {
+        const existingNodes = this.editorContextService.directoryFileNodes();
+
+        if (selectedDir !== this.previousSelectedDirectory) {
+          if (this.previousSelectedDirectory) {
             console.log(
-              `[EditorFileExplorerTreeComponent] Directory changed at path ${path} ${event}`,
+              `Stopped watching at path ${this.previousSelectedDirectory}`,
             );
-            this.editorInMemoryContextService.refreshDirectory.update(
-              (x) => x + 1,
-            );
-          },
-        );
+            this.electronApi.fsApi.stopWatching(this.previousSelectedDirectory);
+          }
 
-        if (existingNodes && existingNodes.length > 0) {
-          console.log('Merging latest nodes');
-          await this.mergeDirectoryNodes(this.previousSelectedDirectory);
-        } else {
-          console.log('Fetching nodes latests');
-          await this.fetchDirectoryNodes(this.previousSelectedDirectory);
+          this.previousSelectedDirectory = selectedDir;
+
+          this.selectedDirectoryUnsub = this.electronApi.fsApi.onChange(
+            this.previousSelectedDirectory,
+            (path, event) => {
+              console.log(
+                `[EditorFileExplorerTreeComponent] Directory changed at path ${path} ${event}`,
+              );
+              this.editorInMemoryContextService.refreshDirectory.update(
+                (x) => x + 1,
+              );
+            },
+          );
+
+          if (existingNodes && existingNodes.length > 0) {
+            console.log('Merging latest nodes');
+            await this.mergeDirectoryNodes(this.previousSelectedDirectory);
+          } else {
+            console.log('Fetching nodes latests');
+            await this.fetchDirectoryNodes(this.previousSelectedDirectory);
+          }
         }
-      }
-    });
+      },
+      [this.editorContextService.selectedDirectoryPath],
+    );
   }
 
   ngOnDestroy(): void {
