@@ -47,7 +47,7 @@ const createWindow = () => {
     minHeight: 600,
     frame: false,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "preload.cjs"),
       plugins: true,
       sandbox: enValues.MODE !== "dev",
     },
