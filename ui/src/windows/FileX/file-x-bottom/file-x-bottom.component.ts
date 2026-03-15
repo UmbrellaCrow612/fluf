@@ -1,7 +1,6 @@
 import {
   Component,
   computed,
-  effect,
   inject,
   signal,
   Signal,
@@ -10,6 +9,7 @@ import {
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
 import { getElectronApi } from '../../../utils';
+import { useEffect } from '../../../lib/useEffect';
 
 @Component({
   selector: 'app-file-x-bottom',
@@ -25,13 +25,14 @@ export class FileXBottomComponent {
   private readonly api = getElectronApi();
 
   constructor() {
-    effect(async () => {
-      console.log('FileXBottomComponent effect ran');
-      // whenever active dir changes re computed
-      let activeDirectory = this.fileXContextService.activeDirectory();
-      let count = await this.api.fsApi.countItemsInDirectory(activeDirectory);
-      this.currentItemCountOfDirectory.set(count);
-    });
+    useEffect(
+      async (_, activeDir) => {
+        console.log('FileXBottomComponent effect ran');
+        const count = await this.api.fsApi.countItemsInDirectory(activeDir);
+        this.currentItemCountOfDirectory.set(count);
+      },
+      [this.fileXContextService.activeDirectory],
+    );
   }
 
   /**
