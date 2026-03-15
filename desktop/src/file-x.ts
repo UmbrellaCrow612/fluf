@@ -26,6 +26,8 @@ let fileXWindow: BrowserWindow | null = null;
  * Opens a window and load the specific route data for /file-x which is out custom built in file explorer
  */
 const createFileXWindow = async () => {
+  const envValues = getEnvValues();
+
   fileXWindow = new BrowserWindow({
     width: 750,
     height: 550,
@@ -35,10 +37,9 @@ const createFileXWindow = async () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       plugins: true,
+      sandbox: envValues.MODE !== "dev",
     },
   });
-
-  let envValues = getEnvValues();
 
   fileXWindow.on("closed", () => {
     if (fileXWindow?.isDestroyed()) {
