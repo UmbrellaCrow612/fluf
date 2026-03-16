@@ -10,5 +10,13 @@
   flex: 1;
   min-height: 0;
   min-width: 0;
-  background-color: blue;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.default_flex {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
 }
