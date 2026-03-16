@@ -148,8 +148,8 @@ body {
 }
 
 .scroll_bar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 .scroll_bar::-webkit-scrollbar-track {

@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input, Signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -12,5 +12,10 @@ export class EditorTerminalTabItemComponent {
   /**
    * Text to render in the tab item
    */
-  public label = input.required<string>()
+  public label = input.required<string>();
+
+  /**
+   * Keeps track if the given terminal tab item is the active one
+   */
+  public isActive: Signal<boolean> = computed(() => false);
 }

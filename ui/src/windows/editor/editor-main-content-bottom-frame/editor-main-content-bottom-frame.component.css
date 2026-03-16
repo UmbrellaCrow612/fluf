@@ -32,6 +32,7 @@
   cursor: pointer;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  user-select: none;
   transition:
     color 0.15s ease,
     border-color 0.15s ease;

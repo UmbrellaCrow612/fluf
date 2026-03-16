@@ -8,6 +8,7 @@
   border-radius: 2px;
   cursor: pointer;
   transition: all 0.35s ease-in-out;
+  user-select: none;
 }
 
 .editor_terminal_tab_item:is(:hover, :focus) .editor_terminal_tab_item_close {
