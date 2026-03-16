@@ -1,9 +1,12 @@
-<div class="editor_terminal_tab_item">
+<div class="editor_terminal_tab_item" tabindex="0">
   <span class="editor_terminal_tab_item_label">
     {{ label() }}
   </span>
 
-  <span>
+  <span
+    class="editor_terminal_tab_item_close"
+    [matTooltip]="'delete ' + label()"
+  >
     <mat-icon fontIcon="delete"></mat-icon>
   </span>
 </div>
