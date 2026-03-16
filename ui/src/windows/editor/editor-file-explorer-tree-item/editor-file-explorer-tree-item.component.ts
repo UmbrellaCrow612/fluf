@@ -14,7 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
-import { CoreEditorService } from '../core/services/core-editor.service';
+import { EditorFileNodeManagerService } from '../core/services/editor-file-manager.service';
 import {
   removeTempoaryFileNodes,
   replaceFileNode,
@@ -39,7 +39,7 @@ import {
 })
 export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly editorContextService = inject(EditorContextService);
-  private readonly coreEditorService = inject(CoreEditorService);
+  private readonly editorFileNodeManagerService = inject(EditorFileNodeManagerService);
   private readonly electronApi = getElectronApi();
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
@@ -297,7 +297,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     const node = this.fileNode();
 
     if (!node.isDirectory) {
-      this.coreEditorService.OpenFileNodeInEditor(node);
+      this.editorFileNodeManagerService.OpenFileNodeInEditor(node);
       return;
     }
 

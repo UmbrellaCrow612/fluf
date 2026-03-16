@@ -140,13 +140,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: 'Exit',
             onClick: () => {
-              this.editorContextService.selectedDirectoryPath.set(null);
-              this.editorContextService.openFiles.set(null);
-              this.editorContextService.currentOpenFileInEditor.set(null);
-              this.editorContextService.editorMainActiveElement.set(null);
-              this.editorContextService.fileExplorerActiveFileOrFolder.set(
-                null,
-              );
+              this.editorContextService.reset();
             },
             id: 'exit',
           },

@@ -4,12 +4,12 @@ import { EditorContextService } from '../../editor-context/editor-context.servic
 import { addFileNodeIfNotExists } from '../file-node-helpers';
 
 /**
- * Used as a way to interact with core editor functionality in a agnostic way
+ * Used as a way to interact with file nodes / files inside the editor such as open them and other functions
  */
 @Injectable({
   providedIn: 'root',
 })
-export class CoreEditorService {
+export class EditorFileNodeManagerService {
   private readonly editorContextService = inject(EditorContextService);
 
   /**
@@ -17,7 +17,7 @@ export class CoreEditorService {
    * @param target The node to open in the editor
    * @returns Nothing
    */
-  OpenFileNodeInEditor(target: fileNode): void {
+  public OpenFileNodeInEditor(target: fileNode): void {
     if (target.isDirectory) {
       console.error('Cannot open a directory in the editor');
       return;

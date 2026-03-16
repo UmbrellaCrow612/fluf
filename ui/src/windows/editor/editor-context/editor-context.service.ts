@@ -14,25 +14,95 @@ const LOCAL_STORAGE_KEY = 'editor-app-context';
   providedIn: 'root',
 })
 export class EditorContextService {
+  /**
+   * Exposes sideBarActiveElement signal
+   */
+  public readonly sideBarActiveElement = signal<
+    EditorAppContext['sideBarActiveElement']
+  >(this.restoreField('sideBarActiveElement', null));
+
+  /**
+   * Exposes directoryFileNodes signal
+   */
+  public readonly directoryFileNodes = signal<
+    EditorAppContext['directoryFileNodes']
+  >(this.restoreField('directoryFileNodes', null));
+
+  /**
+   * Exposes selectedDirectoryPath signal
+   */
+  public readonly selectedDirectoryPath = signal<
+    EditorAppContext['selectedDirectoryPath']
+  >(this.restoreField('selectedDirectoryPath', null));
+
+  /**
+   * Exposes fileExplorerActiveFileOrFolder signal
+   */
+  public readonly fileExplorerActiveFileOrFolder = signal<
+    EditorAppContext['fileExplorerActiveFileOrFolder']
+  >(this.restoreField('fileExplorerActiveFileOrFolder', null));
+
+  /**
+   * Exposes openFiles signal
+   */
+  public readonly openFiles = signal<EditorAppContext['openFiles']>(
+    this.restoreField('openFiles', null),
+  );
+
+  /**
+   * Exposes currentOpenFileInEditor signal
+   */
+  public readonly currentOpenFileInEditor = signal<
+    EditorAppContext['currentOpenFileInEditor']
+  >(this.restoreField('currentOpenFileInEditor', null));
+
+  /**
+   * Exposes displayFileEditorBottom signal
+   */
+  public readonly displayFileEditorBottom = signal<
+    EditorAppContext['displayFileEditorBottom']
+  >(this.restoreField('displayFileEditorBottom', null));
+
+  /**
+   * Exposes fileEditorBottomActiveElement signal
+   */
+  public readonly editorBottomActiveElement = signal<
+    EditorAppContext['editorBottomActiveElement']
+  >(this.restoreField('editorBottomActiveElement', null));
+
+  /**
+   * Exposes the editorMainActiveElement signal
+   */
+  public readonly editorMainActiveElement = signal<
+    EditorAppContext['editorMainActiveElement']
+  >(this.restoreField('editorMainActiveElement', null));
+
+  /**
+   * Exposes editorTheme signal
+   */
+  public readonly editorTheme = signal<EditorAppContext['editorTheme']>(
+    this.restoreField('editorTheme', null),
+  );
+
   constructor() {
     effect(() => {
-      this.persist();
+      const snapshot = this.getSnapShot();
+      this.persist(snapshot);
     });
   }
 
   /**
    * Reads the signals and then saves them
    */
-  private persist() {
-    const snapshot = this.getSnapShot();
+  private persist(data: EditorAppContext) {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     } catch (err) {
       console.warn('[ContextService] Failed to persist context', err);
     }
   }
 
-  getSnapShot(): EditorAppContext {
+  public getSnapShot(): EditorAppContext {
     return {
       sideBarActiveElement: this.sideBarActiveElement(),
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
@@ -45,6 +115,22 @@ export class EditorContextService {
       selectedDirectoryPath: this.selectedDirectoryPath(),
       editorTheme: this.editorTheme(),
     };
+  }
+
+  /**
+   * Resets the state of all fields to their default
+   */
+  public reset() {
+    this.sideBarActiveElement.set(null);
+    this.directoryFileNodes.set(null);
+    this.selectedDirectoryPath.set(null);
+    this.fileExplorerActiveFileOrFolder.set(null);
+    this.openFiles.set(null);
+    this.currentOpenFileInEditor.set(null);
+    this.displayFileEditorBottom.set(null);
+    this.editorBottomActiveElement.set(null);
+    this.editorMainActiveElement.set(null);
+    this.editorTheme.set(null);
   }
 
   /**
@@ -67,74 +153,4 @@ export class EditorContextService {
       return fallback;
     }
   }
-
-  /**
-   * Exposes sideBarActiveElement signal
-   */
-  readonly sideBarActiveElement = signal<EditorAppContext['sideBarActiveElement']>(
-    this.restoreField('sideBarActiveElement', null),
-  );
-
-  /**
-   * Exposes directoryFileNodes signal
-   */
-  readonly directoryFileNodes = signal<EditorAppContext['directoryFileNodes']>(
-    this.restoreField('directoryFileNodes', null),
-  );
-
-  /**
-   * Exposes selectedDirectoryPath signal
-   */
-  readonly selectedDirectoryPath = signal<EditorAppContext['selectedDirectoryPath']>(
-    this.restoreField('selectedDirectoryPath', null),
-  );
-
-  /**
-   * Exposes fileExplorerActiveFileOrFolder signal
-   */
-  readonly fileExplorerActiveFileOrFolder = signal<
-    EditorAppContext['fileExplorerActiveFileOrFolder']
-  >(this.restoreField('fileExplorerActiveFileOrFolder', null));
-
-  /**
-   * Exposes openFiles signal
-   */
-  readonly openFiles = signal<EditorAppContext['openFiles']>(
-    this.restoreField('openFiles', null),
-  );
-
-  /**
-   * Exposes currentOpenFileInEditor signal
-   */
-  readonly currentOpenFileInEditor = signal<
-    EditorAppContext['currentOpenFileInEditor']
-  >(this.restoreField('currentOpenFileInEditor', null));
-
-  /**
-   * Exposes displayFileEditorBottom signal
-   */
-  readonly displayFileEditorBottom = signal<
-    EditorAppContext['displayFileEditorBottom']
-  >(this.restoreField('displayFileEditorBottom', null));
-
-  /**
-   * Exposes fileEditorBottomActiveElement signal
-   */
-  readonly editorBottomActiveElement = signal<
-    EditorAppContext['editorBottomActiveElement']
-  >(this.restoreField('editorBottomActiveElement', null));
-
-  /**
-   * Exposes the editorMainActiveElement signal
-   */
-  readonly editorMainActiveElement = signal<
-    EditorAppContext['editorMainActiveElement']
-  >(this.restoreField('editorMainActiveElement', null));
-
-  /**
-   * Exposes editorTheme signal
-   */
-  readonly editorTheme = signal<EditorAppContext['editorTheme']>(
-    this.restoreField('editorTheme', null),
-  );
 }

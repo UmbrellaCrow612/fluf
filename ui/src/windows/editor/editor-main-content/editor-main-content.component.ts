@@ -15,6 +15,7 @@ import { Renderable } from '../ngComponentOutlet/type';
 import { Resizer } from 'umbr-resizer-two';
 import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file-explorer.component';
 import { useEffect } from '../../../lib/useEffect';
+import { EditorSelectDirectoryComponent } from '../editor-select-directory/editor-select-directory.component';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -139,8 +140,16 @@ export class EditorMainContentComponent {
       component: EditorFileExplorerComponent,
       condition: computed(() => {
         return (
-          this.editorContextService.sideBarActiveElement() === 'file-explorer'
+          this.editorContextService.sideBarActiveElement() ===
+            'file-explorer' && this.hasSelectedDirectory()
         );
+      }),
+    },
+    {
+      component: EditorSelectDirectoryComponent,
+      condition: computed(() => {
+        const hasSelected = this.hasSelectedDirectory();
+        return !hasSelected;
       }),
     },
   ];

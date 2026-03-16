@@ -3,7 +3,7 @@ import { KeyMaster } from 'umbr-key-master';
 import { EditorContextService } from '../editor-context/editor-context.service';
 
 /**
- * Central config for all out key binding logic editor wide
+ * Central configuration for all out key binding logic editor wide
  */
 @Injectable({
   providedIn: 'root',
@@ -16,8 +16,12 @@ export class EditorKeyBindingService {
    * Initlizes key bindings for the editor application
    */
   public initKeyBindings = async () => {
-    this.keyMaster.add(['Control', 'j'], () => {
-      this.editorContextService.displayFileEditorBottom.update((x) => !x);
-    });
+    try {
+      this.keyMaster.add(['Control', 'j'], () => {
+        this.editorContextService.displayFileEditorBottom.update((x) => !x);
+      });
+    } catch (error) {
+      console.error('Failed to init key bindings ', error);
+    }
   };
 }

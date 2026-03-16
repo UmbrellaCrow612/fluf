@@ -1,0 +1,14 @@
+<div class="editor_select_directory">
+  <div class="editor_select_directory_action">
+    <span>Select a directory</span>
+
+    @if (selectionError() && !isSelecting()) {
+      <div>
+        {{ selectionError() }}
+      </div>
+    }
+
+    <!---->
+    <button matButton [disabled]="isSelecting()" (click)="selectDirectory()">Select</button>
+  </div>
+</div>

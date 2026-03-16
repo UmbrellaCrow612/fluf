@@ -1,13 +1,10 @@
 import {
   Component,
   computed,
-  effect,
   inject,
-  input,
   OnDestroy,
   signal,
   Signal,
-  untracked,
 } from '@angular/core';
 import { EditorFileExplorerTreeItemComponent } from '../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component';
 import { fileNode, voidCallback } from '../../../gen/type';
@@ -77,7 +74,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
 
     useEffect(
       async (_, selectedDir) => {
-        console.log('[EditorFileExplorerTreeComponent] merge effect ran');
+        console.log('[EditorFileExplorerTreeComponent] selected directory effect ran');
         this.error.set(null);
 
         if (!selectedDir) {
@@ -133,7 +130,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
    * @param path - The selected directory path to fetch and set the global selected directory nodes
    */
   private mergeDirectoryNodes = async (path: string) => {
-    const current = untracked(() => this.selectedDirectoryFileNodes());
+    const current = this.selectedDirectoryFileNodes();
     const latest = await this.electronApi.fsApi.readDir(path);
     const updated = await this.mergeDirectoryNodesImpl(current, latest);
     this.editorContextService.directoryFileNodes.set(updated);
