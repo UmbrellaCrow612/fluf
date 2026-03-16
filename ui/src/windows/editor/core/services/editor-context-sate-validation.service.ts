@@ -17,7 +17,7 @@ export class EditorContextSateValidationService {
    */
   async EnsureStateIsValid() {
     try {
-      this.validateSelectedDirectory(
+      await this.validateSelectedDirectory(
         this.editorContextService.selectedDirectoryPath(),
       );
     } catch (error) {
