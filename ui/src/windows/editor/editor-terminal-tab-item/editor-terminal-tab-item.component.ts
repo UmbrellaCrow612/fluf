@@ -1,4 +1,4 @@
-import { Component, computed, input, Signal } from '@angular/core';
+import { Component, computed, input, signal, Signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -18,4 +18,30 @@ export class EditorTerminalTabItemComponent {
    * Keeps track if the given terminal tab item is the active one
    */
   public isActive: Signal<boolean> = computed(() => false);
+
+  /**
+   * How long it takes for the parent tooltip to show
+   */
+  public tooltipShowDelay = signal(750);
+
+  /**
+   * Keeps track if the child is being hovered if so then the tooltip for parent will not be shown
+   */
+  public isHoveringChild = signal(false);
+
+  /**
+   * Runs when the child is hovered
+   */
+  public childHovered() {
+    this.isHoveringChild.set(true);
+    console.warn('in');
+  }
+
+  /**
+   * Runs when the child hover mouse leaves
+   */
+  public childHoverLeave() {
+    this.isHoveringChild.set(false);
+    console.warn('out');
+  }
 }
