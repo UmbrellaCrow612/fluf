@@ -195,24 +195,7 @@ export class EditorFrameComponent implements OnInit {
             },
             id: 'search',
           },
-          {
-            label: 'Search folders',
-            onClick: () => {
-              this.editorContextService.sideBarActiveElement.set(
-                'search-folders',
-              );
-            },
-            id: 'search_folder',
-          },
-          {
-            label: 'Search files',
-            onClick: () => {
-              this.editorContextService.sideBarActiveElement.set(
-                'search-files',
-              );
-            },
-            id: 'search_file',
-          },
+
           {
             label: 'Version control',
             onClick: () => {

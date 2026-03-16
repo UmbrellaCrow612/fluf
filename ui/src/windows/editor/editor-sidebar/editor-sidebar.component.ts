@@ -70,16 +70,7 @@ export class EditorSidebarComponent {
       tooltip: 'Search',
       icon: 'search',
     },
-    {
-      element: 'search-folders',
-      tooltip: 'Search folders',
-      icon: 'tab_search',
-    },
-    {
-      element: 'search-files',
-      tooltip: 'Search files',
-      icon: 'find_in_page',
-    },
+
     {
       element: 'source-control',
       tooltip: 'Source control',
