@@ -1,0 +1,13 @@
+.editor_terminal_tab_item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 125px;
+}
+
+.editor_terminal_tab_item_label {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
