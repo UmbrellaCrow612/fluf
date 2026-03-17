@@ -105,7 +105,7 @@ export type fsApi = {
   /**
    * Rename a path from to
    */
-  rename: fsRename
+  rename: fsRename;
 };
 /**
  * Rename a path from one path to a given path
@@ -326,7 +326,15 @@ export type pathApi = {
    * Calls path dirname
    */
   dirname: pathDirname;
+  /**
+   * Gets the path to the user profile
+   */
+  getDefaultProfilePath: getDefaultProfilePath;
 };
+/**
+ * Gets the user profile default path
+ */
+export type getDefaultProfilePath = () => Promise<string>;
 /**
  * Calls path dirname on the given path
  */
@@ -664,9 +672,14 @@ export type clipboardApi = {
   writeImage: writeImageToClipboard;
 };
 /**
- * Create a shell
+ * Represents a PID number of a shell
  */
-export type createShell = (directory: string) => Promise<number>;
+export type shellPid = number;
+/**
+ * Create a shell 
+ * @returns Shell PID or -1 on failure
+ */
+export type createShell = (directory: string) => Promise<-1 | shellPid>;
 /**
  * Kill a specific shell by it's PID
  */

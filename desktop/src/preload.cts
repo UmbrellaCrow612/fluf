@@ -211,6 +211,7 @@ const pathApi: pathApi = {
   isAbsolute: (...args) => typedIpcRender.invoke("path:is:absolute", ...args),
   getRootPath: (...args) => typedIpcRender.invoke("path:root", ...args),
   dirname: (...args) => typedIpcRender.invoke("path:dirname", ...args),
+  getDefaultProfilePath: () => typedIpcRender.invoke("path:default:profile"),
 };
 
 const shellApi: shellApi = {

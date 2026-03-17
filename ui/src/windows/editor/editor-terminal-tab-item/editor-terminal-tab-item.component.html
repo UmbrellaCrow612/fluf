@@ -12,9 +12,10 @@
 
   <span
     class="editor_terminal_tab_item_close"
-    [matTooltip]="'delete ' + label()"
+    [matTooltip]="'delete: ' + label() + ' pid:' + shellPid()"
     (mouseenter)="childHovered()"
     (mouseleave)="childHoverLeave()"
+    (click)="deleteShell()"
   >
     <mat-icon fontIcon="delete"></mat-icon>
   </span>

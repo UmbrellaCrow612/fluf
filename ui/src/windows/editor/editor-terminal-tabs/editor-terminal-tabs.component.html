@@ -1,11 +1,16 @@
 <div class="editor_terminal_tabs">
   <div class="editor_terminal_tabs_tab_items scroll_bar">
-    <app-editor-terminal-tab-item label="foo bar bazz bin bon foo" />
-    <app-editor-terminal-tab-item label="foo bar bazz bin bon foo" />
-    <app-editor-terminal-tab-item label="foo bar bazz bin bon foo" />
+    @for (pid of activeShells(); track $index) {
+      <app-editor-terminal-tab-item label="Terminal" [shellPid]="pid"/>
+    }
   </div>
 
-  <button matIconButton matTooltip="Add terminal">
+  <button
+    matIconButton
+    matTooltip="Add terminal"
+    (click)="createNewTerminal()"
+    [disabled]="isCreatingTerminal()"
+  >
     <mat-icon fontIcon="add" />
   </button>
 </div>

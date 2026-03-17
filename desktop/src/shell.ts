@@ -52,13 +52,15 @@ const createImpl: CombinedCallback<
       return err;
     }
 
-    await fs.access(path.normalize(directory));
+    const norm = path.normalize(directory);
+
+    await fs.access(norm);
 
     const pty = spawn(shell, [], {
       name: "xterm-color",
       cols: 80,
       rows: 30,
-      cwd: directory,
+      cwd: norm,
       env: process.env,
     });
 
@@ -96,10 +98,7 @@ const createImpl: CombinedCallback<
     return pty.pid;
   } catch (error) {
     logger.error(
-      "Create shell failed " +
-        JSON.stringify(error) +
-        " Directory path " +
-        directory,
+      "Create shell failed " + error + " Directory path " + directory,
     );
     return err;
   }

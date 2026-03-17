@@ -6,6 +6,7 @@ import path from "path";
 import os from "node:os";
 import type {
   CombinedCallback,
+  getDefaultProfilePath,
   getRootPath,
   IpcMainInvokeEventCallback,
   normalizePath,
@@ -99,6 +100,39 @@ const pathDirnameImpl: CombinedCallback<
   }
 };
 
+const getDefaultProfilePathImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  getDefaultProfilePath
+> = () => {
+  try {
+    const platform = os.platform();
+
+    if (platform === "win32") {
+      // Windows: use USERPROFILE, fallback to HOMEDRIVE + HOMEPATH
+      const userProfile = process.env["USERPROFILE"];
+      if (userProfile) {
+        return Promise.resolve(path.normalize(userProfile));
+      }
+
+      const homeDrive = process.env["HOMEDRIVE"];
+      const homePath = process.env["HOMEPATH"];
+      if (homeDrive && homePath) {
+        return Promise.resolve(path.normalize(path.join(homeDrive, homePath)));
+      }
+
+      // Final fallback
+      return Promise.resolve(path.normalize(process.cwd()));
+    }
+
+    // Unix-like (macOS, Linux): use HOME environment variable
+    const homeDir = os.homedir();
+    return Promise.resolve(path.normalize(homeDir));
+  } catch (error) {
+    logger.error("Failed to get default profile path ", error);
+    return Promise.resolve(path.normalize(process.cwd()));
+  }
+};
+
 /**
  * All path event operations
  */
@@ -131,6 +165,10 @@ export interface PathEvents {
     args: [pathLike: string];
     return: string;
   };
+  "path:default:profile": {
+    args: [];
+    return: string;
+  };
 }
 
 /**
@@ -144,4 +182,5 @@ export const registerPathListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("path:is:absolute", isAbs);
   typedIpcMain.handle("path:root", getRootPathImpl);
   typedIpcMain.handle("path:dirname", pathDirnameImpl);
+  typedIpcMain.handle("path:default:profile", getDefaultProfilePathImpl);
 };
