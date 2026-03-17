@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { useEffect } from '../../../lib/useEffect';
 import { shellPid, voidCallback } from '../../../gen/type';
-import { IDisposable, Terminal } from '@xterm/xterm';
+import { IDisposable, ITheme, Terminal } from '@xterm/xterm';
 import { getElectronApi } from '../../../utils';
 import { FitAddon } from '@xterm/addon-fit';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
@@ -104,7 +104,6 @@ export class EditorTerminalPaneComponent implements OnDestroy {
     );
 
     this.cleanUpState('attachToPane');
-
     this.createTerminalError.set(null);
 
     try {
@@ -121,13 +120,23 @@ export class EditorTerminalPaneComponent implements OnDestroy {
       const { cols, rows } =
         await this.electronApi.shellApi.getInformation(pid);
 
+      const theme = this.buildXtermThemeFromCss();
+      const fontFamily =
+        this.getCssVariable('--code-editor-font-family').replace(/"/g, '') ||
+        '"Fira Code", Consolas, monospace';
+      const fontSize =
+        parseInt(this.getCssVariable('--code-editor-font-size'), 10) || 14;
+
       const xterm = new Terminal({
         cols,
         rows,
+        theme,
+        fontFamily,
+        fontSize,
       });
+
       this.terminal = xterm;
       this.fitAddon = new FitAddon();
-
       this.terminal.loadAddon(this.fitAddon);
 
       window.addEventListener('resize', this.onResizeEvent);
@@ -158,14 +167,60 @@ export class EditorTerminalPaneComponent implements OnDestroy {
 
       this.terminal.open(container);
       this.fitAddon.fit();
+
+      setTimeout(() => {
+        this.fitAddon?.fit();
+      },4);
     } catch (error: any) {
       console.error('Failed to attach xterm terminal to UI ', error);
       this.createTerminalError.set(
         `Failed to attach xterm terminal to UI ${error?.message}`,
       );
-
       this.cleanUpState('Error attachToPane');
     }
+  }
+
+  /**
+   * Helper to read a CSS variable value from :root
+   */
+  private getCssVariable(variableName: string): string {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(variableName)
+      .trim();
+  }
+
+  /**
+   * Builds an xterm.js theme object from CSS custom properties
+   */
+  private buildXtermThemeFromCss(): ITheme {
+    return {
+      // Core colors
+      background: this.getCssVariable('--xterm-background'),
+      foreground: this.getCssVariable('--xterm-foreground'),
+      cursor: this.getCssVariable('--xterm-cursor'),
+      cursorAccent: this.getCssVariable('--xterm-cursor-accent'),
+      selectionBackground: this.getCssVariable('--xterm-selection'),
+
+      // ANSI colors
+      black: this.getCssVariable('--xterm-black'),
+      red: this.getCssVariable('--xterm-red'),
+      green: this.getCssVariable('--xterm-green'),
+      yellow: this.getCssVariable('--xterm-yellow'),
+      blue: this.getCssVariable('--xterm-blue'),
+      magenta: this.getCssVariable('--xterm-magenta'),
+      cyan: this.getCssVariable('--xterm-cyan'),
+      white: this.getCssVariable('--xterm-white'),
+
+      // Bright ANSI colors
+      brightBlack: this.getCssVariable('--xterm-bright-black'),
+      brightRed: this.getCssVariable('--xterm-bright-red'),
+      brightGreen: this.getCssVariable('--xterm-bright-green'),
+      brightYellow: this.getCssVariable('--xterm-bright-yellow'),
+      brightBlue: this.getCssVariable('--xterm-bright-blue'),
+      brightMagenta: this.getCssVariable('--xterm-bright-magenta'),
+      brightCyan: this.getCssVariable('--xterm-bright-cyan'),
+      brightWhite: this.getCssVariable('--xterm-bright-white'),
+    };
   }
 
   /**
@@ -199,6 +254,10 @@ export class EditorTerminalPaneComponent implements OnDestroy {
   private onResizeEvent = () => {
     if (this.terminal && this.fitAddon) {
       this.fitAddon.fit();
+
+      setTimeout(() => {
+        this.fitAddon?.fit()
+      },4)
       console.log('[EditorTerminalPaneComponent] terminal resize ran');
     }
   };
