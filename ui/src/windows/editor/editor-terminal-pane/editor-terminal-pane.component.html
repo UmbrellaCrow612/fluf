@@ -1,0 +1,10 @@
+<div class="editor_terminal_pane">
+  @if (!shellPid()) {
+    <div class="default_flex align_center">
+      <span>No active shell</span>
+    </div>
+  }
+
+  <!---->
+  <div #xtermContainerTarget [class.default_flex]="shellPid() !== null">X term yo</div>
+</div>

@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.editor_terminal_pane {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.default_flex {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.align_center {
+  align-items: center;
+  justify-content: center;
+}

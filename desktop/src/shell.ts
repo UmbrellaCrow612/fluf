@@ -13,8 +13,10 @@ import type {
   CombinedCallback,
   createShell,
   IpcMainInvokeEventCallback,
+  isShellAlive,
   killShell,
   resizeShell,
+  shellInformation,
   writeToShell,
 } from "./type.js";
 import { logger } from "./logger.js";
@@ -161,6 +163,23 @@ const writeImpl: CombinedCallback<IpcMainInvokeEventCallback, writeToShell> = (
   shell.write(content);
 };
 
+const shellAliveImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  isShellAlive
+> = (_, pid) => {
+  try {
+    const shell = shells.get(pid);
+    if (!shell) return Promise.resolve(false);
+
+    // Check if process is still running by sending signal 0
+    process.kill(pid, 0);
+    return Promise.resolve(true);
+  } catch (error) {
+    logger.error("Failed to check if shell is alive pid: ", pid, error);
+    return Promise.resolve(false);
+  }
+};
+
 /**
  * Kills shells
  */
@@ -217,6 +236,16 @@ export interface ShellEvents {
     args: [pid: number, exit: { exitCode: number; signal?: number }];
     return: void;
   };
+
+  "shell:is:alive": {
+    args: [pid: number];
+    return: boolean;
+  };
+
+  "shell:information": {
+    args: [pid: number];
+    return: shellInformation;
+  };
 }
 
 /**
@@ -227,4 +256,5 @@ export const registerShellListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("shell:kill", killImpl);
   typedIpcMain.on("shell:resize", resizeImpl);
   typedIpcMain.on("shell:write", writeImpl);
+  typedIpcMain.handle("shell:is:alive", shellAliveImpl)
 };
