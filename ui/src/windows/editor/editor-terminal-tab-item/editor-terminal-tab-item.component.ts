@@ -117,7 +117,7 @@ export class EditorTerminalTabItemComponent {
   }
 
   /**
-   * Updates the in memeory data structures to remove the deleted shell PID
+   * Updates the in memeory data structures to remove the deleted shell PID and other related information about it
    */
   private updateInMemeoryDataOnDelete(): void {
     const shellPids = this.editorInMemoryContextService.shells() ?? [];
@@ -134,5 +134,7 @@ export class EditorTerminalTabItemComponent {
     this.editorInMemoryContextService.shells.set(
       structuredClone(filteredShellPids),
     );
+
+    this.editorInMemoryContextService.terminalBuffers().delete(pidToRemove);
   }
 }

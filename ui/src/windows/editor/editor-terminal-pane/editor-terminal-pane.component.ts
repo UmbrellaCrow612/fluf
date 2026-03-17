@@ -13,6 +13,7 @@ import { IDisposable, ITheme, Terminal } from '@xterm/xterm';
 import { getElectronApi } from '../../../utils';
 import { FitAddon } from '@xterm/addon-fit';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { SerializeAddon } from '@xterm/addon-serialize';
 
 /**
  * Renders the actual interact / xterm UI for the current active shell ID
@@ -48,6 +49,11 @@ export class EditorTerminalPaneComponent implements OnDestroy {
    * Holds he xterm addon used for fitting the xterm container
    */
   private fitAddon: FitAddon | null = null;
+
+  /**
+   * Holds the xterm serliaze addon for saving and restoring the buffer for the given terminal
+   */
+  private serializeAddon: SerializeAddon | null = null;
 
   /**
    * Contains a list of xterm dispose functions that are called on cleanup
@@ -136,8 +142,22 @@ export class EditorTerminalPaneComponent implements OnDestroy {
       });
 
       this.terminal = xterm;
+
       this.fitAddon = new FitAddon();
+      this.serializeAddon = new SerializeAddon();
+
       this.terminal.loadAddon(this.fitAddon);
+      this.terminal.loadAddon(this.serializeAddon);
+
+      this.serializeAddon.activate(this.terminal);
+
+      const storedTerminalBuffer = this.editorInMemoryContextService
+        .terminalBuffers()
+        .get(pid);
+      if (storedTerminalBuffer) {
+        console.log('[EditorTerminalPaneComponent] restored terminal buffer');
+        this.terminal.write(storedTerminalBuffer);
+      }
 
       window.addEventListener('resize', this.onResizeEvent);
 
@@ -155,7 +175,25 @@ export class EditorTerminalPaneComponent implements OnDestroy {
 
       this.ptyDisposes.push(
         this.electronApi.shellApi.onChange(pid, (_, chunk) => {
-          this.terminal?.write(chunk);
+          if (!this.terminal) {
+            console.error(
+              'Data sent from backend could not be written to UI xterm instace as it is null',
+            );
+            return;
+          }
+
+          this.terminal.write(chunk, () => {
+            const serlized = this.serializeAddon?.serialize();
+            if (!serlized) {
+              console.error(
+                'Data could not be serlized as the serlize addon is null for PID: ',
+                pid,
+              );
+              return;
+            }
+
+            this.updateTerminalBufferStore(pid, serlized);
+          });
         }),
       );
 
@@ -166,11 +204,11 @@ export class EditorTerminalPaneComponent implements OnDestroy {
       );
 
       this.terminal.open(container);
-      this.fitAddon.fit();
 
+      this.fitAddon.fit();
       setTimeout(() => {
         this.fitAddon?.fit();
-      },4);
+      }, 4);
     } catch (error: any) {
       console.error('Failed to attach xterm terminal to UI ', error);
       this.createTerminalError.set(
@@ -178,6 +216,20 @@ export class EditorTerminalPaneComponent implements OnDestroy {
       );
       this.cleanUpState('Error attachToPane');
     }
+  }
+
+  /**
+   * Update the given terminals
+   * @param pid The specific terminal shell to update
+   * @param buffer The new buffer content
+   */
+  private updateTerminalBufferStore(pid: number, buffer: string): void {
+    const bufferMap = this.editorInMemoryContextService.terminalBuffers();
+    bufferMap.set(pid, buffer);
+    console.log(
+      '[EditorTerminalPaneComponent] Updated terminal buffer in store for PID: ',
+      pid,
+    );
   }
 
   /**
@@ -256,14 +308,14 @@ export class EditorTerminalPaneComponent implements OnDestroy {
       this.fitAddon.fit();
 
       setTimeout(() => {
-        this.fitAddon?.fit()
-      },4)
+        this.fitAddon?.fit();
+      }, 4);
       console.log('[EditorTerminalPaneComponent] terminal resize ran');
     }
   };
 
   /**
-   * Cleans up previous xterm instace and other cleanup work
+   * Cleans up previous xterm instace, addons and other cleanup needed
    */
   private cleanUpState(from: string) {
     console.log('[EditorTerminalPaneComponent] cleanup ran from ', from);
@@ -281,6 +333,14 @@ export class EditorTerminalPaneComponent implements OnDestroy {
     if (this.terminal) {
       this.terminal.dispose();
       this.terminal = null;
+    }
+    if (this.fitAddon) {
+      this.fitAddon.dispose();
+      this.fitAddon = null;
+    }
+    if (this.serializeAddon) {
+      this.serializeAddon.dispose();
+      this.serializeAddon = null;
     }
 
     window.removeEventListener('resize', this.onResizeEvent);
