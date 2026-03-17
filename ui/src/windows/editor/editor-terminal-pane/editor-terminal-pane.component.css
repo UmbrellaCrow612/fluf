@@ -10,6 +10,12 @@
   min-height: 0;
   min-width: 0;
   flex: 1;
+  /* 
+   * The xterm fit addon sometimes fails to constrain the terminal during pane resize 
+   * operations, causing content to overflow and break the layout. This prevents 
+   * the terminal from spilling outside its container even when fit() miscalculates.
+   */
+  overflow: hidden;
 }
 
 .default_flex {
