@@ -72,9 +72,28 @@ export class EditorTerminalTabItemComponent {
   }
 
   /**
+   * Makes the active shell pid this shell
+   */
+  public selectTerminal() {
+    const shellPid = this.shellPid();
+
+    try {
+      if (this.isActive()) {
+        return;
+      }
+
+      this.editorInMemoryContextService.currentActiveShellId.set(shellPid);
+    } catch (error) {
+      console.error('Failed to set shell as active: ', shellPid);
+    }
+  }
+
+  /**
    * Attempts to delete / stop the current shell and then set the next avaible shell PID as active if the one being deleted is the active one
    */
-  public async deleteShell() {
+  public async deleteShell(event: Event) {
+    event.stopPropagation();
+
     if (this.isDeletingShell()) {
       return;
     }

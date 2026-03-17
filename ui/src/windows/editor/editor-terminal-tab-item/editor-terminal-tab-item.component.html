@@ -5,6 +5,7 @@
   [matTooltip]="label()"
   [matTooltipShowDelay]="tooltipShowDelay()"
   [matTooltipDisabled]="isHoveringChild()"
+  (click)="selectTerminal()"
 >
   <span class="editor_terminal_tab_item_label">
     {{ label() }}
@@ -15,7 +16,7 @@
     [matTooltip]="'delete: ' + label() + ' pid:' + shellPid()"
     (mouseenter)="childHovered()"
     (mouseleave)="childHoverLeave()"
-    (click)="deleteShell()"
+    (click)="deleteShell($event)"
   >
     <mat-icon fontIcon="delete"></mat-icon>
   </span>
