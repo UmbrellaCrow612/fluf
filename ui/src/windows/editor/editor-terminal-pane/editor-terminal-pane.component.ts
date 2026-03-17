@@ -152,7 +152,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
 
       this.ptyDisposes.push(
         this.electronApi.shellApi.onExit(pid, () => {
-          this.removeTerminalFromDataStore();
+          this.removeTerminalFromDataStore(pid);
         }),
       );
 
@@ -168,7 +168,30 @@ export class EditorTerminalPaneComponent implements OnDestroy {
     }
   }
 
-  private removeTerminalFromDataStore() {}
+  /**
+   * Removes the given terminal shell from the in memeory data and trys to set the next avialable shell pid
+   * @param pid The Shell to remove
+   */
+  private removeTerminalFromDataStore(pid: number): void {
+    console.log('[EditorTerminalPaneComponent] remove ran');
+
+    try {
+      const shellPids = this.editorInMemoryContextService.shells() ?? [];
+      const pidToRemove = pid;
+      const filteredShellPids = shellPids.filter((n) => n !== pidToRemove);
+      const nextAviableShellPid = filteredShellPids[0] ?? null;
+
+      this.editorInMemoryContextService.currentActiveShellId.set(
+        nextAviableShellPid,
+      );
+
+      this.editorInMemoryContextService.shells.set(
+        structuredClone(filteredShellPids),
+      );
+    } catch (error) {
+      console.log('Failed to remove pid: ', pid, error);
+    }
+  }
 
   /**
    * Runs logic to reszie the terminal
