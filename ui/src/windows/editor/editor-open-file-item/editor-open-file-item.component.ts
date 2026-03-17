@@ -93,7 +93,7 @@ export class EditorOpenFileItemComponent implements OnInit {
 
     let nextAvNode: fileNode | null = openfiles[0];
     if (nextAvNode) {
-      this.editorFileNodeManagerService.OpenFileNodeInEditor(nextAvNode);
+      this.editorFileNodeManagerService.openFileNodeInEditor(nextAvNode);
     }
   }
 
@@ -101,6 +101,6 @@ export class EditorOpenFileItemComponent implements OnInit {
    * Selects the given tab item node as the new active
    */
   public selectFileTabItem(event: Event) {
-    this.editorFileNodeManagerService.OpenFileNodeInEditor(this.fileNode());
+    this.editorFileNodeManagerService.openFileNodeInEditor(this.fileNode());
   }
 }

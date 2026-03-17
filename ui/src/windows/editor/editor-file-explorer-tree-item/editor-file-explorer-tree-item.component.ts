@@ -297,7 +297,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     const node = this.fileNode();
 
     if (!node.isDirectory) {
-      this.editorFileNodeManagerService.OpenFileNodeInEditor(node);
+      this.editorFileNodeManagerService.openFileNodeInEditor(node);
       return;
     }
 

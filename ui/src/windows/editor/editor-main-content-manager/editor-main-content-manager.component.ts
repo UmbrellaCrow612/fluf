@@ -14,6 +14,7 @@ import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/
 import { Resizer } from 'umbr-resizer-two';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorMainContentEmptyComponent } from '../editor-main-content-empty/editor-main-content-empty.component';
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -108,6 +109,18 @@ export class EditorMainContentManagerComponent {
   };
 
   /**
+   * Keeps track of if there are no open files in the editor
+   */
+  private noFilesOpen: Signal<boolean> = computed(() => {
+    const openFiles = this.editorContextService.openFiles();
+    if (!openFiles) {
+      return true;
+    }
+
+    return openFiles.length === 0;
+  });
+
+  /**
    * Indicates if we should render the component that displays all current open files in the editor
    */
   public shouldRenderOpenFiles: Signal<boolean> = computed(() => {
@@ -135,5 +148,14 @@ export class EditorMainContentManagerComponent {
     },
   );
 
-  private mainContentRenderableComponents: Renderable[] = [];
+  private mainContentRenderableComponents: Renderable[] = [
+    {
+      component: EditorMainContentEmptyComponent,
+      condition: computed(
+        () =>
+          this.editorContextService.editorMainActiveElement() === null ||
+          this.noFilesOpen(),
+      ),
+    },
+  ];
 }
