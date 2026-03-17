@@ -256,6 +256,10 @@ const shellApi: shellApi = {
       typedIpcRender.removeListener("shell:exit", listener);
     };
   },
+  getInformation: (...args) =>
+    typedIpcRender.invoke("shell:information", ...args),
+
+  isAlive: (...args) => typedIpcRender.invoke("shell:is:alive", ...args),
 };
 
 const gitApi: gitApi = {

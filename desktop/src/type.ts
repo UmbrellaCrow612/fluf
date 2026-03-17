@@ -730,6 +730,10 @@ export type shellInformation = {
    * The pty cols
    */
   cols: number;
+  /**
+   * The title of the process
+   */
+  title:string
 };
 /**
  * Get information about a specific shell

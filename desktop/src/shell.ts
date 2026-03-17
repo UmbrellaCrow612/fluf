@@ -12,6 +12,7 @@ import path from "path";
 import type {
   CombinedCallback,
   createShell,
+  getShellInformation,
   IpcMainInvokeEventCallback,
   isShellAlive,
   killShell,
@@ -180,6 +181,29 @@ const shellAliveImpl: CombinedCallback<
   }
 };
 
+const shellInformationImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  getShellInformation
+> = (_, pid) => {
+  try {
+    const shell = shells.get(pid);
+    if (!shell) {
+      throw new Error(`Shell with PID ${pid} not found`);
+    }
+
+    const info: shellInformation = {
+      cols: shell.cols,
+      rows: shell.rows,
+      title: shell.process,
+    };
+
+    return Promise.resolve(info);
+  } catch (error) {
+    logger.error("Failed to get shell information for pid: ", pid, error);
+    throw error;
+  }
+};
+
 /**
  * Kills shells
  */
@@ -256,5 +280,6 @@ export const registerShellListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("shell:kill", killImpl);
   typedIpcMain.on("shell:resize", resizeImpl);
   typedIpcMain.on("shell:write", writeImpl);
-  typedIpcMain.handle("shell:is:alive", shellAliveImpl)
+  typedIpcMain.handle("shell:is:alive", shellAliveImpl);
+  typedIpcMain.handle("shell:information", shellInformationImpl);
 };
