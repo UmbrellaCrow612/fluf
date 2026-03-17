@@ -676,7 +676,7 @@ export type clipboardApi = {
  */
 export type shellPid = number;
 /**
- * Create a shell 
+ * Create a shell
  * @returns Shell PID or -1 on failure
  */
 export type createShell = (directory: string) => Promise<-1 | shellPid>;
@@ -715,6 +715,31 @@ export type onShellExit = (
   callback: onShellExitCallback,
 ) => voidCallback;
 /**
+ * Check if a specific shell is alive / exists
+ */
+export type isShellAlive = (pid: number) => Promise<boolean>;
+/**
+ * Information about a shell
+ */
+export type shellInformation = {
+  /**
+   * The pty rows
+   */
+  rows: number;
+  /**
+   * The pty cols
+   */
+  cols: number;
+  /**
+   * The title of the process
+   */
+  title:string
+};
+/**
+ * Get information about a specific shell
+ */
+export type getShellInformation = (pid: number) => Promise<shellInformation>;
+/**
  * Contains all the method to interact with shell's for terminals to use
  */
 export type shellApi = {
@@ -742,6 +767,14 @@ export type shellApi = {
    * - Listen to a specific shell exit and run logic
    */
   onExit: onShellExit;
+  /**
+   * Check if a shell if alive / exists
+   */
+  isAlive: isShellAlive;
+  /**
+   * Get information about a specific shell
+   */
+  getInformation: getShellInformation;
 };
 /**
  * List of all methods that can be in the method of a request / message / Notification

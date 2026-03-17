@@ -6,5 +6,11 @@
   }
 
   <!---->
-  <div #xtermContainerTarget [class.default_flex]="shellPid() !== null">X term yo</div>
+  <div #xtermContainerTarget [class.default_flex]="shellPid() !== null">
+    @if (createTerminalError()) {
+      <div class="default_flex align_center">
+        {{ createTerminalError() }}
+      </div>
+    }
+  </div>
 </div>

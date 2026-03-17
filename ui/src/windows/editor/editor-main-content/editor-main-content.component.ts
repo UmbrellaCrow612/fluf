@@ -16,6 +16,7 @@ import { Resizer } from 'umbr-resizer-two';
 import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file-explorer.component';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorSelectDirectoryComponent } from '../editor-select-directory/editor-select-directory.component';
+import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -32,6 +33,9 @@ import { EditorSelectDirectoryComponent } from '../editor-select-directory/edito
 })
 export class EditorMainContentComponent {
   private readonly editorContextService = inject(EditorContextService);
+  private readonly editorInMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
 
   private resizer: Resizer | null = null;
   private sharedHandleStyles: Record<string, string> = {
@@ -88,13 +92,13 @@ export class EditorMainContentComponent {
         },
         {
           onBeginDrag: () => {
-            console.log('[onBeginDrag]');
+            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
           },
-          onDrag: (flexValues) => {
-            // todo call resize terminal here other callbacks
+          onDrag: () => {
+            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
           },
           onDragFinished: (flexValues) => {
-            console.log(`[onDragFinished] ${flexValues}`);
+            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
           },
           onDragPastMin: (side, pixelsPast) => {
             if (side === 'left' && pixelsPast > 200) {
@@ -108,12 +112,15 @@ export class EditorMainContentComponent {
           },
         },
       );
+
+      this.editorInMemoryContextService.editorResize.update((x) => x + 1);
     });
   };
 
   private disposeResizer = () => {
     this.resizer?.dispose();
     this.resizer = null;
+    this.editorInMemoryContextService.editorResize.update((x) => x + 1);
   };
 
   /**

@@ -1,15 +1,18 @@
 import {
   Component,
   ElementRef,
+  inject,
   input,
   OnDestroy,
   signal,
   viewChild,
 } from '@angular/core';
 import { useEffect } from '../../../lib/useEffect';
-import { shellPid } from '../../../gen/type';
-import { Terminal } from '@xterm/xterm';
+import { shellPid, voidCallback } from '../../../gen/type';
+import { IDisposable, Terminal } from '@xterm/xterm';
 import { getElectronApi } from '../../../utils';
+import { FitAddon } from '@xterm/addon-fit';
+import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 
 /**
  * Renders the actual interact / xterm UI for the current active shell ID
@@ -21,19 +24,40 @@ import { getElectronApi } from '../../../utils';
   styleUrl: './editor-terminal-pane.component.css',
 })
 export class EditorTerminalPaneComponent implements OnDestroy {
-  private readonly electronApi = getElectronApi()
-
+  private readonly electronApi = getElectronApi();
+  private readonly editorInMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
 
   /**
    * The specific shell PID to show the UI for in the panel
    */
   public readonly shellPid = input.required<shellPid | null>();
 
+  /**
+   * Holds any error state for creating xterm
+   */
+  public readonly createTerminalError = signal<string | null>(null);
 
   /**
    * Holds the xterm terminal object instace
    */
   private terminal: Terminal | null = null;
+
+  /**
+   * Holds he xterm addon used for fitting the xterm container
+   */
+  private fitAddon: FitAddon | null = null;
+
+  /**
+   * Contains a list of xterm dispose functions that are called on cleanup
+   */
+  private terminalDisposes: IDisposable[] = [];
+
+  /**
+   * Contains cleanup functions need to be called from the backend
+   */
+  private ptyDisposes: voidCallback[] = [];
 
   /**
    * Holds a refrence to the template div in which xterm will be rendered in
@@ -42,22 +66,26 @@ export class EditorTerminalPaneComponent implements OnDestroy {
     ElementRef<HTMLDivElement>
   >('xtermContainerTarget');
 
-  /**
-   * Holds any error state for creating xterm
-   */
-  public readonly createTerminalError = signal<string | null>(null);
-
   constructor() {
     useEffect(
-      (_, pid) => {
+      async (_, pid) => {
         if (!pid) {
           this.cleanUpState('No PID');
           return;
         }
 
-        this.attachToPane(pid);
+        await this.attachToPane(pid);
       },
       [this.shellPid],
+    );
+
+    useEffect(
+      (_, count) => {
+        if (count > 0) {
+          this.onResizeEvent();
+        }
+      },
+      [this.editorInMemoryContextService.editorResize],
     );
   }
 
@@ -69,7 +97,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
    * Listens to the PID given and creates a Xterm UI for the given PID listening to changes and reflecting them in the UI, as well as removing the previous instance
    * @param pid The PID to listen to
    */
-  private attachToPane(pid: shellPid): void {
+  private async attachToPane(pid: shellPid): Promise<void> {
     console.log(
       '[EditorTerminalPaneComponent] attach to pane ran for pid: ',
       pid,
@@ -85,15 +113,72 @@ export class EditorTerminalPaneComponent implements OnDestroy {
         throw new Error('Could not find container element to attach xterm to');
       }
 
-      const shell = this.electronApi.shellApi. // ap9i tpo get shell info row cols etc
+      const isAlive = await this.electronApi.shellApi.isAlive(pid);
+      if (!isAlive) {
+        throw new Error(`Shell with PID ${pid} no longer alive`);
+      }
 
+      const { cols, rows } =
+        await this.electronApi.shellApi.getInformation(pid);
+
+      const xterm = new Terminal({
+        cols,
+        rows,
+      });
+      this.terminal = xterm;
+      this.fitAddon = new FitAddon();
+
+      this.terminal.loadAddon(this.fitAddon);
+
+      window.addEventListener('resize', this.onResizeEvent);
+
+      this.terminalDisposes.push(
+        this.terminal.onData((data) => {
+          this.electronApi.shellApi.write(pid, data);
+        }),
+      );
+
+      this.terminalDisposes.push(
+        this.terminal.onResize(({ cols, rows }) => {
+          this.electronApi.shellApi.resize(pid, cols, rows);
+        }),
+      );
+
+      this.ptyDisposes.push(
+        this.electronApi.shellApi.onChange(pid, (_, chunk) => {
+          this.terminal?.write(chunk);
+        }),
+      );
+
+      this.ptyDisposes.push(
+        this.electronApi.shellApi.onExit(pid, () => {
+          this.removeTerminalFromDataStore();
+        }),
+      );
+
+      this.terminal.open(container);
+      this.fitAddon.fit();
     } catch (error: any) {
       console.error('Failed to attach xterm terminal to UI ', error);
       this.createTerminalError.set(
         `Failed to attach xterm terminal to UI ${error?.message}`,
       );
+
+      this.cleanUpState('Error attachToPane');
     }
   }
+
+  private removeTerminalFromDataStore() {}
+
+  /**
+   * Runs logic to reszie the terminal
+   */
+  private onResizeEvent = () => {
+    if (this.terminal && this.fitAddon) {
+      this.fitAddon.fit();
+      console.log('[EditorTerminalPaneComponent] terminal resize ran');
+    }
+  };
 
   /**
    * Cleans up previous xterm instace and other cleanup work
@@ -101,9 +186,21 @@ export class EditorTerminalPaneComponent implements OnDestroy {
   private cleanUpState(from: string) {
     console.log('[EditorTerminalPaneComponent] cleanup ran from ', from);
 
+    this.terminalDisposes.forEach((x) => {
+      x.dispose();
+    });
+    this.terminalDisposes = [];
+
+    this.ptyDisposes.forEach((dispose) => {
+      dispose();
+    });
+    this.ptyDisposes = [];
+
     if (this.terminal) {
       this.terminal.dispose();
       this.terminal = null;
     }
+
+    window.removeEventListener('resize', this.onResizeEvent);
   }
 }

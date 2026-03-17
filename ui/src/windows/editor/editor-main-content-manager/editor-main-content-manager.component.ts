@@ -13,6 +13,7 @@ import { Renderable } from '../ngComponentOutlet/type';
 import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
 import { Resizer } from 'umbr-resizer-two';
 import { useEffect } from '../../../lib/useEffect';
+import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -30,6 +31,9 @@ import { useEffect } from '../../../lib/useEffect';
 })
 export class EditorMainContentManagerComponent {
   private readonly editorContextService = inject(EditorContextService);
+  private readonly editorInMemoryContextService = inject(
+    EditorInMemoryContextService,
+  );
 
   private resizer: Resizer | null = null;
   private resizerTimeout: NodeJS.Timeout | undefined = undefined;
@@ -37,7 +41,9 @@ export class EditorMainContentManagerComponent {
   constructor() {
     useEffect(
       (_, should) => {
-        console.log('[EditorMainContentManagerComponent] MainContentManagerResizer effect ran');
+        console.log(
+          '[EditorMainContentManagerComponent] MainContentManagerResizer effect ran',
+        );
         if (should) {
           this.renderResizer();
         } else {
@@ -65,17 +71,32 @@ export class EditorMainContentManagerComponent {
         );
       }
 
-      this.resizer = new Resizer({
-        container,
-        classNames: ['resize_handle_base'],
-        direction: 'vertical',
-        handleStyles: {
-          height: '6px',
-          cursor: 'row-resize',
+      this.resizer = new Resizer(
+        {
+          container,
+          classNames: ['resize_handle_base'],
+          direction: 'vertical',
+          handleStyles: {
+            height: '6px',
+            cursor: 'row-resize',
+          },
+          minFlex: 0.3,
+          storageKey: 'editor_main_content_manager_component_resizer_key',
         },
-        minFlex: 0.3,
-        storageKey: 'editor_main_content_manager_component_resizer_key',
-      });
+        {
+          onBeginDrag: () => {
+            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+          },
+          onDrag: () => {
+            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+          },
+          onDragFinished: (flexValues) => {
+            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+          },
+        },
+      );
+
+      this.editorInMemoryContextService.editorResize.update((x) => x + 1);
     }, 10);
   };
 
@@ -83,6 +104,7 @@ export class EditorMainContentManagerComponent {
     this.resizer?.dispose();
     this.resizer = null;
     clearTimeout(this.resizerTimeout);
+    this.editorInMemoryContextService.editorResize.update((x) => x + 1);
   };
 
   /**
