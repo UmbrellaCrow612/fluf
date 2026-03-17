@@ -4,6 +4,7 @@ import { EditorMainContentComponent } from '../editor-main-content/editor-main-c
 import { EditorFooterComponent } from '../editor-footer/editor-footer.component';
 import { EditorKeyBindingService } from '../editor-key-bindings/editor-key-binding.service';
 import { EditorContextSateValidationService } from '../core/services/editor-context-sate-validation.service';
+import { EditorTerminalService } from '../editor-terminal/services/editor-terminal.service';
 
 /**
  * Main entry point component rendered for the editor
@@ -23,6 +24,11 @@ export class EditorMainComponent implements AfterViewInit {
   private readonly editorContextSateValidationService = inject(
     EditorContextSateValidationService,
   );
+  private readonly editorTerminalService = inject(EditorTerminalService);
+
+  constructor() {
+    this.editorTerminalService.InitiizeBackgroundTerminalBufferListerner();
+  }
 
   async ngAfterViewInit() {
     await this.editorKeyBindingService.initKeyBindings();
