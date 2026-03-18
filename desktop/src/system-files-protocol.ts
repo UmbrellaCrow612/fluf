@@ -5,6 +5,7 @@
 import { protocol } from "electron";
 import path from "node:path";
 import fs from "node:fs";
+import { logger } from "./logger.js";
 
 /**
  * Name of the scheme
@@ -83,7 +84,7 @@ export function registerSystemFileListeners() {
         },
       });
     } catch (error) {
-      console.error("Protocol handler error:", error);
+      logger.error("Protocol handler error:", error);
       return new Response("Internal Server Error", { status: 500 });
     }
   });
