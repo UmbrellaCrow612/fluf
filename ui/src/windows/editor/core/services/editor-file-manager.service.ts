@@ -3,6 +3,7 @@ import { fileNode } from '../../../../gen/type';
 import { EditorContextService } from '../../editor-context/editor-context.service';
 import { addFileNodeIfNotExists } from '../file-node-helpers';
 import { EditorImageService } from './editor-image.service.service';
+import { EditorVideoService } from './editor-video.service';
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -14,6 +15,7 @@ import { EditorImageService } from './editor-image.service.service';
 export class EditorFileNodeManagerService {
   private readonly editorContextService = inject(EditorContextService);
   private readonly editorImageService = inject(EditorImageService);
+  private readonly editorVideoService = inject(EditorVideoService);
 
   /**
    * Opens a file node in the editor.
@@ -71,17 +73,34 @@ export class EditorFileNodeManagerService {
    * @param target - The file node to route to an editor component
    */
   private setMainEditorComponent(target: fileNode): void {
-    if (this.editorImageService.isSupportedExtension(target.extension)) {
+    const extension = target.extension;
+
+    if (this.editorImageService.isSupportedExtension(extension)) {
       this.editorContextService.editorMainActiveElement.set('image-editor');
       return;
     }
 
-    if (this.isPdf(target.extension)) {
+    if (this.isPdf(extension)) {
       this.editorContextService.editorMainActiveElement.set('pdf-editor');
       return;
     }
 
-    this.editorContextService.editorMainActiveElement.set('text-file-editor');
+    if (this.editorVideoService.isSupportedExtension(extension)) {
+      this.editorContextService.editorMainActiveElement.set('video-editor');
+      return;
+    }
+
+    if (this.isTextDocumentOrHasNoExtension(extension)) {
+      this.editorContextService.editorMainActiveElement.set('text-file-editor');
+      return;
+    }
+
+    if (this.hasAnyExtension(extension)) {
+      this.editorContextService.editorMainActiveElement.set('code-editor');
+      return;
+    }
+
+    this.editorContextService.editorMainActiveElement.set('unkown');
   }
 
   /**
@@ -90,5 +109,21 @@ export class EditorFileNodeManagerService {
    */
   private isPdf(extension: string): boolean {
     return extension === '.pdf';
+  }
+
+  /**
+   * Checks if a file extension is a `txt` or it is empty
+   * @param extension The file extension
+   */
+  private isTextDocumentOrHasNoExtension(extension: string): boolean {
+    return extension === '.txt' || extension.trim() === '';
+  }
+
+  /**
+   * Checks if a file extension is a file extension of any type at least and none empty
+   * @param extension The file extension
+   */
+  private hasAnyExtension(extension: string): boolean {
+    return extension.trim() !== '' && extension.indexOf('.') > 0;
   }
 }

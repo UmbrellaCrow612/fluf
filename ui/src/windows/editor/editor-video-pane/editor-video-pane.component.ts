@@ -1,4 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal, Signal } from '@angular/core';
+import { EditorVideoService } from '../core/services/editor-video.service';
+import { EditorContextService } from '../editor-context/editor-context.service';
+import { fileNode } from '../../../gen/type';
+import { useEffect } from '../../../lib/useEffect';
+import { getElectronApi } from '../../../utils';
+import { EditorSystemFileService } from '../core/services/editor-system-file.service';
 
 /**
  * Allows user to view video file formatts
@@ -10,5 +16,70 @@ import { Component } from '@angular/core';
   styleUrl: './editor-video-pane.component.css',
 })
 export class EditorVideoPaneComponent {
+  private readonly editorVideoService = inject(EditorVideoService);
+  private readonly editorContextServic = inject(EditorContextService);
+  private readonly editorSystemFileService = inject(EditorSystemFileService)
+  private readonly electronApi = getElectronApi();
 
+  /**
+   * Keeps track of the current open file in the editor
+   */
+  public readonly activeNode: Signal<fileNode | null> = computed(() =>
+    this.editorContextServic.currentOpenFileInEditor(),
+  );
+
+  /**
+   * Holds loading state
+   */
+  public readonly isLoading = signal(false);
+
+  /**
+   * Holds error state
+   */
+  public readonly error = signal<string | null>(null);
+
+  /**
+   * Holds the file source path to the video to show in the UI
+   */
+  public readonly videoSrc = signal("")
+
+  constructor() {
+    useEffect(
+      async (_, fileNode) => {
+        if (!fileNode) {
+          this.error.set(`No file selected`);
+          return;
+        }
+
+        await this.showVideoPane(fileNode);
+      },
+      [this.activeNode],
+    );
+  }
+
+  /**
+   * Renders the video editor pane to view video files
+   * @param node The file to show it for
+   */
+  private async showVideoPane(node: fileNode) {
+    this.error.set(null);
+    this.isLoading.set(true);
+
+    try {
+      if (!this.editorVideoService.isSupportedExtension(node.extension)) {
+        throw new Error(
+          `File type is not a supported video format valid formatts are ${JSON.stringify(this.editorVideoService.supportedVideoExtensions)}`,
+        );
+      }
+
+      const norm = await this.electronApi.pathApi.normalize(node.path)
+      const path = this.editorSystemFileService.getPath(norm)
+      this.videoSrc.set(path)
+    } catch (error: any) {
+      console.error('Failed to show video pane ', error);
+      this.error.set(`Failed to show video editor panel ${error?.message}`);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
 }

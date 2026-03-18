@@ -19,7 +19,7 @@ export class EditorSystemFileService {
    * // Or in component class:
    * imageUrl = this.editorFileService.get('C:\\Users\\name\\Pictures\\photo.jpg');
    */
-  get(filePath: string): string {
+  getPath(filePath: string): string {
     return `fluf://${filePath}`;
   }
 }

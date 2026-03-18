@@ -73,7 +73,7 @@ export class EditorImagePaneComponent {
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
-      const imgSrc = this.editorSystemFileService.get(norm);
+      const imgSrc = this.editorSystemFileService.getPath(norm);
       this.imageSrc.set(imgSrc);
     } catch (error: any) {
       console.error('Failed to render image pane ', error);

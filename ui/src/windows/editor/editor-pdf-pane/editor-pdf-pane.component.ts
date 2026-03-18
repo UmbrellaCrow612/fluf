@@ -70,7 +70,7 @@ export class EditorPdfPaneComponent {
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
-      const src = this.editorSystemFileService.get(norm);
+      const src = this.editorSystemFileService.getPath(norm);
       
       const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(src);
       this.pdfSrcUrl.set(safeUrl);
