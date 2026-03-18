@@ -23,7 +23,9 @@ import { EditorFileNodeManagerService } from '../core/services/editor-file-manag
 })
 export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorContextService = inject(EditorContextService);
-  private readonly editorFileNodeManagerService = inject(EditorFileNodeManagerService);
+  private readonly editorFileNodeManagerService = inject(
+    EditorFileNodeManagerService,
+  );
 
   ngOnInit(): void {
     this.openFileTooltip.set(this.fileNode().path);
@@ -42,7 +44,7 @@ export class EditorOpenFileItemComponent implements OnInit {
   /**
    * How long it takes for the parent tooltip to show
    */
-  public tooltTipDelayInMs = 750
+  public tooltTipDelayInMs = 750;
 
   /**
    * Keep track if the given file tab is the one open / active
@@ -91,9 +93,11 @@ export class EditorOpenFileItemComponent implements OnInit {
 
     this.editorContextService.openFiles.set(structuredClone(openfiles));
 
-    let nextAvNode: fileNode | null = openfiles[0];
-    if (nextAvNode) {
-      this.editorFileNodeManagerService.openFileNodeInEditor(nextAvNode);
+    if (this.isActive()) {
+      let nextAvNode: fileNode | null = openfiles[0];
+      if (nextAvNode) {
+        this.editorFileNodeManagerService.openFileNodeInEditor(nextAvNode);
+      }
     }
   }
 
