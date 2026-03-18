@@ -15,6 +15,7 @@ import { Resizer } from 'umbr-resizer-two';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
 import { EditorMainContentEmptyComponent } from '../editor-main-content-empty/editor-main-content-empty.component';
+import { EditorImagePaneComponent } from '../editor-image-pane/editor-image-pane.component';
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -155,6 +156,14 @@ export class EditorMainContentManagerComponent {
         () =>
           this.editorContextService.editorMainActiveElement() === null ||
           this.noFilesOpen(),
+      ),
+    },
+    {
+      component: EditorImagePaneComponent,
+      condition: computed(
+        () =>
+          this.editorContextService.editorMainActiveElement() ===
+          'image-editor',
       ),
     },
   ];

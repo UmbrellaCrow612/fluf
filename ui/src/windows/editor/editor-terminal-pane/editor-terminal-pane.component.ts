@@ -1,9 +1,11 @@
 import {
   Component,
+  computed,
   ElementRef,
   inject,
   input,
   OnDestroy,
+  Signal,
   signal,
   viewChild,
 } from '@angular/core';
@@ -33,7 +35,9 @@ export class EditorTerminalPaneComponent implements OnDestroy {
   /**
    * The specific shell PID to show the UI for in the panel
    */
-  public readonly shellPid = input.required<shellPid | null>();
+  public readonly shellPid: Signal<number | null> = computed(() =>
+    this.editorInMemoryContextService.currentActiveShellId(),
+  );
 
   /**
    * Holds any error state for creating xterm

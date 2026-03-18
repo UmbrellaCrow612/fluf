@@ -71,23 +71,11 @@ export class EditorFileNodeManagerService {
    * @param target - The file node to route to an editor component
    */
   private setMainEditorComponent(target: fileNode): void {
-    if (this.isImageFile(target)) {
+    if (this.editorImageService.isSupportedExtension(target.extension)) {
       this.editorContextService.editorMainActiveElement.set('image-editor');
       return;
     }
 
-    this.editorContextService.editorMainActiveElement.set("text-file-editor");
-  }
-
-  /**
-   * Checks if a file node is an image file based on its extension.
-   *
-   * @param target - The file node to check
-   * @returns `true` if the file's extension is in the list of supported image formats
-   */
-  private isImageFile(target: fileNode): boolean {
-    return this.editorImageService.supportedImageExtensions.includes(
-      target.extension,
-    );
+    this.editorContextService.editorMainActiveElement.set('text-file-editor');
   }
 }

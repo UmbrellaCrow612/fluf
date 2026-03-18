@@ -1,7 +1,6 @@
 import { loadEnvFile } from "node:process";
-import { registerProtocols } from "./protocol.js";
 import path from "node:path";
-import { app, BrowserWindow, ipcMain, protocol } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { logger } from "./logger.js";
 import {
   startCommandServer,
@@ -11,8 +10,6 @@ import { registerRipgrepListeners } from "./ripgrep.js";
 import { registerGitListeners } from "./git.js";
 import { registerFsearchListeners } from "./fsearch.js";
 import { registerClipboardListeners } from "./clipboard.js";
-import { registerPdfListeners } from "./pdf.js";
-import { registerImageListeners } from "./image.js";
 import { cleanUpShells, registerShellListeners } from "./shell.js";
 import { cleanUpWatchers, registerFsListeners } from "./fs.js";
 import { registerWindowListener } from "./window.js";
@@ -26,13 +23,17 @@ import { registerStoreListeners } from "./store.js";
 import { fileURLToPath } from "node:url";
 import { getEnvValues, validateEnv } from "./env.js";
 import { loadExtensions, unloadExtensions } from "./chrome-extensions.js";
+import {
+  registerSystemFileListeners,
+  registerSystemFileProtocol,
+} from "./system-files.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 loadEnvFile(".env");
 validateEnv();
-registerProtocols();
+registerSystemFileProtocol();
 
 /**
  * Renders the default route for both dev and in prod - points either to the URL or index.html file which should render the editor itself
@@ -74,8 +75,6 @@ app.whenReady().then(async () => {
   registerGitListeners(ipcMain);
   registerFsearchListeners(ipcMain);
   registerClipboardListeners(ipcMain);
-  registerPdfListeners(protocol);
-  registerImageListeners(protocol);
   registerShellListeners(ipcMain);
   registerFsListeners(ipcMain);
   registerWindowListener(ipcMain);
@@ -83,6 +82,8 @@ app.whenReady().then(async () => {
   registerFileXListeners(ipcMain);
   registerLanguageServerListener(ipcMain);
   registerStoreListeners(ipcMain);
+
+  registerSystemFileListeners();
 });
 
 const appCleanUp = async () => {
