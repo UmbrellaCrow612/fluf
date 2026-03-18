@@ -37,21 +37,29 @@ export function registerSystemFileProtocol() {
 export function registerSystemFileListeners() {
   protocol.handle(SYSTEM_FILE_PROTOCOL_NAME, async (request) => {
     const prefix = `${SYSTEM_FILE_PROTOCOL_NAME}://`;
-    let filePath = request.url.slice(prefix.length);
+    let filePath = decodeURIComponent(request.url.slice(prefix.length));
 
-    // Fix Windows path handling
-    filePath = filePath.replace(/^([a-zA-Z])(?=\/)/, "$1:");
-    filePath = path.normalize(filePath);
+    // Fix Windows path handling - handle both fluf://C:/path and fluf://C/path formats
+    if (filePath.match(/^[a-zA-Z]:/)) {
+      // Already has drive letter with colon
+      filePath = path.normalize(filePath);
+    } else if (filePath.match(/^[a-zA-Z]\//)) {
+      // Drive letter without colon (fluf://C/path format)
+      filePath = filePath.replace(/^([a-zA-Z])\//, "$1:\\\\");
+      filePath = path.normalize(filePath);
+    } else {
+      filePath = path.normalize(filePath);
+    }
 
     try {
-      // Check if file exists
       if (!fs.existsSync(filePath)) {
         return new Response("File not found", { status: 404 });
       }
 
       const stat = fs.statSync(filePath);
+      const mimeType = getMimeType(filePath);
 
-      // Handle range requests for video streaming
+      // Handle range requests for video/audio streaming
       const rangeHeader = request.headers.get("range");
 
       if (rangeHeader) {
@@ -68,7 +76,7 @@ export function registerSystemFileListeners() {
             "Content-Range": `bytes ${start}-${end}/${stat.size}`,
             "Accept-Ranges": "bytes",
             "Content-Length": String(chunksize),
-            "Content-Type": getMimeType(filePath),
+            "Content-Type": mimeType,
           },
         });
       }
@@ -79,7 +87,7 @@ export function registerSystemFileListeners() {
       return new Response(fileStream as any, {
         headers: {
           "Content-Length": String(stat.size),
-          "Content-Type": getMimeType(filePath),
+          "Content-Type": mimeType,
           "Accept-Ranges": "bytes",
         },
       });
@@ -90,9 +98,14 @@ export function registerSystemFileListeners() {
   });
 }
 
+/**
+ * Gets the correct MIME type for a file based on extension
+ */
 function getMimeType(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
+
   const mimeTypes: Record<string, string> = {
+    // Video formats
     ".mp4": "video/mp4",
     ".webm": "video/webm",
     ".ogg": "video/ogg",
@@ -101,6 +114,32 @@ function getMimeType(filePath: string): string {
     ".mkv": "video/x-matroska",
     ".avi": "video/x-msvideo",
     ".m4v": "video/mp4",
+    ".flv": "video/x-flv",
+    ".wmv": "video/x-ms-wmv",
+
+    // PDF
+    ".pdf": "application/pdf",
+
+    // Images
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+
+    // Audio
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".flac": "audio/flac",
+
+    // Documents
+    ".json": "application/json",
+    ".txt": "text/plain",
+    ".html": "text/html",
+    ".css": "text/css",
+    ".js": "application/javascript",
   };
+
   return mimeTypes[ext] || "application/octet-stream";
 }
