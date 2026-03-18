@@ -4,6 +4,7 @@ import { EditorContextService } from '../../editor-context/editor-context.servic
 import { addFileNodeIfNotExists } from '../file-node-helpers';
 import { EditorImageService } from './editor-image.service.service';
 import { EditorVideoService } from './editor-video.service';
+import { EditorAudioService } from './editor-audio.service';
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -16,6 +17,7 @@ export class EditorFileNodeManagerService {
   private readonly editorContextService = inject(EditorContextService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);
+  private readonly editorAudioService = inject(EditorAudioService);
 
   /**
    * Opens a file node in the editor.
@@ -82,6 +84,11 @@ export class EditorFileNodeManagerService {
 
     if (this.isPdf(extension)) {
       this.editorContextService.editorMainActiveElement.set('pdf-editor');
+      return;
+    }
+
+    if (this.editorAudioService.isSupportedExtension(extension)) {
+      this.editorContextService.editorMainActiveElement.set('audio-editor');
       return;
     }
 
