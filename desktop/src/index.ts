@@ -26,7 +26,7 @@ import { loadExtensions, unloadExtensions } from "./chrome-extensions.js";
 import {
   registerSystemFileListeners,
   registerSystemFileProtocol,
-} from "./system-files.js";
+} from "./system-files-protocol.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

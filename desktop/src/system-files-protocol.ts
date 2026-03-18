@@ -1,5 +1,5 @@
 /**
- * Used to get local system files
+ * Used to GET local system files
  */
 
 import { net, protocol } from "electron";
