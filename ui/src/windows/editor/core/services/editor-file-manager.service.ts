@@ -76,6 +76,19 @@ export class EditorFileNodeManagerService {
       return;
     }
 
+    if (this.isPdf(target.extension)) {
+      this.editorContextService.editorMainActiveElement.set('pdf-editor');
+      return;
+    }
+
     this.editorContextService.editorMainActiveElement.set('text-file-editor');
+  }
+
+  /**
+   * Check if a file extension is a PDF
+   * @param extension The file extension
+   */
+  private isPdf(extension: string): boolean {
+    return extension === '.pdf';
   }
 }

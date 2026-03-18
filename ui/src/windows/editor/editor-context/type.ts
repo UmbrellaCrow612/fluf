@@ -26,6 +26,7 @@ export type editorBottomActiveElement = 'terminal' | 'problems' | null;
 export type editorMainActiveElement =
   | 'text-file-editor'
   | 'image-editor'
+  | 'pdf-editor'
   | null;
 
 /**
