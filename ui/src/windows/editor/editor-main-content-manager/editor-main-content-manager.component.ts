@@ -1,18 +1,12 @@
-import {
-  Component,
-  computed,
-  inject,
-  Signal,
-  Type,
-} from '@angular/core';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { Component, computed, inject, Signal, Type } from '@angular/core';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { EditorOpenFilesComponent } from '../editor-open-files/editor-open-files.component';
 import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
 import { Resizer } from 'umbr-resizer-two';
 import { useEffect } from '../../../lib/useEffect';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 import { EditorMainContentEmptyComponent } from '../editor-main-content-empty/editor-main-content-empty.component';
 import { EditorImagePaneComponent } from '../editor-image-pane/editor-image-pane.component';
 import { EditorPdfPaneComponent } from '../editor-pdf-pane/editor-pdf-pane.component';
@@ -36,7 +30,7 @@ import { EditorTextFilePaneComponent } from '../editor-text-file-pane/editor-tex
   styleUrl: './editor-main-content-manager.component.css',
 })
 export class EditorMainContentManagerComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
   );
@@ -56,7 +50,7 @@ export class EditorMainContentManagerComponent {
           this.disposeResizer();
         }
       },
-      [this.editorContextService.displayFileEditorBottom],
+      [this.editorStateService.displayFileEditorBottom],
       {
         debugName: 'MainContentManagerResizer',
       },
@@ -117,7 +111,7 @@ export class EditorMainContentManagerComponent {
    * Keeps track of if there are no open files in the editor
    */
   private noFilesOpen: Signal<boolean> = computed(() => {
-    const openFiles = this.editorContextService.openFiles();
+    const openFiles = this.editorStateService.openFiles();
     if (!openFiles) {
       return true;
     }
@@ -129,7 +123,7 @@ export class EditorMainContentManagerComponent {
    * Indicates if we should render the component that displays all current open files in the editor
    */
   public shouldRenderOpenFiles: Signal<boolean> = computed(() => {
-    let files = this.editorContextService.openFiles();
+    let files = this.editorStateService.openFiles();
     return Array.isArray(files) && files.length > 0;
   });
 
@@ -137,7 +131,7 @@ export class EditorMainContentManagerComponent {
    * Indicates if it should rende the bottom section of the editor which contains stuff like terminal etc
    */
   public shouldRenderBottomSection: Signal<boolean> = computed(() => {
-    let should = this.editorContextService.displayFileEditorBottom();
+    let should = this.editorStateService.displayFileEditorBottom();
     return typeof should === 'boolean' && should;
   });
 
@@ -158,7 +152,7 @@ export class EditorMainContentManagerComponent {
       component: EditorMainContentEmptyComponent,
       condition: computed(
         () =>
-          this.editorContextService.editorMainActiveElement() === null ||
+          this.editorStateService.editorMainActiveElement() === null ||
           this.noFilesOpen(),
       ),
     },
@@ -166,38 +160,35 @@ export class EditorMainContentManagerComponent {
       component: EditorImagePaneComponent,
       condition: computed(
         () =>
-          this.editorContextService.editorMainActiveElement() ===
-          'image-editor',
+          this.editorStateService.editorMainActiveElement() === 'image-editor',
       ),
     },
     {
       component: EditorPdfPaneComponent,
       condition: computed(
         () =>
-          this.editorContextService.editorMainActiveElement() === 'pdf-editor',
+          this.editorStateService.editorMainActiveElement() === 'pdf-editor',
       ),
     },
     {
       component: EditorVideoPaneComponent,
       condition: computed(
         () =>
-          this.editorContextService.editorMainActiveElement() ===
-          'video-editor',
+          this.editorStateService.editorMainActiveElement() === 'video-editor',
       ),
     },
     {
       component: EditorAudioPaneComponent,
       condition: computed(
         () =>
-          this.editorContextService.editorMainActiveElement() ===
-          'audio-editor',
+          this.editorStateService.editorMainActiveElement() === 'audio-editor',
       ),
     },
     {
       component: EditorMarkdownPaneComponent,
       condition: computed(
         () =>
-          this.editorContextService.editorMainActiveElement() ===
+          this.editorStateService.editorMainActiveElement() ===
           'markdown-editor',
       ),
     },
@@ -205,7 +196,7 @@ export class EditorMainContentManagerComponent {
       component: EditorTextFilePaneComponent,
       condition: computed(
         () =>
-          this.editorContextService.editorMainActiveElement() ===
+          this.editorStateService.editorMainActiveElement() ===
           'text-file-editor',
       ),
     },

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { EditorContextService } from '../../editor-context/editor-context.service';
+import { EditorStateService } from '../../editor-state/editor-state.service';
 import { getElectronApi } from '../../../../utils';
 
 /**
@@ -9,7 +9,7 @@ import { getElectronApi } from '../../../../utils';
   providedIn: 'root',
 })
 export class EditorContextSateValidationService {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
   /**
@@ -18,11 +18,11 @@ export class EditorContextSateValidationService {
   async EnsureStateIsValid() {
     try {
       await this.validateSelectedDirectory(
-        this.editorContextService.selectedDirectoryPath(),
+        this.editorStateService.selectedDirectoryPath(),
       );
     } catch (error) {
       console.error('Failed to validate editor context ', error);
-      this.editorContextService.reset();
+      this.editorStateService.reset();
     }
   }
 
@@ -32,23 +32,23 @@ export class EditorContextSateValidationService {
     }
 
     if (typeof directory !== 'string') {
-      this.editorContextService.selectedDirectoryPath.set(null);
+      this.editorStateService.selectedDirectoryPath.set(null);
       return;
     }
 
     if (directory.length < 1) {
-      this.editorContextService.selectedDirectoryPath.set(null);
+      this.editorStateService.selectedDirectoryPath.set(null);
       return;
     }
 
     try {
       const exists = await this.electronApi.fsApi.exists(directory);
       if (!exists) {
-        this.editorContextService.selectedDirectoryPath.set(null);
+        this.editorStateService.selectedDirectoryPath.set(null);
       }
     } catch (error) {
       console.error('Failed to validate selected directory ', directory, error);
-      this.editorContextService.selectedDirectoryPath.set(null);
+      this.editorStateService.selectedDirectoryPath.set(null);
     }
   }
 }

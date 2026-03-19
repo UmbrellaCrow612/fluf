@@ -1,4 +1,4 @@
-import { Component} from '@angular/core';
+import { Component } from '@angular/core';
 import { EditorTerminalTabsComponent } from '../editor-terminal-tabs/editor-terminal-tabs.component';
 import { EditorTerminalPaneComponent } from '../editor-terminal-pane/editor-terminal-pane.component';
 
@@ -11,6 +11,4 @@ import { EditorTerminalPaneComponent } from '../editor-terminal-pane/editor-term
   templateUrl: './editor-terminal.component.html',
   styleUrl: './editor-terminal.component.css',
 })
-export class EditorTerminalComponent {
-  
-}
+export class EditorTerminalComponent {}

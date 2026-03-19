@@ -6,6 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './editor-footer.component.html',
   styleUrl: './editor-footer.component.css',
 })
-export class EditorFooterComponent {
-
-}
+export class EditorFooterComponent {}

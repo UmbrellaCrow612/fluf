@@ -6,7 +6,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { getElectronApi } from '../../../utils';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
@@ -22,14 +22,14 @@ import { marked } from 'marked';
   styleUrl: './editor-markdown-pane.component.css',
 })
 export class EditorMarkdownPaneComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
   /**
    * The current active node in the UI
    */
   public readonly activeNode = computed(() =>
-    this.editorContextService.currentOpenFileInEditor(),
+    this.editorStateService.currentOpenFileInEditor(),
   );
 
   /**

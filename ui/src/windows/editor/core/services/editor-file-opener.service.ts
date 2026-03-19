@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { fileNode } from '../../../../gen/type';
-import { EditorContextService } from '../../editor-context/editor-context.service';
+import { EditorStateService } from '../../editor-state/editor-state.service';
 import { addFileNodeIfNotExists } from '../file-node-helpers';
 import { EditorImageService } from './editor-image.service.service';
 import { EditorVideoService } from './editor-video.service';
@@ -14,7 +14,7 @@ import { EditorAudioService } from './editor-audio.service';
   providedIn: 'root',
 })
 export class EditorFileOpenerService {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);
   private readonly editorAudioService = inject(EditorAudioService);
@@ -48,9 +48,9 @@ export class EditorFileOpenerService {
    * @param target - The file node to add to open files
    */
   private addToOpenFiles(target: fileNode): void {
-    const openFiles = this.editorContextService.openFiles() ?? [];
+    const openFiles = this.editorStateService.openFiles() ?? [];
     addFileNodeIfNotExists(openFiles, target);
-    this.editorContextService.openFiles.set(structuredClone(openFiles));
+    this.editorStateService.openFiles.set(structuredClone(openFiles));
   }
 
   /**
@@ -61,8 +61,8 @@ export class EditorFileOpenerService {
    */
   private setActiveFile(target: fileNode): void {
     const clonedTarget = structuredClone(target);
-    this.editorContextService.currentOpenFileInEditor.set(clonedTarget);
-    this.editorContextService.fileExplorerActiveFileOrFolder.set(clonedTarget);
+    this.editorStateService.currentOpenFileInEditor.set(clonedTarget);
+    this.editorStateService.fileExplorerActiveFileOrFolder.set(clonedTarget);
   }
 
   /**
@@ -79,36 +79,36 @@ export class EditorFileOpenerService {
     const extension = target.extension;
 
     if (this.editorImageService.isSupportedExtension(extension)) {
-      this.editorContextService.editorMainActiveElement.set('image-editor');
+      this.editorStateService.editorMainActiveElement.set('image-editor');
       return;
     }
 
     if (this.isPdf(extension)) {
-      this.editorContextService.editorMainActiveElement.set('pdf-editor');
+      this.editorStateService.editorMainActiveElement.set('pdf-editor');
       return;
     }
 
     if (this.editorAudioService.isSupportedExtension(extension)) {
-      this.editorContextService.editorMainActiveElement.set('audio-editor');
+      this.editorStateService.editorMainActiveElement.set('audio-editor');
       return;
     }
 
     if (this.editorVideoService.isSupportedExtension(extension)) {
-      this.editorContextService.editorMainActiveElement.set('video-editor');
+      this.editorStateService.editorMainActiveElement.set('video-editor');
       return;
     }
 
     if (this.isTextDocumentOrHasNoExtension(extension)) {
-      this.editorContextService.editorMainActiveElement.set('text-file-editor');
+      this.editorStateService.editorMainActiveElement.set('text-file-editor');
       return;
     }
 
     if (this.hasAnyExtension(extension)) {
-      this.editorContextService.editorMainActiveElement.set('code-editor');
+      this.editorStateService.editorMainActiveElement.set('code-editor');
       return;
     }
 
-    this.editorContextService.editorMainActiveElement.set('unkown');
+    this.editorStateService.editorMainActiveElement.set('unkown');
   }
 
   /**

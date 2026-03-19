@@ -6,6 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './file-x-tab-item-context-menu.component.html',
   styleUrl: './file-x-tab-item-context-menu.component.css',
 })
-export class FileXTabItemContextMenuComponent {
-
-}
+export class FileXTabItemContextMenuComponent {}

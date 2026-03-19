@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal, Signal } from '@angular/core';
 import { EditorAudioService } from '../core/services/editor-audio.service';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
@@ -17,8 +17,8 @@ import { LocalFileUrlService } from '../core/services/editor-local-file-url.serv
 })
 export class EditorAudioPaneComponent {
   private readonly editorAudioService = inject(EditorAudioService);
-  private readonly editorContextService = inject(EditorContextService);
-  private readonly localFileUrlService = inject(LocalFileUrlService)
+  private readonly editorStateService = inject(EditorStateService);
+  private readonly localFileUrlService = inject(LocalFileUrlService);
   private readonly electronApi = getElectronApi();
 
   /**
@@ -34,13 +34,13 @@ export class EditorAudioPaneComponent {
    * Current open file in the editor
    */
   public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorContextService.currentOpenFileInEditor(),
+    this.editorStateService.currentOpenFileInEditor(),
   );
 
   /**
    * Holds refrence to the audio source
    */
-  public readonly audioSrc = signal("")
+  public readonly audioSrc = signal('');
 
   constructor() {
     useEffect(
@@ -72,8 +72,8 @@ export class EditorAudioPaneComponent {
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
-      const src = this.localFileUrlService.toUrl(norm)
-      this.audioSrc.set(src)
+      const src = this.localFileUrlService.toUrl(norm);
+      this.audioSrc.set(src);
     } catch (error: any) {
       console.error('Failed to load audio file ', error);
       this.error.set(`Failed to show audio file ${error?.message}`);

@@ -4,16 +4,26 @@ import { EditorAppContext } from './type';
 const LOCAL_STORAGE_KEY = 'editor-app-context';
 
 /**
- * Service that provides access to application context, persists it.
+ * Central state management service for the editor application.
  *
- * Think of it as a central store that can be accessed from anywhere for application wide state
+ * Maintains application-wide state using Angular signals and automatically
+ * persists state to localStorage for session continuity across reloads.
  *
- * SHOULD not use any other services as it's a base service
+ * @remarks
+ * This is a base service that should not depend on other services to avoid
+ * circular dependencies. All state is restored from localStorage on initialization.
+ *
+ * @example
+ * // Access current state
+ * const currentFile = this.editorState.currentOpenFileInEditor();
+ *
+ * // Update state
+ * this.editorState.sideBarActiveElement.set('explorer');
  */
 @Injectable({
   providedIn: 'root',
 })
-export class EditorContextService {
+export class EditorStateService {
   /**
    * Exposes sideBarActiveElement signal
    */

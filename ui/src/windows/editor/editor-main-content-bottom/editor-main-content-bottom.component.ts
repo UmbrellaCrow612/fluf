@@ -1,7 +1,7 @@
 import { Component, computed, inject, Signal, Type } from '@angular/core';
 import { EditorMainContentBottomFrameComponent } from '../editor-main-content-bottom-frame/editor-main-content-bottom-frame.component';
 import { Renderable } from '../ngComponentOutlet/type';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { NgComponentOutlet } from '@angular/common';
 import { EditorTerminalComponent } from '../editor-terminal/editor-terminal.component';
 import { EditorMainContentBottomEmptyComponent } from '../editor-main-content-bottom-empty/editor-main-content-bottom-empty.component';
@@ -16,7 +16,7 @@ import { EditorMainContentBottomEmptyComponent } from '../editor-main-content-bo
   styleUrl: './editor-main-content-bottom.component.css',
 })
 export class EditorMainContentBottomComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
 
   /**
    * Holds list of components that can be rendered as the main content of this component
@@ -26,14 +26,14 @@ export class EditorMainContentBottomComponent {
       component: EditorTerminalComponent,
       condition: computed(() => {
         return (
-          this.editorContextService.editorBottomActiveElement() === 'terminal'
+          this.editorStateService.editorBottomActiveElement() === 'terminal'
         );
       }),
     },
     {
       component: EditorMainContentBottomEmptyComponent,
       condition: computed(() => {
-        return !this.editorContextService.editorBottomActiveElement();
+        return !this.editorStateService.editorBottomActiveElement();
       }),
     },
   ];

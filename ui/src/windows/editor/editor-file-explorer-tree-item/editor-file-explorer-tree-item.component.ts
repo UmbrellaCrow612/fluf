@@ -12,7 +12,7 @@ import {
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 import {
@@ -20,7 +20,7 @@ import {
   replaceFileNode,
 } from '../core/file-node-helpers';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 import {
   FormControl,
   FormGroup,
@@ -40,10 +40,8 @@ import { EditorFileExplorerContextMenuComponent } from '../editor-file-explorer-
   styleUrl: './editor-file-explorer-tree-item.component.css',
 })
 export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
-  private readonly editorContextService = inject(EditorContextService);
-  private readonly editorFileOpenerService = inject(
-    EditorFileOpenerService,
-  );
+  private readonly editorStateService = inject(EditorStateService);
+  private readonly editorFileOpenerService = inject(EditorFileOpenerService);
   private readonly electronApi = getElectronApi();
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
@@ -105,7 +103,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    * Keeps track if the given item is active either by being select or open in the editor view
    */
   public isActive: Signal<boolean> = computed(() => {
-    let node = this.editorContextService.fileExplorerActiveFileOrFolder();
+    let node = this.editorStateService.fileExplorerActiveFileOrFolder();
     if (!node) {
       return false;
     }
@@ -284,9 +282,9 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    * Attempts to remove all file nodes in the tree that are not default i.e create rename etc
    */
   public deleteTemporaryNodes() {
-    const nodes = this.editorContextService.directoryFileNodes() ?? [];
+    const nodes = this.editorStateService.directoryFileNodes() ?? [];
     removeTempoaryFileNodes(nodes);
-    this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
     this.editorInMemoryContextService.isCreateFileOrFolderActive.set(null);
   }
 
@@ -319,29 +317,29 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       return;
     }
 
-    this.editorContextService.fileExplorerActiveFileOrFolder.set(node);
+    this.editorStateService.fileExplorerActiveFileOrFolder.set(node);
 
     if (node.expanded) {
-      const nodes = this.editorContextService.directoryFileNodes() ?? [];
+      const nodes = this.editorStateService.directoryFileNodes() ?? [];
       const copy = structuredClone(node);
       copy.expanded = false;
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
         console.error('Failed to replce node ', JSON.stringify(node));
       }
-      this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
       return;
     }
 
     if (node.children.length > 0) {
-      const nodes = this.editorContextService.directoryFileNodes() ?? [];
+      const nodes = this.editorStateService.directoryFileNodes() ?? [];
       const copy = structuredClone(node);
       copy.expanded = true;
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
         console.error('Failed to replce node ', JSON.stringify(node));
       }
-      this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
       return;
     }
 
@@ -354,13 +352,13 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       copy.children = children;
       copy.expanded = true;
 
-      const nodes = this.editorContextService.directoryFileNodes() ?? [];
+      const nodes = this.editorStateService.directoryFileNodes() ?? [];
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
         console.error('Failed to replce node ', JSON.stringify(node));
       }
 
-      this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
     } catch (error: any) {
       console.error('Failed to fetch children for node ', error);
       this.fetchingChildrenError.set(

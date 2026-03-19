@@ -8,9 +8,9 @@ import {
 } from '@angular/core';
 import { EditorFileExplorerTreeItemComponent } from '../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component';
 import { fileNode, voidCallback } from '../../../gen/type';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { useEffect } from '../../../lib/useEffect';
 
@@ -35,7 +35,7 @@ import { useEffect } from '../../../lib/useEffect';
   styleUrl: './editor-file-explorer-tree.component.css',
 })
 export class EditorFileExplorerTreeComponent implements OnDestroy {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
   );
@@ -60,7 +60,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
     useEffect(
       async (_, count) => {
         console.log('[EditorFileExplorerTreeComponent] refresh effect ran');
-        const selectedPath = this.editorContextService.selectedDirectoryPath();
+        const selectedPath = this.editorStateService.selectedDirectoryPath();
 
         if (count > 0 && selectedPath) {
           await this.mergeDirectoryNodes(selectedPath);
@@ -74,7 +74,9 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
 
     useEffect(
       async (_, selectedDir) => {
-        console.log('[EditorFileExplorerTreeComponent] selected directory effect ran');
+        console.log(
+          '[EditorFileExplorerTreeComponent] selected directory effect ran',
+        );
         this.error.set(null);
 
         if (!selectedDir) {
@@ -84,7 +86,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
 
         this.selectedDirectoryUnsub?.();
 
-        const existingNodes = this.editorContextService.directoryFileNodes();
+        const existingNodes = this.editorStateService.directoryFileNodes();
 
         if (selectedDir !== this.previousSelectedDirectory) {
           if (this.previousSelectedDirectory) {
@@ -117,7 +119,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
           }
         }
       },
-      [this.editorContextService.selectedDirectoryPath],
+      [this.editorStateService.selectedDirectoryPath],
     );
   }
 
@@ -133,7 +135,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
     const current = this.selectedDirectoryFileNodes();
     const latest = await this.electronApi.fsApi.readDir(path);
     const updated = await this.mergeDirectoryNodesImpl(current, latest);
-    this.editorContextService.directoryFileNodes.set(updated);
+    this.editorStateService.directoryFileNodes.set(updated);
   };
 
   /**
@@ -195,7 +197,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
   private fetchDirectoryNodes = async (path: string) => {
     try {
       const nodes = await this.electronApi.fsApi.readDir(path);
-      this.editorContextService.directoryFileNodes.set(nodes);
+      this.editorStateService.directoryFileNodes.set(nodes);
     } catch (error: any) {
       this.error.set(`Failed to read the selected directory ${error?.message}`);
     }
@@ -205,6 +207,6 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
    * Keeps track of the nodes for the selected directory and it's current nodes
    */
   public selectedDirectoryFileNodes: Signal<fileNode[]> = computed(() => {
-    return this.editorContextService.directoryFileNodes() ?? [];
+    return this.editorStateService.directoryFileNodes() ?? [];
   });
 }

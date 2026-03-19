@@ -13,20 +13,26 @@ Represents the main editor that is shown fluf is opened - editor contains all th
 - Use signals for ever field that is read into UI saves render cycles
 
 Understand flex - we use flex for layout and filling so to get overflow properly working first:
+
 - Parent must have display flex, min height, min width all the way up from it self to root body tag which has the same
 - Component render with extra angular html element like `<angular_html_tag>actual html of component<angular_html_tag>` so inside of the component
-  add `:host {display:flex; min-height:0; min-width:0;}` so overflow works properly, whenever you get broken over flow it is becuase this rule has been broken in the chain of HTML 
+  add `:host {display:flex; min-height:0; min-width:0;}` so overflow works properly, whenever you get broken over flow it is becuase this rule has been broken in the chain of HTML
   heirarchy use dev tools to find the tag and apply said styles all the way down
   - Use signals for all private and public fields used in UI as using function calls for computing UI text or other stuff run every angular cycle wasting compute and slowing app
-- Inside classes define DI first then fields that hold state then function defs after 
+- Inside classes define DI first then fields that hold state then function defs after
 - For active, error, loading css use the parent css name then add a `.active` etc state based on what your doing instead of making a whole new css for example:
+
 ```css
-.parent {}
+.parent {
+}
 
-.parent.active {}
+.parent.active {
+}
 
-.parent.error {}
+.parent.error {
+}
 ```
+
 - Use angular `[class.className]` syntax to apply them
 - Whenever you compare paths normlize them first
 

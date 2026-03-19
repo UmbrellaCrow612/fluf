@@ -2,7 +2,10 @@
   @if (shouldRenderOpenFiles()) {
     <app-editor-open-files />
   }
-  <div class="editor_main_content_manager_central_container" id="editor_main_content_manager_central_container">
+  <div
+    class="editor_main_content_manager_central_container"
+    id="editor_main_content_manager_central_container"
+  >
     <div class="default_flex">
       <ng-container *ngComponentOutlet="mainContentComponentToRender()" />
     </div>

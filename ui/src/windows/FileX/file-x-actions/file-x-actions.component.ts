@@ -69,7 +69,6 @@ export class FileXActionsComponent {
       onClick: async () => {
         let selectedItems = this.fileXInMemoryContextService.selectedItems();
         try {
-          
         } catch (error) {
           console.error(error); // promise rejects
         }

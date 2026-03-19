@@ -8,7 +8,7 @@ import {
   Signal,
   viewChild,
 } from '@angular/core';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { getElectronApi } from '../../../utils';
@@ -26,14 +26,14 @@ import { textFilePaneThemeExtension } from './extensions/theme';
   styleUrl: './editor-text-file-pane.component.css',
 })
 export class EditorTextFilePaneComponent implements OnDestroy {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
   /**
    * Keeps track of the current open file in the editor
    */
   private readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorContextService.currentOpenFileInEditor(),
+    this.editorStateService.currentOpenFileInEditor(),
   );
 
   /**
@@ -124,7 +124,7 @@ export class EditorTextFilePaneComponent implements OnDestroy {
         ],
       });
 
-      this.editorView.focus()
+      this.editorView.focus();
     } catch (error: any) {
       console.error('Failed to load file ', error);
       this.error.set(`Failed to load file ${error?.message}`);

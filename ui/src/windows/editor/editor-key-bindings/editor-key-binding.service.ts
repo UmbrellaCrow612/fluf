@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { KeyMaster } from 'umbr-key-master';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 
 /**
  * Central configuration for all out key binding logic editor wide
@@ -10,7 +10,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 })
 export class EditorKeyBindingService {
   private readonly keyMaster = new KeyMaster();
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
 
   /**
    * Initlizes key bindings for the editor application
@@ -18,7 +18,7 @@ export class EditorKeyBindingService {
   public initKeyBindings = async () => {
     try {
       this.keyMaster.add(['Control', 'j'], () => {
-        this.editorContextService.displayFileEditorBottom.update((x) => !x);
+        this.editorStateService.displayFileEditorBottom.update((x) => !x);
       });
     } catch (error) {
       console.error('Failed to init key bindings ', error);

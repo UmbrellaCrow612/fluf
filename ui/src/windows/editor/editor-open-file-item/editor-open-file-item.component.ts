@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { removeFileNodeIfExists } from '../core/file-node-helpers';
@@ -22,10 +22,8 @@ import { EditorFileOpenerService } from '../core/services/editor-file-opener.ser
   styleUrl: './editor-open-file-item.component.css',
 })
 export class EditorOpenFileItemComponent implements OnInit {
-  private readonly editorContextService = inject(EditorContextService);
-  private readonly editorFileOpenerService = inject(
-    EditorFileOpenerService,
-  );
+  private readonly editorStateService = inject(EditorStateService);
+  private readonly editorFileOpenerService = inject(EditorFileOpenerService);
 
   ngOnInit(): void {
     this.openFileTooltip.set(this.fileNode().path);
@@ -51,7 +49,7 @@ export class EditorOpenFileItemComponent implements OnInit {
    */
   public isActive: Signal<boolean> = computed(
     () =>
-      this.editorContextService.currentOpenFileInEditor()?.path ===
+      this.editorStateService.currentOpenFileInEditor()?.path ===
       this.fileNode().path,
   );
 
@@ -88,10 +86,10 @@ export class EditorOpenFileItemComponent implements OnInit {
   public closeFileTabItem(event: Event) {
     event.stopPropagation();
 
-    let openfiles = this.editorContextService.openFiles() ?? [];
+    let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());
 
-    this.editorContextService.openFiles.set(structuredClone(openfiles));
+    this.editorStateService.openFiles.set(structuredClone(openfiles));
 
     if (this.isActive()) {
       let nextAvNode: fileNode | null = openfiles[0];

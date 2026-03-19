@@ -8,9 +8,8 @@ describe('FileXDirectoryContentIconViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FileXDirectoryContentIconViewComponent]
-    })
-    .compileComponents();
+      imports: [FileXDirectoryContentIconViewComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FileXDirectoryContentIconViewComponent);
     component = fixture.componentInstance;

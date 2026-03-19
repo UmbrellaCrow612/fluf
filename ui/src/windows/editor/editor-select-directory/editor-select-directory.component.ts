@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { getElectronApi } from '../../../utils';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 
 /**
  * Shown when there isnt any select directory and allows users to select a directory
@@ -14,7 +14,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 })
 export class EditorSelectDirectoryComponent {
   private readonly electronApi = getElectronApi();
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
 
   /**
    * Holds state when user is choosing a directory
@@ -52,7 +52,7 @@ export class EditorSelectDirectoryComponent {
         return;
       }
 
-      this.editorContextService.selectedDirectoryPath.set(dir);
+      this.editorStateService.selectedDirectoryPath.set(dir);
     } catch (error: any) {
       console.error('Failed to select directory ', error);
       this.selectionError.set(`Failed to select directory ${error?.message}`);

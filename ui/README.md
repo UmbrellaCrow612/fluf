@@ -60,11 +60,11 @@ Sometimes types generated from `desktop` change and `npm run start` does not cat
 
 - When making components or css classes make it prefix with the module such as `editor-side-bar` or `.editor_class`
 
-# Structure 
+# Structure
 
-Ui refers to all UI related code for noew it is split up into 
+Ui refers to all UI related code for noew it is split up into
 
-## Windows 
+## Windows
 
 Represents a application or part of fluffy that is rendered as part of a whole chrome window - self contained app
 

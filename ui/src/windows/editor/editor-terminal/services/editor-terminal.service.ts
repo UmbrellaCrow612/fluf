@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { useEffect } from '../../../../lib/useEffect';
-import { EditorInMemoryContextService } from '../../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../../editor-state/editor-in-memory-context.service';
 import { voidCallback } from '../../../../gen/type';
 import { getElectronApi } from '../../../../utils';
-import { EditorContextService } from '../../editor-context/editor-context.service';
+import { EditorStateService } from '../../editor-state/editor-state.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +12,7 @@ export class EditorTerminalService {
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
   );
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
   /**
@@ -27,7 +27,7 @@ export class EditorTerminalService {
   public async InitiizeBackgroundTerminalBufferListerner() {
     return useEffect(
       (_, shells, bottomDisplayed) => {
-        this.cleanUpState(); 
+        this.cleanUpState();
 
         if (!shells) {
           return;
@@ -67,7 +67,7 @@ export class EditorTerminalService {
       },
       [
         this.editorInMemoryContextService.shells,
-        this.editorContextService.displayFileEditorBottom,
+        this.editorStateService.displayFileEditorBottom,
       ],
     );
   }

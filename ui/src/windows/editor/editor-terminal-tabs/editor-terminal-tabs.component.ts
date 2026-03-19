@@ -1,11 +1,18 @@
-import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  Signal,
+  signal,
+} from '@angular/core';
 import { EditorTerminalTabItemComponent } from '../editor-terminal-tab-item/editor-terminal-tab-item.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 
 /**
  * Holds the active tabs and allows crud operations on them
@@ -22,7 +29,7 @@ import { EditorInMemoryContextService } from '../editor-context/editor-in-memory
   styleUrl: './editor-terminal-tabs.component.css',
 })
 export class EditorTerminalTabsComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
   );
@@ -36,7 +43,9 @@ export class EditorTerminalTabsComponent {
   /**
    * Keeps track of all the active shell PID's
    */
-  public readonly activeShells: Signal<number[]> = computed(() => this.editorInMemoryContextService.shells() ?? [])
+  public readonly activeShells: Signal<number[]> = computed(
+    () => this.editorInMemoryContextService.shells() ?? [],
+  );
 
   /**
    * Creats a new terminal in the selected directory path or default path if it not defined
@@ -46,7 +55,7 @@ export class EditorTerminalTabsComponent {
       this.isCreatingTerminal.set(true);
 
       let directory: string | null =
-        this.editorContextService.selectedDirectoryPath();
+        this.editorStateService.selectedDirectoryPath();
       if (!directory || !(await this.electronApi.fsApi.exists(directory))) {
         directory = await this.electronApi.pathApi.getDefaultProfilePath();
       }

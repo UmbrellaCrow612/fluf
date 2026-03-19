@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { LocalFileUrlService } from '../core/services/editor-local-file-url.service';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
@@ -17,7 +17,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 })
 export class EditorPdfPaneComponent {
   private readonly localFileUrlService = inject(LocalFileUrlService);
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
   private sanitizer = inject(DomSanitizer);
 
@@ -25,12 +25,12 @@ export class EditorPdfPaneComponent {
    * Keeps track of the current open file in the editor
    */
   public readonly activeFileNode = computed(() =>
-    this.editorContextService.currentOpenFileInEditor(),
+    this.editorStateService.currentOpenFileInEditor(),
   );
   /**
    * Holda a refrence to the PDF img src
    */
-   public readonly pdfSrcUrl = signal<SafeResourceUrl | string>('');
+  public readonly pdfSrcUrl = signal<SafeResourceUrl | string>('');
 
   /**
    * Holds error state
@@ -60,7 +60,7 @@ export class EditorPdfPaneComponent {
    * Shows the pdf pane
    * @param node The file to show
    */
-   private async showPdfPane(node: fileNode) {
+  private async showPdfPane(node: fileNode) {
     this.error.set(null);
     this.isLoading.set(true);
 
@@ -71,7 +71,7 @@ export class EditorPdfPaneComponent {
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
       const src = this.localFileUrlService.toUrl(norm);
-      
+
       const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(src);
       this.pdfSrcUrl.set(safeUrl);
     } catch (error) {

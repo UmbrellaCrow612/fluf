@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 import { getElectronApi } from '../../../utils';
 
 @Component({

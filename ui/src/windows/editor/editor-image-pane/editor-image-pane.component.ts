@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal, Signal } from '@angular/core';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorImageService } from '../core/services/editor-image.service.service';
@@ -16,7 +16,7 @@ import { getElectronApi } from '../../../utils';
   styleUrl: './editor-image-pane.component.css',
 })
 export class EditorImagePaneComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly localFileUrlService = inject(LocalFileUrlService);
   private readonly electronApi = getElectronApi();
@@ -25,7 +25,7 @@ export class EditorImagePaneComponent {
    * Keeps track of the current active file node in the editor
    */
   public readonly activeFileNode: Signal<fileNode | null> = computed(() =>
-    this.editorContextService.currentOpenFileInEditor(),
+    this.editorStateService.currentOpenFileInEditor(),
   );
 
   /**

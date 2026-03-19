@@ -9,14 +9,14 @@ import {
 } from '@angular/core';
 import { EditorMainContentManagerComponent } from '../editor-main-content-manager/editor-main-content-manager.component';
 import { EditorSidebarComponent } from '../editor-sidebar/editor-sidebar.component';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { Resizer } from 'umbr-resizer-two';
 import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file-explorer.component';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorSelectDirectoryComponent } from '../editor-select-directory/editor-select-directory.component';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -32,7 +32,7 @@ import { EditorInMemoryContextService } from '../editor-context/editor-in-memory
   styleUrl: './editor-main-content.component.css',
 })
 export class EditorMainContentComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
   );
@@ -107,7 +107,7 @@ export class EditorMainContentComponent {
               );
               this.disposeResizer();
 
-              this.editorContextService.sideBarActiveElement.set(null);
+              this.editorStateService.sideBarActiveElement.set(null);
             }
           },
         },
@@ -127,7 +127,7 @@ export class EditorMainContentComponent {
    * Determins if the side bar component should be rendered if a specific component to render is present, also removes or add handle
    */
   public shouldRenderSideBarComponent: Signal<boolean> = computed(() => {
-    let should = this.editorContextService.sideBarActiveElement() !== null;
+    let should = this.editorStateService.sideBarActiveElement() !== null;
     return should;
   });
 
@@ -135,7 +135,7 @@ export class EditorMainContentComponent {
    * Keep track if user has select a directory
    */
   private hasSelectedDirectory: Signal<boolean> = computed(() => {
-    const selectedDir = this.editorContextService.selectedDirectoryPath();
+    const selectedDir = this.editorStateService.selectedDirectoryPath();
     return selectedDir !== null;
   });
 
@@ -147,8 +147,8 @@ export class EditorMainContentComponent {
       component: EditorFileExplorerComponent,
       condition: computed(() => {
         return (
-          this.editorContextService.sideBarActiveElement() ===
-            'file-explorer' && this.hasSelectedDirectory()
+          this.editorStateService.sideBarActiveElement() === 'file-explorer' &&
+          this.hasSelectedDirectory()
         );
       }),
     },

@@ -14,7 +14,7 @@ import { shellPid, voidCallback } from '../../../gen/type';
 import { IDisposable, ITheme, Terminal } from '@xterm/xterm';
 import { getElectronApi } from '../../../utils';
 import { FitAddon } from '@xterm/addon-fit';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 import { SerializeAddon } from '@xterm/addon-serialize';
 
 /**

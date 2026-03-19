@@ -2,8 +2,8 @@ import { Component, computed, inject, signal, Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorContextService } from '../editor-context/editor-context.service';
-import { editorBottomActiveElement } from '../editor-context/type';
+import { EditorStateService } from '../editor-state/editor-state.service';
+import { editorBottomActiveElement } from '../editor-state/type';
 
 /**
  * Shape each clickable button has
@@ -36,7 +36,7 @@ type EditorBottomFrameCallToAction = {
   styleUrl: './editor-main-content-bottom-frame.component.css',
 })
 export class EditorMainContentBottomFrameComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
 
   private readonly callToActionsArray: EditorBottomFrameCallToAction[] = [
     { label: 'TERMINAL', tooltip: 'Terminal', element: 'terminal' },
@@ -53,7 +53,7 @@ export class EditorMainContentBottomFrameComponent {
    */
   public readonly activeBottomElement: Signal<editorBottomActiveElement> =
     computed(() => {
-      return this.editorContextService.editorBottomActiveElement();
+      return this.editorStateService.editorBottomActiveElement();
     });
 
   /**
@@ -61,13 +61,13 @@ export class EditorMainContentBottomFrameComponent {
    * @param element The item to switch to
    */
   public selectEditorBottomElement(element: editorBottomActiveElement): void {
-    this.editorContextService.editorBottomActiveElement.set(element);
+    this.editorStateService.editorBottomActiveElement.set(element);
   }
 
   /**
    * Closes the bottom panel i.e hides it from UI
    */
   public closeBottomPanel() {
-    this.editorContextService.displayFileEditorBottom.set(null);
+    this.editorStateService.displayFileEditorBottom.set(null);
   }
 }

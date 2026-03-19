@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { EditorVideoService } from '../core/services/editor-video.service';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { getElectronApi } from '../../../utils';
@@ -26,7 +26,7 @@ import { LocalFileUrlService } from '../core/services/editor-local-file-url.serv
 })
 export class EditorVideoPaneComponent implements OnDestroy {
   private readonly editorVideoService = inject(EditorVideoService);
-  private readonly editorContextServic = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly localFileUrlService = inject(LocalFileUrlService);
   private readonly electronApi = getElectronApi();
 
@@ -40,7 +40,7 @@ export class EditorVideoPaneComponent implements OnDestroy {
    * Keeps track of the current open file in the editor
    */
   public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorContextServic.currentOpenFileInEditor(),
+    this.editorStateService.currentOpenFileInEditor(),
   );
 
   /**

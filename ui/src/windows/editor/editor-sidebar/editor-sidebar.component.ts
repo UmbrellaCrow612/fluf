@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal, Signal } from '@angular/core';
-import { sideBarActiveElement } from '../editor-context/type';
+import { sideBarActiveElement } from '../editor-state/type';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 
 /**
  * Represents a clickable side bar element
@@ -35,13 +35,13 @@ type editorSideBarItem = {
   styleUrl: './editor-sidebar.component.css',
 })
 export class EditorSidebarComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
 
   /**
    * Keeps track of the current active side bar element
    */
   public activeElement = computed(() =>
-    this.editorContextService.sideBarActiveElement(),
+    this.editorStateService.sideBarActiveElement(),
   );
 
   /**
@@ -53,7 +53,7 @@ export class EditorSidebarComponent {
     const newValue =
       this.activeElement() === item.element ? null : item.element;
 
-    this.editorContextService.sideBarActiveElement.set(newValue);
+    this.editorStateService.sideBarActiveElement.set(newValue);
   }
 
   /**

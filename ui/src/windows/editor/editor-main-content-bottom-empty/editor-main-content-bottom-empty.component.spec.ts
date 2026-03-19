@@ -8,9 +8,8 @@ describe('EditorMainContentBottomEmptyComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EditorMainContentBottomEmptyComponent]
-    })
-    .compileComponents();
+      imports: [EditorMainContentBottomEmptyComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(EditorMainContentBottomEmptyComponent);
     component = fixture.componentInstance;

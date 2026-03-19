@@ -4,9 +4,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fileNode, fileNodeMode } from '../../../gen/type';
-import { EditorContextService } from '../editor-context/editor-context.service';
+import { EditorStateService } from '../editor-state/editor-state.service';
 import { normalizePath } from '../core/path-uri-helpers';
-import { EditorInMemoryContextService } from '../editor-context/editor-in-memory-context.service';
+import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
 import {
   collapseFileNodeFirstLayer,
   findFileNodeByPath,
@@ -30,7 +30,7 @@ import { A11yModule } from '@angular/cdk/a11y';
   styleUrl: './editor-file-explorer.component.css',
 })
 export class EditorFileExplorerComponent {
-  private readonly editorContextService = inject(EditorContextService);
+  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
   );
@@ -71,15 +71,14 @@ export class EditorFileExplorerComponent {
       mode: 'default',
       name: '',
       parentName: '',
-      parentPath: this.editorContextService.selectedDirectoryPath()!,
-      path: this.editorContextService.selectedDirectoryPath()!,
+      parentPath: this.editorStateService.selectedDirectoryPath()!,
+      path: this.editorStateService.selectedDirectoryPath()!,
       size: 1,
     };
   });
 
   public readonly isRootNodeActive: Signal<boolean> = computed(() => {
-    const activeNode =
-      this.editorContextService.fileExplorerActiveFileOrFolder();
+    const activeNode = this.editorStateService.fileExplorerActiveFileOrFolder();
     if (!activeNode) {
       return false;
     }
@@ -106,9 +105,9 @@ export class EditorFileExplorerComponent {
    * Collapses the nodes to root
    */
   public collapseDirectoryNodes() {
-    const nodes = this.editorContextService.directoryFileNodes() ?? [];
+    const nodes = this.editorStateService.directoryFileNodes() ?? [];
     collapseFileNodeFirstLayer(nodes);
-    this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
   }
 
   /**
@@ -127,11 +126,11 @@ export class EditorFileExplorerComponent {
     this.editorInMemoryContextService.isCreateFileOrFolderActive.set(true);
 
     const rootPath = normalizePath(
-      this.editorContextService.selectedDirectoryPath()!,
+      this.editorStateService.selectedDirectoryPath()!,
     );
-    const nodes = this.editorContextService.directoryFileNodes() ?? [];
+    const nodes = this.editorStateService.directoryFileNodes() ?? [];
     const activeNode =
-      this.editorContextService.fileExplorerActiveFileOrFolder() ??
+      this.editorStateService.fileExplorerActiveFileOrFolder() ??
       this.rootNode();
     const copy = structuredClone(activeNode);
 
@@ -144,7 +143,7 @@ export class EditorFileExplorerComponent {
         this.createFileOrFolderNode(targetDirPath, targetDirPath, mode),
       );
 
-      this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
       return;
     }
 
@@ -162,15 +161,13 @@ export class EditorFileExplorerComponent {
     );
 
     replaceFileNode(nodes, parentNode, parentCopyNode);
-    this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
   }
 
   /**
    * When the user clicks the empty space in the file explroer we set the active node to be the root node
    */
   public focusFileExplorerRoot() {
-    this.editorContextService.fileExplorerActiveFileOrFolder.set(
-      this.rootNode(),
-    );
+    this.editorStateService.fileExplorerActiveFileOrFolder.set(this.rootNode());
   }
 }
