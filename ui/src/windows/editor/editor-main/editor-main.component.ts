@@ -3,7 +3,7 @@ import { EditorFrameComponent } from '../editor-frame/editor-frame.component';
 import { EditorMainContentComponent } from '../editor-main-content/editor-main-content.component';
 import { EditorFooterComponent } from '../editor-footer/editor-footer.component';
 import { EditorKeyBindingService } from '../editor-key-bindings/editor-key-binding.service';
-import { EditorContextSateValidationService } from '../core/services/editor-context-sate-validation.service';
+import { EditorSateValidationService } from '../editor-state/editor-sate-validation.service';
 import { EditorTerminalService } from '../editor-terminal/services/editor-terminal.service';
 
 /**
@@ -21,8 +21,8 @@ import { EditorTerminalService } from '../editor-terminal/services/editor-termin
 })
 export class EditorMainComponent implements AfterViewInit {
   private readonly editorKeyBindingService = inject(EditorKeyBindingService);
-  private readonly editorContextSateValidationService = inject(
-    EditorContextSateValidationService,
+  private readonly editorSateValidationService = inject(
+    EditorSateValidationService,
   );
   private readonly editorTerminalService = inject(EditorTerminalService);
 
@@ -32,6 +32,6 @@ export class EditorMainComponent implements AfterViewInit {
 
   async ngAfterViewInit() {
     await this.editorKeyBindingService.initKeyBindings();
-    await this.editorContextSateValidationService.EnsureStateIsValid();
+    await this.editorSateValidationService.EnsureStateIsValid();
   }
 }

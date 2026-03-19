@@ -6,7 +6,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { fileNode, fileNodeMode } from '../../../gen/type';
 import { EditorStateService } from '../editor-state/editor-state.service';
 import { normalizePath } from '../core/path-uri-helpers';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 import {
   collapseFileNodeFirstLayer,
   findFileNodeByPath,
@@ -31,8 +31,8 @@ import { A11yModule } from '@angular/cdk/a11y';
 })
 export class EditorFileExplorerComponent {
   private readonly editorStateService = inject(EditorStateService);
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
 
   /**
@@ -92,8 +92,7 @@ export class EditorFileExplorerComponent {
    */
   public readonly shouldDisableFileExplorerActions: Signal<boolean> = computed(
     () => {
-      const flag =
-        this.editorInMemoryContextService.isCreateFileOrFolderActive();
+      const flag = this.editorInMemoryStateService.isCreateFileOrFolderActive();
       if (!flag) {
         return false;
       }
@@ -114,7 +113,7 @@ export class EditorFileExplorerComponent {
    * Updates state to trigger a refresh / re read of the select directory manually by the user
    */
   public refreshDirectory() {
-    this.editorInMemoryContextService.refreshDirectory.update((x) => x + 1);
+    this.editorInMemoryStateService.refreshDirectory.update((x) => x + 1);
   }
 
   /**
@@ -123,7 +122,7 @@ export class EditorFileExplorerComponent {
   public createNode(event: Event, mode: fileNodeMode) {
     event.stopPropagation();
 
-    this.editorInMemoryContextService.isCreateFileOrFolderActive.set(true);
+    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(true);
 
     const rootPath = normalizePath(
       this.editorStateService.selectedDirectoryPath()!,

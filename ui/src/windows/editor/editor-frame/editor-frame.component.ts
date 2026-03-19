@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 import { EditorStateService } from '../editor-state/editor-state.service';
 import { MatMenuModule } from '@angular/material/menu';
 
@@ -66,8 +66,8 @@ type EditorFrameActionWithMenus = {
 export class EditorFrameComponent implements OnInit {
   private readonly electronApi = getElectronApi();
   private readonly editorStateService = inject(EditorStateService);
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
 
   /**
@@ -151,7 +151,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: 'Command Palette',
             onClick: () => {
-              this.editorInMemoryContextService.showCommandPalette.update(
+              this.editorInMemoryStateService.showCommandPalette.update(
                 (x) => !x,
               );
             },
@@ -209,13 +209,13 @@ export class EditorFrameComponent implements OnInit {
             onClick: () => {
               this.editorStateService.displayFileEditorBottom.set(true);
               this.editorStateService.editorBottomActiveElement.set('terminal');
-              this.editorInMemoryContextService.resetEditorBottomPanelDragHeight.update(
+              this.editorInMemoryStateService.resetEditorBottomPanelDragHeight.update(
                 (x) => x + 1,
               );
 
               setTimeout(() => {
                 // we need a slight delay for UI to catch up
-                this.editorInMemoryContextService.createTerminal.update(
+                this.editorInMemoryStateService.createTerminal.update(
                   (x) => x + 1,
                 );
               }, 200);

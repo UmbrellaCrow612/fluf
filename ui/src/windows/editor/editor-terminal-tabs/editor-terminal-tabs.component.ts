@@ -12,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorStateService } from '../editor-state/editor-state.service';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 
 /**
  * Holds the active tabs and allows crud operations on them
@@ -30,8 +30,8 @@ import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-c
 })
 export class EditorTerminalTabsComponent {
   private readonly editorStateService = inject(EditorStateService);
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
   private readonly electronApi = getElectronApi();
 
@@ -44,7 +44,7 @@ export class EditorTerminalTabsComponent {
    * Keeps track of all the active shell PID's
    */
   public readonly activeShells: Signal<number[]> = computed(
-    () => this.editorInMemoryContextService.shells() ?? [],
+    () => this.editorInMemoryStateService.shells() ?? [],
   );
 
   /**
@@ -66,13 +66,13 @@ export class EditorTerminalTabsComponent {
         return;
       }
 
-      const currentShellPids = this.editorInMemoryContextService.shells() ?? [];
+      const currentShellPids = this.editorInMemoryStateService.shells() ?? [];
       currentShellPids.push(pid);
-      this.editorInMemoryContextService.shells.set(
+      this.editorInMemoryStateService.shells.set(
         structuredClone(currentShellPids),
       );
 
-      this.editorInMemoryContextService.currentActiveShellId.set(pid);
+      this.editorInMemoryStateService.currentActiveShellId.set(pid);
     } catch (error) {
       console.error('Failed to create terminal ', error);
     } finally {

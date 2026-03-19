@@ -14,7 +14,7 @@ import { shellPid, voidCallback } from '../../../gen/type';
 import { IDisposable, ITheme, Terminal } from '@xterm/xterm';
 import { getElectronApi } from '../../../utils';
 import { FitAddon } from '@xterm/addon-fit';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 import { SerializeAddon } from '@xterm/addon-serialize';
 
 /**
@@ -28,15 +28,15 @@ import { SerializeAddon } from '@xterm/addon-serialize';
 })
 export class EditorTerminalPaneComponent implements OnDestroy {
   private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
 
   /**
    * The specific shell PID to show the UI for in the panel
    */
   public readonly shellPid: Signal<number | null> = computed(() =>
-    this.editorInMemoryContextService.currentActiveShellId(),
+    this.editorInMemoryStateService.currentActiveShellId(),
   );
 
   /**
@@ -95,7 +95,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
           this.onResizeEvent();
         }
       },
-      [this.editorInMemoryContextService.editorResize],
+      [this.editorInMemoryStateService.editorResize],
     );
   }
 
@@ -155,7 +155,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
 
       this.serializeAddon.activate(this.terminal);
 
-      const storedTerminalBuffer = this.editorInMemoryContextService
+      const storedTerminalBuffer = this.editorInMemoryStateService
         .terminalBuffers()
         .get(pid);
       if (storedTerminalBuffer) {
@@ -228,7 +228,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
    * @param buffer The new buffer content
    */
   private updateTerminalBufferStore(pid: number, buffer: string): void {
-    const bufferMap = this.editorInMemoryContextService.terminalBuffers();
+    const bufferMap = this.editorInMemoryStateService.terminalBuffers();
     bufferMap.set(pid, buffer);
     console.log(
       '[EditorTerminalPaneComponent] Updated terminal buffer in store for PID: ',
@@ -287,16 +287,16 @@ export class EditorTerminalPaneComponent implements OnDestroy {
     console.log('[EditorTerminalPaneComponent] remove ran');
 
     try {
-      const shellPids = this.editorInMemoryContextService.shells() ?? [];
+      const shellPids = this.editorInMemoryStateService.shells() ?? [];
       const pidToRemove = pid;
       const filteredShellPids = shellPids.filter((n) => n !== pidToRemove);
       const nextAviableShellPid = filteredShellPids[0] ?? null;
 
-      this.editorInMemoryContextService.currentActiveShellId.set(
+      this.editorInMemoryStateService.currentActiveShellId.set(
         nextAviableShellPid,
       );
 
-      this.editorInMemoryContextService.shells.set(
+      this.editorInMemoryStateService.shells.set(
         structuredClone(filteredShellPids),
       );
     } catch (error) {

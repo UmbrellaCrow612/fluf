@@ -20,7 +20,7 @@ import {
   replaceFileNode,
 } from '../core/file-node-helpers';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 import {
   FormControl,
   FormGroup,
@@ -43,8 +43,8 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorFileOpenerService = inject(EditorFileOpenerService);
   private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
@@ -285,7 +285,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     const nodes = this.editorStateService.directoryFileNodes() ?? [];
     removeTempoaryFileNodes(nodes);
     this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
-    this.editorInMemoryContextService.isCreateFileOrFolderActive.set(null);
+    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(null);
   }
 
   /**

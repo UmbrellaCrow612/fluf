@@ -2,17 +2,31 @@ import { Injectable, signal } from '@angular/core';
 import { EditorInMemoryAppContext } from './type';
 
 /**
- * Represents information that dosent need to be persisted between sessions but within the lifecycle of the app, i.e until a refresh
- * but has the same structure to notify those who want it it's data when it changes.
+ * Volatile state container for transient application data.
  *
- * Think of it as a central store containing all signals that we can acesses from anywhere
+ * Maintains ephemeral state that resets on page refresh, using signals
+ * for reactive access across the application. Mirrors the structure of
+ * persistent state but without localStorage backing.
  *
- * SHOULD not use any other services / injection as it's a base service
+ * @remarks
+ * This is a foundational service with no external dependencies to prevent
+ * circular dependency issues. State is lost on application reload.
+ *
+ * @example
+ * // Trigger directory refresh from any component
+ * this.inMemoryState.refreshDirectory.update(n => n + 1);
+ *
+ * // React to command palette visibility
+ * effect(() => {
+ *   if (this.inMemoryState.showCommandPalette()) {
+ *     // focus input
+ *   }
+ * });
  */
 @Injectable({
   providedIn: 'root',
 })
-export class EditorInMemoryContextService {
+export class EditorInMemoryStateService {
   /**
    * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
    */

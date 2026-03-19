@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 import { getElectronApi } from '../../../utils';
 
 @Component({
@@ -18,8 +18,8 @@ import { getElectronApi } from '../../../utils';
   styleUrl: './editor-terminal-tab-item.component.css',
 })
 export class EditorTerminalTabItemComponent {
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
   private readonly electronApi = getElectronApi();
 
@@ -38,7 +38,7 @@ export class EditorTerminalTabItemComponent {
    */
   public readonly isActive: Signal<boolean> = computed(
     () =>
-      this.editorInMemoryContextService.currentActiveShellId() ===
+      this.editorInMemoryStateService.currentActiveShellId() ===
       this.shellPid(),
   );
 
@@ -82,7 +82,7 @@ export class EditorTerminalTabItemComponent {
         return;
       }
 
-      this.editorInMemoryContextService.currentActiveShellId.set(shellPid);
+      this.editorInMemoryStateService.currentActiveShellId.set(shellPid);
     } catch (error) {
       console.error('Failed to set shell as active: ', shellPid);
     }
@@ -120,21 +120,21 @@ export class EditorTerminalTabItemComponent {
    * Updates the in memeory data structures to remove the deleted shell PID and other related information about it
    */
   private updateInMemeoryDataOnDelete(): void {
-    const shellPids = this.editorInMemoryContextService.shells() ?? [];
+    const shellPids = this.editorInMemoryStateService.shells() ?? [];
     const pidToRemove: number = this.shellPid();
     const filteredShellPids = shellPids.filter((n) => n !== pidToRemove);
 
     if (this.isActive()) {
       const nextAvailableShellPid = filteredShellPids[0] ?? null;
-      this.editorInMemoryContextService.currentActiveShellId.set(
+      this.editorInMemoryStateService.currentActiveShellId.set(
         nextAvailableShellPid,
       );
     }
 
-    this.editorInMemoryContextService.shells.set(
+    this.editorInMemoryStateService.shells.set(
       structuredClone(filteredShellPids),
     );
 
-    this.editorInMemoryContextService.terminalBuffers().delete(pidToRemove);
+    this.editorInMemoryStateService.terminalBuffers().delete(pidToRemove);
   }
 }

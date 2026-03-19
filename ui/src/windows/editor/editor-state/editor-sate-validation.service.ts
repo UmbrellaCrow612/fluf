@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { EditorStateService } from '../../editor-state/editor-state.service';
-import { getElectronApi } from '../../../../utils';
+import { EditorStateService } from './editor-state.service';
+import { getElectronApi } from '../../../utils';
 
 /**
  * Fixes / reset editor context state to be in a expected format
@@ -8,7 +8,7 @@ import { getElectronApi } from '../../../../utils';
 @Injectable({
   providedIn: 'root',
 })
-export class EditorContextSateValidationService {
+export class EditorSateValidationService {
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 

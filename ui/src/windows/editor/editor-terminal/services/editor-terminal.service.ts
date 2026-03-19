@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { useEffect } from '../../../../lib/useEffect';
-import { EditorInMemoryContextService } from '../../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../../editor-state/editor-in-memory-state.service';
 import { voidCallback } from '../../../../gen/type';
 import { getElectronApi } from '../../../../utils';
 import { EditorStateService } from '../../editor-state/editor-state.service';
@@ -9,8 +9,8 @@ import { EditorStateService } from '../../editor-state/editor-state.service';
   providedIn: 'root',
 })
 export class EditorTerminalService {
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
@@ -50,7 +50,7 @@ export class EditorTerminalService {
               );
 
               const bufferMap =
-                this.editorInMemoryContextService.terminalBuffers();
+                this.editorInMemoryStateService.terminalBuffers();
 
               let previousBuffer = bufferMap.get(pid);
 
@@ -66,7 +66,7 @@ export class EditorTerminalService {
         }
       },
       [
-        this.editorInMemoryContextService.shells,
+        this.editorInMemoryStateService.shells,
         this.editorStateService.displayFileEditorBottom,
       ],
     );

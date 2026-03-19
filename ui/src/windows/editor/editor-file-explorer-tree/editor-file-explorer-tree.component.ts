@@ -10,7 +10,7 @@ import { EditorFileExplorerTreeItemComponent } from '../editor-file-explorer-tre
 import { fileNode, voidCallback } from '../../../gen/type';
 import { EditorStateService } from '../editor-state/editor-state.service';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { useEffect } from '../../../lib/useEffect';
 
@@ -36,8 +36,8 @@ import { useEffect } from '../../../lib/useEffect';
 })
 export class EditorFileExplorerTreeComponent implements OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
   private readonly electronApi = getElectronApi();
 
@@ -66,7 +66,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
           await this.mergeDirectoryNodes(selectedPath);
         }
       },
-      [this.editorInMemoryContextService.refreshDirectory],
+      [this.editorInMemoryStateService.refreshDirectory],
       {
         debugName: 'RefreshNodes',
       },
@@ -104,7 +104,7 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
               console.log(
                 `[EditorFileExplorerTreeComponent] Directory changed at path ${path} ${event}`,
               );
-              this.editorInMemoryContextService.refreshDirectory.update(
+              this.editorInMemoryStateService.refreshDirectory.update(
                 (x) => x + 1,
               );
             },

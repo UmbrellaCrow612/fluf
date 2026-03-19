@@ -6,7 +6,7 @@ import { Renderable } from '../ngComponentOutlet/type';
 import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
 import { Resizer } from 'umbr-resizer-two';
 import { useEffect } from '../../../lib/useEffect';
-import { EditorInMemoryContextService } from '../editor-state/editor-in-memory-context.service';
+import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
 import { EditorMainContentEmptyComponent } from '../editor-main-content-empty/editor-main-content-empty.component';
 import { EditorImagePaneComponent } from '../editor-image-pane/editor-image-pane.component';
 import { EditorPdfPaneComponent } from '../editor-pdf-pane/editor-pdf-pane.component';
@@ -31,8 +31,8 @@ import { EditorTextFilePaneComponent } from '../editor-text-file-pane/editor-tex
 })
 export class EditorMainContentManagerComponent {
   private readonly editorStateService = inject(EditorStateService);
-  private readonly editorInMemoryContextService = inject(
-    EditorInMemoryContextService,
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
   );
 
   private resizer: Resizer | null = null;
@@ -85,18 +85,18 @@ export class EditorMainContentManagerComponent {
         },
         {
           onBeginDrag: () => {
-            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
           },
           onDrag: () => {
-            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
           },
           onDragFinished: (flexValues) => {
-            this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
           },
         },
       );
 
-      this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+      this.editorInMemoryStateService.editorResize.update((x) => x + 1);
     }, 10);
   };
 
@@ -104,7 +104,7 @@ export class EditorMainContentManagerComponent {
     this.resizer?.dispose();
     this.resizer = null;
     clearTimeout(this.resizerTimeout);
-    this.editorInMemoryContextService.editorResize.update((x) => x + 1);
+    this.editorInMemoryStateService.editorResize.update((x) => x + 1);
   };
 
   /**
