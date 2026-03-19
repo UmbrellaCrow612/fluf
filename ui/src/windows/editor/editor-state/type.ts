@@ -35,9 +35,9 @@ export type editorMainActiveElement =
   | null;
 
 /**
- * Represents application-wide context that persists between sessions for the editor.
+ * Represents editor application-wide state that persists between sessions for the editor.
  */
-export type EditorAppContext = {
+export type EditorState = {
   /**
    * Current active sidebar element.
    */

@@ -1,5 +1,5 @@
 import { effect, Injectable, signal } from '@angular/core';
-import { EditorAppContext } from './type';
+import { EditorState } from './type';
 
 const LOCAL_STORAGE_KEY = 'editor-app-context';
 
@@ -28,34 +28,34 @@ export class EditorStateService {
    * Exposes sideBarActiveElement signal
    */
   public readonly sideBarActiveElement = signal<
-    EditorAppContext['sideBarActiveElement']
+    EditorState['sideBarActiveElement']
   >(this.restoreField('sideBarActiveElement', null));
 
   /**
    * Exposes directoryFileNodes signal
    */
   public readonly directoryFileNodes = signal<
-    EditorAppContext['directoryFileNodes']
+    EditorState['directoryFileNodes']
   >(this.restoreField('directoryFileNodes', null));
 
   /**
    * Exposes selectedDirectoryPath signal
    */
   public readonly selectedDirectoryPath = signal<
-    EditorAppContext['selectedDirectoryPath']
+    EditorState['selectedDirectoryPath']
   >(this.restoreField('selectedDirectoryPath', null));
 
   /**
    * Exposes fileExplorerActiveFileOrFolder signal
    */
   public readonly fileExplorerActiveFileOrFolder = signal<
-    EditorAppContext['fileExplorerActiveFileOrFolder']
+    EditorState['fileExplorerActiveFileOrFolder']
   >(this.restoreField('fileExplorerActiveFileOrFolder', null));
 
   /**
    * Exposes openFiles signal
    */
-  public readonly openFiles = signal<EditorAppContext['openFiles']>(
+  public readonly openFiles = signal<EditorState['openFiles']>(
     this.restoreField('openFiles', null),
   );
 
@@ -63,34 +63,34 @@ export class EditorStateService {
    * Exposes currentOpenFileInEditor signal
    */
   public readonly currentOpenFileInEditor = signal<
-    EditorAppContext['currentOpenFileInEditor']
+    EditorState['currentOpenFileInEditor']
   >(this.restoreField('currentOpenFileInEditor', null));
 
   /**
    * Exposes displayFileEditorBottom signal
    */
   public readonly displayFileEditorBottom = signal<
-    EditorAppContext['displayFileEditorBottom']
+    EditorState['displayFileEditorBottom']
   >(this.restoreField('displayFileEditorBottom', null));
 
   /**
    * Exposes fileEditorBottomActiveElement signal
    */
   public readonly editorBottomActiveElement = signal<
-    EditorAppContext['editorBottomActiveElement']
+    EditorState['editorBottomActiveElement']
   >(this.restoreField('editorBottomActiveElement', null));
 
   /**
    * Exposes the editorMainActiveElement signal
    */
   public readonly editorMainActiveElement = signal<
-    EditorAppContext['editorMainActiveElement']
+    EditorState['editorMainActiveElement']
   >(this.restoreField('editorMainActiveElement', null));
 
   /**
    * Exposes editorTheme signal
    */
-  public readonly editorTheme = signal<EditorAppContext['editorTheme']>(
+  public readonly editorTheme = signal<EditorState['editorTheme']>(
     this.restoreField('editorTheme', null),
   );
 
@@ -104,7 +104,7 @@ export class EditorStateService {
   /**
    * Reads the signals and then saves them
    */
-  private persist(data: EditorAppContext) {
+  private persist(data: EditorState) {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     } catch (err) {
@@ -112,7 +112,7 @@ export class EditorStateService {
     }
   }
 
-  public getSnapShot(): EditorAppContext {
+  public getSnapShot(): EditorState {
     return {
       sideBarActiveElement: this.sideBarActiveElement(),
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
@@ -149,15 +149,15 @@ export class EditorStateService {
    * @param fallback A fallback value if it's invalid
    * @returns Value
    */
-  private restoreField<K extends keyof EditorAppContext>(
+  private restoreField<K extends keyof EditorState>(
     key: K,
-    fallback: EditorAppContext[K],
-  ): EditorAppContext[K] {
+    fallback: EditorState[K],
+  ): EditorState[K] {
     try {
       const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (!raw) return fallback;
 
-      const saved = JSON.parse(raw) as Partial<EditorAppContext>;
+      const saved = JSON.parse(raw) as Partial<EditorState>;
       return saved[key] ?? fallback;
     } catch {
       return fallback;
