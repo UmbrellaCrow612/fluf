@@ -21,10 +21,10 @@ export type editorBottomActiveElement = 'terminal' | 'problems' | null;
 /**
  * All the components that can be rendered in the middle of the text editor.
  *
- * - `text-file-editor` — Shown for plain txt documents without any extensions and specifically for .txt files files such as these
+ * - `plain-text-file-editor` — Shown for plain txt documents without any extensions and specifically for .txt files files such as these
  */
 export type editorMainActiveElement =
-  | 'text-file-editor'
+  | 'plain-text-file-editor'
   | 'image-editor'
   | 'video-editor'
   | 'pdf-editor'

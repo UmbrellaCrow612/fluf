@@ -99,7 +99,7 @@ export class EditorFileOpenerService {
     }
 
     if (this.isTextDocumentOrHasNoExtension(extension)) {
-      this.editorStateService.editorMainActiveElement.set('text-file-editor');
+      this.editorStateService.editorMainActiveElement.set('plain-text-file-editor');
       return;
     }
 

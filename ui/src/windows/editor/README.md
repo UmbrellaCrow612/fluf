@@ -35,6 +35,7 @@ Understand flex - we use flex for layout and filling so to get overflow properly
 
 - Use angular `[class.className]` syntax to apply them
 - Whenever you compare paths normlize them first
+- Write component or service etc and all there logic then in the end just get AI kimi to check if the name means what it's doing and rename it to have a clear name of what it does
 
 # Docs
 

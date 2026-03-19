@@ -5,7 +5,7 @@
   min-width: 0;
 }
 
-.editor_text_file_pane {
+.editor_plain_text_pane {
   display: flex;
   flex-direction: column;
   flex: 1;

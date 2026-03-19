@@ -1,31 +1,18 @@
-import {
-  Component,
-  computed,
-  ElementRef,
-  inject,
-  OnDestroy,
-  signal,
-  Signal,
-  viewChild,
-} from '@angular/core';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { fileNode } from '../../../gen/type';
-import { useEffect } from '../../../lib/useEffect';
+import { Component, computed, ElementRef, inject, OnDestroy, signal, Signal, viewChild } from '@angular/core';
 import { getElectronApi } from '../../../shared/electron';
-import { EditorView } from '@codemirror/view';
-import { basicSetup } from 'codemirror';
-import { textFilePaneThemeExtension } from './extensions/theme';
+import { fileNode } from '../../../gen/type';
+import { EditorStateService } from '../core/state/editor-state.service';
+import { basicSetup, EditorView } from 'codemirror';
+import { useEffect } from '../../../lib/useEffect';
+import { editorPlainTextPaneExtension } from './extensions/theme';
 
-/**
- * Shows the content of a .txt file or file without an extension and allows edits, saves and redo / undo history in a editor format
- */
 @Component({
-  selector: 'app-editor-text-file-pane',
+  selector: 'app-editor-plain-text-pane',
   imports: [],
-  templateUrl: './editor-text-file-pane.component.html',
-  styleUrl: './editor-text-file-pane.component.css',
+  templateUrl: './editor-plain-text-pane.component.html',
+  styleUrl: './editor-plain-text-pane.component.css',
 })
-export class EditorTextFilePaneComponent implements OnDestroy {
+export class EditorPlainTextPaneComponent implements OnDestroy{
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
@@ -44,8 +31,8 @@ export class EditorTextFilePaneComponent implements OnDestroy {
   /**
    * Refrence to the container to render the editor
    */
-  private readonly editorTextFilePaneContainer =
-    viewChild<ElementRef<HTMLDivElement>>('editorTextFilePane');
+  private readonly editorPlaneTextPaneContainer =
+    viewChild<ElementRef<HTMLDivElement>>('editorPlainTextPane');
 
   /**
    * Holds loading state
@@ -104,7 +91,7 @@ export class EditorTextFilePaneComponent implements OnDestroy {
       this.isLoading.set(true);
       this.error.set(null);
 
-      const container = this.editorTextFilePaneContainer()?.nativeElement;
+      const container = this.editorPlaneTextPaneContainer()?.nativeElement;
       if (!container) {
         throw new Error('Could not find target container');
       }
@@ -120,7 +107,7 @@ export class EditorTextFilePaneComponent implements OnDestroy {
         extensions: [
           basicSetup,
           this.updateListener,
-          textFilePaneThemeExtension,
+          editorPlainTextPaneExtension,
         ],
       });
 

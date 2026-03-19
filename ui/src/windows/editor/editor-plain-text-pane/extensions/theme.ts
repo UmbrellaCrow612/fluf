@@ -4,7 +4,7 @@ import { Extension } from '@codemirror/state';
 /**
  * Custom theme using CSS tokens
  */
-export const textFilePaneThemeExtension: Extension = EditorView.theme(
+export const editorPlainTextPaneExtension: Extension = EditorView.theme(
   {
     '&': {
       color: 'var(--code-editor-text)',
