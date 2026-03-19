@@ -1,7 +1,7 @@
 import { Component, computed, inject, Signal, Type } from '@angular/core';
 import { EditorMainContentBottomFrameComponent } from '../editor-main-content-bottom-frame/editor-main-content-bottom-frame.component';
 import { Renderable } from '../ngComponentOutlet/type';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { NgComponentOutlet } from '@angular/common';
 import { EditorTerminalComponent } from '../editor-terminal/editor-terminal.component';
 import { EditorMainContentBottomEmptyComponent } from '../editor-main-content-bottom-empty/editor-main-content-bottom-empty.component';

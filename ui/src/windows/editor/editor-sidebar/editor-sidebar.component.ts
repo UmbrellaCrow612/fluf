@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal, Signal } from '@angular/core';
-import { sideBarActiveElement } from '../editor-state/type';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
+import { sideBarActiveElement } from '../core/state/type';
 
 /**
  * Represents a clickable side bar element

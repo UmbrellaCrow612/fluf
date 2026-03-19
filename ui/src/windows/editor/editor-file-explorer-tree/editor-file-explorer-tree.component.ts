@@ -8,9 +8,9 @@ import {
 } from '@angular/core';
 import { EditorFileExplorerTreeItemComponent } from '../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component';
 import { fileNode, voidCallback } from '../../../gen/type';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { useEffect } from '../../../lib/useEffect';
 

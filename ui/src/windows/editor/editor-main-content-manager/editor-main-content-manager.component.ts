@@ -1,12 +1,12 @@
 import { Component, computed, inject, Signal, Type } from '@angular/core';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { EditorOpenFilesComponent } from '../editor-open-files/editor-open-files.component';
 import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
 import { Resizer } from 'umbr-resizer-two';
 import { useEffect } from '../../../lib/useEffect';
-import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { EditorMainContentEmptyComponent } from '../editor-main-content-empty/editor-main-content-empty.component';
 import { EditorImagePaneComponent } from '../editor-image-pane/editor-image-pane.component';
 import { EditorPdfPaneComponent } from '../editor-pdf-pane/editor-pdf-pane.component';

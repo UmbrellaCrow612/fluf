@@ -9,14 +9,14 @@ import {
 } from '@angular/core';
 import { EditorMainContentManagerComponent } from '../editor-main-content-manager/editor-main-content-manager.component';
 import { EditorSidebarComponent } from '../editor-sidebar/editor-sidebar.component';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { NgComponentOutlet } from '@angular/common';
 import { Renderable } from '../ngComponentOutlet/type';
 import { Resizer } from 'umbr-resizer-two';
 import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file-explorer.component';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorSelectDirectoryComponent } from '../editor-select-directory/editor-select-directory.component';
-import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff

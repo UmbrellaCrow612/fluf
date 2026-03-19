@@ -1,6 +1,6 @@
 import { Component, computed, inject, Signal } from '@angular/core';
 import { fileNode } from '../../../gen/type';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';

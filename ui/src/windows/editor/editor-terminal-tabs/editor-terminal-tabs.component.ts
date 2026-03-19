@@ -10,9 +10,9 @@ import { EditorTerminalTabItemComponent } from '../editor-terminal-tab-item/edit
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 
 /**
  * Holds the active tabs and allows crud operations on them

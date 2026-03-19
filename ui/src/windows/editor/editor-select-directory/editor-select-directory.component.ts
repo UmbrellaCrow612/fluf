@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { getElectronApi } from '../../../utils';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 
 /**
  * Shown when there isnt any select directory and allows users to select a directory

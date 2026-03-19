@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal, Signal } from '@angular/core';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorImageService } from '../core/services/editor-image.service.service';

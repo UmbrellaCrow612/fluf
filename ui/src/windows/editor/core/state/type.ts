@@ -1,5 +1,5 @@
 import { Diagnostic } from '@codemirror/lint';
-import { fileNode, languageId } from '../../../gen/type';
+import { fileNode, languageId } from '../../../../gen/type';
 
 /**
  * Represents which elements from the sidebar can be in an active state,

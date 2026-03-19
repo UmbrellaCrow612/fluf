@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { fileNode } from '../../../../gen/type';
-import { EditorStateService } from '../../editor-state/editor-state.service';
+import { EditorStateService } from '../../core/state/editor-state.service';
 import { addFileNodeIfNotExists } from '../file-node-helpers';
 import { EditorImageService } from './editor-image.service.service';
 import { EditorVideoService } from './editor-video.service';

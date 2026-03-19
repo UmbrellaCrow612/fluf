@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal, Signal } from '@angular/core';
 import { EditorAudioService } from '../core/services/editor-audio.service';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';

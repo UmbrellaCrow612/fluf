@@ -2,8 +2,8 @@ import { Component, computed, inject, signal, Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorStateService } from '../editor-state/editor-state.service';
-import { editorBottomActiveElement } from '../editor-state/type';
+import { EditorStateService } from '../core/state/editor-state.service';
+import { editorBottomActiveElement } from '../core/state/type';
 
 /**
  * Shape each clickable button has

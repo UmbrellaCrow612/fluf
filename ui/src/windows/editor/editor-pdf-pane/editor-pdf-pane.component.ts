@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { LocalFileUrlService } from '../core/services/editor-local-file-url.service';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';

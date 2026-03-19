@@ -4,8 +4,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { MatMenuModule } from '@angular/material/menu';
 
 /**

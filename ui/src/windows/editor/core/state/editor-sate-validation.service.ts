@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { EditorStateService } from './editor-state.service';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../../utils';
 
 /**
  * Fixes / reset editor context state to be in a expected format

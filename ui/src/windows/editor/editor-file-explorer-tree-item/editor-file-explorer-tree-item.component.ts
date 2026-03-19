@@ -12,7 +12,7 @@ import {
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { normalizePath } from '../core/path-uri-helpers';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 import {
@@ -20,7 +20,7 @@ import {
   replaceFileNode,
 } from '../core/file-node-helpers';
 import { getElectronApi } from '../../../utils';
-import { EditorInMemoryStateService } from '../editor-state/editor-in-memory-state.service';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import {
   FormControl,
   FormGroup,

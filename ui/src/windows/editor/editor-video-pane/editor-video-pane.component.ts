@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { EditorVideoService } from '../core/services/editor-video.service';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { getElectronApi } from '../../../utils';

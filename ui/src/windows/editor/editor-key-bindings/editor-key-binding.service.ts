@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { KeyMaster } from 'umbr-key-master';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 
 /**
  * Central configuration for all out key binding logic editor wide

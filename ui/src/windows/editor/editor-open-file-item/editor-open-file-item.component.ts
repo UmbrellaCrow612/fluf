@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { EditorStateService } from '../editor-state/editor-state.service';
+import { EditorStateService } from '../core/state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { removeFileNodeIfExists } from '../core/file-node-helpers';

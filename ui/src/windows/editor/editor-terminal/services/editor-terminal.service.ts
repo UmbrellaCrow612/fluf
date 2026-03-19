@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { useEffect } from '../../../../lib/useEffect';
-import { EditorInMemoryStateService } from '../../editor-state/editor-in-memory-state.service';
+import { EditorInMemoryStateService } from '../../core/state/editor-in-memory-state.service';
 import { voidCallback } from '../../../../gen/type';
 import { getElectronApi } from '../../../../utils';
-import { EditorStateService } from '../../editor-state/editor-state.service';
+import { EditorStateService } from '../../core/state/editor-state.service';
 
 @Injectable({
   providedIn: 'root',
