@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { EditorSystemFileService } from '../core/services/editor-system-file.service';
+import { LocalFileUrlService } from '../core/services/editor-local-file-url.service';
 import { EditorContextService } from '../editor-context/editor-context.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
@@ -16,7 +16,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   styleUrl: './editor-pdf-pane.component.css',
 })
 export class EditorPdfPaneComponent {
-  private readonly editorSystemFileService = inject(EditorSystemFileService);
+  private readonly localFileUrlService = inject(LocalFileUrlService);
   private readonly editorContextService = inject(EditorContextService);
   private readonly electronApi = getElectronApi();
   private sanitizer = inject(DomSanitizer);
@@ -70,7 +70,7 @@ export class EditorPdfPaneComponent {
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
-      const src = this.editorSystemFileService.getPath(norm);
+      const src = this.localFileUrlService.toUrl(norm);
       
       const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(src);
       this.pdfSrcUrl.set(safeUrl);

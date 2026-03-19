@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root',
 })
-export class EditorSystemFileService {
+export class LocalFileUrlService {
   /**
    * Generates a fluf:// URL for use in img src attributes
    * @param filePath - Absolute path to the local file
@@ -19,7 +19,7 @@ export class EditorSystemFileService {
    * // Or in component class:
    * imageUrl = this.editorFileService.get('C:\\Users\\name\\Pictures\\photo.jpg');
    */
-  getPath(filePath: string): string {
+  toUrl(filePath: string): string {
     return `fluf://${filePath}`;
   }
 }

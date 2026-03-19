@@ -13,7 +13,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { getElectronApi } from '../../../utils';
-import { EditorSystemFileService } from '../core/services/editor-system-file.service';
+import { LocalFileUrlService } from '../core/services/editor-local-file-url.service';
 
 /**
  * Allows user to view video file formatts
@@ -27,7 +27,7 @@ import { EditorSystemFileService } from '../core/services/editor-system-file.ser
 export class EditorVideoPaneComponent implements OnDestroy {
   private readonly editorVideoService = inject(EditorVideoService);
   private readonly editorContextServic = inject(EditorContextService);
-  private readonly editorSystemFileService = inject(EditorSystemFileService);
+  private readonly localFileUrlService = inject(LocalFileUrlService);
   private readonly electronApi = getElectronApi();
 
   /**
@@ -115,7 +115,7 @@ export class EditorVideoPaneComponent implements OnDestroy {
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
-      const path = this.editorSystemFileService.getPath(norm);
+      const path = this.localFileUrlService.toUrl(norm);
       this.videoSrc.set(path);
     } catch (error: any) {
       console.error('Failed to show video pane ', error);
