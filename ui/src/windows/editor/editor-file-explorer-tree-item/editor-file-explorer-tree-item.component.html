@@ -8,6 +8,7 @@
     tabindex="0"
     (click)="selectTreeItem($event)"
     [style.paddingLeft]="paddingLeftValue()"
+    (contextmenu)="displayContextMenu($event)"
   >
     @if (fileNode().isDirectory) {
       <mat-icon

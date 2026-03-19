@@ -27,6 +27,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { ApplicationContextMenuService } from '../../../shared/application-context-menu/services/application-context-menu.service';
+import { EditorFileExplorerContextMenuComponent } from '../editor-file-explorer-context-menu/editor-file-explorer-context-menu.component';
 
 /**
  * Used to render a given file node content and it's children
@@ -39,10 +41,15 @@ import {
 })
 export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly editorContextService = inject(EditorContextService);
-  private readonly editorFileNodeManagerService = inject(EditorFileNodeManagerService);
+  private readonly editorFileNodeManagerService = inject(
+    EditorFileNodeManagerService,
+  );
   private readonly electronApi = getElectronApi();
   private readonly editorInMemoryContextService = inject(
     EditorInMemoryContextService,
+  );
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
   );
 
   /**
@@ -281,6 +288,17 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     removeTempoaryFileNodes(nodes);
     this.editorContextService.directoryFileNodes.set(structuredClone(nodes));
     this.editorInMemoryContextService.isCreateFileOrFolderActive.set(null);
+  }
+
+  /**
+   * Display the context menu
+   * @param event The mouse event
+   */
+  public displayContextMenu(event: Event) {
+    this.applicationContextMenuService.open(
+      EditorFileExplorerContextMenuComponent,
+      event,
+    );
   }
 
   /**
