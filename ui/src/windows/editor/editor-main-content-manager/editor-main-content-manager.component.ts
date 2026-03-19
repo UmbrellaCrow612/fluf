@@ -149,7 +149,7 @@ export class EditorMainContentManagerComponent {
       let component =
         this.mainContentRenderableComponents.find((x) => x.condition())
           ?.component ?? null;
-      return component;
+      return EditorMarkdownPaneComponent;
     },
   );
 

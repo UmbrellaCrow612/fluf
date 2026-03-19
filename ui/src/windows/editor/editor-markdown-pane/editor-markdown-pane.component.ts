@@ -87,9 +87,9 @@ export class EditorMarkdownPaneComponent {
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
       const fileContent = await this.electronApi.fsApi.readFile(norm);
-      const innerHTML = await marked.parse(fileContent);
-      container.classList.add("markdown-body")
-      container.innerHTML = innerHTML
+      let innerHTML = await marked.parse(fileContent);
+      container.classList.add('markdown-body');
+      container.innerHTML = innerHTML;
     } catch (error: any) {
       console.error('Failed to load file ', error);
       this.error.set(`Failed to load file ${error?.message}`);
