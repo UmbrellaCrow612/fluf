@@ -101,9 +101,9 @@ export type ActiveLanguageServer = {
 };
 
 /**
- * Represents application context that stays in memory until a refresh or app close.
+ * Represents editor application state that stays in memory until a refresh or app close.
  */
-export type EditorInMemoryAppContext = {
+export type EditorInMemoryState = {
   /**
    * When its value changes, it means the editor has been resized (i.e., when it increments).
    */

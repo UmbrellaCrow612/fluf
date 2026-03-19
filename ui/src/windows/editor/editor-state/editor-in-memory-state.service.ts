@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { EditorInMemoryAppContext } from './type';
+import { EditorInMemoryState } from './type';
 
 /**
  * Volatile state container for transient application data.
@@ -31,57 +31,57 @@ export class EditorInMemoryStateService {
    * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
    */
   readonly refreshDirectory =
-    signal<EditorInMemoryAppContext['refreshDirectory']>(0);
+    signal<EditorInMemoryState['refreshDirectory']>(0);
 
   /**
    * Exposes problems signal
    */
-  readonly problems = signal<EditorInMemoryAppContext['problems']>(new Map());
+  readonly problems = signal<EditorInMemoryState['problems']>(new Map());
 
   /**
    * Exposes signal for isCreateFileOrFolderActive
    */
   readonly isCreateFileOrFolderActive =
-    signal<EditorInMemoryAppContext['isCreateFileOrFolderActive']>(null);
+    signal<EditorInMemoryState['isCreateFileOrFolderActive']>(null);
 
   /**
    * Exposes signal editorResize
    */
-  readonly editorResize = signal<EditorInMemoryAppContext['editorResize']>(0);
+  readonly editorResize = signal<EditorInMemoryState['editorResize']>(0);
 
   /**
    * Exposes shells signal
    */
-  readonly shells = signal<EditorInMemoryAppContext['shells']>(null);
+  readonly shells = signal<EditorInMemoryState['shells']>(null);
 
   /**
    * Exposes currentActiveShellId signal
    */
   readonly currentActiveShellId =
-    signal<EditorInMemoryAppContext['currentActiveShellId']>(null);
+    signal<EditorInMemoryState['currentActiveShellId']>(null);
 
   /**
    * Exposes terminalBuffers signal
    */
   readonly terminalBuffers = signal<
-    EditorInMemoryAppContext['terminalBuffers']
+    EditorInMemoryState['terminalBuffers']
   >(new Map());
 
   /**
    * Exposes createTerminal signal
    */
   readonly createTerminal =
-    signal<EditorInMemoryAppContext['createTerminal']>(0);
+    signal<EditorInMemoryState['createTerminal']>(0);
 
   /**
    * Exposes showCommandPalette signal
    */
   readonly showCommandPalette =
-    signal<EditorInMemoryAppContext['showCommandPalette']>(false);
+    signal<EditorInMemoryState['showCommandPalette']>(false);
 
   /**
    * Exposes resetEditorBottomPanelDragHeight signal
    */
   readonly resetEditorBottomPanelDragHeight =
-    signal<EditorInMemoryAppContext['resetEditorBottomPanelDragHeight']>(0);
+    signal<EditorInMemoryState['resetEditorBottomPanelDragHeight']>(0);
 }
