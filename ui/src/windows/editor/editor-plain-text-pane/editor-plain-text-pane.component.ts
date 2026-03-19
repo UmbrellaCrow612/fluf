@@ -6,6 +6,9 @@ import { basicSetup, EditorView } from 'codemirror';
 import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
 
+/**
+ * Shows a editor for plain text documents
+ */
 @Component({
   selector: 'app-editor-plain-text-pane',
   imports: [],
@@ -54,7 +57,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy{
           return;
         }
 
-        await this.showTextFilePane(fileNode);
+        await this.displayPlainTextEditor(fileNode);
       },
       [this.activeNode],
     );
@@ -80,7 +83,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy{
    * Shows the current open file and shows the editor pane
    * @param node The file to show
    */
-  private async showTextFilePane(node: fileNode): Promise<void> {
+  private async displayPlainTextEditor(node: fileNode): Promise<void> {
     const extension = node.extension.trim();
     if (node.isDirectory || (extension !== '' && extension !== '.txt')) {
       this.error.set('File is not a text file or has a extension');
