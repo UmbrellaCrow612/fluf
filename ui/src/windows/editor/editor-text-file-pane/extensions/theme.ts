@@ -2,13 +2,18 @@ import { EditorView } from '@codemirror/view';
 import { Extension } from '@codemirror/state';
 
 /**
- * Custom theme using your CSS tokens
+ * Custom theme using CSS tokens
  */
 export const textFilePaneThemeExtension: Extension = EditorView.theme(
   {
     '&': {
       color: 'var(--code-editor-text)',
       backgroundColor: 'var(--code-editor-bg)',
+      height: '100%',
+      width: '100%',
+    },
+    '.cm-scroller': {
+      overflow: 'auto',
     },
     '.cm-content': {
       caretColor: 'var(--code-editor-cursor)',
