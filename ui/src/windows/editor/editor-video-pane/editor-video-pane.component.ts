@@ -13,7 +13,7 @@ import { EditorStateService } from '../core/state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { getElectronApi } from '../../../utils';
-import { LocalFileUrlService } from '../core/services/editor-local-file-url.service';
+import { LocalFileUrlService } from '../../../shared/services/local-file-url.service';
 
 /**
  * Allows user to view video file formatts

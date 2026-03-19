@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 /**
- * Used to fetch local files from system
+ * Used to fetch local files from system by creating a URL path
  */
 @Injectable({
   providedIn: 'root',

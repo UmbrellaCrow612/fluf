@@ -4,7 +4,7 @@ import { EditorStateService } from '../core/state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../utils';
-import { LocalFileUrlService } from '../core/services/editor-local-file-url.service';
+import { LocalFileUrlService } from '../../../shared/services/local-file-url.service';
 
 /**
  * Allows users to view audio files
