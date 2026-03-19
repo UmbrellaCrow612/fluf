@@ -85,12 +85,7 @@ export class EditorTextFilePaneComponent implements OnDestroy {
       // Iterate through changes
       update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
         console.warn(`Replaced ${fromA}-${toA} with "${inserted}"`);
-      });
-    }
-
-    // Check selection changes
-    if (update.selectionSet) {
-      console.log('Selection changed');
+      }, true);
     }
   });
 

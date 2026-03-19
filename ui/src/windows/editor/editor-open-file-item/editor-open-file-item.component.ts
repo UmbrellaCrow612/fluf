@@ -13,7 +13,7 @@ import { EditorContextService } from '../editor-context/editor-context.service';
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { removeFileNodeIfExists } from '../core/file-node-helpers';
-import { EditorFileNodeManagerService } from '../core/services/editor-file-manager.service';
+import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -23,8 +23,8 @@ import { EditorFileNodeManagerService } from '../core/services/editor-file-manag
 })
 export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorContextService = inject(EditorContextService);
-  private readonly editorFileNodeManagerService = inject(
-    EditorFileNodeManagerService,
+  private readonly editorFileOpenerService = inject(
+    EditorFileOpenerService,
   );
 
   ngOnInit(): void {
@@ -96,7 +96,7 @@ export class EditorOpenFileItemComponent implements OnInit {
     if (this.isActive()) {
       let nextAvNode: fileNode | null = openfiles[0];
       if (nextAvNode) {
-        this.editorFileNodeManagerService.openFileNodeInEditor(nextAvNode);
+        this.editorFileOpenerService.openFileNodeInEditor(nextAvNode);
       }
     }
   }
@@ -105,6 +105,6 @@ export class EditorOpenFileItemComponent implements OnInit {
    * Selects the given tab item node as the new active
    */
   public selectFileTabItem(event: Event) {
-    this.editorFileNodeManagerService.openFileNodeInEditor(this.fileNode());
+    this.editorFileOpenerService.openFileNodeInEditor(this.fileNode());
   }
 }

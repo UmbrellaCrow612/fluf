@@ -13,7 +13,7 @@ import { EditorAudioService } from './editor-audio.service';
 @Injectable({
   providedIn: 'root',
 })
-export class EditorFileNodeManagerService {
+export class EditorFileOpenerService {
   private readonly editorContextService = inject(EditorContextService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);
