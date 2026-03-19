@@ -20,19 +20,30 @@ export type editorBottomActiveElement = 'terminal' | 'problems' | null;
 
 /**
  * All the components that can be rendered in the middle of the text editor.
- *
- * - `plain-text-file-editor` — Shown for plain txt documents without any extensions and specifically for .txt files files such as these
+ */
+export const EDITOR_MAIN_ACTIVE_ELEMENT = {
+  PLAIN_TEXT_FILE_EDITOR: 'plain-text-file-editor',
+  IMAGE_EDITOR: 'image-editor',
+  VIDEO_EDITOR: 'video-editor',
+  PDF_EDITOR: 'pdf-editor',
+  UNKNOWN: 'unknown',
+  CODE_EDITOR: 'code-editor',
+  AUDIO_EDITOR: 'audio-editor',
+  MARKDOWN_EDITOR: 'markdown-editor',
+} as const;
+
+/**
+ * Valid main editor elements
  */
 export type editorMainActiveElement =
-  | 'plain-text-file-editor'
-  | 'image-editor'
-  | 'video-editor'
-  | 'pdf-editor'
-  | 'unkown'
-  | 'code-editor'
-  | 'audio-editor'
-  | 'markdown-editor'
+  | (typeof EDITOR_MAIN_ACTIVE_ELEMENT)[keyof typeof EDITOR_MAIN_ACTIVE_ELEMENT]
   | null;
+
+/**
+ * Contains a map of all valid editor main active elements
+ */
+export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> =
+  new Set<any>(Object.values(EDITOR_MAIN_ACTIVE_ELEMENT));
 
 /**
  * Represents editor application-wide state that persists between sessions for the editor.

@@ -14,6 +14,7 @@ import { EditorVideoPaneComponent } from '../editor-video-pane/editor-video-pane
 import { EditorAudioPaneComponent } from '../editor-audio-pane/editor-audio-pane.component';
 import { EditorMarkdownPaneComponent } from '../editor-markdown-pane/editor-markdown-pane.component';
 import { EditorPlainTextPaneComponent } from '../editor-plain-text-pane/editor-plain-text-pane.component';
+import { EDITOR_MAIN_ACTIVE_ELEMENT } from '../core/state/type';
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -160,28 +161,32 @@ export class EditorMainContentManagerComponent {
       component: EditorImagePaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() === 'image-editor',
+          this.editorStateService.editorMainActiveElement() ===
+          EDITOR_MAIN_ACTIVE_ELEMENT.IMAGE_EDITOR,
       ),
     },
     {
       component: EditorPdfPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() === 'pdf-editor',
+          this.editorStateService.editorMainActiveElement() ===
+          EDITOR_MAIN_ACTIVE_ELEMENT.PDF_EDITOR,
       ),
     },
     {
       component: EditorVideoPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() === 'video-editor',
+          this.editorStateService.editorMainActiveElement() ===
+          EDITOR_MAIN_ACTIVE_ELEMENT.VIDEO_EDITOR,
       ),
     },
     {
       component: EditorAudioPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() === 'audio-editor',
+          this.editorStateService.editorMainActiveElement() ===
+          EDITOR_MAIN_ACTIVE_ELEMENT.AUDIO_EDITOR,
       ),
     },
     {
@@ -189,7 +194,7 @@ export class EditorMainContentManagerComponent {
       condition: computed(
         () =>
           this.editorStateService.editorMainActiveElement() ===
-          'markdown-editor',
+          EDITOR_MAIN_ACTIVE_ELEMENT.MARKDOWN_EDITOR,
       ),
     },
     {
@@ -197,7 +202,7 @@ export class EditorMainContentManagerComponent {
       condition: computed(
         () =>
           this.editorStateService.editorMainActiveElement() ===
-          'plain-text-file-editor',
+          EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR,
       ),
     },
   ];

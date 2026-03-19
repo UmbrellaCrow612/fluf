@@ -37,6 +37,36 @@ Understand flex - we use flex for layout and filling so to get overflow properly
 - Whenever you compare paths normlize them first
 - Write component or service etc and all there logic then in the end just get AI kimi to check if the name means what it's doing and rename it to have a clear name of what it does
 
+- For enum types use this pattern:
+```ts
+/**
+ * All the components that can be rendered in the middle of the text editor.
+ */
+export const EDITOR_MAIN_ACTIVE_ELEMENT = {
+  PLAIN_TEXT_FILE_EDITOR: 'plain-text-file-editor',
+  IMAGE_EDITOR: 'image-editor',
+  VIDEO_EDITOR: 'video-editor',
+  PDF_EDITOR: 'pdf-editor',
+  UNKNOWN: 'unknown',
+  CODE_EDITOR: 'code-editor',
+  AUDIO_EDITOR: 'audio-editor',
+  MARKDOWN_EDITOR: 'markdown-editor',
+} as const;
+
+/**
+ * Valid main editor elements
+ */
+export type editorMainActiveElement =
+  | (typeof EDITOR_MAIN_ACTIVE_ELEMENT)[keyof typeof EDITOR_MAIN_ACTIVE_ELEMENT]
+  | null;
+
+/**
+ * Contains a map of all valid editor main active elements
+ */
+export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> =
+  new Set<any>(Object.values(EDITOR_MAIN_ACTIVE_ELEMENT));
+```
+
 # Docs
 
 - The angular material icons https://fonts.google.com/icons?icon.set=Material+Icons&icon.size=24&icon.color=%231f1f1f

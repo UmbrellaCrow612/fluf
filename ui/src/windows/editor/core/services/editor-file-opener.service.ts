@@ -5,6 +5,10 @@ import { EditorImageService } from './editor-image.service.service';
 import { EditorVideoService } from './editor-video.service';
 import { EditorAudioService } from './editor-audio.service';
 import { addFileNodeIfNotExists } from '../../../../shared/file-node-helpers';
+import {
+  EDITOR_MAIN_ACTIVE_ELEMENT,
+  editorMainActiveElement,
+} from '../state/type';
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -66,6 +70,14 @@ export class EditorFileOpenerService {
   }
 
   /**
+   * Wrapper around signal set for main active element
+   * @param value The valu to change it to
+   */
+  private setMainActiveElementInState(value: editorMainActiveElement) {
+    this.editorStateService.editorMainActiveElement.set(value);
+  }
+
+  /**
    * Determines and sets the appropriate main editor component based on file type.
    *
    * Routing logic:
@@ -79,36 +91,38 @@ export class EditorFileOpenerService {
     const extension = target.extension;
 
     if (this.editorImageService.isSupportedExtension(extension)) {
-      this.editorStateService.editorMainActiveElement.set('image-editor');
+      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.IMAGE_EDITOR);
       return;
     }
 
     if (this.isPdf(extension)) {
-      this.editorStateService.editorMainActiveElement.set('pdf-editor');
+      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.PDF_EDITOR);
       return;
     }
 
     if (this.editorAudioService.isSupportedExtension(extension)) {
-      this.editorStateService.editorMainActiveElement.set('audio-editor');
+      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.AUDIO_EDITOR);
       return;
     }
 
     if (this.editorVideoService.isSupportedExtension(extension)) {
-      this.editorStateService.editorMainActiveElement.set('video-editor');
+      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.VIDEO_EDITOR);
       return;
     }
 
     if (this.isTextDocumentOrHasNoExtension(extension)) {
-      this.editorStateService.editorMainActiveElement.set('plain-text-file-editor');
+      this.setMainActiveElementInState(
+        EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR,
+      );
       return;
     }
 
     if (this.hasAnyExtension(extension)) {
-      this.editorStateService.editorMainActiveElement.set('code-editor');
+      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.CODE_EDITOR);
       return;
     }
 
-    this.editorStateService.editorMainActiveElement.set('unkown');
+    this.setMainActiveElementInState(null);
   }
 
   /**
