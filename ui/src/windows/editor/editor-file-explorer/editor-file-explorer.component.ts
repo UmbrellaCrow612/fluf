@@ -4,15 +4,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fileNode, fileNodeMode } from '../../../gen/type';
-import { normalizePath } from '../core/path-uri-helpers';
-import {
-  collapseFileNodeFirstLayer,
-  findFileNodeByPath,
-  replaceFileNode,
-} from '../core/file-node-helpers';
+import { normalizePath } from '../../../shared/path-uri-helpers';
 import { A11yModule } from '@angular/cdk/a11y';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { EditorStateService } from '../core/state/editor-state.service';
+import { collapseFileNodeFirstLayer, findFileNodeByPath, replaceFileNode } from '../../../shared/file-node-helpers';
 
 /**
  * Renders a file explorer with the current files and folders in the select directory

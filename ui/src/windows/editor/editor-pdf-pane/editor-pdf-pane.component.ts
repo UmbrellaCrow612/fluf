@@ -3,7 +3,7 @@ import { LocalFileUrlService } from '../../../shared/services/local-file-url.ser
 import { EditorStateService } from '../core/state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 /**

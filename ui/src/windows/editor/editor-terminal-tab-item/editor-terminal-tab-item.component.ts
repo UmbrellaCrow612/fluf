@@ -9,7 +9,7 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 
 @Component({
   selector: 'app-editor-terminal-tab-item',

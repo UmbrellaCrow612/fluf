@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 
 @Component({
   selector: 'app-file-x-top-bar',

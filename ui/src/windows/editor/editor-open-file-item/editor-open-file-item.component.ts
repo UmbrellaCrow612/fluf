@@ -12,8 +12,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { removeFileNodeIfExists } from '../core/file-node-helpers';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
+import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
 
 @Component({
   selector: 'app-editor-open-file-item',

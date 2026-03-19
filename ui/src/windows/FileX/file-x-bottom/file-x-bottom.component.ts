@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { useEffect } from '../../../lib/useEffect';
 
 @Component({

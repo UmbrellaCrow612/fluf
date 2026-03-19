@@ -6,7 +6,7 @@ import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXTab } from '../types';
 import { filexRemoveTabItem, filexSetTabItemAsActive } from '../utils';
 import { FileXTabItemContextMenuComponent } from '../file-x-tab-item-context-menu/file-x-tab-item-context-menu.component';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
 
 @Component({

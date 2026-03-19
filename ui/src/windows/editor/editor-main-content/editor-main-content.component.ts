@@ -11,7 +11,7 @@ import { EditorMainContentManagerComponent } from '../editor-main-content-manage
 import { EditorSidebarComponent } from '../editor-sidebar/editor-sidebar.component';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { NgComponentOutlet } from '@angular/common';
-import { Renderable } from '../ngComponentOutlet/type';
+import { Renderable } from '../../../lib/ng-component-outlet/type';
 import { Resizer } from 'umbr-resizer-two';
 import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file-explorer.component';
 import { useEffect } from '../../../lib/useEffect';

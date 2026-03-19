@@ -2,7 +2,7 @@ import { FileXInMemoryContextService } from './../file-x-context/file-x-in-memor
 import { Component, effect, inject, OnDestroy, signal } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { fileNode, fileNodeMode, voidCallback } from '../../../gen/type';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { FileXDirectoryContentItemComponent } from './file-x-directory-content-item/file-x-directory-content-item.component';
 import { FileXCreateFileOrFolderValues } from '../types';
 

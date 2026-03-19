@@ -3,7 +3,7 @@ import { EditorAudioService } from '../core/services/editor-audio.service';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { LocalFileUrlService } from '../../../shared/services/local-file-url.service';
 
 /**

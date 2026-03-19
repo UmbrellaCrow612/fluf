@@ -1,8 +1,4 @@
-/**
- * Contains global utils
- */
-
-import { ElectronApi, EWindow } from './gen/type';
+import { ElectronApi, EWindow } from '../gen/type';
 
 /**
  * Util to get the electron api

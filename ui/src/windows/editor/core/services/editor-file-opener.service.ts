@@ -1,10 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { fileNode } from '../../../../gen/type';
 import { EditorStateService } from '../../core/state/editor-state.service';
-import { addFileNodeIfNotExists } from '../file-node-helpers';
 import { EditorImageService } from './editor-image.service.service';
 import { EditorVideoService } from './editor-video.service';
 import { EditorAudioService } from './editor-audio.service';
+import { addFileNodeIfNotExists } from '../../../../shared/file-node-helpers';
 
 /**
  * Manages file node interactions within the editor, including opening files,

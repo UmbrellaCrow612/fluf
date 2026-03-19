@@ -2,7 +2,7 @@ import { Component, computed, inject, Signal, Type } from '@angular/core';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { EditorOpenFilesComponent } from '../editor-open-files/editor-open-files.component';
 import { NgComponentOutlet } from '@angular/common';
-import { Renderable } from '../ngComponentOutlet/type';
+import { Renderable } from '../../../lib/ng-component-outlet/type';
 import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
 import { Resizer } from 'umbr-resizer-two';
 import { useEffect } from '../../../lib/useEffect';

@@ -12,7 +12,7 @@ import {
 import { useEffect } from '../../../lib/useEffect';
 import { shellPid, voidCallback } from '../../../gen/type';
 import { IDisposable, ITheme, Terminal } from '@xterm/xterm';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { FitAddon } from '@xterm/addon-fit';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { SerializeAddon } from '@xterm/addon-serialize';

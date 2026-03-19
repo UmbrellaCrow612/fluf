@@ -7,7 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { EditorStateService } from '../core/state/editor-state.service';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
 import { marked } from 'marked';

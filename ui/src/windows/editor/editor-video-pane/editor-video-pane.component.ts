@@ -12,7 +12,7 @@ import { EditorVideoService } from '../core/services/editor-video.service';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { LocalFileUrlService } from '../../../shared/services/local-file-url.service';
 
 /**

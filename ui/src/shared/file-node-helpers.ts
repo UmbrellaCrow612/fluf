@@ -1,4 +1,4 @@
-import { fileNode } from '../../../gen/type';
+import { fileNode } from '../gen/type';
 import { normalizePath } from './path-uri-helpers';
 
 /**

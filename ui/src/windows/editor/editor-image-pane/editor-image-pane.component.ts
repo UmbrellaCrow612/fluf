@@ -4,7 +4,7 @@ import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorImageService } from '../core/services/editor-image.service.service';
 import { LocalFileUrlService } from '../../../shared/services/local-file-url.service';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 
 /**
  * Displays a image viwer for the current open file and render any specific component needed to render it
