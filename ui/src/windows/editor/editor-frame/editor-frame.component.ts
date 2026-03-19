@@ -7,6 +7,7 @@ import { getElectronApi } from '../../../shared/electron';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { MatMenuModule } from '@angular/material/menu';
+import { EDITOR_SIDE_BAR_ACTIVE_ELEMENT } from '../core/state/type';
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -176,7 +177,9 @@ export class EditorFrameComponent implements OnInit {
           {
             label: 'File explorer',
             onClick: () => {
-              this.editorStateService.sideBarActiveElement.set('file-explorer');
+              this.editorStateService.sideBarActiveElement.set(
+                EDITOR_SIDE_BAR_ACTIVE_ELEMENT.FILE_EXPLORER,
+              );
             },
             id: 'file_explor',
           },

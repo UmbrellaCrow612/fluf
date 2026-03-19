@@ -2,7 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { EditorStateService } from './editor-state.service';
 import { getElectronApi } from '../../../../shared/electron';
 import { useEffect } from '../../../../lib/useEffect';
-import { EDITOR_VALID_MAIN_ACTIVE_ELEMENTS } from './type';
+import {
+  EDITOR_VALID_MAIN_ACTIVE_ELEMENTS,
+  EDITOR_VALID__SIDE_BAR_ACTIVE_ELEMENTS,
+} from './type';
 
 /**
  * Severity levels for validation warnings
@@ -58,6 +61,13 @@ export class EditorSateValidationService {
       },
       [this.editorStateService.selectedDirectoryPath],
     );
+
+    useEffect(
+      (_, element) => {
+        this.validateSideBarActiveElement(element);
+      },
+      [this.editorStateService.sideBarActiveElement],
+    );
   }
 
   /**
@@ -70,6 +80,9 @@ export class EditorSateValidationService {
     try {
       this.validateMainActiveElement(
         this.editorStateService.editorMainActiveElement(),
+      );
+      this.validateSideBarActiveElement(
+        this.editorStateService.sideBarActiveElement(),
       );
       await this.validateSelectedDirectory(
         this.editorStateService.selectedDirectoryPath(),
@@ -173,6 +186,39 @@ export class EditorSateValidationService {
         timestamp: Date.now(),
       });
       this.editorStateService.editorMainActiveElement.set(null);
+    }
+  }
+
+  /**
+   * Validates sidebar active element and resets if invalid.
+   * @param element - The sidebar active element to validate
+   */
+  private validateSideBarActiveElement(element: unknown): void {
+    if (element === null) {
+      return;
+    }
+
+    if (typeof element !== 'string') {
+      this.log('warn', {
+        type: 'element',
+        issue: `Invalid type for sidebar active element: expected string, got ${typeof element}`,
+        value: element,
+        action: 'Resetting editorSideBarActiveElement to null',
+        timestamp: Date.now(),
+      });
+      this.editorStateService.sideBarActiveElement.set(null);
+      return;
+    }
+
+    if (!EDITOR_VALID__SIDE_BAR_ACTIVE_ELEMENTS.has(element as any)) {
+      this.log('warn', {
+        type: 'element',
+        issue: 'Sidebar active element is not in the valid set',
+        value: element,
+        action: 'Resetting editorSideBarActiveElement to null',
+        timestamp: Date.now(),
+      });
+      this.editorStateService.sideBarActiveElement.set(null);
     }
   }
 

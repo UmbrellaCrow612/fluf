@@ -17,6 +17,7 @@ import { EditorFileExplorerComponent } from '../editor-file-explorer/editor-file
 import { useEffect } from '../../../lib/useEffect';
 import { EditorSelectDirectoryComponent } from '../editor-select-directory/editor-select-directory.component';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
+import { EDITOR_SIDE_BAR_ACTIVE_ELEMENT } from '../core/state/type';
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -147,7 +148,8 @@ export class EditorMainContentComponent {
       component: EditorFileExplorerComponent,
       condition: computed(() => {
         return (
-          this.editorStateService.sideBarActiveElement() === 'file-explorer' &&
+          this.editorStateService.sideBarActiveElement() ===
+            EDITOR_SIDE_BAR_ACTIVE_ELEMENT.FILE_EXPLORER &&
           this.hasSelectedDirectory()
         );
       }),

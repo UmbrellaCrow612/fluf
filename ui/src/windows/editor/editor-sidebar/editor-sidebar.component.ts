@@ -3,7 +3,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { EditorStateService } from '../core/state/editor-state.service';
-import { sideBarActiveElement } from '../core/state/type';
+import {
+  EDITOR_SIDE_BAR_ACTIVE_ELEMENT,
+  editorSideBarActiveElement,
+} from '../core/state/type';
 
 /**
  * Represents a clickable side bar element
@@ -12,7 +15,7 @@ type editorSideBarItem = {
   /**
    * The specific element to render on click
    */
-  element: sideBarActiveElement;
+  element: editorSideBarActiveElement;
 
   /**
    * Hover information
@@ -61,28 +64,28 @@ export class EditorSidebarComponent {
    */
   public sideBarElements: Signal<editorSideBarItem[]> = signal([
     {
-      element: 'file-explorer',
+      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.FILE_EXPLORER,
       tooltip: 'File explorer',
       icon: 'file_copy',
     },
     {
-      element: 'search',
+      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.SEARCH,
       tooltip: 'Search',
       icon: 'search',
     },
 
     {
-      element: 'source-control',
+      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.SOURCE_CONTROL,
       tooltip: 'Source control',
       icon: 'change_history',
     },
     {
-      element: 'run-and-debug',
+      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.RUN_AND_DEBUG,
       tooltip: 'Run and debug',
       icon: 'bug_report',
     },
     {
-      element: 'extensions',
+      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.EXTENSIONS,
       tooltip: 'Extensions',
       icon: 'extension',
     },

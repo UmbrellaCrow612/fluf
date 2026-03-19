@@ -5,12 +5,27 @@ import { fileNode, languageId } from '../../../../gen/type';
  * Represents which elements from the sidebar can be in an active state,
  * i.e., the elements that can be clicked to show their rendered component.
  */
-export type sideBarActiveElement =
-  | 'file-explorer'
-  | 'search'
-  | 'source-control'
-  | 'run-and-debug'
-  | 'extensions'
+export const EDITOR_SIDE_BAR_ACTIVE_ELEMENT = {
+  FILE_EXPLORER: 'file-explorer',
+  SEARCH: 'search',
+  SOURCE_CONTROL: 'source-control',
+  RUN_AND_DEBUG: 'run-and-debug',
+  EXTENSIONS: 'extensions',
+} as const;
+
+/**
+ * Contains a list of valid seditor side bar active elements
+ */
+export const EDITOR_VALID__SIDE_BAR_ACTIVE_ELEMENTS =
+  new Set<editorSideBarActiveElement>(
+    Object.values(EDITOR_SIDE_BAR_ACTIVE_ELEMENT),
+  );
+
+/**
+ * Represents a valid value for the editor side bar active element
+ */
+export type editorSideBarActiveElement =
+  | (typeof EDITOR_SIDE_BAR_ACTIVE_ELEMENT)[keyof typeof EDITOR_SIDE_BAR_ACTIVE_ELEMENT]
   | null;
 
 /**
@@ -52,7 +67,7 @@ export type EditorState = {
   /**
    * Current active sidebar element.
    */
-  sideBarActiveElement: sideBarActiveElement;
+  sideBarActiveElement: editorSideBarActiveElement;
 
   /**
    * List of nodes read from the selected directory.
