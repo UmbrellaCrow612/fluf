@@ -1,4 +1,13 @@
-import { Component, computed, ElementRef, inject, OnDestroy, signal, Signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  OnDestroy,
+  signal,
+  Signal,
+  viewChild,
+} from '@angular/core';
 import { getElectronApi } from '../../../shared/electron';
 import { fileNode } from '../../../gen/type';
 import { EditorStateService } from '../core/state/editor-state.service';
@@ -15,7 +24,7 @@ import { editorPlainTextPaneExtension } from './extensions/theme';
   templateUrl: './editor-plain-text-pane.component.html',
   styleUrl: './editor-plain-text-pane.component.css',
 })
-export class EditorPlainTextPaneComponent implements OnDestroy{
+export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
@@ -34,8 +43,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy{
   /**
    * Refrence to the container to render the editor
    */
-  private readonly editorPlaneTextPaneContainer =
-    viewChild<ElementRef<HTMLDivElement>>('editorPlainTextPane');
+  private readonly editorPlaneTextPaneContainer = viewChild<
+    ElementRef<HTMLDivElement>
+  >('editorPlainTextPane');
 
   /**
    * Holds loading state

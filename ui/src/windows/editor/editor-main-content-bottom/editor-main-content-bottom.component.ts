@@ -5,6 +5,7 @@ import { EditorStateService } from '../core/state/editor-state.service';
 import { NgComponentOutlet } from '@angular/common';
 import { EditorTerminalComponent } from '../editor-terminal/editor-terminal.component';
 import { EditorMainContentBottomEmptyComponent } from '../editor-main-content-bottom-empty/editor-main-content-bottom-empty.component';
+import { EDITOR_BOTTOM_ACTIVE_ELEMENT } from '../core/state/type';
 
 /**
  * Represents the bottom section of the main content which contains stuff like the terminal etc, manages which one to show
@@ -26,7 +27,8 @@ export class EditorMainContentBottomComponent {
       component: EditorTerminalComponent,
       condition: computed(() => {
         return (
-          this.editorStateService.editorBottomActiveElement() === 'terminal'
+          this.editorStateService.editorBottomActiveElement() ===
+          EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL
         );
       }),
     },

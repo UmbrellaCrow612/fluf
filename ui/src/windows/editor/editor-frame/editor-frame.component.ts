@@ -7,7 +7,10 @@ import { getElectronApi } from '../../../shared/electron';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { MatMenuModule } from '@angular/material/menu';
-import { EDITOR_SIDE_BAR_ACTIVE_ELEMENT } from '../core/state/type';
+import {
+  EDITOR_BOTTOM_ACTIVE_ELEMENT,
+  EDITOR_SIDE_BAR_ACTIVE_ELEMENT,
+} from '../core/state/type';
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -170,7 +173,9 @@ export class EditorFrameComponent implements OnInit {
             label: 'Terminal',
             onClick: () => {
               this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set('terminal');
+              this.editorStateService.editorBottomActiveElement.set(
+                EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL,
+              );
             },
             id: 'terminal',
           },
@@ -211,7 +216,9 @@ export class EditorFrameComponent implements OnInit {
             label: 'New terminal',
             onClick: () => {
               this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set('terminal');
+              this.editorStateService.editorBottomActiveElement.set(
+                EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL,
+              );
               this.editorInMemoryStateService.resetEditorBottomPanelDragHeight.update(
                 (x) => x + 1,
               );

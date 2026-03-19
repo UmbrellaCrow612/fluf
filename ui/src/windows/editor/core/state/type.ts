@@ -29,9 +29,27 @@ export type editorSideBarActiveElement =
   | null;
 
 /**
- * The current active element to be rendered in the bottom editor popup.
+ * Represents which elements can be active in the bottom editor popup.
  */
-export type editorBottomActiveElement = 'terminal' | 'problems' | null;
+export const EDITOR_BOTTOM_ACTIVE_ELEMENT = {
+  TERMINAL: 'terminal',
+  PROBLEMS: 'problems',
+} as const;
+
+/**
+ * Contains a list of valid editor bottom active elements
+ */
+export const EDITOR_VALID_BOTTOM_ACTIVE_ELEMENTS =
+  new Set<editorBottomActiveElement>(
+    Object.values(EDITOR_BOTTOM_ACTIVE_ELEMENT),
+  );
+
+/**
+ * Represents a valid value for the editor bottom active element
+ */
+export type editorBottomActiveElement =
+  | (typeof EDITOR_BOTTOM_ACTIVE_ELEMENT)[keyof typeof EDITOR_BOTTOM_ACTIVE_ELEMENT]
+  | null;
 
 /**
  * All the components that can be rendered in the middle of the text editor.

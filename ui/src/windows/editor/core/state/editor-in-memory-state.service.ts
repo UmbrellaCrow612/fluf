@@ -63,15 +63,14 @@ export class EditorInMemoryStateService {
   /**
    * Exposes terminalBuffers signal
    */
-  readonly terminalBuffers = signal<
-    EditorInMemoryState['terminalBuffers']
-  >(new Map());
+  readonly terminalBuffers = signal<EditorInMemoryState['terminalBuffers']>(
+    new Map(),
+  );
 
   /**
    * Exposes createTerminal signal
    */
-  readonly createTerminal =
-    signal<EditorInMemoryState['createTerminal']>(0);
+  readonly createTerminal = signal<EditorInMemoryState['createTerminal']>(0);
 
   /**
    * Exposes showCommandPalette signal

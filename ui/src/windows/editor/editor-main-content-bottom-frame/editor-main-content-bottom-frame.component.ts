@@ -3,7 +3,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorStateService } from '../core/state/editor-state.service';
-import { editorBottomActiveElement } from '../core/state/type';
+import {
+  EDITOR_BOTTOM_ACTIVE_ELEMENT,
+  editorBottomActiveElement,
+} from '../core/state/type';
 
 /**
  * Shape each clickable button has
@@ -39,8 +42,16 @@ export class EditorMainContentBottomFrameComponent {
   private readonly editorStateService = inject(EditorStateService);
 
   private readonly callToActionsArray: EditorBottomFrameCallToAction[] = [
-    { label: 'TERMINAL', tooltip: 'Terminal', element: 'terminal' },
-    { label: 'PROBLEMS', tooltip: 'Problems', element: 'problems' },
+    {
+      label: 'TERMINAL',
+      tooltip: 'Terminal',
+      element: EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL,
+    },
+    {
+      label: 'PROBLEMS',
+      tooltip: 'Problems',
+      element: EDITOR_BOTTOM_ACTIVE_ELEMENT.PROBLEMS,
+    },
   ];
   /**
    * List of actions we render in the UI

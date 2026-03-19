@@ -8,7 +8,11 @@ import { normalizePath } from '../../../shared/path-uri-helpers';
 import { A11yModule } from '@angular/cdk/a11y';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { EditorStateService } from '../core/state/editor-state.service';
-import { collapseFileNodeFirstLayer, findFileNodeByPath, replaceFileNode } from '../../../shared/file-node-helpers';
+import {
+  collapseFileNodeFirstLayer,
+  findFileNodeByPath,
+  replaceFileNode,
+} from '../../../shared/file-node-helpers';
 
 /**
  * Renders a file explorer with the current files and folders in the select directory

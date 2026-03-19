@@ -3,6 +3,7 @@ import { EditorStateService } from './editor-state.service';
 import { getElectronApi } from '../../../../shared/electron';
 import { useEffect } from '../../../../lib/useEffect';
 import {
+  EDITOR_VALID_BOTTOM_ACTIVE_ELEMENTS,
   EDITOR_VALID_MAIN_ACTIVE_ELEMENTS,
   EDITOR_VALID__SIDE_BAR_ACTIVE_ELEMENTS,
 } from './type';
@@ -68,6 +69,13 @@ export class EditorSateValidationService {
       },
       [this.editorStateService.sideBarActiveElement],
     );
+
+    useEffect(
+      (_, element) => {
+        this.validateBottomActiveElement(element);
+      },
+      [this.editorStateService.editorBottomActiveElement],
+    );
   }
 
   /**
@@ -84,6 +92,9 @@ export class EditorSateValidationService {
       this.validateSideBarActiveElement(
         this.editorStateService.sideBarActiveElement(),
       );
+      this.validateBottomActiveElement(
+        this.editorStateService.editorBottomActiveElement(),
+      );
       await this.validateSelectedDirectory(
         this.editorStateService.selectedDirectoryPath(),
       );
@@ -96,6 +107,38 @@ export class EditorSateValidationService {
         timestamp: Date.now(),
       });
       this.editorStateService.reset();
+    }
+  }
+
+  /**
+   * Validates editor bottom active element
+   */
+  private validateBottomActiveElement(element: unknown): void {
+    if (element === null) {
+      return;
+    }
+
+    if (typeof element !== 'string') {
+      this.log('warn', {
+        type: 'element',
+        issue: `Invalid type for bottom active element: expected string, got ${typeof element}`,
+        value: element,
+        action: 'Resetting editorBottomActiveElement to null',
+        timestamp: Date.now(),
+      });
+      this.editorStateService.editorBottomActiveElement.set(null);
+      return;
+    }
+
+    if (!EDITOR_VALID_BOTTOM_ACTIVE_ELEMENTS.has(element as any)) {
+      this.log('warn', {
+        type: 'element',
+        issue: 'Bottom active element is not in the valid set',
+        value: element,
+        action: 'Resetting editorBottomActiveElement to null',
+        timestamp: Date.now(),
+      });
+      this.editorStateService.editorBottomActiveElement.set(null);
     }
   }
 
