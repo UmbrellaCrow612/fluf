@@ -71,6 +71,7 @@ export class EditorFileNodeManagerService {
    * Routing logic:
    * - Image files → 'image-editor'
    * - All other files → 'text-file-editor'
+   * etc
    *
    * @param target - The file node to route to an editor component
    */

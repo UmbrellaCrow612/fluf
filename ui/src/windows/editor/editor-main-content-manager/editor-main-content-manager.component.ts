@@ -19,6 +19,7 @@ import { EditorImagePaneComponent } from '../editor-image-pane/editor-image-pane
 import { EditorPdfPaneComponent } from '../editor-pdf-pane/editor-pdf-pane.component';
 import { EditorVideoPaneComponent } from '../editor-video-pane/editor-video-pane.component';
 import { EditorAudioPaneComponent } from '../editor-audio-pane/editor-audio-pane.component';
+import { EditorMarkdownPaneComponent } from '../editor-markdown-pane/editor-markdown-pane.component';
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -190,6 +191,14 @@ export class EditorMainContentManagerComponent {
         () =>
           this.editorContextService.editorMainActiveElement() ===
           'audio-editor',
+      ),
+    },
+    {
+      component: EditorMarkdownPaneComponent,
+      condition: computed(
+        () =>
+          this.editorContextService.editorMainActiveElement() ===
+          'markdown-editor',
       ),
     },
   ];

@@ -30,7 +30,8 @@ export type editorMainActiveElement =
   | 'pdf-editor'
   | 'unkown'
   | 'code-editor'
-  | "audio-editor"
+  | 'audio-editor'
+  | 'markdown-editor'
   | null;
 
 /**

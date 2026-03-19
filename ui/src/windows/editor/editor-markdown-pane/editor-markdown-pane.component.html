@@ -1,1 +1,13 @@
-<p>editor-markdown-pane works!</p>
+<div class="editor_markdown_pane" #markdownTargetContainer>
+  @if (isLoading()) {
+    <div>Loading</div>
+  }
+
+  <!---->
+
+  @if (error()) {
+    <div>
+      {{ error() }}
+    </div>
+  }
+</div>
