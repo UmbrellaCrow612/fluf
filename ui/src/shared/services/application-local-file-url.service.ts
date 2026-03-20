@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root',
 })
-export class LocalFileUrlService {
+export class ApplicationapplicationLocalFileUrlService {
   /**
    * Generates a fluf:// URL for use in img src attributes
    * @param filePath - Absolute path to the local file

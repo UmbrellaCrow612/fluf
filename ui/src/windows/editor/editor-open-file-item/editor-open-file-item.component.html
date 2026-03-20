@@ -11,12 +11,11 @@
   </mat-icon>
   <div class="file_item_name_container">
     <span class="file_item_name">
-      {{ fileNode().name }}
-
-      <!---->
       @if (isDirty()) {
-        dirt
+        <span>*</span>
       }
+
+      {{ fileNode().name }}
     </span>
   </div>
 

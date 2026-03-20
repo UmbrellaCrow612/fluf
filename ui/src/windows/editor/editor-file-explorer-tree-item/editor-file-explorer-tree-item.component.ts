@@ -27,7 +27,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ApplicationContextMenuService } from '../../../shared/application-context-menu/services/application-context-menu.service';
+import { ApplicationContextMenuService } from '../../../shared/services/application-context-menu.service';
 import { EditorFileExplorerContextMenuComponent } from '../editor-file-explorer-context-menu/editor-file-explorer-context-menu.component';
 
 /**

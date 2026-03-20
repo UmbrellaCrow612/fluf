@@ -101,8 +101,12 @@ export class EditorOpenFileItemComponent implements OnInit {
   /**
    * Removes the given tab item from the open files and put's the next aviavke item as active
    */
-  public closeFileTabItem(event: Event) {
+  public async closeFileTabItem(event: Event) {
     event.stopPropagation();
+
+    if(this.isDirty()){
+      
+    }
 
     let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());

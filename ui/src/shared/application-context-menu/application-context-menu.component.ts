@@ -7,7 +7,7 @@ import {
   Type,
   viewChild,
 } from '@angular/core';
-import { ApplicationContextMenuService } from './services/application-context-menu.service';
+import { ApplicationContextMenuService } from '../services/application-context-menu.service';
 import { NgComponentOutlet } from '@angular/common';
 
 /**

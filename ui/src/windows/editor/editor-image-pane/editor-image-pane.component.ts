@@ -3,7 +3,7 @@ import { EditorStateService } from '../core/state/editor-state.service';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { EditorImageService } from '../core/services/editor-image.service.service';
-import { LocalFileUrlService } from '../../../shared/services/local-file-url.service';
+import { ApplicationapplicationLocalFileUrlService } from '../../../shared/services/application-local-file-url.service';
 import { getElectronApi } from '../../../shared/electron';
 
 /**
@@ -18,7 +18,7 @@ import { getElectronApi } from '../../../shared/electron';
 export class EditorImagePaneComponent {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
-  private readonly localFileUrlService = inject(LocalFileUrlService);
+  private readonly applicationLocalFileUrlService = inject(ApplicationapplicationLocalFileUrlService);
   private readonly electronApi = getElectronApi();
 
   /**
@@ -73,7 +73,7 @@ export class EditorImagePaneComponent {
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
-      const imgSrc = this.localFileUrlService.toUrl(norm);
+      const imgSrc = this.applicationLocalFileUrlService.toUrl(norm);
       this.imageSrc.set(imgSrc);
     } catch (error: any) {
       console.error('Failed to render image pane ', error);

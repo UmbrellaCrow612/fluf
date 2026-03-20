@@ -4,7 +4,7 @@ import { EditorStateService } from '../core/state/editor-state.service';
 import { useEffect } from '../../../lib/useEffect';
 import { fileNode } from '../../../gen/type';
 import { getElectronApi } from '../../../shared/electron';
-import { LocalFileUrlService } from '../../../shared/services/local-file-url.service';
+import { ApplicationapplicationLocalFileUrlService } from '../../../shared/services/application-local-file-url.service';
 
 /**
  * Allows users to view audio files
@@ -18,7 +18,7 @@ import { LocalFileUrlService } from '../../../shared/services/local-file-url.ser
 export class EditorAudioPaneComponent {
   private readonly editorAudioService = inject(EditorAudioService);
   private readonly editorStateService = inject(EditorStateService);
-  private readonly localFileUrlService = inject(LocalFileUrlService);
+  private readonly applicationLocalFileUrlService = inject(ApplicationapplicationLocalFileUrlService);
   private readonly electronApi = getElectronApi();
 
   /**
@@ -72,7 +72,7 @@ export class EditorAudioPaneComponent {
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
-      const src = this.localFileUrlService.toUrl(norm);
+      const src = this.applicationLocalFileUrlService.toUrl(norm);
       this.audioSrc.set(src);
     } catch (error: any) {
       console.error('Failed to load audio file ', error);
