@@ -14,6 +14,8 @@ import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
+import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
+import { normalizePath } from '../../../shared/path-uri-helpers';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -24,10 +26,18 @@ import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
 export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorFileOpenerService = inject(EditorFileOpenerService);
+  private readonly editorDirtyFilesTrackerService = inject(
+    EditorDirtyFilesTrackerService,
+  );
 
   ngOnInit(): void {
     this.openFileTooltip.set(this.fileNode().path);
   }
+
+  /**
+   * TODO: on close check if there are unsaved changes for file and not auto save on then display warning beofre closing and restting state
+   * if press save apply changes to a string then save them to the file
+   */
 
   /**
    * Input file node to render for the given item
@@ -43,6 +53,23 @@ export class EditorOpenFileItemComponent implements OnInit {
    * How long it takes for the parent tooltip to show
    */
   public tooltTipDelayInMs = 750;
+
+  /**
+   * Keeps track if the current file has changes and how many
+   */
+  public readonly changesCount: Signal<number> = computed(() => {
+    this.editorDirtyFilesTrackerService.fileChangeMapChangedCount(); // dep
+
+    const fileChangeMap = this.editorDirtyFilesTrackerService.fileChangeMap;
+
+    const norm = normalizePath(this.fileNode().path);
+    const changes = fileChangeMap.get(norm);
+    if (!changes) {
+      return 0;
+    }
+
+    return changes.length;
+  });
 
   /**
    * Keep track if the given file tab is the one open / active

@@ -135,6 +135,11 @@ export type EditorState = {
    * It is a stringified version of a `cssVar[]` object.
    */
   editorTheme: string | null;
+
+  /**
+   * Keeps track if it should auto saves changes in files beofre closing
+   */
+  autoSave: boolean;
 };
 
 /**

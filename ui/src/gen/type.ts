@@ -1,7 +1,7 @@
 import type {
   NotificationMessage,
   ResponseMessage,
-} from 'vscode-languageserver-protocol';
+} from "vscode-languageserver-protocol";
 
 /**
  * A generic type that merges the parameters of two callbacks
@@ -19,7 +19,7 @@ export type CombinedCallback<
  * i.e use when you writing a listener for a channel that uses a handle
  */
 export type IpcMainInvokeEventCallback = (
-  event: import('electron').IpcMainInvokeEvent,
+  event: import("electron").IpcMainInvokeEvent,
 ) => any;
 /**
  * Typed for IpcMainEvent listener
@@ -27,7 +27,7 @@ export type IpcMainInvokeEventCallback = (
  * i.e use when you writing a listener for a channel that uses a handle
  */
 export type IpcMainEventCallback = (
-  event: import('electron').IpcMainEvent,
+  event: import("electron").IpcMainEvent,
 ) => any;
 /**
  * Typed for IpcRendererEvent listener
@@ -35,7 +35,7 @@ export type IpcMainEventCallback = (
  * i.e used when making a listener that runs in preload.js
  */
 export type IpcRendererEventCallback = (
-  event: import('electron').IpcRendererEvent,
+  event: import("electron").IpcRendererEvent,
 ) => any;
 /**
  * Contains all the fs api's using node fs and other file related utils
@@ -123,7 +123,7 @@ export type fsGetNode = (path: string) => Promise<fileNode>;
  * Allow a user to select a file from explorer
  */
 export type selectFile = () => Promise<
-  import('electron').OpenDialogReturnValue | null
+  import("electron").OpenDialogReturnValue | null
 >;
 /**
  * Listen to a given file path
@@ -175,14 +175,14 @@ export type createDirectory = (directoryPath: string) => Promise<boolean>;
  * Opens a folder selection dialog and returns the selected path.
  */
 export type selectFolder = () => Promise<
-  import('electron').OpenDialogReturnValue
+  import("electron").OpenDialogReturnValue
 >;
 /**
  * Specific function you want to run when it changes
  */
 export type onFsChangeCallback = (
   pathLike: string,
-  event: import('fs/promises').FileChangeInfo<string>,
+  event: import("fs/promises").FileChangeInfo<string>,
 ) => void;
 /**
  * Listen to a specific dir and run custom logic
@@ -248,7 +248,7 @@ export type fileNode = {
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
  * that the given node is going to be rendered as a editor to create said file or folder
  */
-export type fileNodeMode = 'createFile' | 'createFolder' | 'rename' | 'default';
+export type fileNodeMode = "createFile" | "createFolder" | "rename" | "default";
 /**
  * Contains all utils related to the electron chroium window
  */
@@ -355,7 +355,7 @@ export type pathJoin = (...args: string[]) => Promise<string>;
 /**
  * Get the path seperator calls path.sep
  */
-export type pathSep = () => Promise<'\\' | '/'>;
+export type pathSep = () => Promise<"\\" | "/">;
 /**
  * Method to fix a filepath
  */
@@ -459,12 +459,12 @@ export type ripgrepApi = {
  */
 export type voidCallback = () => void;
 export type gitFileStatus =
-  | 'modified'
-  | 'deleted'
-  | 'new file'
-  | 'renamed'
-  | 'untracked'
-  | 'unknown';
+  | "modified"
+  | "deleted"
+  | "new file"
+  | "renamed"
+  | "untracked"
+  | "unknown";
 export type gitFileEntry = {
   /**
    * - The status of the file (e.g., modified, deleted, untracked, etc.)
@@ -475,7 +475,7 @@ export type gitFileEntry = {
    */
   file: string;
 };
-export type gitSection = 'staged' | 'unstaged' | 'untracked' | 'ignored' | null;
+export type gitSection = "staged" | "unstaged" | "untracked" | "ignored" | null;
 export type gitStatusResult = {
   /**
    * - The current branch name
@@ -615,7 +615,7 @@ export type fsearchOptions = {
   /**
    * - The type format used in size comparisons
    */
-  sizeType?: 'B' | 'KB' | undefined;
+  sizeType?: "B" | "KB" | undefined;
   /**
    * - Include files modified before date (YYYY-MM-DD)
    */
@@ -643,7 +643,7 @@ export type fsearchOptions = {
   /**
    * - Type of item to search for
    */
-  type?: 'file' | 'folder' | undefined;
+  type?: "file" | "folder" | undefined;
 };
 /**
  * Search for a given file or folder with options
@@ -733,7 +733,7 @@ export type shellInformation = {
   /**
    * The title of the process
    */
-  title: string;
+  title:string
 };
 /**
  * Get information about a specific shell
@@ -781,35 +781,35 @@ export type shellApi = {
  * based on the action you want to perform read the link below and send that method
  */
 export type LanguageServerProtocolMethod =
-  | 'initialize'
-  | 'initialized'
-  | 'client/registerCapability'
-  | 'client/unregisterCapability'
-  | '$/setTrac'
-  | '$/logTrace'
-  | 'shutdown'
-  | 'exit'
-  | 'textDocument/didOpen'
-  | 'textDocument/didChange'
-  | 'textDocument/willSave'
-  | 'textDocument/willSaveWaitUntil'
-  | 'textDocument/didSave'
-  | 'textDocument/didClose'
-  | 'textDocument/declaration'
-  | 'textDocument/publishDiagnostics'
-  | 'textDocument/completion'
-  | 'textDocument/hover'
-  | 'textDocument/definition';
+  | "initialize"
+  | "initialized"
+  | "client/registerCapability"
+  | "client/unregisterCapability"
+  | "$/setTrac"
+  | "$/logTrace"
+  | "shutdown"
+  | "exit"
+  | "textDocument/didOpen"
+  | "textDocument/didChange"
+  | "textDocument/willSave"
+  | "textDocument/willSaveWaitUntil"
+  | "textDocument/didSave"
+  | "textDocument/didClose"
+  | "textDocument/declaration"
+  | "textDocument/publishDiagnostics"
+  | "textDocument/completion"
+  | "textDocument/hover"
+  | "textDocument/definition";
 /**
  * Version of jsonrpc's
  */
-export type LanguageServerjsonrpc = '2.0';
+export type LanguageServerjsonrpc = "2.0";
 /**
  * Holds the values language id can be.
  *
  * It is also a way of indicating which lsp have been impl
  */
-export type languageId = 'go' | 'python' | 'typescript';
+export type languageId = "go" | "python" | "typescript";
 /**
  * Base interface for language server implementations.
  * All language servers should follow this structure.
@@ -872,24 +872,24 @@ export type ILanguageServer = {
 export type ILanguageServerDefinition = (
   workSpaceFolder: string,
   filePath: string,
-  position: import('vscode-languageserver-protocol').Position,
-) => Promise<import('vscode-languageserver-protocol').Definition | null>;
+  position: import("vscode-languageserver-protocol").Position,
+) => Promise<import("vscode-languageserver-protocol").Definition | null>;
 /**
  * Get completion suggestions
  */
 export type ILanguageServerCompletion = (
   workSpaceFolder: string,
   filePath: string,
-  position: import('vscode-languageserver-protocol').Position,
-) => Promise<import('vscode-languageserver-protocol').CompletionList | null>;
+  position: import("vscode-languageserver-protocol").Position,
+) => Promise<import("vscode-languageserver-protocol").CompletionList | null>;
 /**
  * Get hover information
  */
 export type ILanguageServerHover = (
   workSpaceFolder: string,
   filePath: string,
-  position: import('vscode-languageserver-protocol').Position,
-) => Promise<import('vscode-languageserver-protocol').Hover | null>;
+  position: import("vscode-languageserver-protocol").Position,
+) => Promise<import("vscode-languageserver-protocol").Hover | null>;
 /**
  * Closes a file that was opened
  */
@@ -904,7 +904,7 @@ export type ILanguageServerDidChangeTextDocument = (
   workSpaceFolder: string,
   filePath: string,
   version: number,
-  changes: import('vscode-languageserver-protocol').TextDocumentContentChangeEvent[],
+  changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
 ) => void;
 /**
  * Start the language server for a given work space, if it is already started then it ignores it for the workspace folder.
@@ -1017,8 +1017,8 @@ export type ILanguageServerClientDefinition = (
   workSpaceFolder: string,
   languageId: languageId,
   filePath: string,
-  position: import('vscode-languageserver-protocol').Position,
-) => Promise<import('vscode-languageserver-protocol').Definition | null>;
+  position: import("vscode-languageserver-protocol").Position,
+) => Promise<import("vscode-languageserver-protocol").Definition | null>;
 /**
  * Get completion suggestions at a specific position
  */
@@ -1026,8 +1026,8 @@ export type ILanguageServerClientCompletion = (
   workSpaceFolder: string,
   languageId: languageId,
   filePath: string,
-  position: import('vscode-languageserver-protocol').Position,
-) => Promise<import('vscode-languageserver-protocol').CompletionList | null>;
+  position: import("vscode-languageserver-protocol").Position,
+) => Promise<import("vscode-languageserver-protocol").CompletionList | null>;
 /**
  * Run logic for the first time when a server just becomes ready to recieve messages
  */
@@ -1064,8 +1064,8 @@ export type ILanguageServerClientHover = (
   workSpaceFolder: string,
   languageId: languageId,
   filePath: string,
-  position: import('vscode-languageserver-protocol').Position,
-) => Promise<import('vscode-languageserver-protocol').Hover | null>;
+  position: import("vscode-languageserver-protocol").Position,
+) => Promise<import("vscode-languageserver-protocol").Hover | null>;
 /**
  * Check if the LSP is running for a given workspace and language
  */
@@ -1095,7 +1095,7 @@ export type ILanguageServerClientDidChangeTextDocument = (
   languageId: languageId,
   filePath: string,
   version: number,
-  changes: import('vscode-languageserver-protocol').TextDocumentContentChangeEvent[],
+  changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
 ) => void;
 /**
  * Close the document in the LSP
@@ -1220,7 +1220,7 @@ export type onOpenFileCommand = (
  * Callback to run when the command is given to the server
  */
 export type onOpenFileCommandCallback = (
-  request: import('flufy-ipc-contract').OpenFileRequest,
+  request: import("flufy-ipc-contract").OpenFileRequest,
 ) => void | Promise<void>;
 /**
  * APIs exposed to the renderer process for using Electron functions.

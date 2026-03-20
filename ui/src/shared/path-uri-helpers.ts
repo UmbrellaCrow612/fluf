@@ -1,9 +1,9 @@
 /**
  * Normalizes a file path to be cross-platform compatible
  * Converts backslashes to forward slashes, resolves . and .. segments,
- * removes trailing slashes (except for root), and handles edge cases
+ * removes trailing slashes (except for root), and preserves Windows drive letters
  * @param inputPath The raw path string to normalize
- * @returns A normalized path using forward slashes
+ * @returns A normalized path using forward slashes, with Windows drive letters preserved (e.g., C:/foo)
  */
 export function normalizePath(inputPath: string): string {
   if (!inputPath || inputPath === '.') {
@@ -13,10 +13,13 @@ export function normalizePath(inputPath: string): string {
   // Replace all backslashes with forward slashes
   let normalized = inputPath.replace(/\\/g, '/');
 
-  // Handle Windows-style drive letters (e.g., C:/ → /c/)
-  const driveLetterMatch = normalized.match(/^([a-zA-Z]):(\/|$)/);
+  // Detect and preserve Windows-style drive letters (e.g., C:/ or c:/)
+  // Capture the drive letter but DON'T convert to /c/ format
+  let driveLetter = '';
+  const driveLetterMatch = normalized.match(/^([a-zA-Z]):\//);
   if (driveLetterMatch) {
-    normalized = `/${driveLetterMatch[1].toLowerCase()}${driveLetterMatch[2] === '/' ? '/' : ''}${normalized.slice(3)}`;
+    driveLetter = driveLetterMatch[1].toLowerCase() + ':/';
+    normalized = normalized.slice(3); // Remove the drive letter part from the path to process
   }
 
   // Split into segments and process . and ..
@@ -29,7 +32,8 @@ export function normalizePath(inputPath: string): string {
       const last = segments[segments.length - 1];
       if (last && last !== '..') {
         segments.pop();
-      } else if (!normalized.startsWith('/')) {
+      } else if (!driveLetter && !normalized.startsWith('/')) {
+        // Only allow .. if it's a relative path without drive letter
         segments.push('..');
       }
     } else if (part !== '.') {
@@ -38,22 +42,30 @@ export function normalizePath(inputPath: string): string {
   }
 
   // Reconstruct path
-  const isAbsolute = normalized.startsWith('/');
+  const isAbsolute = driveLetter !== '' || normalized.startsWith('/');
   let result = segments.join('/');
 
-  // Preserve leading slash for absolute paths
-  if (isAbsolute) {
+  // Prepend drive letter if present (preserving C:/ format)
+  if (driveLetter) {
+    result = driveLetter + result;
+  } else if (isAbsolute) {
+    // Preserve leading slash for absolute Unix paths
     result = '/' + result;
   }
 
   // Handle root path case
   if (result === '' && isAbsolute) {
-    result = '/';
+    result = driveLetter || '/';
   }
 
   // Keep trailing slash if original had one (and it's not root)
   const hadTrailingSlash = inputPath.endsWith('/') || inputPath.endsWith('\\');
-  if (hadTrailingSlash && result !== '/' && result !== '') {
+  if (
+    hadTrailingSlash &&
+    result !== '/' &&
+    !result.endsWith(':/') &&
+    result !== ''
+  ) {
     result += '/';
   }
 

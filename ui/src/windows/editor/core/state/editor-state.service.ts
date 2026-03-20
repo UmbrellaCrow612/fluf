@@ -94,6 +94,13 @@ export class EditorStateService {
     this.restoreField('editorTheme', null),
   );
 
+  /**
+   * Exposes auto save signal
+   */
+  public readonly autoSave = signal<EditorState['autoSave']>(
+    this.restoreField('autoSave', false),
+  );
+
   constructor() {
     effect(() => {
       const snapshot = this.getSnapShot();
@@ -124,6 +131,7 @@ export class EditorStateService {
       openFiles: this.openFiles(),
       selectedDirectoryPath: this.selectedDirectoryPath(),
       editorTheme: this.editorTheme(),
+      autoSave: this.autoSave(),
     };
   }
 

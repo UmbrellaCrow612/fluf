@@ -12,6 +12,11 @@
   <div class="file_item_name_container">
     <span class="file_item_name">
       {{ fileNode().name }}
+
+      <!---->
+      @if (changesCount() > 0) {
+        {{ changesCount() }}
+      }
     </span>
   </div>
 

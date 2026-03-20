@@ -14,6 +14,7 @@ import { EditorStateService } from '../core/state/editor-state.service';
 import { basicSetup, EditorView } from 'codemirror';
 import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
+import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
 
 /**
  * Shows a editor for plain text documents
@@ -26,6 +27,9 @@ import { editorPlainTextPaneExtension } from './extensions/theme';
 })
 export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
+  private readonly editorDirtyFilesTrackerService = inject(
+    EditorDirtyFilesTrackerService,
+  );
   private readonly electronApi = getElectronApi();
 
   /**
@@ -57,6 +61,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   public readonly error = signal<string | null>(null);
 
+  /**
+   * Holds the normlized path of the current open file
+   */
+  private readonly normalizedFilePath = signal<string | null>(null);
+
   constructor() {
     useEffect(
       async (_, fileNode) => {
@@ -81,11 +90,12 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    * Extension that listens to changes and runs logic
    */
   private updateListener = EditorView.updateListener.of((update) => {
-    if (update.docChanged) {
-      // Iterate through changes
-      update.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-        console.warn(`Replaced ${fromA}-${toA} with "${inserted}"`);
-      }, true);
+    const normalizedPath = this.normalizedFilePath();
+    if (normalizedPath && update.docChanged) {
+      this.editorDirtyFilesTrackerService.addChange(
+        normalizedPath,
+        update.changes,
+      );
     }
   });
 
@@ -103,6 +113,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     try {
       this.isLoading.set(true);
       this.error.set(null);
+      this.normalizedFilePath.set(null);
 
       const container = this.editorPlaneTextPaneContainer()?.nativeElement;
       if (!container) {
@@ -112,6 +123,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       const normalizedPath = await this.electronApi.pathApi.normalize(
         node.path,
       );
+      this.normalizedFilePath.set(normalizedPath);
+
       const fileContent = await this.electronApi.fsApi.readFile(normalizedPath);
 
       this.editorView = new EditorView({
