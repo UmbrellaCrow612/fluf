@@ -15,7 +15,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
 import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
-import { normalizePath } from '../../../shared/path-uri-helpers';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -55,20 +54,12 @@ export class EditorOpenFileItemComponent implements OnInit {
   public tooltTipDelayInMs = 750;
 
   /**
-   * Keeps track if the current file has changes and how many
+   * Keeps track if the current file is dirty
    */
-  public readonly changesCount: Signal<number> = computed(() => {
+  public readonly isDirty: Signal<boolean> = computed(() => {
     this.editorDirtyFilesTrackerService.fileChangeMapChangedCount(); // dep
 
-    const fileChangeMap = this.editorDirtyFilesTrackerService.fileChangeMap;
-
-    const norm = normalizePath(this.fileNode().path);
-    const changes = fileChangeMap.get(norm);
-    if (!changes) {
-      return 0;
-    }
-
-    return changes.length;
+    return this.editorDirtyFilesTrackerService.isDirty(this.fileNode().path);
   });
 
   /**

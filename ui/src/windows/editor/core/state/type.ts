@@ -202,4 +202,10 @@ export type EditorInMemoryState = {
    * Used as a way to react when its value changes to be greater than 0; then it means reset the resize panel height to be back at 50%.
    */
   resetEditorBottomPanelDragHeight: number;
+
+  /**
+   * Holds how many times ctrl s is ran whenever it it ran / triggred this is incremenent used to allows other parts of the app to respond to the event 
+   * agnosticly by reading this value as a dep 
+   */
+  controlSaveCount: number;
 };

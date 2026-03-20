@@ -14,8 +14,8 @@
       {{ fileNode().name }}
 
       <!---->
-      @if (changesCount() > 0) {
-        {{ changesCount() }}
+      @if (isDirty()) {
+        dirt
       }
     </span>
   </div>

@@ -8,22 +8,15 @@ import { normalizePath } from '../../../../shared/path-uri-helpers';
  * Maintains a registry of files that have been modified through the UI
  * but not yet persisted, enabling features like "unsaved changes" indicators,
  * save-all functionality, and dirty state management.
- *
- * @example
- * // Mark a file as dirty when edited
- * tracker.markDirty(fileId, content);
- *
- * // Check if any files have unsaved changes
- * const hasChanges = tracker.hasDirtyFiles();
  */
 @Injectable({
   providedIn: 'root',
 })
 export class EditorDirtyFilesTrackerService {
   /**
-   * Contains a specific file path normalized and a list of change sets applied to it in a stack as they come in
+   * Contains a specific file path and if it is dirty
    */
-  public readonly fileChangeMap = new Map<string, ChangeSet[]>();
+  public readonly fileDirtyMap = new Map<string, boolean>();
 
   /**
    * Updates the count whenever the file map changes use this to subscrive to changes
@@ -37,31 +30,34 @@ export class EditorDirtyFilesTrackerService {
    */
   public isDirty(filePath: string): boolean {
     const normalizedPath = normalizePath(filePath);
-    const map = this.fileChangeMap;
-    const changes = map.get(normalizedPath);
-    if (!changes) {
+    const map = this.fileDirtyMap;
+    const isDirty = map.get(normalizedPath);
+    if (isDirty === undefined) {
       return false;
     }
 
-    return changes.length > 0;
+    return isDirty;
   }
 
   /**
-   * Add changes to the stack of changes of a file
+   * Marks a file as is dirty
    * @param filePath The file path
-   * @param change The change set
    */
-  public addChange(filePath: string, change: ChangeSet): void {
+  public markIsDirty(filePath: string): void {
     const normalizedPath = normalizePath(filePath);
-    const map = this.fileChangeMap;
+    const map = this.fileDirtyMap;
+    map.set(normalizedPath, true);
 
-    const changes = map.get(normalizedPath);
-    if (changes) {
-      changes.push(change);
-    } else {
-      map.set(normalizedPath, [change]);
-    }
+    this.fileChangeMapChangedCount.update((x) => x + 1);
+  }
 
+  /**
+   * Marks a file as no longer dirty
+   * @param filePath The file to clear the sotred changes for
+   */
+  public markAsClean(filePath: string): void {
+    const norm = normalizePath(filePath);
+    this.fileDirtyMap.set(norm, false);
     this.fileChangeMapChangedCount.update((x) => x + 1);
   }
 }

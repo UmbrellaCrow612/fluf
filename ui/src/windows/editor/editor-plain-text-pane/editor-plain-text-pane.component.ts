@@ -15,6 +15,7 @@ import { basicSetup, EditorView } from 'codemirror';
 import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
 import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 
 /**
  * Shows a editor for plain text documents
@@ -31,6 +32,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     EditorDirtyFilesTrackerService,
   );
   private readonly electronApi = getElectronApi();
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
+  );
 
   /**
    * Keeps track of the current open file in the editor
@@ -66,6 +70,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private readonly normalizedFilePath = signal<string | null>(null);
 
+  /**
+   * Holds the current document view after every change
+   */
+  private readonly currentDocumentView = signal<string | null>(null);
+
   constructor() {
     useEffect(
       async (_, fileNode) => {
@@ -80,7 +89,29 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       },
       [this.activeNode],
     );
+
+    useEffect(
+      async (_, count) => {
+        if (count > 0) {
+          console.log('Control save ran');
+
+          const docString = this.currentDocumentView();
+          const node = this.activeNode();
+          if (docString && node) {
+            await this.saveContent(node.path, docString);
+          }
+        }
+      },
+      [this.editorInMemoryStateService.controlSaveCount],
+    );
   }
+
+  /**
+   * Keeps track if auto save is on
+   */
+  private readonly autoSaveOn = computed(() =>
+    this.editorStateService.autoSave(),
+  );
 
   ngOnDestroy(): void {
     this.cleanUpState();
@@ -89,15 +120,42 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   /**
    * Extension that listens to changes and runs logic
    */
-  private updateListener = EditorView.updateListener.of((update) => {
+  private updateListener = EditorView.updateListener.of(async (update) => {
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
-      this.editorDirtyFilesTrackerService.addChange(
-        normalizedPath,
-        update.changes,
-      );
+      if (this.autoSaveOn()) {
+        const currentContent = update.state.doc.toString();
+        await this.saveContent(normalizedPath, currentContent);
+        return;
+      }
+
+      this.currentDocumentView.set(update.state.doc.toString());
+      this.editorDirtyFilesTrackerService.markIsDirty(normalizedPath);
     }
   });
+
+  /**
+   * Save content directly to file
+   * @param filePath Path to the file in the editor
+   * @param content The current content to save
+   */
+  private async saveContent(filePath: string, content: string): Promise<void> {
+    console.log('Saving file content');
+
+    try {
+      const norm = await this.electronApi.pathApi.normalize(filePath);
+
+      console.log('Content to save:', content);
+
+      await this.electronApi.fsApi.write(norm, content);
+
+      this.editorDirtyFilesTrackerService.markAsClean(filePath);
+
+      console.log('File saved successfully');
+    } catch (error) {
+      console.error('Failed to save file content ', filePath, error);
+    }
+  }
 
   /**
    * Shows the current open file and shows the editor pane
