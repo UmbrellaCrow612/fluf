@@ -3,6 +3,7 @@ import {
   computed,
   inject,
   input,
+  OnDestroy,
   OnInit,
   signal,
   Signal,
@@ -10,13 +11,12 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EditorStateService } from '../core/state/editor-state.service';
-import { fileNode } from '../../../gen/type';
+import { fileNode, voidCallback } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
-import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
 import { ApplicationConfirmationService } from '../../../shared/services/application-confirmation.service';
-import { EditorDraftFileService } from '../core/services/editor-draft-file-service.service';
+import { EditorFileStateService } from '../core/services/editor-file-state.service';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -24,19 +24,29 @@ import { EditorDraftFileService } from '../core/services/editor-draft-file-servi
   templateUrl: './editor-open-file-item.component.html',
   styleUrl: './editor-open-file-item.component.css',
 })
-export class EditorOpenFileItemComponent implements OnInit {
+export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorFileOpenerService = inject(EditorFileOpenerService);
-  private readonly editorDirtyFilesTrackerService = inject(
-    EditorDirtyFilesTrackerService,
-  );
   private readonly applicationConfirmationService = inject(
     ApplicationConfirmationService,
   );
-  private readonly editorDraftFileService = inject(EditorDraftFileService);
+  private readonly editorFileStateService = inject(EditorFileStateService);
 
-  ngOnInit(): void {
+  private unsub: voidCallback | null = null;
+
+  ngOnInit() {
     this.openFileTooltip.set(this.fileNode().path);
+
+    this.unsub = this.editorFileStateService.onDirtyChange(
+      this.fileNode().path,
+      (isDirty) => {
+        this.isDirty.set(isDirty);
+      },
+    );
+  }
+
+  ngOnDestroy() {
+    this.unsub?.();
   }
 
   /**
@@ -62,11 +72,7 @@ export class EditorOpenFileItemComponent implements OnInit {
   /**
    * Keeps track if the current file is dirty
    */
-  public readonly isDirty: Signal<boolean> = computed(() => {
-    this.editorDirtyFilesTrackerService.fileChangeMapChangedCount(); // dep
-
-    return this.editorDirtyFilesTrackerService.isDirty(this.fileNode().path);
-  });
+  public readonly isDirty = signal(false);
 
   /**
    * Keep track if the given file tab is the one open / active
@@ -118,9 +124,6 @@ export class EditorOpenFileItemComponent implements OnInit {
         return;
       }
     }
-
-    this.editorDirtyFilesTrackerService.markAsClean(this.fileNode().path);
-    this.editorDraftFileService.removeDraft(this.fileNode().path);
 
     let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());

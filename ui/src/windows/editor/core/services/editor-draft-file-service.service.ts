@@ -1,9 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { normalizePath } from '../../../../shared/path-uri-helpers';
-import { EditorDirtyFilesTrackerService } from './editor-dirty-files-tracker.service';
 import { getElectronApi } from '../../../../shared/electron';
-import { useEffect } from '../../../../lib/useEffect';
-import { EditorInMemoryStateService } from '../state/editor-in-memory-state.service';
 
 /**
  * Holds files and their current draft content that is not yet saved.
@@ -12,13 +9,7 @@ import { EditorInMemoryStateService } from '../state/editor-in-memory-state.serv
   providedIn: 'root',
 })
 export class EditorDraftFileService {
-  private readonly editorDirtyFilesTrackerService = inject(
-    EditorDirtyFilesTrackerService,
-  );
   private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
 
   /**
    * Holds a file path and its draft content.
@@ -103,8 +94,6 @@ export class EditorDraftFileService {
       }
 
       this.removeDraft(normalizedPath);
-      this.editorDirtyFilesTrackerService.markAsClean(normalizedPath);
-
       return true;
     } catch (error) {
       console.error('Failed to save draft for file path:', filePath, error);
@@ -122,21 +111,5 @@ export class EditorDraftFileService {
         console.error('Failed to save draft for file path:', filePath);
       }
     }
-  }
-
-  /**
-   * Sets up an effect that listens for the save shortcut (Ctrl+S) signal
-   * and saves all drafts when triggered.
-   * @returns A cleanup function to destroy the effect.
-   */
-  public setupSaveShortcutHandler() {
-    return useEffect(
-      async (_, count) => {
-        if (count > 0) {
-          await this.saveDrafts();
-        }
-      },
-      [this.editorInMemoryStateService.controlSaveCount],
-    );
   }
 }

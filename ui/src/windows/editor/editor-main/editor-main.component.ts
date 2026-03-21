@@ -6,6 +6,7 @@ import { EditorKeyBindingService } from '../editor-key-bindings/editor-key-bindi
 import { EditorTerminalService } from '../editor-terminal/services/editor-terminal.service';
 import { EditorSateValidationService } from '../core/state/editor-sate-validation.service';
 import { EditorDraftFileService } from '../core/services/editor-draft-file-service.service';
+import { EditorFileStateService } from '../core/services/editor-file-state.service';
 
 /**
  * Main entry point component rendered for the editor
@@ -26,11 +27,11 @@ export class EditorMainComponent implements AfterViewInit {
     EditorSateValidationService,
   );
   private readonly editorTerminalService = inject(EditorTerminalService);
-  private readonly editorDraftFileService = inject(EditorDraftFileService);
+  private readonly editorFileStateService = inject(EditorFileStateService);
 
   constructor() {
     this.editorTerminalService.InitiizeBackgroundTerminalBufferListerner();
-    this.editorDraftFileService.setupSaveShortcutHandler();
+    this.editorFileStateService.setupSaveShortcutHandler();
   }
 
   async ngAfterViewInit() {

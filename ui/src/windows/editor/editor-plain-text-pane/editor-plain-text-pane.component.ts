@@ -14,9 +14,7 @@ import { EditorStateService } from '../core/state/editor-state.service';
 import { basicSetup, EditorView } from 'codemirror';
 import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
-import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { EditorDraftFileService } from '../core/services/editor-draft-file-service.service';
+import { EditorFileStateService } from '../core/services/editor-file-state.service';
 
 /**
  * Shows a editor for plain text documents
@@ -29,14 +27,8 @@ import { EditorDraftFileService } from '../core/services/editor-draft-file-servi
 })
 export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
-  private readonly editorDirtyFilesTrackerService = inject(
-    EditorDirtyFilesTrackerService,
-  );
   private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
-  private readonly editorDraftFileService = inject(EditorDraftFileService);
+  private readonly editorFileStateService = inject(EditorFileStateService);
 
   /**
    * Keeps track of the current open file in the editor
@@ -105,14 +97,13 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private updateListener = EditorView.updateListener.of(async (update) => {
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
-      this.editorDirtyFilesTrackerService.markIsDirty(normalizedPath);
-      this.editorDraftFileService.setDraft(
+      this.editorFileStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),
       );
 
       if (this.autoSaveOn()) {
-        await this.editorDraftFileService.saveDraft(normalizedPath);
+        await this.editorFileStateService.save(normalizedPath);
       }
     }
   });
@@ -148,10 +139,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
        */
       let docString: string = '';
 
-      const hasDraft = this.editorDraftFileService.hasDraft(normalizedPath);
-      if (hasDraft) {
-        docString =
-          this.editorDraftFileService.getDraft(normalizedPath) ?? 'undefined';
+      const draft = this.editorFileStateService.getDraft(normalizedPath);
+      if (draft) {
+        docString = draft;
       } else {
         docString = await this.electronApi.fsApi.readFile(normalizedPath);
       }
