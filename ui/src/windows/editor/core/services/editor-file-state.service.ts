@@ -87,6 +87,15 @@ export class EditorFileStateService {
   }
 
   /**
+   * Reset a files state 
+   * @param filePath The files path
+   */
+  public reset(filePath:string): void{
+    this.draftService.removeDraft(filePath)
+    this.dirtyService.markClean(filePath)
+  }
+
+  /**
    * Sets up an effect that listens for the save shortcut (Ctrl+S) signal
    * and saves all drafts when triggered.
    * @returns A cleanup function to destroy the effect.

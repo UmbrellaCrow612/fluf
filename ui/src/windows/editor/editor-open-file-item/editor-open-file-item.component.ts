@@ -125,6 +125,8 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
       }
     }
 
+    this.editorFileStateService.reset(this.fileNode().path);
+
     let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());
 
