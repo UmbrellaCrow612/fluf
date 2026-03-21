@@ -16,6 +16,7 @@ import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
 import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
+import { EditorDraftFileService } from '../core/services/editor-draft-file-service.service';
 
 /**
  * Shows a editor for plain text documents
@@ -35,6 +36,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
+  private readonly editorDraftFileService = inject(EditorDraftFileService);
 
   /**
    * Keeps track of the current open file in the editor
@@ -70,11 +72,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private readonly normalizedFilePath = signal<string | null>(null);
 
-  /**
-   * Holds the current document view after every change
-   */
-  private readonly currentDocumentView = signal<string | null>(null);
-
   constructor() {
     useEffect(
       async (_, fileNode) => {
@@ -93,13 +90,13 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     useEffect(
       async (_, count) => {
         if (count > 0) {
-          console.log('Control save ran');
-
-          const docString = this.currentDocumentView();
-          const node = this.activeNode();
-          if (docString && node) {
-            await this.saveContent(node.path, docString);
+          const drafMap = this.editorDraftFileService.getAllDrafts();
+          for (const [file, draft] of drafMap) {
+            await this.saveContent(file, draft);
           }
+
+          this.editorDraftFileService.clearAllDrafts();
+          console.log('Control save ran');
         }
       },
       [this.editorInMemoryStateService.controlSaveCount],
@@ -129,8 +126,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         return;
       }
 
-      this.currentDocumentView.set(update.state.doc.toString());
       this.editorDirtyFilesTrackerService.markIsDirty(normalizedPath);
+      this.editorDraftFileService.setDraft(
+        normalizedPath,
+        update.state.doc.toString(),
+      );
     }
   });
 
@@ -150,6 +150,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       await this.electronApi.fsApi.write(norm, content);
 
       this.editorDirtyFilesTrackerService.markAsClean(filePath);
+      this.editorDraftFileService.removeDraft(filePath);
 
       console.log('File saved successfully');
     } catch (error) {
@@ -183,10 +184,21 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       );
       this.normalizedFilePath.set(normalizedPath);
 
-      const fileContent = await this.electronApi.fsApi.readFile(normalizedPath);
+      /**
+       * Holds the content we show in the pane editor
+       */
+      let docString: string = '';
+
+      const hasDraft = this.editorDraftFileService.hasDraft(normalizedPath);
+      if (hasDraft) {
+        docString =
+          this.editorDraftFileService.getDraft(normalizedPath) ?? 'undefined';
+      } else {
+        docString = await this.electronApi.fsApi.readFile(normalizedPath);
+      }
 
       this.editorView = new EditorView({
-        doc: fileContent,
+        doc: docString,
         parent: container,
         extensions: [
           basicSetup,

@@ -16,6 +16,7 @@ import { EditorFileOpenerService } from '../core/services/editor-file-opener.ser
 import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
 import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
 import { ApplicationConfirmationService } from '../../../shared/services/application-confirmation.service';
+import { EditorDraftFileService } from '../core/services/editor-draft-file-service.service';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -32,6 +33,7 @@ export class EditorOpenFileItemComponent implements OnInit {
   private readonly applicationConfirmationService = inject(
     ApplicationConfirmationService,
   );
+  private readonly editorDraftFileService = inject(EditorDraftFileService);
 
   ngOnInit(): void {
     this.openFileTooltip.set(this.fileNode().path);
@@ -112,10 +114,13 @@ export class EditorOpenFileItemComponent implements OnInit {
       const confirmed = await this.applicationConfirmationService.request(
         'This file has unsaved changes are you sure you want to close it',
       );
-      if(!confirmed){
+      if (!confirmed) {
         return;
       }
     }
+
+    this.editorDirtyFilesTrackerService.markAsClean(this.fileNode().path);
+    this.editorDraftFileService.removeDraft(this.fileNode().path);
 
     let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());
