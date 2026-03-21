@@ -86,21 +86,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       },
       [this.activeNode],
     );
-
-    useEffect(
-      async (_, count) => {
-        if (count > 0) {
-          const drafMap = this.editorDraftFileService.getAllDrafts();
-          for (const [file, draft] of drafMap) {
-            await this.saveContent(file, draft);
-          }
-
-          this.editorDraftFileService.clearAllDrafts();
-          console.log('Control save ran');
-        }
-      },
-      [this.editorInMemoryStateService.controlSaveCount],
-    );
   }
 
   /**
@@ -120,43 +105,17 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private updateListener = EditorView.updateListener.of(async (update) => {
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
-      if (this.autoSaveOn()) {
-        const currentContent = update.state.doc.toString();
-        await this.saveContent(normalizedPath, currentContent);
-        return;
-      }
-
       this.editorDirtyFilesTrackerService.markIsDirty(normalizedPath);
       this.editorDraftFileService.setDraft(
         normalizedPath,
         update.state.doc.toString(),
       );
+
+      if (this.autoSaveOn()) {
+        await this.editorDraftFileService.saveDraft(normalizedPath);
+      }
     }
   });
-
-  /**
-   * Save content directly to file
-   * @param filePath Path to the file in the editor
-   * @param content The current content to save
-   */
-  private async saveContent(filePath: string, content: string): Promise<void> {
-    console.log('Saving file content');
-
-    try {
-      const norm = await this.electronApi.pathApi.normalize(filePath);
-
-      console.log('Content to save:', content);
-
-      await this.electronApi.fsApi.write(norm, content);
-
-      this.editorDirtyFilesTrackerService.markAsClean(filePath);
-      this.editorDraftFileService.removeDraft(filePath);
-
-      console.log('File saved successfully');
-    } catch (error) {
-      console.error('Failed to save file content ', filePath, error);
-    }
-  }
 
   /**
    * Shows the current open file and shows the editor pane
@@ -222,7 +181,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private cleanUpState() {
     const editorView = this.editorView;
     if (editorView) {
-      // save history state
       editorView.destroy();
       this.editorView = null;
     }
