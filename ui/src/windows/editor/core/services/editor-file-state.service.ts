@@ -87,12 +87,20 @@ export class EditorFileStateService {
   }
 
   /**
-   * Reset a files state 
+   * Reset a files state
    * @param filePath The files path
    */
-  public reset(filePath:string): void{
-    this.draftService.removeDraft(filePath)
-    this.dirtyService.markClean(filePath)
+  public reset(filePath: string): void {
+    this.draftService.removeDraft(filePath);
+    this.dirtyService.markClean(filePath);
+  }
+
+  /**
+   * Check if any file has any dirty / edits that are unsaved
+   * @returns IF any file has unsaved changes
+   */
+  public hasAnyDirty(): boolean {
+    return this.dirtyService.hasAnyDirty();
   }
 
   /**

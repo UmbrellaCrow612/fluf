@@ -112,4 +112,12 @@ export class EditorDirtyFileService {
     const notificationPromises = trackedPaths.map((path) => this.notify(path));
     await Promise.all(notificationPromises);
   }
+
+  /**
+   * Checks if any tracked file is currently marked as dirty.
+   * @returns `true` if at least one file has unsaved changes, `false` otherwise.
+   */
+  public hasAnyDirty(): boolean {
+    return Array.from(this.fileDirtyMap.values()).some((isDirty) => isDirty);
+  }
 }

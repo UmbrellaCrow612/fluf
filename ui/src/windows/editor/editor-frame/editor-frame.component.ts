@@ -11,6 +11,8 @@ import {
   EDITOR_BOTTOM_ACTIVE_ELEMENT,
   EDITOR_SIDE_BAR_ACTIVE_ELEMENT,
 } from '../core/state/type';
+import { EditorFileStateService } from '../core/services/editor-file-state.service';
+import { ApplicationConfirmationService } from '../../../shared/services/application-confirmation.service';
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -73,6 +75,10 @@ export class EditorFrameComponent implements OnInit {
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
+  private readonly editorFileStateService = inject(EditorFileStateService);
+  private readonly applicationConfirmationService = inject(
+    ApplicationConfirmationService,
+  );
 
   /**
    * Holds state if the given chrome window is maximized
@@ -90,7 +96,17 @@ export class EditorFrameComponent implements OnInit {
   /**
    * Closes the whole chrome window instace
    */
-  public closeWindow() {
+  public async closeWindow() {
+    const hasUnsavedChanges = this.editorFileStateService.hasAnyDirty();
+    if (hasUnsavedChanges) {
+      const confirmed = await this.applicationConfirmationService.request(
+        'Are you sure you want to exit you have unsaved changes',
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
     this.electronApi.chromeWindowApi.close();
   }
 
