@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
 import { EditorDirtyFilesTrackerService } from '../core/services/editor-dirty-files-tracker.service';
+import { ApplicationConfirmationService } from '../../../shared/services/application-confirmation.service';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -27,6 +28,9 @@ export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorFileOpenerService = inject(EditorFileOpenerService);
   private readonly editorDirtyFilesTrackerService = inject(
     EditorDirtyFilesTrackerService,
+  );
+  private readonly applicationConfirmationService = inject(
+    ApplicationConfirmationService,
   );
 
   ngOnInit(): void {
@@ -104,8 +108,13 @@ export class EditorOpenFileItemComponent implements OnInit {
   public async closeFileTabItem(event: Event) {
     event.stopPropagation();
 
-    if(this.isDirty()){
-      
+    if (this.isDirty()) {
+      const confirmed = await this.applicationConfirmationService.request(
+        'This file has unsaved changes are you sure you want to close it',
+      );
+      if(!confirmed){
+        return;
+      }
     }
 
     let openfiles = this.editorStateService.openFiles() ?? [];

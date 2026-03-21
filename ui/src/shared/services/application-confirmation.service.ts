@@ -49,10 +49,12 @@ export class ApplicationConfirmationService {
 
   public resolveRequest(value: boolean) {
     this._resolve?.(value);
+    this.resetState();
   }
 
-  public rejectRequest() {
-    this._reject?.();
+  public rejectRequest(reason: string) {
+    this._reject?.(reason);
+    this.resetState();
   }
 
   public getRequestInformation(): RequestInformation {
