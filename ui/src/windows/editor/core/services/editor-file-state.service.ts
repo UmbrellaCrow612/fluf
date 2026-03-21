@@ -63,21 +63,6 @@ export class EditorFileStateService {
   }
 
   /**
-   * Marks a specific file as clean (saved), removing its dirty status.
-   * This updates the dirty state signal to `false` and clears any
-   * visual indicators of unsaved changes for the file.
-   *
-   * @param filePath - The normalized path of the file to mark as clean.
-   * @returns void
-   * @example
-   * // After successful save operation
-   * this.editorFileStateService.markClean('/path/to/file.ts');
-   */
-  private markClean(filePath: string): void {
-    this.dirtyService.markClean(filePath);
-  }
-
-  /**
    * Saves the document to disk and clears the dirty/draft state.
    * @param filePath - The path to the file to save.
    * @returns A promise that resolves to `true` if the save was successful,
@@ -86,7 +71,7 @@ export class EditorFileStateService {
   public async save(filePath: string): Promise<boolean> {
     const success = await this.draftService.saveDraft(filePath);
     if (success) {
-      this.markClean(filePath);
+      this.dirtyService.markClean(filePath);
     }
     return success;
   }
@@ -98,7 +83,7 @@ export class EditorFileStateService {
    */
   public async saveAll(): Promise<void> {
     await this.draftService.saveDrafts();
-    await this.dirtyService.markAll(false)
+    await this.dirtyService.markAll(false);
   }
 
   /**
