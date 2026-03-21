@@ -23,7 +23,7 @@ export class EditorDirtyFileService {
   /** Internal map storing registered callbacks for each file's dirty state changes. */
   private readonly fileCallbackMap = new Map<
     string,
-    EditorDirtyFileChangeCallback[]
+    Set<EditorDirtyFileChangeCallback>
   >();
 
   /**
@@ -85,13 +85,13 @@ export class EditorDirtyFileService {
     const normPath = normalizePath(filePath);
 
     if (this.fileCallbackMap.has(normPath)) {
-      this.fileCallbackMap.get(normPath)?.push(callback);
+      this.fileCallbackMap.get(normPath)?.add(callback);
     } else {
-      this.fileCallbackMap.set(normPath, [callback]);
+      this.fileCallbackMap.set(normPath, new Set([callback]));
     }
 
     return () => {
-      this.fileCallbackMap.delete(normPath);
+      this.fileCallbackMap.get(normPath)?.delete(callback);
     };
   }
 
