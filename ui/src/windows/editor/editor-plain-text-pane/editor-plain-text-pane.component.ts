@@ -129,7 +129,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     const scrollTop = view.scrollDOM.scrollTop;
     const scrollLeft = view.scrollDOM.scrollLeft;
 
-    this.editorSessionStateService.setChace(currentPath, {
+    this.editorSessionStateService.setCache(currentPath, {
       editorStateJSON,
       scrollTop,
       scrollLeft,
@@ -163,7 +163,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       );
       this.normalizedFilePath.set(normalizedPath);
 
-      const cachedView = this.editorSessionStateService.restoreChace(
+      const cachedView = this.editorSessionStateService.restoreCache(
         normalizedPath,
         container,
         this.createExtensions,
