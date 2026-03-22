@@ -1,5 +1,5 @@
-import { inject, Injectable, Signal } from '@angular/core';
-import { EditorDraftFileService } from './editor-draft-file-service.service';
+import { inject, Injectable } from '@angular/core';
+import { EditorDraftFileService } from './editor-draft-file.service';
 import {
   EditorDirtyFileChangeCallback,
   EditorDirtyFileService,

@@ -1,3 +1,5 @@
+import { Extension } from '@codemirror/state';
+import { history, historyField } from '@codemirror/commands';
 import {
   Component,
   computed,
@@ -15,6 +17,7 @@ import { basicSetup, EditorView } from 'codemirror';
 import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
 import { EditorFileStateService } from '../core/services/editor-file-state.service';
+import { EditorSessionStateService } from '../core/services/editor-session-state.service';
 
 /**
  * Shows a editor for plain text documents
@@ -29,6 +32,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
   private readonly editorFileStateService = inject(EditorFileStateService);
+  private readonly editorSessionStateService = inject(
+    EditorSessionStateService,
+  );
 
   /**
    * Keeps track of the current open file in the editor
@@ -109,6 +115,29 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   });
 
   /**
+   * Saves current editor state to cache before switching files
+   */
+  private saveCurrentState(): void {
+    const currentPath = this.normalizedFilePath();
+    const view = this.editorView;
+
+    if (!currentPath || !view || currentPath.trim() === '') return;
+
+    const editorStateJSON = view.state.toJSON({
+      history: historyField,
+    });
+    const scrollTop = view.scrollDOM.scrollTop;
+    const scrollLeft = view.scrollDOM.scrollLeft;
+
+    this.editorSessionStateService.setChace(currentPath, {
+      editorStateJSON,
+      scrollTop,
+      scrollLeft,
+      lastAccessed: Date.now(),
+    });
+  }
+
+  /**
    * Shows the current open file and shows the editor pane
    * @param node The file to show
    */
@@ -134,6 +163,18 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       );
       this.normalizedFilePath.set(normalizedPath);
 
+      const cachedView = this.editorSessionStateService.restoreChace(
+        normalizedPath,
+        container,
+        this.createExtensions,
+      );
+      if (cachedView) {
+        this.editorView = cachedView;
+        this.isLoading.set(false);
+        this.editorView.focus();
+        return;
+      }
+
       /**
        * Holds the content we show in the pane editor
        */
@@ -149,11 +190,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       this.editorView = new EditorView({
         doc: docString,
         parent: container,
-        extensions: [
-          basicSetup,
-          this.updateListener,
-          editorPlainTextPaneExtension,
-        ],
+        extensions: this.createExtensions(),
       });
 
       this.editorView.focus();
@@ -166,9 +203,25 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   }
 
   /**
-   * Cleans up the state between file changes or destroy
+   * Creates editor extensions
+   * @returns Array of extensions for new editor instances
    */
-  private cleanUpState() {
+  private createExtensions = (): Extension[] => {
+    return [
+      basicSetup,
+      this.updateListener,
+      editorPlainTextPaneExtension,
+      history(),
+    ];
+  };
+
+  /**
+   * Cleans up the state between file changes or destroy
+   * Saves current state to cache before cleanup
+   */
+  private cleanUpState(): void {
+    this.saveCurrentState();
+
     const editorView = this.editorView;
     if (editorView) {
       editorView.destroy();
