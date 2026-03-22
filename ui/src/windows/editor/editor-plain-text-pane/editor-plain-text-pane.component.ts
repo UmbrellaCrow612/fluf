@@ -161,6 +161,10 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       const normalizedPath = await this.electronApi.pathApi.normalize(
         node.path,
       );
+      const filePathExists = await this.electronApi.fsApi.exists(normalizedPath)
+      if(!filePathExists){
+        throw new Error("File path does not exit")
+      }
       this.normalizedFilePath.set(normalizedPath);
 
       const cachedView = this.editorSessionStateService.restoreCache(
@@ -170,7 +174,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       );
       if (cachedView) {
         this.editorView = cachedView;
-        this.isLoading.set(false);
         this.editorView.focus();
         return;
       }
