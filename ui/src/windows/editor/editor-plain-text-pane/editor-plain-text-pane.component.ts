@@ -28,7 +28,7 @@ import { EditorSessionStateService } from '../core/services/editor-session-state
   templateUrl: './editor-plain-text-pane.component.html',
   styleUrl: './editor-plain-text-pane.component.css',
 })
-export class EditorPlainTextPaneComponent implements OnDestroy {
+export class EditorPlainTextPaneComponent {
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
   private readonly editorFileStateService = inject(EditorFileStateService);
@@ -91,11 +91,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private readonly autoSaveOn = computed(() =>
     this.editorStateService.autoSave(),
-  );
-
-  ngOnDestroy(): void {
-    this.cleanUpState();
-  }
+  )
 
   /**
    * Extension that listens to changes and runs logic
@@ -103,6 +99,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private updateListener = EditorView.updateListener.of(async (update) => {
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
+      this.saveCurrentState()
+
       this.editorFileStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),

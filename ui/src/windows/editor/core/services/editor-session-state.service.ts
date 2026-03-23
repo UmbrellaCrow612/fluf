@@ -239,9 +239,7 @@ export class EditorSessionStateService {
    */
   public removeCache(filePath: string): boolean {
     const path = normalizePath(filePath);
-    const existed = this.stateCache.has(path);
-    this.stateCache.delete(path);
-    return existed;
+    return this.stateCache.delete(path);
   }
 
   /**

@@ -17,6 +17,7 @@ import { EditorFileOpenerService } from '../core/services/editor-file-opener.ser
 import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
 import { ApplicationConfirmationService } from '../../../shared/services/application-confirmation.service';
 import { EditorFileStateService } from '../core/services/editor-file-state.service';
+import { EditorSessionStateService } from '../core/services/editor-session-state.service';
 
 @Component({
   selector: 'app-editor-open-file-item',
@@ -31,6 +32,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
     ApplicationConfirmationService,
   );
   private readonly editorFileStateService = inject(EditorFileStateService);
+  private readonly editorSessionStateService = inject(EditorSessionStateService)
 
   private unsub: voidCallback | null = null;
 
@@ -126,6 +128,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
     }
 
     this.editorFileStateService.reset(this.fileNode().path);
+    this.editorSessionStateService.removeCache(this.fileNode().path)
 
     let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());
