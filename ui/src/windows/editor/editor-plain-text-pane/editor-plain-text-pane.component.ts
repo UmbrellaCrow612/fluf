@@ -102,10 +102,10 @@ export class EditorPlainTextPaneComponent {
    * Extension that listens to changes and runs logic
    */
   private updateListener = EditorView.updateListener.of(async (update) => {
+    this.hydrateCursorPosition(update.view);
+
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
-      this.hydrateCursorPosition(update.view);
-
       this.editorFileStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),
