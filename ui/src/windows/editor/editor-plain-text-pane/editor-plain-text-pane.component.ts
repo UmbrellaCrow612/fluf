@@ -18,7 +18,8 @@ import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
 import { EditorFileStateService } from '../core/services/editor-file-state.service';
 import { EditorSessionStateService } from '../core/services/editor-session-state.service';
-import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
+import { EditorPathBreadcrumbBarComponent } from '../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 
 /**
  * Shows a editor for plain text documents
@@ -31,6 +32,9 @@ import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/
 })
 export class EditorPlainTextPaneComponent {
   private readonly editorStateService = inject(EditorStateService);
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
+  );
   private readonly electronApi = getElectronApi();
   private readonly editorFileStateService = inject(EditorFileStateService);
   private readonly editorSessionStateService = inject(
@@ -92,7 +96,7 @@ export class EditorPlainTextPaneComponent {
    */
   private readonly autoSaveOn = computed(() =>
     this.editorStateService.autoSave(),
-  )
+  );
 
   /**
    * Extension that listens to changes and runs logic
@@ -100,6 +104,8 @@ export class EditorPlainTextPaneComponent {
   private updateListener = EditorView.updateListener.of(async (update) => {
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
+      this.hydrateCursorPosition(update.view);
+
       this.editorFileStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),
@@ -110,6 +116,40 @@ export class EditorPlainTextPaneComponent {
       }
     }
   });
+
+  /**
+   * Hydrates the editor state memeory to have up to date cursor positon
+   * @param view The editor view
+   */
+  private hydrateCursorPosition(view: EditorView) {
+    const cursorPos = this.getCursorPosition(view);
+    this.editorInMemoryStateService.selectedLineAndColumn.set({
+      line: cursorPos.line,
+      column: cursorPos.col,
+    });
+  }
+
+  /**
+   * Get the current editors cursor position
+   * @param view The editor view
+   * @returns Position
+   */
+  private getCursorPosition = (view: EditorView) => {
+    const selection = view.state.selection.main;
+    const pos = selection.head; // cursor position (anchor if you want selection start)
+
+    // Get line information
+    const line = view.state.doc.lineAt(pos);
+
+    // Calculate column (0-indexed from start of line)
+    const col = pos - line.from;
+
+    return {
+      line: line.number, // 1-indexed line number
+      col: col, // 0-indexed column
+      col1Indexed: col + 1, // 1-indexed column if preferred
+    };
+  };
 
   /**
    * Saves current editor state to cache before switching files
@@ -158,9 +198,10 @@ export class EditorPlainTextPaneComponent {
       const normalizedPath = await this.electronApi.pathApi.normalize(
         node.path,
       );
-      const filePathExists = await this.electronApi.fsApi.exists(normalizedPath)
-      if(!filePathExists){
-        throw new Error("File path does not exit")
+      const filePathExists =
+        await this.electronApi.fsApi.exists(normalizedPath);
+      if (!filePathExists) {
+        throw new Error('File path does not exit');
       }
       this.normalizedFilePath.set(normalizedPath);
 
@@ -172,6 +213,8 @@ export class EditorPlainTextPaneComponent {
       if (cachedView) {
         this.editorView = cachedView;
         this.editorView.focus();
+
+        this.hydrateCursorPosition(cachedView);
         return;
       }
 
@@ -194,6 +237,7 @@ export class EditorPlainTextPaneComponent {
       });
 
       this.editorView.focus();
+      this.hydrateCursorPosition(this.editorView);
     } catch (error: any) {
       console.error('Failed to load file ', error);
       this.error.set(`Failed to load file ${error?.message}`);

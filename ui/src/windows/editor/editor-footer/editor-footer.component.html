@@ -1,1 +1,14 @@
-<p>editor-footer works!</p>
+<footer class="editor_footer scroll_bar">
+  @if (hasGit()) {
+    <div>
+      <div>icon</div>
+      <div>Current branch</div>
+    </div>
+  }
+
+  @if (selectedLines()) {
+    <div class="editor_footer_cursor_position">
+      Ln {{ selectedLines()?.line }}, Col {{ selectedLines()?.column }}
+    </div>
+  }
+</footer>

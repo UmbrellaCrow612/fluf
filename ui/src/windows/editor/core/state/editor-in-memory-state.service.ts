@@ -89,4 +89,10 @@ export class EditorInMemoryStateService {
    */
   public readonly controlSaveCount =
     signal<EditorInMemoryState['controlSaveCount']>(0);
+
+  /**
+   * Exposes selectedLineAndColumn signal
+   */
+  public readonly selectedLineAndColumn =
+    signal<EditorInMemoryState['selectedLineAndColumn']>(null);
 }

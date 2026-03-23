@@ -204,8 +204,13 @@ export type EditorInMemoryState = {
   resetEditorBottomPanelDragHeight: number;
 
   /**
-   * Holds how many times ctrl s is ran whenever it it ran / triggred this is incremenent used to allows other parts of the app to respond to the event 
-   * agnosticly by reading this value as a dep 
+   * Holds how many times ctrl s is ran whenever it it ran / triggred this is incremenent used to allows other parts of the app to respond to the event
+   * agnosticly by reading this value as a dep
    */
   controlSaveCount: number;
+
+  /**
+   * Holds the users current selected line and column numbers in a editor text document
+   */
+  selectedLineAndColumn: { line: number; column: number } | null;
 };
