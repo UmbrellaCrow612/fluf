@@ -2,13 +2,15 @@ import { Component, input, signal } from '@angular/core';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { getElectronApi } from '../../../shared/electron';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 
 /**
  * Displays a bread crumb of files and folders from the given path file path
  */
 @Component({
   selector: 'app-editor-path-breadcrumb-bar',
-  imports: [],
+  imports: [MatTooltipModule, MatIconModule],
   templateUrl: './editor-path-breadcrumb-bar.component.html',
   styleUrl: './editor-path-breadcrumb-bar.component.css',
 })

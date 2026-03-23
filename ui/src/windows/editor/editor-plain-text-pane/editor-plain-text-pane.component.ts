@@ -100,8 +100,6 @@ export class EditorPlainTextPaneComponent {
   private updateListener = EditorView.updateListener.of(async (update) => {
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
-      this.saveCurrentState()
-
       this.editorFileStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),

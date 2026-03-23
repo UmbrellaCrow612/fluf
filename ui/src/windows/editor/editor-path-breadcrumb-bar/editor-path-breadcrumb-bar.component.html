@@ -15,9 +15,12 @@
 
   @if (!isLoading() && !error()) {
     @for (seg of segmentNodes(); track $index) {
-      <div>
+      <div [matTooltip]="seg.path" class="bread_crumb">
         {{ seg.name }}
       </div>
+      @if (seg.isDirectory) {
+        <mat-icon fontIcon="chevron_right" class="icon"/>
+      }
     }
   }
 </div>

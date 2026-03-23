@@ -85,11 +85,13 @@ export class EditorDraftFileService {
       const normalizedPath = normalizePath(filePath);
       const draft = this.fileDraftMap.get(normalizedPath);
       if (!draft) {
+        console.warn("No draft found for file path ", filePath)
         return false;
       }
 
       const success = await this.electronApi.fsApi.write(normalizedPath, draft);
       if (!success) {
+        console.error("Failed to write to file path ", normalizePath, draft)
         return false;
       }
 
