@@ -5,11 +5,20 @@
   min-width: 0;
 }
 
-.editor_plain_text_pane {
+.editor_plain_text_pane_container {
   display: flex;
   flex-direction: column;
+  gap: 5px;
   flex: 1;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+}
+
+.target_container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
 }

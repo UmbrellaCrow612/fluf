@@ -18,13 +18,14 @@ import { useEffect } from '../../../lib/useEffect';
 import { editorPlainTextPaneExtension } from './extensions/theme';
 import { EditorFileStateService } from '../core/services/editor-file-state.service';
 import { EditorSessionStateService } from '../core/services/editor-session-state.service';
+import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
 
 /**
  * Shows a editor for plain text documents
  */
 @Component({
   selector: 'app-editor-plain-text-pane',
-  imports: [],
+  imports: [EditorPathBreadcrumbBarComponent],
   templateUrl: './editor-plain-text-pane.component.html',
   styleUrl: './editor-plain-text-pane.component.css',
 })
@@ -39,7 +40,7 @@ export class EditorPlainTextPaneComponent {
   /**
    * Keeps track of the current open file in the editor
    */
-  private readonly activeNode: Signal<fileNode | null> = computed(() =>
+  public readonly activeNode: Signal<fileNode | null> = computed(() =>
     this.editorStateService.currentOpenFileInEditor(),
   );
 

@@ -1,0 +1,23 @@
+<div class="editor_path_breadcrumb_bar scroll_bar">
+  @if (isLoading()) {
+    <div>Loading</div>
+  }
+
+  <!---->
+
+  @if (error()) {
+    <div>
+      {{ error() }}
+    </div>
+  }
+
+  <!---->
+
+  @if (!isLoading() && !error()) {
+    @for (seg of segmentNodes(); track $index) {
+      <div>
+        {{ seg.name }}
+      </div>
+    }
+  }
+</div>

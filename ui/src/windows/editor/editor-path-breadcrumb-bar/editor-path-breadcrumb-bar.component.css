@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor_path_breadcrumb_bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-y: hidden;
+  overflow-x: auto;
+  padding: 3px;
+}

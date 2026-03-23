@@ -330,6 +330,10 @@ export type pathApi = {
    * Gets the path to the user profile
    */
   getDefaultProfilePath: getDefaultProfilePath;
+  /**
+   * Walks a path and gives you all ancestor paths
+   */
+  buildPathSegments: buildPathSegments;
 };
 /**
  * Gets the user profile default path
@@ -360,6 +364,13 @@ export type pathSep = () => Promise<"\\" | "/">;
  * Method to fix a filepath
  */
 export type normalizePath = (path: string) => Promise<string>;
+/**
+ * Walks a given path and returns all ancestor segments.
+ * @example
+ * buildPathSegments('/foo/bar/baz')
+ * // ['/foo', '/foo/bar', '/foo/bar/baz']
+ */
+export type buildPathSegments = (pathLike: string) => Promise<string[]>;
 /**
  * Get the relative path
  */
@@ -733,7 +744,7 @@ export type shellInformation = {
   /**
    * The title of the process
    */
-  title:string
+  title: string;
 };
 /**
  * Get information about a specific shell

@@ -5,6 +5,7 @@
 import path from "path";
 import os from "node:os";
 import type {
+  buildPathSegments,
   CombinedCallback,
   getDefaultProfilePath,
   getRootPath,
@@ -73,17 +74,9 @@ const getRootPathImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   getRootPath
 > = () => {
-  // Windows logic
-  if (os.platform() === "win32") {
-    // Get something like "C:\" from current working directory
-    const root = path.parse(process.cwd()).root;
+  const rootPath = path.parse(path.resolve(path.normalize("/")));
 
-    // Ensure it always ends with a backslash (Windows uses one)
-    return Promise.resolve(root.endsWith("\\") ? root : root + "\\");
-  }
-
-  // Unix-based logic → always "/"
-  return Promise.resolve("/");
+  return Promise.resolve(rootPath.root);
 };
 
 const pathDirnameImpl: CombinedCallback<
@@ -133,6 +126,33 @@ const getDefaultProfilePathImpl: CombinedCallback<
   }
 };
 
+const buildPathSegmentsImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  buildPathSegments
+> = (_, pathLike) => {
+  try {
+    const normalized = path.normalize(pathLike);
+    const root = path.parse(normalized).root;
+    const segments = normalized
+      .slice(root.length)
+      .split(path.sep)
+      .filter(Boolean);
+
+    const resolved: string[] = [];
+    let current = root;
+
+    for (const segment of segments) {
+      current = path.join(current, segment);
+      resolved.push(current);
+    }
+
+    return Promise.resolve(resolved);
+  } catch (error) {
+    logger.error("Failed to build path segments for path", pathLike, error);
+    return Promise.resolve([]);
+  }
+};
+
 /**
  * All path event operations
  */
@@ -169,6 +189,10 @@ export interface PathEvents {
     args: [];
     return: string;
   };
+  "path:build:segments": {
+    args: [pathLike: string];
+    return: string[];
+  };
 }
 
 /**
@@ -183,4 +207,5 @@ export const registerPathListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("path:root", getRootPathImpl);
   typedIpcMain.handle("path:dirname", pathDirnameImpl);
   typedIpcMain.handle("path:default:profile", getDefaultProfilePathImpl);
+  typedIpcMain.handle("path:build:segments", buildPathSegmentsImpl);
 };
