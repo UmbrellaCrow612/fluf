@@ -46,7 +46,7 @@
 
   <!-- Render sub children if expanded -->
   @if (fileNode().children.length > 0 && fileNode().expanded) {
-    @for (node of fileNode().children; track $index) {
+    @for (node of fileNode().children; track node.path) {
       <!--
        Note: you need pass all to children outputs and inputs to these children as well 
       -->
