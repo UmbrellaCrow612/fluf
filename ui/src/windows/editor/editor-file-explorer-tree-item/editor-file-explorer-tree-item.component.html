@@ -54,8 +54,9 @@
         [fileNode]="node"
         [depth]="depth() + 1"
         [rootNodeChildren]="rootNodeChildren()"
-        (rootNodeChildrenUpdated)="rootNodeChildrenUpdated.emit($event)"
         [activeNode]="activeNode()"
+        (rootNodeChildrenUpdated)="rootNodeChildrenUpdated.emit($event)"
+        (itemSelected)="itemSelected.emit($event)"
       />
     }
   }

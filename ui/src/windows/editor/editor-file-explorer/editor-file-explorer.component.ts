@@ -88,7 +88,7 @@ export class EditorFileExplorerComponent {
    * Keeps track of the current file in the editor
    */
   public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
+    this.editorStateService.fileExplorerActiveFileOrFolder(),
   );
 
   /**
@@ -97,6 +97,14 @@ export class EditorFileExplorerComponent {
    */
   public updateRootNodeChildren(nodes: fileNode[]) {
     this.editorStateService.directoryFileNodes.set(nodes);
+  }
+
+  /**
+   * Update the file explroer last clicked / active node to the clicked child
+   * @param node The node clicked
+   */
+  public itemSelected(node: fileNode) {
+    this.editorStateService.fileExplorerActiveFileOrFolder.set(node);
   }
 
   public readonly isRootNodeActive: Signal<boolean> = computed(() => {

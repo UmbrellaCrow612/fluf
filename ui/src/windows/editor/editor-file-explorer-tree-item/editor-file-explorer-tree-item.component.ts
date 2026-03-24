@@ -45,41 +45,63 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
-  private readonly editorInMemoryStateService = inject(EditorInMemoryStateService)
+  private readonly editorInMemoryStateService = inject(
+    EditorInMemoryStateService,
+  );
 
   /**
    * Refrence to the UI element that is rendered when the mode of the file node is set to create a file or folder
    */
-  private  readonly createInput = viewChild<ElementRef<HTMLInputElement>>(
+  private readonly createInput = viewChild<ElementRef<HTMLInputElement>>(
     'create_tree_item_input',
   );
 
   /**
    * File node to render
    */
-  public  readonly fileNode = input.required<fileNode>();
+  public readonly fileNode = input.required<fileNode>();
 
   /**
    * How deep this is being rendered increment each sub child you render
    */
-  public  readonly depth = input.required<number>();
+  public readonly depth = input.required<number>();
+
+  /**
+   * The current active node
+   */
+  public readonly activeNode = input.required<fileNode | null>();
+
+  /**
+   * Holds a refrence ot the root nodes children nodes that where fetched
+   */
+  public readonly rootNodeChildren = input.required<fileNode[]>();
+
+  /**
+   * Emit when the nodes are updated so you update your local copy
+   */
+  public readonly rootNodeChildrenUpdated = output<fileNode[]>();
+
+  /**
+   * Emits when a item is clicked / selected
+   */
+  public readonly itemSelected = output<fileNode>();
 
   /**
    * Calcutes the padding value for the given tree item based on how deep it is in the tree
    */
-  public  readonly paddingLeftValue: Signal<string> = computed(() => {
+  public readonly paddingLeftValue: Signal<string> = computed(() => {
     return `${this.depth() * 8}px`;
   });
 
   /**
    * How long it will take on hover to show tooltip
    */
-  public  readonly matTooltipShowDelayInMilliseconds = signal(750);
+  public readonly matTooltipShowDelayInMilliseconds = signal(750);
 
   /**
    * Keeps track of fetching children nodes for the given node
    */
-  public  readonly isFetchingChildren = signal(false);
+  public readonly isFetchingChildren = signal(false);
 
   /**
    * Keeps track if there was any error when fetching children
@@ -89,7 +111,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   /**
    * Keeps track when creating a file or folder in the system
    */
-  public  readonly isCreatingOrRenamingFileOrFolder = signal(false);
+  public readonly isCreatingOrRenamingFileOrFolder = signal(false);
 
   /**
    * Keeps track of any errors that occured when creating file or folder in the system or renaming it
@@ -107,21 +129,6 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     }
     return normalize(node.path) === normalize(activeNode.path);
   });
-
-  /**
-   * The current active node
-   */
-  public readonly activeNode = input.required<fileNode | null>();
-
-  /**
-   * Holds a refrence ot the root nodes children nodes that where fetched
-   */
-  public readonly rootNodeChildren = input.required<fileNode[]>();
-
-  /**
-   * Emit when the nodes are updated so you update your local copy
-   */
-  public readonly rootNodeChildrenUpdated = output<fileNode[]>();
 
   /**
    * Holds the state for the create file or folder form
@@ -299,7 +306,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     removeTempoaryFileNodes(nodes);
 
     this.rootNodeChildrenUpdated.emit(nodes);
-    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(false)
+    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(false);
   }
 
   /**
@@ -326,6 +333,8 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
 
     const node = this.fileNode();
     const nodes = this.rootNodeChildren();
+
+    this.itemSelected.emit(node)
 
     if (!node.isDirectory) {
       this.editorFileOpenerService.openFileNodeInEditor(node);

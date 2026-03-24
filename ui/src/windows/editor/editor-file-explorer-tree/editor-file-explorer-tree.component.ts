@@ -16,7 +16,10 @@ import { useEffect } from '../../../lib/useEffect';
 import { normalize } from '../../../lib/path';
 
 /**
- * Component that renders a node tree structure for a node and it's children node
+ * Component that renders a node tree structure for a node and it's children node.
+ * 
+ * THe reason we design it to be agnostic and accept root node and other fields so we can render a tree of any directory file explroer is just a implamenation of this 
+ * with specific contrained needs.
  *
  * Like:
  *
@@ -75,6 +78,11 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
    * Emits a event when the root nodes children are updated and then emitted
    */
   public readonly rootNodeChildrenUpdated = output<fileNode[]>();
+
+  /**
+   * Emits when a child tree node is clicked
+   */
+  public readonly itemSelected = output<fileNode>();
 
   constructor() {
     useEffect(

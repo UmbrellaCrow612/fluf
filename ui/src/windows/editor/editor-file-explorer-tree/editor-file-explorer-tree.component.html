@@ -5,8 +5,9 @@
         [fileNode]="node"
         [depth]="0"
         [rootNodeChildren]="rootNodeChildren()"
-        (rootNodeChildrenUpdated)="this.rootNodeChildrenUpdated.emit($event)"
         [activeNode]="activeNode()"
+        (rootNodeChildrenUpdated)="this.rootNodeChildrenUpdated.emit($event)"
+        (itemSelected)="itemSelected.emit($event)"
       />
     }
   </div>
