@@ -3,225 +3,83 @@
  */
 
 import { spawn } from "child_process";
-import fs from "fs/promises";
-import path from "path";
+import path from "node:path";
 import type {
   CombinedCallback,
-  gitFileEntry,
-  gitSection,
-  gitStatus,
-  gitStatusResult,
+  gitCurrentBranch,
   hasGit,
-  initializeGit,
   IpcMainInvokeEventCallback,
-  isGitInitialized,
 } from "./type.js";
 import { logger } from "./logger.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
- * Parses the stdout from `git status` and returns a structured JSON object.
- *
- * @param {string} stdout - The raw stdout string from `git status`
- * @returns {import("./type").gitStatusResult} A structured representation of the git status
+ * Run git command
+ * @param directory The directory to run the cmds in
+ * @param flags Addtional git commands and flags
+ * @returns Stdout of the git process
  */
-function parseGitStatus(stdout: string): gitStatusResult {
-  const lines = stdout.split(/\r?\n/);
-  /** @type {import("./type").gitStatusResult} */
-  const result: gitStatusResult = {
-    branch: null,
-    branchStatus: null,
-    staged: [],
-    unstaged: [],
-    untracked: [],
-    ignored: [],
-    clean: false,
-  };
-
-  /** @type {import("./type").gitSection} */
-  let section: gitSection = null;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-
-    // Skip git hint lines
-    if (trimmed.startsWith("(use ")) continue;
-    if (trimmed.startsWith("(all conflicts")) continue;
-    if (trimmed.startsWith("(fix conflicts")) continue;
-    if (trimmed.startsWith("no changes added")) continue;
-
-    // --- Branch info ---
-    if (trimmed.startsWith("On branch")) {
-      result.branch = trimmed.replace("On branch ", "").trim();
-      continue;
-    }
-
-    if (trimmed.startsWith("Your branch")) {
-      result.branchStatus = trimmed;
-      continue;
-    }
-
-    // --- Section markers ---
-    if (trimmed.startsWith("Changes to be committed:")) {
-      section = "staged";
-      continue;
-    }
-    if (trimmed.startsWith("Changes not staged for commit:")) {
-      section = "unstaged";
-      continue;
-    }
-    if (trimmed.startsWith("Untracked files:")) {
-      section = "untracked";
-      continue;
-    }
-    if (trimmed.startsWith("Ignored files:")) {
-      section = "ignored";
-      continue;
-    }
-
-    if (trimmed.includes("nothing to commit, working tree clean")) {
-      result.clean = true;
-      continue;
-    }
-
-    // --- Parse file lines within known sections ---
-    if (
-      section &&
-      ["staged", "unstaged", "untracked", "ignored"].includes(section)
-    ) {
-      const match = trimmed.match(
-        /^(modified:|deleted:|new file:|renamed:|.+->.+)?\s*(.+)$/,
-      );
-      if (match) {
-        const status: any = match[1] ? match[1].replace(":", "").trim() : null;
-        const file = match[2] ? match[2].trim() : null;
-
-        if (file) {
-          /** @type {import("./type").gitFileEntry} */
-          const entry: gitFileEntry = {
-            status: status || "untracked",
-            file,
-          };
-
-          result /** @type {"staged"|"unstaged"|"untracked"|"ignored"} */[
-            section
-          ]
-            .push(entry);
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-/**
- * Spawn a Git command and return structured output
- * @param {string[]} args - List of args to run ["init"]
- * @param {string} cwd - The directory to run the cmds in
- * @param {number} [timeOut=5000] - The timeout for a git cmd's to take before it fails
- * @returns {Promise<string>}
- */
-function runGitCommand(
-  args: string[],
-  cwd: string,
-  timeOut: number = 5000,
-): Promise<string> {
+function runGitCommand(directory: string, flags: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    const gitProc = spawn("git", args, {
-      cwd: path.normalize(path.resolve(cwd)),
-    });
+    try {
+      const process = spawn("git", flags, { cwd: directory });
+      let stdout = "";
 
-    let stdoutData = "";
-    let stderrData = "";
-    let finished = false;
+      process.stdout.on("data", (chunk) => {
+        stdout += chunk.toString();
+      });
 
-    const timeout = setTimeout(() => {
-      if (!finished) {
-        finished = true;
-        gitProc.kill("SIGTERM");
-        reject(new Error("Git command timed out"));
-      }
-    }, timeOut);
+      process.on("error", (err) => {
+        logger.error("Git process failed to spawn ", err);
+        reject(err);
+      });
 
-    gitProc.stdout.on("data", (data) => {
-      stdoutData += data.toString();
-    });
-
-    gitProc.stderr.on("data", (data) => {
-      stderrData += data.toString();
-    });
-
-    gitProc.on("close", (code) => {
-      if (finished) return;
-      finished = true;
-      clearTimeout(timeout);
-
-      if (code !== 0) {
-        reject(
-          new Error(stderrData.trim() || `Git exited with code ${code}`),
-        ); return;
-      }
-
-      resolve(stdoutData.trim());
-    });
+      process.on("exit", (code) => {
+        if (code === 0) {
+          resolve(stdout);
+        } else {
+          reject(new Error("Git process exited with non zero code"));
+        }
+      });
+    } catch (error) {
+      logger.error("Failed to run git commands ", flags);
+      reject(error);
+    }
   });
 }
 
-const hasGitImpl: hasGit = async () => {
-  try {
-    const version = await runGitCommand(["--version"], process.cwd());
-    return version.startsWith("git");
-  } catch {
-    return false;
-  }
-};
-
-const gitInitImpl: CombinedCallback<
+const hasGitImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
-  initializeGit
-> = async (_, dir) => {
-  const p = path.normalize(path.resolve(dir));
-
+  hasGit
+> = async () => {
   try {
-    await runGitCommand(["init"], p);
-
+    const basePath = path.resolve("/");
+    await runGitCommand(basePath, ["--version"]);
     return true;
   } catch (error) {
-    logger.error("Failed to init git repo " + p + " " + JSON.stringify(error));
+    logger.error("System does not have git or run git command failed ", error);
     return false;
   }
 };
 
-const igGitInit: CombinedCallback<
+const gitCurrentBranchImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
-  isGitInitialized
-> = async (_, dir) => {
-  const gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
-
+  gitCurrentBranch
+> = async (_, directory) => {
   try {
-    await fs.access(gitPath);
-    return true;
+    const branch = await runGitCommand(directory, [
+      "rev-parse",
+      "--abbrev-ref",
+      "HEAD",
+    ]);
+
+    return branch;
   } catch (error) {
-    logger.error(error, `Failed to check if git is init in directory ${dir}`);
-    return false;
-  }
-};
-
-const gitStatusImpl: CombinedCallback<
-  IpcMainInvokeEventCallback,
-  gitStatus
-> = async (_, dir) => {
-  try {
-    const stdout = await runGitCommand(
-      ["status"],
-      path.normalize(path.resolve(dir)),
+    logger.error(
+      "Failed to check current git branch for path ",
+      directory,
+      error,
     );
-
-    return parseGitStatus(stdout);
-  } catch (err) {
-    logger.error("Failed to check status " + JSON.stringify(err));
     return null;
   }
 };
@@ -234,17 +92,9 @@ export interface GitEvents {
     args: [];
     return: boolean;
   };
-  "git:init": {
+  "git:current:branch": {
     args: [directory: string];
-    return: boolean;
-  };
-  "git:is:init": {
-    args: [directory: string];
-    return: boolean;
-  };
-  "git:status": {
-    args: [directory: string];
-    return: gitStatusResult | null;
+    return: string | null;
   };
 }
 
@@ -253,7 +103,5 @@ export interface GitEvents {
  */
 export const registerGitListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("has:git", hasGitImpl);
-  typedIpcMain.handle("git:init", gitInitImpl);
-  typedIpcMain.handle("git:is:init", igGitInit);
-  typedIpcMain.handle("git:status", gitStatusImpl);
+  typedIpcMain.handle("git:current:branch", gitCurrentBranchImpl);
 };

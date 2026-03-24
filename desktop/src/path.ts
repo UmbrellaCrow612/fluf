@@ -74,9 +74,7 @@ const getRootPathImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   getRootPath
 > = () => {
-  const rootPath = path.parse(path.resolve(path.normalize("/")));
-
-  return Promise.resolve(rootPath.root);
+  return Promise.resolve(path.resolve(path.normalize("/")));
 };
 
 const pathDirnameImpl: CombinedCallback<
