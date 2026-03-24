@@ -30,7 +30,7 @@ import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state
   templateUrl: './editor-plain-text-pane.component.html',
   styleUrl: './editor-plain-text-pane.component.css',
 })
-export class EditorPlainTextPaneComponent {
+export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
@@ -89,6 +89,10 @@ export class EditorPlainTextPaneComponent {
       },
       [this.activeNode],
     );
+  }
+
+  ngOnDestroy(): void {
+    this.cleanUpState();
   }
 
   /**
@@ -211,12 +215,15 @@ export class EditorPlainTextPaneComponent {
         this.createExtensions,
       );
       if (cachedView) {
+        console.log('Using cahche view');
         this.editorView = cachedView;
         this.editorView.focus();
 
         this.hydrateCursorPosition(cachedView);
         return;
       }
+
+      console.log('Creating new cahche view');
 
       /**
        * Holds the content we show in the pane editor
@@ -226,6 +233,7 @@ export class EditorPlainTextPaneComponent {
       const draft = this.editorFileStateService.getDraft(normalizedPath);
       if (draft) {
         docString = draft;
+        console.log('Using saved draft');
       } else {
         docString = await this.electronApi.fsApi.readFile(normalizedPath);
       }
