@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { EditorView } from '@codemirror/view';
 import { EditorState, Extension } from '@codemirror/state';
 import { historyField } from '@codemirror/commands';
-import { normalizePath } from '../../../../shared/path-uri-helpers';
+import { normalize } from '../../../../lib/path';
 
 /**
  * Cached editor state including CodeMirror state and UI state
@@ -104,7 +104,7 @@ export class EditorSessionStateService {
     container: HTMLDivElement,
     getExtensions: () => Extension[],
   ): EditorView | null {
-    const path = normalizePath(filePath);
+    const path = normalize(filePath);
 
     const cached = this.stateCache.get(path);
     if (!cached) return null;
@@ -168,7 +168,7 @@ export class EditorSessionStateService {
    * });
    */
   public setCache(filePath: string, entry: CachedEditorState) {
-    const path = normalizePath(filePath);
+    const path = normalize(filePath);
     this.stateCache.set(path, entry);
     this.enforceCacheLimit();
   }
@@ -238,7 +238,7 @@ export class EditorSessionStateService {
    * this.sessionStateService.removeCache(filePath);
    */
   public removeCache(filePath: string): boolean {
-    const path = normalizePath(filePath);
+    const path = normalize(filePath);
     return this.stateCache.delete(path);
   }
 
@@ -249,7 +249,7 @@ export class EditorSessionStateService {
    * @returns True if a cached state exists, false otherwise
    */
   public hasCache(filePath: string): boolean {
-    return this.stateCache.has(normalizePath(filePath));
+    return this.stateCache.has(normalize(filePath));
   }
 
   /**

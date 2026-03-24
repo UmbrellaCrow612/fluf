@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { normalizePath } from '../../../../shared/path-uri-helpers';
 import { getElectronApi } from '../../../../shared/electron';
+import { normalize } from '../../../../lib/path';
 
 /**
  * Holds files and their current draft content that is not yet saved.
@@ -22,7 +22,7 @@ export class EditorDraftFileService {
    * @param content - The current draft content.
    */
   public setDraft(filePath: string, content: string): void {
-    this.fileDraftMap.set(normalizePath(filePath), content);
+    this.fileDraftMap.set(normalize(filePath), content);
   }
 
   /**
@@ -31,7 +31,7 @@ export class EditorDraftFileService {
    * @returns The draft content or undefined if no draft exists.
    */
   public getDraft(filePath: string): string | undefined {
-    return this.fileDraftMap.get(normalizePath(filePath));
+    return this.fileDraftMap.get(normalize(filePath));
   }
 
   /**
@@ -40,7 +40,7 @@ export class EditorDraftFileService {
    * @returns Whether the given file has unsaved draft.
    */
   public hasDraft(filePath: string): boolean {
-    return this.fileDraftMap.has(normalizePath(filePath));
+    return this.fileDraftMap.has(normalize(filePath));
   }
 
   /**
@@ -49,7 +49,7 @@ export class EditorDraftFileService {
    * @returns Whether a draft was actually deleted.
    */
   public removeDraft(filePath: string): boolean {
-    return this.fileDraftMap.delete(normalizePath(filePath));
+    return this.fileDraftMap.delete(normalize(filePath));
   }
 
   /**
@@ -82,7 +82,7 @@ export class EditorDraftFileService {
    */
   public async saveDraft(filePath: string): Promise<boolean> {
     try {
-      const normalizedPath = normalizePath(filePath);
+      const normalizedPath = normalize(filePath);
       const draft = this.fileDraftMap.get(normalizedPath);
       if (!draft) {
         console.warn("No draft found for file path ", filePath)
@@ -91,7 +91,7 @@ export class EditorDraftFileService {
 
       const success = await this.electronApi.fsApi.write(normalizedPath, draft);
       if (!success) {
-        console.error("Failed to write to file path ", normalizePath, draft)
+        console.error("Failed to write to file path ", filePath, draft)
         return false;
       }
 

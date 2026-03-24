@@ -144,6 +144,7 @@ export class EditorFrameComponent implements OnInit {
               let res = await this.electronApi.fsApi.selectFolder();
               if (res.canceled) return;
 
+              // tood call reset then set select dir as this ro make some util 
               this.editorStateService.selectedDirectoryPath.set(
                 res.filePaths[0],
               );

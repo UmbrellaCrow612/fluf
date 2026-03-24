@@ -2,20 +2,21 @@ import {
   Component,
   computed,
   inject,
+  input,
   OnDestroy,
+  output,
   signal,
   Signal,
 } from '@angular/core';
 import { EditorFileExplorerTreeItemComponent } from '../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component';
 import { fileNode, voidCallback } from '../../../gen/type';
-import { EditorStateService } from '../core/state/editor-state.service';
 import { getElectronApi } from '../../../shared/electron';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { normalizePath } from '../../../shared/path-uri-helpers';
 import { useEffect } from '../../../lib/useEffect';
+import { normalize } from '../../../lib/path';
 
 /**
- * Main component in file explorer that renders the actual file nodes in a tree / file pattern:
+ * Component that renders a node tree structure for a node and it's children node
  *
  * Like:
  *
@@ -26,7 +27,6 @@ import { useEffect } from '../../../lib/useEffect';
  * ------ too.py
  *
  * ```
- * etc
  */
 @Component({
   selector: 'app-editor-file-explorer-tree',
@@ -35,7 +35,6 @@ import { useEffect } from '../../../lib/useEffect';
   styleUrl: './editor-file-explorer-tree.component.css',
 })
 export class EditorFileExplorerTreeComponent implements OnDestroy {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
@@ -56,39 +55,59 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
    */
   public error = signal<string | null>(null);
 
+  /**
+   * Holds a refrence to the root node / selected directory node to show in the tree view
+   */
+  public readonly rootNode = input.required<fileNode>();
+
+  /**
+   * Holds a refrence to the children nodes fetched fore the root node or previous nodes emitted change this when the given children change and are emitted to show
+   * the nodes in UI
+   */
+  public readonly rootNodeChildren = input.required<fileNode[]>();
+
+  /**
+   * The current active node
+   */
+  public readonly activeNode = input.required<fileNode | null>();
+
+  /**
+   * Emits a event when the root nodes children are updated and then emitted
+   */
+  public readonly rootNodeChildrenUpdated = output<fileNode[]>();
+
   constructor() {
     useEffect(
+      // whenever refresh directory is run we merge nodes
       async (_, count) => {
         console.log('[EditorFileExplorerTreeComponent] refresh effect ran');
-        const selectedPath = this.editorStateService.selectedDirectoryPath();
+        const rootNode = this.rootNode();
 
-        if (count > 0 && selectedPath) {
-          await this.mergeDirectoryNodes(selectedPath);
+        if (count > 0 && rootNode) {
+          await this.mergeDirectoryNodes(rootNode);
         }
       },
       [this.editorInMemoryStateService.refreshDirectory],
-      {
-        debugName: 'RefreshNodes',
-      },
     );
 
     useEffect(
-      async (_, selectedDir) => {
+      async (_, newRootNode) => {
+        // whenever the root node changes i.e selected directory we re run out logic
         console.log(
           '[EditorFileExplorerTreeComponent] selected directory effect ran',
         );
         this.error.set(null);
 
-        if (!selectedDir) {
+        if (!newRootNode) {
           this.error.set(`No selected directory`);
           return;
         }
 
         this.selectedDirectoryUnsub?.();
 
-        const existingNodes = this.editorStateService.directoryFileNodes();
+        const nodes = this.rootNodeChildren();
 
-        if (selectedDir !== this.previousSelectedDirectory) {
+        if (normalize(newRootNode.path) !== this.previousSelectedDirectory) {
           if (this.previousSelectedDirectory) {
             console.log(
               `Stopped watching at path ${this.previousSelectedDirectory}`,
@@ -96,13 +115,15 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
             this.electronApi.fsApi.stopWatching(this.previousSelectedDirectory);
           }
 
-          this.previousSelectedDirectory = selectedDir;
+          this.previousSelectedDirectory = normalize(newRootNode.path);
 
           this.selectedDirectoryUnsub = this.electronApi.fsApi.onChange(
             this.previousSelectedDirectory,
             (path, event) => {
               console.log(
-                `[EditorFileExplorerTreeComponent] Directory changed at path ${path} ${event}`,
+                `[EditorFileExplorerTreeComponent] Directory changed at path `,
+                path,
+                event,
               );
               this.editorInMemoryStateService.refreshDirectory.update(
                 (x) => x + 1,
@@ -110,16 +131,16 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
             },
           );
 
-          if (existingNodes && existingNodes.length > 0) {
+          if (nodes && nodes.length > 0) {
             console.log('Merging latest nodes');
-            await this.mergeDirectoryNodes(this.previousSelectedDirectory);
+            await this.mergeDirectoryNodes(newRootNode);
           } else {
             console.log('Fetching nodes latests');
             await this.fetchDirectoryNodes(this.previousSelectedDirectory);
           }
         }
       },
-      [this.editorStateService.selectedDirectoryPath],
+      [this.rootNode],
     );
   }
 
@@ -128,14 +149,15 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
   }
 
   /**
-   * Merges the current nodes inb state with latest keeping state between them and also removing stale nodes and updating there values
-   * @param path - The selected directory path to fetch and set the global selected directory nodes
+   * Merges the current nodes in state with latest keeping state between them and also removing stale nodes and updating there values
+   * @param rootNode - The root node to fetch the merge the nodes for
    */
-  private mergeDirectoryNodes = async (path: string) => {
-    const current = this.selectedDirectoryFileNodes();
-    const latest = await this.electronApi.fsApi.readDir(path);
+  private mergeDirectoryNodes = async (rootNode: fileNode) => {
+    const current = this.rootNodeChildren();
+    const latest = await this.electronApi.fsApi.readDir(rootNode.path);
     const updated = await this.mergeDirectoryNodesImpl(current, latest);
-    this.editorStateService.directoryFileNodes.set(updated);
+
+    this.rootNodeChildrenUpdated.emit(updated);
   };
 
   /**
@@ -152,13 +174,13 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
      * Holds the current nodes mapped from there file paths to the nodes
      */
     const currentMap = new Map<string, fileNode>(
-      currentNodes.map((node) => [normalizePath(node.path), node]),
+      currentNodes.map((node) => [normalize(node.path), node]),
     );
 
     const result: fileNode[] = [];
 
     for (const latestNode of latestNodes) {
-      const existing = currentMap.get(normalizePath(latestNode.path));
+      const existing = currentMap.get(normalize(latestNode.path));
 
       // New node
       if (!existing) {
@@ -197,16 +219,9 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
   private fetchDirectoryNodes = async (path: string) => {
     try {
       const nodes = await this.electronApi.fsApi.readDir(path);
-      this.editorStateService.directoryFileNodes.set(nodes);
+      this.rootNodeChildrenUpdated.emit(nodes);
     } catch (error: any) {
       this.error.set(`Failed to read the selected directory ${error?.message}`);
     }
   };
-
-  /**
-   * Keeps track of the nodes for the selected directory and it's current nodes
-   */
-  public selectedDirectoryFileNodes: Signal<fileNode[]> = computed(() => {
-    return this.editorStateService.directoryFileNodes() ?? [];
-  });
 }

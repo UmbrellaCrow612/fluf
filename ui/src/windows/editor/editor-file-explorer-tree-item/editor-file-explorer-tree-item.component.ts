@@ -5,6 +5,7 @@ import {
   ElementRef,
   inject,
   input,
+  output,
   signal,
   Signal,
   viewChild,
@@ -12,15 +13,12 @@ import {
 import { fileNode } from '../../../gen/type';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { normalizePath } from '../../../shared/path-uri-helpers';
 import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
 import {
   removeTempoaryFileNodes,
   replaceFileNode,
 } from '../../../shared/file-node-helpers';
 import { getElectronApi } from '../../../shared/electron';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import {
   FormControl,
   FormGroup,
@@ -29,6 +27,8 @@ import {
 } from '@angular/forms';
 import { ApplicationContextMenuService } from '../../../shared/services/application-context-menu.service';
 import { EditorFileExplorerContextMenuComponent } from '../editor-file-explorer-context-menu/editor-file-explorer-context-menu.component';
+import { normalize } from '../../../lib/path';
+import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 
 /**
  * Used to render a given file node content and it's children
@@ -40,59 +40,56 @@ import { EditorFileExplorerContextMenuComponent } from '../editor-file-explorer-
   styleUrl: './editor-file-explorer-tree-item.component.css',
 })
 export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorFileOpenerService = inject(EditorFileOpenerService);
   private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
+  private readonly editorInMemoryStateService = inject(EditorInMemoryStateService)
 
   /**
    * Refrence to the UI element that is rendered when the mode of the file node is set to create a file or folder
    */
-  private createInput = viewChild<ElementRef<HTMLInputElement>>(
+  private  readonly createInput = viewChild<ElementRef<HTMLInputElement>>(
     'create_tree_item_input',
   );
 
   /**
    * File node to render
    */
-  public fileNode = input.required<fileNode>();
+  public  readonly fileNode = input.required<fileNode>();
 
   /**
    * How deep this is being rendered increment each sub child you render
    */
-  public depth = input.required<number>();
+  public  readonly depth = input.required<number>();
 
   /**
    * Calcutes the padding value for the given tree item based on how deep it is in the tree
    */
-  public paddingLeftValue: Signal<string> = computed(() => {
+  public  readonly paddingLeftValue: Signal<string> = computed(() => {
     return `${this.depth() * 8}px`;
   });
 
   /**
    * How long it will take on hover to show tooltip
    */
-  public matTooltipShowDelayInMilliseconds = signal(750);
+  public  readonly matTooltipShowDelayInMilliseconds = signal(750);
 
   /**
    * Keeps track of fetching children nodes for the given node
    */
-  public isFetchingChildren = signal(false);
+  public  readonly isFetchingChildren = signal(false);
 
   /**
    * Keeps track if there was any error when fetching children
    */
-  public fetchingChildrenError = signal<string | null>('');
+  public readonly fetchingChildrenError = signal<string | null>('');
 
   /**
    * Keeps track when creating a file or folder in the system
    */
-  public isCreatingOrRenamingFileOrFolder = signal(false);
+  public  readonly isCreatingOrRenamingFileOrFolder = signal(false);
 
   /**
    * Keeps track of any errors that occured when creating file or folder in the system or renaming it
@@ -103,17 +100,33 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    * Keeps track if the given item is active either by being select or open in the editor view
    */
   public isActive: Signal<boolean> = computed(() => {
-    let node = this.editorStateService.fileExplorerActiveFileOrFolder();
-    if (!node) {
+    const activeNode = this.activeNode();
+    const node = this.fileNode();
+    if (!node || !activeNode) {
       return false;
     }
-    return normalizePath(this.fileNode().path) === normalizePath(node.path);
+    return normalize(node.path) === normalize(activeNode.path);
   });
+
+  /**
+   * The current active node
+   */
+  public readonly activeNode = input.required<fileNode | null>();
+
+  /**
+   * Holds a refrence ot the root nodes children nodes that where fetched
+   */
+  public readonly rootNodeChildren = input.required<fileNode[]>();
+
+  /**
+   * Emit when the nodes are updated so you update your local copy
+   */
+  public readonly rootNodeChildrenUpdated = output<fileNode[]>();
 
   /**
    * Holds the state for the create file or folder form
    */
-  public createInputForm = new FormGroup({
+  public readonly createInputForm = new FormGroup({
     /**
      * The name of the file or folder to create
      */
@@ -282,10 +295,11 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    * Attempts to remove all file nodes in the tree that are not default i.e create rename etc
    */
   public deleteTemporaryNodes() {
-    const nodes = this.editorStateService.directoryFileNodes() ?? [];
+    const nodes = this.rootNodeChildren();
     removeTempoaryFileNodes(nodes);
-    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
-    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(null);
+
+    this.rootNodeChildrenUpdated.emit(nodes);
+    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(false)
   }
 
   /**
@@ -311,35 +325,34 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     this.fetchingChildrenError.set(null);
 
     const node = this.fileNode();
+    const nodes = this.rootNodeChildren();
 
     if (!node.isDirectory) {
       this.editorFileOpenerService.openFileNodeInEditor(node);
       return;
     }
 
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(node);
-
     if (node.expanded) {
-      const nodes = this.editorStateService.directoryFileNodes() ?? [];
       const copy = structuredClone(node);
       copy.expanded = false;
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
         console.error('Failed to replce node ', JSON.stringify(node));
       }
-      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+
+      this.rootNodeChildrenUpdated.emit(nodes);
       return;
     }
 
     if (node.children.length > 0) {
-      const nodes = this.editorStateService.directoryFileNodes() ?? [];
       const copy = structuredClone(node);
       copy.expanded = true;
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
         console.error('Failed to replce node ', JSON.stringify(node));
       }
-      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+
+      this.rootNodeChildrenUpdated.emit(nodes);
       return;
     }
 
@@ -352,13 +365,12 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       copy.children = children;
       copy.expanded = true;
 
-      const nodes = this.editorStateService.directoryFileNodes() ?? [];
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
         console.error('Failed to replce node ', JSON.stringify(node));
       }
 
-      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+      this.rootNodeChildrenUpdated.emit(nodes);
     } catch (error: any) {
       console.error('Failed to fetch children for node ', error);
       this.fetchingChildrenError.set(

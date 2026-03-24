@@ -1,6 +1,6 @@
 import { Injectable, signal, Signal } from '@angular/core';
 import { voidCallback } from '../../../../gen/type';
-import { normalizePath } from '../../../../shared/path-uri-helpers';
+import { normalize } from '../../../../lib/path';
 
 /**
  * Shape of the callback that runs when a dirty file change happens.
@@ -32,7 +32,7 @@ export class EditorDirtyFileService {
    * @returns A promise that resolves when all callbacks have been invoked.
    */
   private async notify(filePath: string): Promise<void> {
-    const path = normalizePath(filePath);
+    const path = normalize(filePath);
     const callbacks = this.fileCallbackMap.get(path) ?? [];
     const isDirty = this.fileDirtyMap.get(path) ?? false;
 
@@ -46,7 +46,7 @@ export class EditorDirtyFileService {
    * @param filePath - The path of the file to mark as dirty.
    */
   public markDirty(filePath: string): void {
-    const path = normalizePath(filePath);
+    const path = normalize(filePath);
     this.fileDirtyMap.set(path, true);
     this.notify(path);
   }
@@ -56,7 +56,7 @@ export class EditorDirtyFileService {
    * @param filePath - The path of the file to mark as clean.
    */
   public markClean(filePath: string): void {
-    const path = normalizePath(filePath);
+    const path = normalize(filePath);
     this.fileDirtyMap.set(path, false);
     this.notify(path);
   }
@@ -67,7 +67,7 @@ export class EditorDirtyFileService {
    * @returns `true` if the file has unsaved changes, `false` otherwise.
    */
   public isDirty(filePath: string): boolean {
-    const path = normalizePath(filePath);
+    const path = normalize(filePath);
     return this.fileDirtyMap.get(path) ?? false;
   }
 
@@ -82,7 +82,7 @@ export class EditorDirtyFileService {
     filePath: string,
     callback: EditorDirtyFileChangeCallback,
   ): voidCallback {
-    const normPath = normalizePath(filePath);
+    const normPath = normalize(filePath);
 
     if (this.fileCallbackMap.has(normPath)) {
       this.fileCallbackMap.get(normPath)?.add(callback);

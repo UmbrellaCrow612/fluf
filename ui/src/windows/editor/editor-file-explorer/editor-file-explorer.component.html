@@ -44,5 +44,10 @@
     </div>
   </div>
 
-  <app-editor-file-explorer-tree />
+  <app-editor-file-explorer-tree
+    [rootNode]="rootNode()"
+    [rootNodeChildren]="rootNodeChildren()"
+    [activeNode]="activeNode()"
+    (rootNodeChildrenUpdated)="updateRootNodeChildren($event)"
+  />
 </div>

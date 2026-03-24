@@ -1,5 +1,5 @@
 import { fileNode } from '../gen/type';
-import { normalizePath } from './path-uri-helpers';
+import { normalize } from '../lib/path';
 
 /**
  * Collapse all nodes at the first layer by clearing their children and setting expanded to false
@@ -24,7 +24,7 @@ export function removeFileNodeIfExists(
   target: fileNode,
 ): void {
   const index = nodes.findIndex(
-    (node) => normalizePath(node.path) === normalizePath(target.path),
+    (node) => normalize(node.path) === normalize(target.path),
   );
   if (index !== -1) {
     nodes.splice(index, 1);
@@ -42,7 +42,7 @@ export function addFileNodeIfNotExists(
   target: fileNode,
 ): void {
   const exists = nodes.some(
-    (node) => normalizePath(node.path) === normalizePath(target.path),
+    (node) => normalize(node.path) === normalize(target.path),
   );
   if (!exists) {
     nodes.push(target);
@@ -62,7 +62,7 @@ export function replaceFileNode(
   replacement: fileNode,
 ): boolean {
   for (let i = 0; i < nodes.length; i++) {
-    if (normalizePath(nodes[i].path) === normalizePath(target.path)) {
+    if (normalize(nodes[i].path) === normalize(target.path)) {
       nodes[i] = replacement;
       return true;
     }
@@ -103,10 +103,10 @@ export function findFileNodeByPath(
   nodes: fileNode[],
   path: string,
 ): fileNode | undefined {
-  const normalizedTargetPath = normalizePath(path);
+  const normalizedTargetPath = normalize(path);
 
   for (const node of nodes) {
-    if (normalizePath(node.path) === normalizedTargetPath) {
+    if (normalize(node.path) === normalizedTargetPath) {
       return node;
     }
 

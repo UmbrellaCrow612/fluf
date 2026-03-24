@@ -4,7 +4,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { fileNode, fileNodeMode } from '../../../gen/type';
-import { normalizePath } from '../../../shared/path-uri-helpers';
 import { A11yModule } from '@angular/cdk/a11y';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 import { EditorStateService } from '../core/state/editor-state.service';
@@ -13,6 +12,7 @@ import {
   findFileNodeByPath,
   replaceFileNode,
 } from '../../../shared/file-node-helpers';
+import { normalize } from '../../../lib/path';
 
 /**
  * Renders a file explorer with the current files and folders in the select directory
@@ -61,7 +61,7 @@ export class EditorFileExplorerComponent {
   /**
    * Keep track of the root node i.e the select directory as the root node, used when creating files or folders in the root level
    */
-  private readonly rootNode: Signal<fileNode> = computed(() => {
+  public readonly rootNode: Signal<fileNode> = computed(() => {
     return {
       children: [],
       expanded: false,
@@ -77,6 +77,28 @@ export class EditorFileExplorerComponent {
     };
   });
 
+  /**
+   * Keeps track of the current selected directory nodes
+   */
+  public readonly rootNodeChildren: Signal<fileNode[]> = computed(
+    () => this.editorStateService.directoryFileNodes() ?? [],
+  );
+
+  /**
+   * Keeps track of the current file in the editor
+   */
+  public readonly activeNode: Signal<fileNode | null> = computed(() =>
+    this.editorStateService.currentOpenFileInEditor(),
+  );
+
+  /**
+   * Updates the session state nodes for the selected directory root node
+   * @param nodes The updates nodes
+   */
+  public updateRootNodeChildren(nodes: fileNode[]) {
+    this.editorStateService.directoryFileNodes.set(nodes);
+  }
+
   public readonly isRootNodeActive: Signal<boolean> = computed(() => {
     const activeNode = this.editorStateService.fileExplorerActiveFileOrFolder();
     if (!activeNode) {
@@ -84,7 +106,7 @@ export class EditorFileExplorerComponent {
     }
     const rootNode = this.rootNode();
 
-    return normalizePath(rootNode.path) === normalizePath(activeNode.path);
+    return normalize(rootNode.path) === normalize(activeNode.path);
   });
 
   /**
@@ -124,7 +146,7 @@ export class EditorFileExplorerComponent {
 
     this.editorInMemoryStateService.isCreateFileOrFolderActive.set(true);
 
-    const rootPath = normalizePath(
+    const rootPath = normalize(
       this.editorStateService.selectedDirectoryPath()!,
     );
     const nodes = this.editorStateService.directoryFileNodes() ?? [];
@@ -137,7 +159,7 @@ export class EditorFileExplorerComponent {
     const targetDirPath = copy.isDirectory ? copy.path : copy.parentPath;
 
     // Handle special case: If the active node path is the root select directory then we just push onto top level
-    if (normalizePath(targetDirPath) === rootPath) {
+    if (normalize(targetDirPath) === rootPath) {
       nodes.push(
         this.createFileOrFolderNode(targetDirPath, targetDirPath, mode),
       );
