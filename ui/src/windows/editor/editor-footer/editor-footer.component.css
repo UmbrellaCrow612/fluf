@@ -9,7 +9,6 @@
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   overflow-y: hidden;
   overflow-x: auto;
@@ -36,4 +35,40 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
   transition: all 0.15s ease;
+}
+
+.editor_footer_git_branch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  padding: 2px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  transition: all 0.15s ease;
+  cursor: default;
+  border: 1px solid transparent;
+}
+
+.editor_footer_git_branch:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.git_branch_icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.git_branch_name {
+  font-family: var(--code-editor-font-family);
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

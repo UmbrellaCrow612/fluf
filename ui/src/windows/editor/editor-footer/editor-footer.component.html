@@ -1,8 +1,13 @@
 <footer class="editor_footer scroll_bar">
-  @if (hasGit()) {
-    <div>
-      <div>icon</div>
-      <div>Current branch</div>
+  @if (hasGit() && currentBranch()) {
+    <div
+      class="editor_footer_git_branch"
+      [matTooltip]="'current branch ' + this.currentBranch()"
+    >
+      <span class="git_branch_icon">
+        <mat-icon fontIcon="alt_route" />
+      </span>
+      <span class="git_branch_name">{{ currentBranch() }}</span>
     </div>
   }
 

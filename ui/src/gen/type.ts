@@ -469,70 +469,15 @@ export type ripgrepApi = {
  * Callback structure for callback
  */
 export type voidCallback = () => void;
-export type gitFileStatus =
-  | "modified"
-  | "deleted"
-  | "new file"
-  | "renamed"
-  | "untracked"
-  | "unknown";
-export type gitFileEntry = {
-  /**
-   * - The status of the file (e.g., modified, deleted, untracked, etc.)
-   */
-  status: gitFileStatus;
-  /**
-   * - The file path affected
-   */
-  file: string;
-};
-export type gitSection = "staged" | "unstaged" | "untracked" | "ignored" | null;
-export type gitStatusResult = {
-  /**
-   * - The current branch name
-   */
-  branch: string | null;
-  /**
-   * - The descriptive status of the branch (ahead/behind/diverged)
-   */
-  branchStatus: string | null;
-  /**
-   * - Files staged for commit
-   */
-  staged: gitFileEntry[];
-  /**
-   * - Files modified but not staged
-   */
-  unstaged: gitFileEntry[];
-  /**
-   * - Untracked files
-   */
-  untracked: gitFileEntry[];
-  /**
-   * - Ignored files (only if shown with `--ignored`)
-   */
-  ignored: gitFileEntry[];
-  /**
-   * - Whether the working directory is clean
-   */
-  clean: boolean;
-};
-/**
- * Runs git status in the current project and returns the result
- */
-export type gitStatus = (directory: string) => Promise<gitStatusResult | null>;
 /**
  * Checks if the OS has git installed
  */
 export type hasGit = () => Promise<boolean>;
 /**
- * Checks if the given folder has git Initialized
+ * Get the current branch a given directory is on 
+ * @returns The branch name or null if git is not on the directory or system
  */
-export type isGitInitialized = (directory: string) => Promise<boolean>;
-/**
- * Initialize git into a given folder
- */
-export type initializeGit = (directory: string) => Promise<boolean>;
+export type gitCurrentBranch = (directory:string) => Promise<string | null>
 /**
  * Object that contains all the git helper functions
  */
@@ -542,17 +487,9 @@ export type gitApi = {
    */
   hasGit: hasGit;
   /**
-   * - Checks if a folder has git tracking
+   * Get the current branch a given path is on
    */
-  isGitInitialized: isGitInitialized;
-  /**
-   * - Init git inot a folder
-   */
-  initializeGit: initializeGit;
-  /**
-   * - Run git status in a folder and get the result
-   */
-  gitStatus: gitStatus;
+  getCurrentBranch: gitCurrentBranch
 };
 /**
  * Result object returned from fsearch
