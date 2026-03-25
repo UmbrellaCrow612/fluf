@@ -15,14 +15,14 @@ import { fileNode } from '../../../gen/type';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { basicSetup, EditorView } from 'codemirror';
 import { useEffect } from '../../../lib/useEffect';
-import { editorPlainTextPaneExtension } from './extensions/theme';
+import { editorPlainTextPaneThemeExtension } from './extensions/theme';
 import { EditorFileStateService } from '../core/services/editor-file-state.service';
 import { EditorSessionStateService } from '../core/services/editor-session-state.service';
 import { EditorPathBreadcrumbBarComponent } from '../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component';
 import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
 
 /**
- * Shows a editor for plain text documents
+ * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
  */
 @Component({
   selector: 'app-editor-plain-text-pane',
@@ -183,9 +183,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    * @param node The file to show
    */
   private async displayPlainTextEditor(node: fileNode): Promise<void> {
-    const extension = node.extension.trim();
-    if (node.isDirectory || (extension !== '' && extension !== '.txt')) {
-      this.error.set('File is not a text file or has a extension');
+    if (node.isDirectory) {
+      this.error.set('Node must be a file not a directory');
       return;
     }
 
@@ -262,7 +261,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     return [
       basicSetup,
       this.updateListener,
-      editorPlainTextPaneExtension,
+      editorPlainTextPaneThemeExtension,
       history(),
     ];
   };

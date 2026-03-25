@@ -60,7 +60,6 @@ export const EDITOR_MAIN_ACTIVE_ELEMENT = {
   VIDEO_EDITOR: 'video-editor',
   PDF_EDITOR: 'pdf-editor',
   UNKNOWN: 'unknown',
-  CODE_EDITOR: 'code-editor',
   AUDIO_EDITOR: 'audio-editor',
   MARKDOWN_EDITOR: 'markdown-editor',
 } as const;

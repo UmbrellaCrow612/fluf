@@ -110,19 +110,7 @@ export class EditorFileOpenerService {
       return;
     }
 
-    if (this.isTextDocumentOrHasNoExtension(extension)) {
-      this.setMainActiveElementInState(
-        EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR,
-      );
-      return;
-    }
-
-    if (this.hasAnyExtension(extension)) {
-      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.CODE_EDITOR);
-      return;
-    }
-
-    this.setMainActiveElementInState(null);
+    this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR);
   }
 
   /**
@@ -131,21 +119,5 @@ export class EditorFileOpenerService {
    */
   private isPdf(extension: string): boolean {
     return extension === '.pdf';
-  }
-
-  /**
-   * Checks if a file extension is a `txt` or it is empty
-   * @param extension The file extension
-   */
-  private isTextDocumentOrHasNoExtension(extension: string): boolean {
-    return extension === '.txt' || extension.trim() === '';
-  }
-
-  /**
-   * Checks if a file extension is a file extension of any type at least and none empty
-   * @param extension The file extension
-   */
-  private hasAnyExtension(extension: string): boolean {
-    return extension.trim() !== '' && extension.indexOf('.') > 0;
   }
 }

@@ -474,10 +474,40 @@ export type voidCallback = () => void;
  */
 export type hasGit = () => Promise<boolean>;
 /**
- * Get the current branch a given directory is on 
+ * Get the current branch a given directory is on
  * @returns The branch name or null if git is not on the directory or system
  */
-export type gitCurrentBranch = (directory:string) => Promise<string | null>
+export type gitCurrentBranch = (directory: string) => Promise<string | null>;
+/**
+ * Information parsed from git blame
+ */
+export type gitBlameLineInformation = {
+  /**
+   * The commit ID; if it is `00000000`, it means it has not been committed
+   */
+  commit: string | "00000000";
+  /**
+   * The author's name (first and last) or `Not Committed Yet`
+   */
+  author: string | "Not Committed Yet";
+  /**
+   * A datetime string of when it was committed, or last modified if not committed
+   */
+  dateTime: string;
+  /**
+   * The content changed or you're going to commit
+   */
+  content: string;
+};
+/**
+ * Get git blame information for a given file and line
+ */
+export type gitBlameLine = (
+  directory: string,
+  filePath: string,
+  start: number,
+  end: number,
+) => Promise<gitBlameLineInformation | null>;
 /**
  * Object that contains all the git helper functions
  */
@@ -489,7 +519,11 @@ export type gitApi = {
   /**
    * Get the current branch a given path is on
    */
-  getCurrentBranch: gitCurrentBranch
+  getCurrentBranch: gitCurrentBranch;
+  /**
+   * Get git blame information for a given line
+   */
+  gitBlameLine: gitBlameLine;
 };
 /**
  * Result object returned from fsearch

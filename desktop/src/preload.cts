@@ -269,6 +269,7 @@ const gitApi: gitApi = {
   hasGit: (...args) => typedIpcRender.invoke("has:git", ...args),
   getCurrentBranch: (...args) =>
     typedIpcRender.invoke("git:current:branch", ...args),
+  gitBlameLine: (...args) => typedIpcRender.invoke("git:blame:line", ...args)
 };
 
 const fsearchApi: fsearchApi = {
