@@ -23,12 +23,12 @@
 
   /* Layout */
   min-width: 200px;
-  max-width: 90vw;
+  max-width: 50vw;
   min-height: 100px;
-  max-height: 90vh;
+  max-height: 50vh;
 
   /* Overflow handling */
-  overflow: hidden;
+  overflow: auto;
   display: flex;
   flex-direction: column;
 
@@ -37,8 +37,3 @@
   outline: none;
 }
 
-/* Dialog backdrop using ::backdrop pseudo-element */
-.application_context_dialog::backdrop {
-  background-color: var(--bg-overlay);
-  backdrop-filter: blur(2px);
-}

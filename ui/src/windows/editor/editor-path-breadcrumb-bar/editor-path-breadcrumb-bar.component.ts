@@ -1,9 +1,11 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { fileNode } from '../../../gen/type';
 import { useEffect } from '../../../lib/useEffect';
 import { getElectronApi } from '../../../shared/electron';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
+import { ApplicationContextMenuService } from '../../../shared/services/application-context-menu.service';
+import { EditorPathBreadcrumbContextMenuComponent } from '../editor-path-breadcrumb-context-menu/editor-path-breadcrumb-context-menu.component';
 
 /**
  * Displays a bread crumb of files and folders from the given path file path
@@ -16,6 +18,9 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class EditorPathBreadcrumbBarComponent {
   private readonly electronApi = getElectronApi();
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
+  );
 
   /**
    * The file in which you wanrt to show a breadcrumb for
@@ -53,7 +58,7 @@ export class EditorPathBreadcrumbBarComponent {
   private async display(node: fileNode) {
     this.isLoading.set(true);
     this.error.set(null);
-    this.segmentNodes.set([])
+    this.segmentNodes.set([]);
 
     try {
       const nodes: fileNode[] = [];
@@ -65,12 +70,29 @@ export class EditorPathBreadcrumbBarComponent {
         nodes.push(await this.electronApi.fsApi.getNode(seg));
       }
 
-      this.segmentNodes.set(nodes)
+      this.segmentNodes.set(nodes);
     } catch (error: any) {
       this.error.set(`Failed to load breadcrumb ${error?.message}`);
       console.error('Failed to load breadcrumb ', error);
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * Displays a tree similar to file explorer for the given node
+   * @param event The trigger event
+   * @param node The node to show tree for
+   */
+  public displayTree(event: Event, node: fileNode) {
+    if (!node.isDirectory) {
+      return;
+    }
+
+    this.applicationContextMenuService.open<fileNode>(
+      EditorPathBreadcrumbContextMenuComponent,
+      event,
+      node,
+    );
   }
 }

@@ -15,7 +15,7 @@
 
   @if (!isLoading() && !error()) {
     @for (seg of segmentNodes(); track $index) {
-      <div [matTooltip]="seg.path" class="bread_crumb">
+      <div [matTooltip]="seg.path" class="bread_crumb" (click)="displayTree($event, seg)">
         {{ seg.name }}
       </div>
       @if (seg.isDirectory) {
