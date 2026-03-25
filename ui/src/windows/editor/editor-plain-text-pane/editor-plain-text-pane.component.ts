@@ -75,6 +75,13 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private readonly normalizedFilePath = signal<string | null>(null);
 
+  /**
+   * Keeps track of the selected directory in the editor
+   */
+  private readonly selectedDirectory = computed(() =>
+    this.editorStateService.selectedDirectoryPath(),
+  );
+
   constructor() {
     useEffect(
       async (_, fileNode) => {
@@ -107,6 +114,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private updateListener = EditorView.updateListener.of(async (update) => {
     this.hydrateCursorPosition(update.view);
+    this.hydrateGitBlameLine(update.view);
 
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
@@ -131,6 +139,35 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       line: cursorPos.line,
       column: cursorPos.col,
     });
+  }
+
+  /**
+   * Fire and forget: Updates the blame information for the current line the cursor is at
+   * @param view The editor view
+   */
+  private async hydrateGitBlameLine(view: EditorView) {
+    try {
+      const lineNumber = this.getCursorPosition(view).line;
+      const directory = this.selectedDirectory();
+      const filePath = this.activeNode()?.path;
+      if (!directory) {
+        throw new Error('No selected directory');
+      }
+      if (!filePath) {
+        throw new Error('No file path');
+      }
+
+      const result = await this.electronApi.gitApi.gitBlameLine(
+        directory,
+        filePath,
+        lineNumber,
+        lineNumber,
+      );
+
+      this.editorInMemoryStateService.gitBlameLineInformation.set(result);
+    } catch (error) {
+      console.error('Failed to hydrate git blame line ', error);
+    }
   }
 
   /**

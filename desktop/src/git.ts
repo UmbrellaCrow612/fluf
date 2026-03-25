@@ -151,8 +151,7 @@ const gitBlameLineImpl: CombinedCallback<
     const stdout = await runGitCommand(directory, [
       "blame",
       "-L",
-      start.toString(),
-      end.toString(),
+      `${start},${end}`,
       filePath,
     ]);
 

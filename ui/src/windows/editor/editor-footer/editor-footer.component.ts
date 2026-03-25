@@ -4,10 +4,11 @@ import { getElectronApi } from '../../../shared/electron';
 import { MatIconModule } from '@angular/material/icon';
 import { EditorStateService } from '../core/state/editor-state.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-editor-footer',
-  imports: [MatIconModule, MatTooltipModule],
+  imports: [MatIconModule, MatTooltipModule, DatePipe],
   templateUrl: './editor-footer.component.html',
   styleUrl: './editor-footer.component.css',
 })
@@ -36,6 +37,13 @@ export class EditorFooterComponent implements OnInit {
   );
 
   /**
+   * Keeps track of the latest git blame line information
+   */
+  public readonly gitBlameLineInformation = computed(() =>
+    this.editorInMemoryStateService.gitBlameLineInformation(),
+  );
+
+  /**
    * Keeps track of the current selected directory path
    */
   private readonly selectedDirectory = computed(() =>
@@ -44,7 +52,7 @@ export class EditorFooterComponent implements OnInit {
 
   async ngOnInit() {
     await this.checkIfSystemHasGit();
-    await this.getCurrentGitBranch()
+    await this.getCurrentGitBranch();
   }
 
   private async checkIfSystemHasGit() {
@@ -58,13 +66,13 @@ export class EditorFooterComponent implements OnInit {
 
   private async getCurrentGitBranch() {
     try {
-      const dir = this.selectedDirectory()
-      if(!dir){
-        return
+      const dir = this.selectedDirectory();
+      if (!dir) {
+        return;
       }
 
       const branch = await this.electronApi.gitApi.getCurrentBranch(dir);
-      this.currentBranch.set(branch)
+      this.currentBranch.set(branch);
     } catch (error) {
       console.error('Failed to get current git branch ', error);
     }

@@ -11,8 +11,23 @@
     </div>
   }
 
+  @if (gitBlameLineInformation()) {
+    <div class="editor_footer_git_blame" matTooltip="Git blame for line">
+      <span class="git_blame_author">
+        {{ gitBlameLineInformation()?.author }}
+      </span>
+      <span class="git_blame_commit">
+        {{ gitBlameLineInformation()?.commit }}
+      </span>
+      <span class="git_blame_date">
+        {{ gitBlameLineInformation()?.dateTime | date }}
+      </span>
+    </div>
+  }
+  <!---->
+
   @if (selectedLines()) {
-    <div class="editor_footer_cursor_position">
+    <div class="editor_footer_cursor_position" matTooltip="Current line column of cursor">
       Ln {{ selectedLines()?.line }}, Col {{ selectedLines()?.column }}
     </div>
   }

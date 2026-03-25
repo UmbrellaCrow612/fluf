@@ -1,5 +1,5 @@
 import { Diagnostic } from '@codemirror/lint';
-import { fileNode, languageId } from '../../../../gen/type';
+import { fileNode, gitBlameLineInformation, languageId } from '../../../../gen/type';
 
 /**
  * Represents which elements from the sidebar can be in an active state,
@@ -212,4 +212,9 @@ export type EditorInMemoryState = {
    * Holds the users current selected line and column numbers in a editor text document
    */
   selectedLineAndColumn: { line: number; column: number } | null;
+
+  /**
+   * Holds the current git blame information for the cusor line
+   */
+  gitBlameLineInformation: gitBlameLineInformation | null
 };
