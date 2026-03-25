@@ -66,3 +66,24 @@ export function assertObject(value: any): void {
     );
   }
 }
+
+/**
+ * Assert a value is a non-negative number (zero or positive)
+ * @param value The value to assert as a non-negative number
+ * @throws Error if the value isn't a number, is NaN, or is negative
+ */
+export function assertNonNegativeNumber(value: any): void {
+  const type = typeof value;
+
+  if (type !== "number" || Number.isNaN(value)) {
+    throw new Error(
+      `Assertion failed: received type ${type === "number" ? "NaN" : type} but expected a number`,
+    );
+  }
+
+  if (value < 0) {
+    throw new Error(
+      `Assertion failed: received ${value} but expected a non-negative number (>= 0)`,
+    );
+  }
+}
