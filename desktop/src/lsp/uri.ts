@@ -1,4 +1,5 @@
 import path from "path";
+import { assertString } from "../assert.js";
 
 /**
  * Converts a local file path into an LSP-compliant DocumentUri.
@@ -15,9 +16,7 @@ import path from "path";
  * createUri('/home/user/file.txt');    // 'file:///home/user/file.txt'
  */
 export function createUri(filePath: string): string {
-  if (typeof filePath !== "string") {
-    throw new TypeError("filePath must be a string");
-  }
+  assertString(filePath);
 
   // Resolve relative paths to absolute
   let absolutePath = path.normalize(path.resolve(filePath));
@@ -49,4 +48,19 @@ export function isUri(uri: string): boolean {
   }
 
   return uri.startsWith("file://");
+}
+
+/**
+ * Assert a value is a valid file URI (DocumentUri)
+ * @param value The value to assert as a URI
+ * @throws Error if the value isn't a string or isn't a valid file URI
+ */
+export function assertUri(value: any): void {
+  assertString(value);
+
+  if (!isUri(value)) {
+    throw new Error(
+      `Assertion failed: received "${value}" but expected a valid file URI (e.g., "file:///path/to/file")`,
+    );
+  }
 }

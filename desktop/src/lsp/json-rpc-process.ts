@@ -1,17 +1,16 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
 import fs from "fs/promises";
 import path from "path";
-import type {
-  languageId,
-  LanguageServerProtocolMethod,
-} from "../type.js";
+import type { languageId, LanguageServerProtocolMethod } from "../type.js";
 import { logger } from "../logger.js";
-import { isUri } from "./uri.js";
+import { assertUri, isUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
 import type {
+  DidCloseTextDocumentParams,
   NotificationMessage,
   ResponseMessage,
 } from "vscode-languageserver-protocol";
+import { assertObject, assertString, assertStringArray } from "../assert.js";
 
 /**
  * Type guard to check if an object is a NotificationMessage
@@ -144,19 +143,10 @@ export class JsonRpcProcess {
     workSpaceFolder: string,
     languageId: languageId | null,
   ) {
-    if (!command || typeof command !== "string")
-      throw new TypeError("command must be a non-empty string");
-
-    if (!Array.isArray(args)) throw new TypeError("args must be an array");
-
-    if (!args.every((arg) => typeof arg === "string"))
-      throw new TypeError("all elements in args must be strings");
-
-    if (typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non empty string");
-
-    if (typeof languageId !== "string")
-      throw new TypeError("languageId must be a non empty string");
+    assertString(command);
+    assertStringArray(args);
+    assertString(workSpaceFolder);
+    assertString(languageId);
 
     this._command = command;
     this._args = args;
@@ -165,23 +155,46 @@ export class JsonRpcProcess {
   }
 
   /**
+   * Clears up pendinbg promises
+   */
+  private rejectPendingRequests(error: Error) {
+    this._pendingRequests.forEach(({ reject }) => {
+      reject(new Error(`Process error: ${error.message}`));
+    });
+    this._pendingRequests.clear();
+  }
+
+  /**
+   * Creates a info object about the given process
+   * @returns Object containg information about the given process
+   */
+  private createInfoDumpObject() {
+    return {
+      command: this._command,
+      args: this._args,
+      workSpaceFolder: this._workSpaceFolder,
+      languageId: this._languageId,
+    };
+  }
+
+  /**
    * Start the process
    */
   async Start() {
-    if (!this._workSpaceFolder || this._workSpaceFolder.length === 0)
-      throw new TypeError("workSpaceFolder must be a non empty string");
-
-    if (!this._command) throw new Error("Command not passed");
-
     try {
       if (this._isStarted) {
         logger.info(`JSON Rpc already started for command ${this._command}`);
         return;
       }
 
-      await fs.access(this._workSpaceFolder);
+      const workspaceFolder = this._workSpaceFolder as string;
+      assertString(workspaceFolder);
+      const command = this._command as string;
+      assertString(command);
 
-      this._spawnRef = spawn(this._command, this._args);
+      await fs.access(workspaceFolder);
+
+      this._spawnRef = spawn(command, this._args);
 
       this._pid = this._spawnRef.pid;
 
@@ -195,23 +208,22 @@ export class JsonRpcProcess {
       });
 
       this._spawnRef.on("error", (error) => {
-        logger.error(`Process error for ${this._command}: ${error.message}`);
-        this._isStarted = false;
-        this._pendingRequests.forEach(({ reject }) => {
-          reject(new Error(`Process error: ${error.message}`));
-        });
-        this._pendingRequests.clear();
+        logger.error("Process error ", this.createInfoDumpObject(), error);
+        this.rejectPendingRequests(error);
       });
 
       this._spawnRef.on("exit", (code, signal) => {
         logger.info(
-          `Process ${this._command} exited with code ${code}, signal ${signal}`,
+          "Process exited ",
+          this.createInfoDumpObject(),
+          code,
+          signal,
         );
-        this._isStarted = false;
-        this._pendingRequests.forEach(({ reject }) => {
-          reject(new Error(`Process exited with code ${code}`));
-        });
-        this._pendingRequests.clear();
+        if (code !== 0) {
+          this.rejectPendingRequests(
+            new Error("Process exited with non zero code"),
+          );
+        }
       });
 
       this._isStarted = true;
@@ -219,8 +231,9 @@ export class JsonRpcProcess {
       this._isStarted = false;
 
       logger.error(
+        "Failed to start process ",
+        this.createInfoDumpObject(),
         error,
-        `Failed to start JSON RPC process with command ${this._command}`,
       );
 
       throw error;
@@ -244,12 +257,7 @@ export class JsonRpcProcess {
       }, 1000);
     }
 
-    this._pendingRequests.forEach(({ reject }) => {
-      reject(new Error("Process shutdown"));
-    });
-
-    this._pendingRequests.clear();
-    this._spawnRef = null;
+    this.rejectPendingRequests(new Error("Process shutting down"));
   }
 
   /**
@@ -426,21 +434,20 @@ export class JsonRpcProcess {
    * @returns {void}
    */
   DidCloseTextDocument(uri: string): void {
-    if (!uri || typeof uri !== "string")
-      throw new TypeError("uri must be a non-empty string");
+    assertString(uri);
+    assertUri(uri);
 
-    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
+    const method: LanguageServerProtocolMethod = "textDocument/didClose";
+    const params: DidCloseTextDocumentParams = {
+      textDocument: {
+        uri: uri,
+      },
+    };
 
     this._write({
       jsonrpc: "2.0",
-      /** @type {LanguageServerProtocolMethod} */
-      method: "textDocument/didClose",
-      /** @type {import("vscode-languageserver-protocol").DidCloseTextDocumentParams} */
-      params: {
-        textDocument: {
-          uri: uri,
-        },
-      },
+      method: method,
+      params: params,
       id: null,
     });
   }
@@ -580,23 +587,23 @@ export class JsonRpcProcess {
   private _write(
     message: import("vscode-languageserver-protocol").RequestMessage,
   ) {
-    if (!message || typeof message !== "object")
-      throw new TypeError("message must be an object");
+    assertObject(message);
 
     if (!this._isStarted) {
       logger.error(
-        `Cannot write to process command: ${this._command} as it is not yet started`,
+        `Cannot write to process as it is not yet started `,
+        this.createInfoDumpObject(),
       );
       return;
     }
 
     if (!this._spawnRef) {
-      logger.error(`No child process spawned for command: ${this._command}`);
+      logger.error("Process does not exist ", this.createInfoDumpObject());
       throw new Error("Trying to write to child process but it is undefined");
     }
 
     if (!this._spawnRef.stdin.writable) {
-      logger.error(`Cannot write to process command: ${this._command}`);
+      logger.error("Cannot write to process ", this.createInfoDumpObject());
       throw new Error(
         "Trying to write to child process but stdin is not writable",
       );
@@ -606,10 +613,12 @@ export class JsonRpcProcess {
       const json = JSON.stringify(message);
       const contentLength = Buffer.byteLength(json, "utf8");
       const writeContent = `Content-Length: ${contentLength}\r\n\r\n${json}`;
+
       this._spawnRef.stdin.write(writeContent);
     } catch (error) {
       logger.error(
-        `Failed to write to stdin stream of command: ${this._command} error: `,
+        "Failed to write to stdin stream of process ",
+        this.createInfoDumpObject(),
         error,
       );
 

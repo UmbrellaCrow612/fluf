@@ -145,12 +145,20 @@ const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
     logger.info("Watching path: ", norm);
 
     for await (const event of watcher) {
+      if (
+        event?.filename &&
+        event.filename?.toLowerCase().trim().includes(".git")
+      ) {
+        logger.warn("Ignoring changes in .git folder");
+        return;
+      }
+
       broadcastToAll("fs:change", fileOrFolderPath, event);
     }
   } catch (error: unknown) {
     if (error instanceof Error && error.name === "AbortError") return;
 
-    logger.error(error, "Failed to watch directory");
+    logger.error("Failed to watch directory", error, fileOrFolderPath);
 
     throw error;
   }
