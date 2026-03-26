@@ -21,6 +21,58 @@ import {
 } from "../assert.js";
 
 /**
+ * Type guard that checks whether an unknown value is a valid {@link ResponseMessage}.
+ *
+ * A value qualifies as a `ResponseMessage` if it satisfies all of the following:
+ * - Is a non-null object
+ * - Has a `jsonrpc` property equal to `"2.0"`
+ * - Has an `id` property that is a number, string, or `null`
+ * - Has either a `result` property (on success) or an `error` property (on failure), but not both
+ *
+ * @param value - The value to test.
+ * @returns `true` if `value` is a {@link ResponseMessage}, narrowing its type accordingly.
+ *
+ * @example
+ * const raw = JSON.parse(line);
+ * if (isResponseMessage(raw)) {
+ *   // raw is now typed as ResponseMessage
+ *   console.log(raw.id, raw.result);
+ * }
+ */
+function isResponseMessage(value: unknown): value is ResponseMessage {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  // Must be a JSON-RPC 2.0 message
+  if (record["jsonrpc"] !== "2.0") {
+    return false;
+  }
+
+  // id must be a number, string, or null — undefined is not allowed
+  const id = record["id"];
+  if (typeof id !== "number" && typeof id !== "string" && id !== null) {
+    return false;
+  }
+
+  const hasResult = "result" in record;
+  const hasError = "error" in record;
+
+  // A response must carry either a result or an error, but never both
+  if (!hasResult && !hasError) {
+    return false;
+  }
+
+  if (hasResult && hasError) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Type guard to check if an object is a NotificationMessage
  */
 function isNotificationMessage(obj: any): obj is NotificationMessage {
@@ -182,7 +234,7 @@ export class JsonRpcProcess {
         continue;
       }
 
-      const contentLength = parseInt(contentLengthMatch[1]!, 10);
+      const contentLength = parseInt(contentLengthMatch[1], 10);
       const messageStart = headerEnd + 4;
       const messageEnd = messageStart + contentLength;
 
@@ -197,21 +249,26 @@ export class JsonRpcProcess {
       // Move buffer advancement BEFORE parsing to prevent infinite loops
       this._stdoutBuffer = this._stdoutBuffer.subarray(messageEnd);
 
-      let response;
+      let response: ResponseMessage | null = null;
       try {
-        response = JSON.parse(messageBody);
-      } catch (/** @type {any}*/ err: any) {
-        logger.error(err, `Failed to parse JSON for command: ${this._command}`);
-        logger.error("Raw body: ", messageBody);
+        response = JSON.parse(messageBody) as ResponseMessage;
+      } catch (err) {
+        logger.error(
+          "Failed to parse stdout message ",
+          this._createInfoDumpObject(),
+          messageBody,
+          err,
+        );
         continue;
       }
 
       try {
         this._handle(response);
-      } catch (/** @type {any}*/ err: any) {
+      } catch (err) {
         logger.error(
+          "Failed to notify message ",
+          this._createInfoDumpObject(),
           err,
-          `Failed to notify response for command: ${this._command}`,
         );
         // Continue processing even if notification fails
       }
@@ -223,50 +280,49 @@ export class JsonRpcProcess {
    * @param {ResponseMessage} responseMessage - The parsed message from the LSP
    * @returns {void} Nothing
    */
-  private _resolveRequests(responseMessage: ResponseMessage): void {
-    if (responseMessage.id !== null) {
-      const requestId = Number(responseMessage.id);
-      if (!this._pendingRequests.has(requestId)) {
-        return;
-      }
-
-      const obj = this._pendingRequests.get(requestId)!;
-
-      if (responseMessage.error) {
-        clearTimeout(obj.timeout);
-        obj.reject(responseMessage.error);
-      } else {
-        clearTimeout(obj.timeout);
-        obj?.resolve(responseMessage.result);
-      }
-
-      this._pendingRequests.delete(requestId);
+  private _resolvePendingRequests(responseMessage: ResponseMessage): void {
+    if (!isResponseMessage(responseMessage)) {
+      return;
     }
+
+    if (!responseMessage["id"]) {
+      return;
+    }
+
+    const requestId = Number(responseMessage.id);
+    if (!this._pendingRequests.has(requestId)) {
+      return;
+    }
+
+    const obj = this._pendingRequests.get(requestId);
+    if (!obj) {
+      throw new Error("Pending requests object is null");
+    }
+
+    if (responseMessage.error) {
+      clearTimeout(obj.timeout);
+      obj.reject(responseMessage.error);
+    } else {
+      clearTimeout(obj.timeout);
+      obj.resolve(responseMessage.result);
+    }
+
+    this._pendingRequests.delete(requestId);
   }
 
   /**
    * Handles a response message from the LSP and notifies any listeners
-   * @param {import("vscode-languageserver-protocol").ResponseMessage} response
+   * @param {ResponseMessage} response
    */
-  private _handle(
-    response: import("vscode-languageserver-protocol").ResponseMessage,
-  ) {
-    this._resolveRequests(response);
-    if (!this._languageId) {
-      logger.error("No language ID provided when calling handle");
-      throw new Error("No language ID provided when calling handle");
-    }
-    if (!this._workSpaceFolder) {
-      logger.error("No workspace folder provided when calling handle");
-      throw new Error("No workspace folder provided when calling handle");
-    }
+  private _handle(response: ResponseMessage) {
+    this._resolvePendingRequests(response);
 
-    broadcastToAll(
-      "lsp:data",
-      response,
-      this._languageId,
-      this._workSpaceFolder,
-    );
+    const languageId = this._languageId as languageId;
+    assertString(languageId);
+    const workSpaceFolder = this._workSpaceFolder as string;
+    assertString(workSpaceFolder);
+
+    broadcastToAll("lsp:data", response, languageId, workSpaceFolder);
 
     if (isNotificationMessage(response)) {
       this._handleNotificationMessage(response);
@@ -277,15 +333,20 @@ export class JsonRpcProcess {
    * Notify interested parties of a notification message from the LSP
    */
   private _handleNotificationMessage(notification: NotificationMessage): void {
-    if (!this._languageId) throw new Error("No language id cannot send events");
-    if (!this._workSpaceFolder)
-      throw new Error("No workspace folder cannot send events");
+    if (!isNotificationMessage(notification)) {
+      return;
+    }
+
+    const languageId = this._languageId as languageId;
+    assertString(languageId);
+    const workSpaceFolder = this._workSpaceFolder as string;
+    assertString(workSpaceFolder);
 
     broadcastToAll(
       "lsp:notification",
       notification,
-      this._languageId,
-      this._workSpaceFolder,
+      languageId,
+      workSpaceFolder,
     );
   }
 
@@ -410,8 +471,6 @@ export class JsonRpcProcess {
 
       this._isStarted = true;
     } catch (error) {
-      this._isStarted = false;
-
       logger.error(
         "Failed to start process ",
         this._createInfoDumpObject(),
@@ -435,6 +494,7 @@ export class JsonRpcProcess {
       setTimeout(() => {
         if (this._spawnRef && !this._spawnRef.killed) {
           this._spawnRef.kill("SIGKILL");
+          this._spawnRef = null;
         }
       }, 1000);
     }
