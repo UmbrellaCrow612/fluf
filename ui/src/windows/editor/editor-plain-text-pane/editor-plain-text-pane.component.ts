@@ -287,7 +287,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         this.editorView = cachedView;
         this.editorView.focus();
         this.hydrateDataOnChange(cachedView);
-        await this.initLanguageServer(node);
+
+        await this.initLanguageServer(node, cachedView.state.doc.toString());
         return;
       }
 
@@ -313,7 +314,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       });
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
-      await this.initLanguageServer(node);
+
+      await this.initLanguageServer(node, docString);
     } catch (error: any) {
       console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
@@ -334,8 +336,13 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
 
   /**
    * Initlizes language server logic
+   * @param node - The open file
+   * @param docString The documents content
    */
-  private initLanguageServer = async (node: fileNode) => {
+  private initLanguageServer = async (
+    node: fileNode,
+    docString: string,
+  ): Promise<void> => {
     this.languageId.set(getLanguageId(node.extension));
 
     const languageId = this.languageId();
@@ -361,10 +368,10 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
 
     if (!lspStarted) {
       this.editorLanguageServerProtocolService.onReady(() => {
-        this.sendOpenTextDocument(workspaceFolder, languageId, node);
+        this.sendOpenTextDocument(workspaceFolder, languageId, node, docString);
       });
     } else {
-      this.sendOpenTextDocument(workspaceFolder, languageId, node);
+      this.sendOpenTextDocument(workspaceFolder, languageId, node, docString);
     }
   };
 
@@ -374,27 +381,25 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    * @param languageId The lnaguage ID
    * @param node The selected node in the editor
    */
-  private sendOpenTextDocument(
+  private async sendOpenTextDocument(
     workspaceFolder: string,
     languageId: languageId,
     node: fileNode,
+    docString: string,
   ) {
     try {
       const filePath = node.path;
       const version = this.editorDocumentVersionService.getVersion(filePath);
-      const draft = this.editorFileStateService.getDraft(filePath);
-
-      if (!draft) {
-        throw new Error("Could not find document draft");
-      }
 
       this.editorLanguageServerProtocolService.didOpenTextDocument(
         workspaceFolder,
         languageId,
         filePath,
         version,
-        draft,
+        docString,
       );
+
+      console.log("Sent text document open lsp");
     } catch (error) {
       console.error("Failed to open did open document ", error);
     }

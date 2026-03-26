@@ -134,7 +134,7 @@ export class JsonRpcProcess {
   > = new Map();
 
   /** Holds the next ID  */
-  private _id = 0;
+  private _id = 1;
   /**
    * Gets the next id
    * @returns {number} - The next id
@@ -293,10 +293,6 @@ export class JsonRpcProcess {
    */
   private _resolvePendingRequests(responseMessage: ResponseMessage): void {
     if (!isResponseMessage(responseMessage)) {
-      return;
-    }
-
-    if (!responseMessage["id"]) {
       return;
     }
 
