@@ -20,10 +20,16 @@ import { EditorFileStateService } from "../core/services/editor-file-state.servi
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
-import { linter, Diagnostic } from "@codemirror/lint";
+import {
+  linter,
+  Diagnostic as CmDiagnostic,
+  lintGutter,
+} from "@codemirror/lint";
 import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language-server-protocol.service";
 import { getLanguageId } from "../core/lsp/languageId";
 import { EditorDocumentVersionService } from "../core/lsp/editor-document-version.service";
+import { PublishDiagnosticsParams } from "vscode-languageserver-protocol";
+import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -88,7 +94,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   /**
    * Contains the current diagnostics for the file
    */
-  private readonly diagnostics = signal<Diagnostic[]>([]);
+  private readonly diagnostics = signal<CmDiagnostic[]>([]);
 
   /**
    * Contains the current language ID
@@ -288,7 +294,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         this.editorView.focus();
         this.hydrateDataOnChange(cachedView);
 
-        await this.initLanguageServer(node, cachedView.state.doc.toString());
+        await this.initLanguageServer(
+          node,
+          cachedView.state.doc.toString(),
+          cachedView,
+        );
         return;
       }
 
@@ -315,7 +325,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
 
-      await this.initLanguageServer(node, docString);
+      await this.initLanguageServer(node, docString, this.editorView);
     } catch (error: any) {
       console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
@@ -342,6 +352,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private initLanguageServer = async (
     node: fileNode,
     docString: string,
+    view: EditorView,
   ): Promise<void> => {
     this.languageId.set(getLanguageId(node.extension));
 
@@ -367,12 +378,57 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     }
 
     if (!lspStarted) {
-      this.editorLanguageServerProtocolService.onReady(() => {
-        this.sendOpenTextDocument(workspaceFolder, languageId, node, docString);
-      });
+      this.unsubCallbacks.push(
+        this.editorLanguageServerProtocolService.onReady(() => {
+          this.sendOpenTextDocument(
+            workspaceFolder,
+            languageId,
+            node,
+            docString,
+          );
+        }),
+      );
     } else {
       this.sendOpenTextDocument(workspaceFolder, languageId, node, docString);
     }
+
+    this.unsubCallbacks.push(
+      this.editorLanguageServerProtocolService.onNotification(
+        "textDocument/publishDiagnostics",
+        (message) => {
+          console.log("Backend diagnostic ", message);
+
+          const params = message?.params as
+            | undefined
+            | PublishDiagnosticsParams;
+
+          if (!params || !params?.diagnostics) {
+            console.error(
+              "textDocument/publishDiagnostics produced a none matching object notification",
+            );
+            return;
+          }
+
+          const diags: CmDiagnostic[] = [];
+
+          for (const vscodeDiag of params?.diagnostics) {
+            const mappedDiag = vscodeToCodeMirrorDiagnostic(
+              vscodeDiag,
+              view.state,
+            );
+            if (mappedDiag) {
+              diags.push(mappedDiag);
+            } else {
+              console.error(
+                "Failed to map vscode diagnostic to editor diagnostic",
+              );
+            }
+          }
+
+          this.diagnostics.set(diags);
+        },
+      ),
+    );
   };
 
   /**
@@ -416,6 +472,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       editorPlainTextPaneThemeExtension,
       history(),
       this.linterExtension(),
+      lintGutter(),
     ];
   };
 
