@@ -11,7 +11,7 @@ import {
   viewChild,
 } from "@angular/core";
 import { getElectronApi } from "../../../shared/electron";
-import { fileNode } from "../../../gen/type";
+import { fileNode, languageId, voidCallback } from "../../../gen/type";
 import { EditorStateService } from "../core/state/editor-state.service";
 import { basicSetup, EditorView } from "codemirror";
 import { useEffect } from "../../../lib/useEffect";
@@ -21,6 +21,9 @@ import { EditorSessionStateService } from "../core/services/editor-session-state
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { linter, Diagnostic } from "@codemirror/lint";
+import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language-server-protocol.service";
+import { getLanguageId } from "../core/lsp/languageId";
+import { EditorDocumentVersionService } from "../core/lsp/editor-document-version.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -40,6 +43,12 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorFileStateService = inject(EditorFileStateService);
   private readonly editorSessionStateService = inject(
     EditorSessionStateService,
+  );
+  private readonly editorLanguageServerProtocolService = inject(
+    EditorLanguageServerProtocolService,
+  );
+  private readonly editorDocumentVersionService = inject(
+    EditorDocumentVersionService,
   );
 
   /**
@@ -80,6 +89,16 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    * Contains the current diagnostics for the file
    */
   private readonly diagnostics = signal<Diagnostic[]>([]);
+
+  /**
+   * Contains the current language ID
+   */
+  private readonly languageId = signal<languageId | null>(null);
+
+  /**
+   * Contains list of unsub callbacks to clean up state
+   */
+  private unsubCallbacks: voidCallback[] = [];
 
   /**
    * Keeps track of the selected directory in the editor
@@ -268,7 +287,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         this.editorView = cachedView;
         this.editorView.focus();
         this.hydrateDataOnChange(cachedView);
-        this.initLanguageServer();
+        await this.initLanguageServer(node);
         return;
       }
 
@@ -294,7 +313,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       });
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
-      this.initLanguageServer();
+      await this.initLanguageServer(node);
     } catch (error: any) {
       console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
@@ -316,7 +335,70 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   /**
    * Initlizes language server logic
    */
-  private initLanguageServer = () => {};
+  private initLanguageServer = async (node: fileNode) => {
+    this.languageId.set(getLanguageId(node.extension));
+
+    const languageId = this.languageId();
+    if (!languageId) {
+      return;
+    }
+
+    const workspaceFolder = this.selectedDirectory();
+    if (!workspaceFolder) {
+      return;
+    }
+
+    let lspStarted: boolean = false;
+    try {
+      lspStarted = await this.editorLanguageServerProtocolService.start(
+        workspaceFolder,
+        languageId,
+      );
+    } catch (error) {
+      lspStarted = false;
+      console.error("Failed to start LSP ", error);
+    }
+
+    if (!lspStarted) {
+      this.editorLanguageServerProtocolService.onReady(() => {
+        this.sendOpenTextDocument(workspaceFolder, languageId, node);
+      });
+    } else {
+      this.sendOpenTextDocument(workspaceFolder, languageId, node);
+    }
+  };
+
+  /**
+   * Sends a text document open LSP
+   * @param workspaceFolder The workspace folder
+   * @param languageId The lnaguage ID
+   * @param node The selected node in the editor
+   */
+  private sendOpenTextDocument(
+    workspaceFolder: string,
+    languageId: languageId,
+    node: fileNode,
+  ) {
+    try {
+      const filePath = node.path;
+      const version = this.editorDocumentVersionService.getVersion(filePath);
+      const draft = this.editorFileStateService.getDraft(filePath);
+
+      if (!draft) {
+        throw new Error("Could not find document draft");
+      }
+
+      this.editorLanguageServerProtocolService.didOpenTextDocument(
+        workspaceFolder,
+        languageId,
+        filePath,
+        version,
+        draft,
+      );
+    } catch (error) {
+      console.error("Failed to open did open document ", error);
+    }
+  }
 
   /**
    * Creates editor extensions
@@ -340,6 +422,12 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     this.saveCurrentState();
 
     this.diagnostics.set([]);
+    this.languageId.set(null);
+
+    for (const callback of this.unsubCallbacks) {
+      callback();
+    }
+    this.unsubCallbacks = [];
 
     const editorView = this.editorView;
     if (editorView) {
