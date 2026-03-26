@@ -9,6 +9,7 @@ import type {
   TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
 import {
+  assertArray,
   assertNonNegativeNumber,
   assertString,
   assertStringArray,
@@ -280,39 +281,34 @@ export class JsonRpcLanguageServer {
     version: number,
     changes: TextDocumentContentChangeEvent[],
   ): void {
-    if (!workSpaceFolder || typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non-empty string");
-
-    if (!filePath || typeof filePath !== "string")
-      throw new TypeError("filePath must be a non-empty string");
-
-    if (typeof version !== "number" || version < 0)
-      throw new TypeError("version must be a non-negative number");
-
-    if (!Array.isArray(changes))
-      throw new TypeError("changes must be an array");
+    assertString(workSpaceFolder);
+    assertString(filePath);
+    assertNonNegativeNumber(version);
+    assertArray(changes);
 
     try {
-      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+      const workspaceFolder = this.normalizePath(workSpaceFolder);
 
-      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
-      if (!rc) {
-        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+      const process = this._workSpaceRpcMap.get(workspaceFolder);
+      if (!process) {
+        logger.warn(`No LSP process is running `, this.createInfoBumpObject());
         return;
       }
 
-      if (!rc.IsStarted()) {
+      if (!process.IsStarted()) {
         logger.error(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          `LSP process not yet started `,
+          this.createInfoBumpObject(),
         );
         return;
       }
 
-      rc.DidChangeTextDocument(createUri(filePath), version, changes);
+      process.DidChangeTextDocument(createUri(filePath), version, changes);
     } catch (error) {
       logger.error(
+        "Failed to sync changes for documents ",
+        this.createInfoBumpObject(),
         error,
-        `Failed to sync document changes for workspace folder: ${workSpaceFolder} file: ${filePath} version: ${version} changes count: ${changes.length}`,
       );
       throw error;
     }
