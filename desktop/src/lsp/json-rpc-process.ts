@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import type { languageId, LanguageServerProtocolMethod } from "../type.js";
 import { logger } from "../logger.js";
-import { assertUri, isUri } from "./uri.js";
+import { assertUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
 import type {
   DidChangeTextDocumentParams,
@@ -127,7 +127,7 @@ export class JsonRpcProcess {
   private _pendingRequests: Map<
     number,
     {
-      resolve: (value: ResponseMessage["result"]) => void;
+      resolve: (value: any) => void;
       reject: (reason?: unknown) => void;
       timeout: NodeJS.Timeout;
     }
@@ -245,7 +245,7 @@ export class JsonRpcProcess {
         continue;
       }
 
-      const contentLength = parseInt(contentLengthMatch[1], 10);
+      const contentLength = parseInt(contentLengthMatch[1]!, 10);
       const messageStart = headerEnd + 4;
       const messageEnd = messageStart + contentLength;
 
@@ -547,7 +547,7 @@ export class JsonRpcProcess {
     try {
       const requestId = this._getId();
 
-      return new Promise((resolve, reject) => {
+      return new Promise<T>((resolve, reject) => {
         const timeout = setTimeout(() => {
           const pendingRequest = this._pendingRequests.get(requestId);
           if (pendingRequest) {

@@ -11,41 +11,28 @@ export function assertArray(value: unknown): void {
   }
 }
 
-/**
- * Assert a value is a non-empty string
- * @param value The value to assert as a string
- * @throws Error if the type isn't a string
- */
 export function assertString(value: unknown): void {
   const type = typeof value;
-  if (type !== "string" || value?.length === 0) {
+  if (type !== "string" || (value as string).length === 0) {
     throw new TypeError(
       `Assertion failed: received type ${type} but expected a non-empty string for value`,
     );
   }
 }
 
-/**
- * Assert a value is a non-empty array of strings
- * @param value The value to assert as a string array
- * @throws Error if the value isn't a string array or is empty
- */
 export function assertStringArray(value: unknown): void {
   assertArray(value);
-
-  if (value.length === 0) {
+  const arr = value as unknown[];
+  if (arr.length === 0) {
     throw new TypeError(
       `Assertion failed: received an empty array but expected a non-empty string array`,
     );
   }
-
-  const nonStringIndex = value.findIndex(
-    (item: any) => typeof item !== "string",
-  );
+  const nonStringIndex = arr.findIndex((item) => typeof item !== "string");
   if (nonStringIndex !== -1) {
-    const item = value[nonStringIndex];
+    const item = arr[nonStringIndex];
     throw new TypeError(
-      `Assertion failed: array item at index ${nonStringIndex} has type ${typeof item} but expected string`,
+      `Assertion failed: array item at index ${String(nonStringIndex)} has type ${typeof item} but expected string`,
     );
   }
 }
@@ -55,7 +42,7 @@ export function assertStringArray(value: unknown): void {
  * @param value The value to assert as an object
  * @throws Error if the value isn't an object, is null, or is an array
  */
-export function assertObject(value: any): void {
+export function assertObject(value: unknown): void {
   const type = typeof value;
 
   if (type !== "object" || value === null || Array.isArray(value)) {
@@ -67,21 +54,15 @@ export function assertObject(value: any): void {
   }
 }
 
-/**
- * Assert a value is a non-negative number (zero or positive)
- * @param value The value to assert as a non-negative number
- * @throws Error if the value isn't a number, is NaN, or is negative
- */
 export function assertNonNegativeNumber(value: unknown): void {
   const type = typeof value;
-
   if (type !== "number" || Number.isNaN(value)) {
     throw new Error(
       `Assertion failed: received type ${type === "number" ? "NaN" : type} but expected a number`,
     );
   }
-
-  if (value < 0) {
+  // Cast after the typeof guard — TS won't narrow 'unknown' for comparisons
+  if ((value as number) < 0) {
     throw new Error(
       `Assertion failed: received ${value} but expected a non-negative number (>= 0)`,
     );

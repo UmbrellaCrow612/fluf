@@ -1,5 +1,5 @@
-import { Extension } from '@codemirror/state';
-import { history, historyField } from '@codemirror/commands';
+import { Extension } from "@codemirror/state";
+import { history, historyField } from "@codemirror/commands";
 import {
   Component,
   computed,
@@ -9,26 +9,26 @@ import {
   signal,
   Signal,
   viewChild,
-} from '@angular/core';
-import { getElectronApi } from '../../../shared/electron';
-import { fileNode } from '../../../gen/type';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { basicSetup, EditorView } from 'codemirror';
-import { useEffect } from '../../../lib/useEffect';
-import { editorPlainTextPaneThemeExtension } from './extensions/theme';
-import { EditorFileStateService } from '../core/services/editor-file-state.service';
-import { EditorSessionStateService } from '../core/services/editor-session-state.service';
-import { EditorPathBreadcrumbBarComponent } from '../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
+} from "@angular/core";
+import { getElectronApi } from "../../../shared/electron";
+import { fileNode } from "../../../gen/type";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { basicSetup, EditorView } from "codemirror";
+import { useEffect } from "../../../lib/useEffect";
+import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
+import { EditorFileStateService } from "../core/services/editor-file-state.service";
+import { EditorSessionStateService } from "../core/services/editor-session-state.service";
+import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
  */
 @Component({
-  selector: 'app-editor-plain-text-pane',
+  selector: "app-editor-plain-text-pane",
   imports: [EditorPathBreadcrumbBarComponent],
-  templateUrl: './editor-plain-text-pane.component.html',
-  styleUrl: './editor-plain-text-pane.component.css',
+  templateUrl: "./editor-plain-text-pane.component.html",
+  styleUrl: "./editor-plain-text-pane.component.css",
 })
 export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
@@ -58,7 +58,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private readonly editorPlaneTextPaneContainer = viewChild<
     ElementRef<HTMLDivElement>
-  >('editorPlainTextPane');
+  >("editorPlainTextPane");
 
   /**
    * Holds loading state
@@ -88,7 +88,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         this.cleanUpState();
 
         if (!fileNode) {
-          this.error.set('No open file');
+          this.error.set("No open file");
           return;
         }
 
@@ -113,8 +113,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    * Extension that listens to changes and runs logic
    */
   private updateListener = EditorView.updateListener.of(async (update) => {
-    this.hydrateCursorPosition(update.view);
-    this.hydrateGitBlameLine(update.view);
+    this.hydrateDataOnChange(update.view);
 
     const normalizedPath = this.normalizedFilePath();
     if (normalizedPath && update.docChanged) {
@@ -128,6 +127,15 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       }
     }
   });
+
+  /**
+   * Hydrates global data and editor state based on local data and shared data
+   * @param view The editor view
+   */
+  private async hydrateDataOnChange(view: EditorView): Promise<void> {
+    this.hydrateCursorPosition(view);
+    await this.hydrateGitBlameLine(view);
+  }
 
   /**
    * Hydrates the editor state memeory to have up to date cursor positon
@@ -151,10 +159,10 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       const directory = this.selectedDirectory();
       const filePath = this.activeNode()?.path;
       if (!directory) {
-        throw new Error('No selected directory');
+        throw new Error("No selected directory");
       }
       if (!filePath) {
-        throw new Error('No file path');
+        throw new Error("No file path");
       }
 
       const result = await this.electronApi.gitApi.gitBlameLine(
@@ -166,7 +174,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
 
       this.editorInMemoryStateService.gitBlameLineInformation.set(result);
     } catch (error) {
-      console.error('Failed to hydrate git blame line ', error);
+      console.error("Failed to hydrate git blame line ", error);
     }
   }
 
@@ -199,7 +207,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     const currentPath = this.normalizedFilePath();
     const view = this.editorView;
 
-    if (!currentPath || !view || currentPath.trim() === '') return;
+    if (!currentPath || !view || currentPath.trim() === "") return;
 
     const editorStateJSON = view.state.toJSON({
       history: historyField,
@@ -221,7 +229,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private async displayPlainTextEditor(node: fileNode): Promise<void> {
     if (node.isDirectory) {
-      this.error.set('Node must be a file not a directory');
+      this.error.set("Node must be a file not a directory");
       return;
     }
 
@@ -232,7 +240,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
 
       const container = this.editorPlaneTextPaneContainer()?.nativeElement;
       if (!container) {
-        throw new Error('Could not find target container');
+        throw new Error("Could not find target container");
       }
 
       const normalizedPath = await this.electronApi.pathApi.normalize(
@@ -241,7 +249,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       const filePathExists =
         await this.electronApi.fsApi.exists(normalizedPath);
       if (!filePathExists) {
-        throw new Error('File path does not exit');
+        throw new Error("File path does not exit");
       }
       this.normalizedFilePath.set(normalizedPath);
 
@@ -251,25 +259,25 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         this.createExtensions,
       );
       if (cachedView) {
-        console.log('Using cahche view');
+        console.log("Using cahche view");
         this.editorView = cachedView;
         this.editorView.focus();
 
-        this.hydrateCursorPosition(cachedView);
+        this.hydrateDataOnChange(cachedView);
         return;
       }
 
-      console.log('Creating new cahche view');
+      console.log("Creating new cahche view");
 
       /**
        * Holds the content we show in the pane editor
        */
-      let docString: string = '';
+      let docString: string = "";
 
       const draft = this.editorFileStateService.getDraft(normalizedPath);
       if (draft) {
         docString = draft;
-        console.log('Using saved draft');
+        console.log("Using saved draft");
       } else {
         docString = await this.electronApi.fsApi.readFile(normalizedPath);
       }
@@ -281,9 +289,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       });
 
       this.editorView.focus();
-      this.hydrateCursorPosition(this.editorView);
+      this.hydrateDataOnChange(this.editorView);
     } catch (error: any) {
-      console.error('Failed to load file ', error);
+      console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
     } finally {
       this.isLoading.set(false);
