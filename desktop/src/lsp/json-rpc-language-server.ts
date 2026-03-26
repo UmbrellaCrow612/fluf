@@ -5,6 +5,7 @@ import { logger } from "../logger.js";
 import { createUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
 import type { InitializeParams } from "vscode-languageserver-protocol";
+import { assertString, assertStringArray } from "../assert.js";
 
 /**
  * Base class that implements common JSON-RPC LSP functionality.
@@ -22,59 +23,59 @@ export class JsonRpcLanguageServer {
    * @param {languageId} languageId - The specific language this is for
    */
   constructor(languageId: languageId) {
-    if (typeof languageId !== "string")
-      throw new TypeError("languageId must be a non empty string");
+    assertString(languageId);
 
     this._languageId = languageId;
   }
 
   /**
-   * Holds a map of specific workspace folders normalized and abs and there rpc
-   * @type {Map<string, JsonRpcProcess>}
+   * Holds a map of specific workspace folders normalized and abs and there rpc process running for it
    */
   private _workSpaceRpcMap: Map<string, JsonRpcProcess> = new Map();
 
   /**
    * Holds the language this LSP is for exmaple `go` or `js` etc
-   * @type {languageId | null}
    */
   private _languageId: languageId | null = null;
 
   /**
+   * Get information about the current LSP
+   * @returns Object containg all information about the given LSP
+   */
+  private createInfoBumpObject() {
+    return {
+      workspaceFolders: [...this._workSpaceRpcMap.keys()],
+      languageId: this._languageId,
+    };
+  }
+
+  /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
-   * @param {string} command - The command like `gopls` or path to the xe binary to launch it like `c:\dev\bin\gopls.exe`
-   * @param {string[]} args - Addtional arguments to pass to the spawned process like `["--stdio"]`
-   * @param {string} wsf - The path to the workspace folder to run the lsp for
-   * @returns {Promise<boolean>} If it could or could not start it
+   * @param command - The command like `gopls` or path to the xe binary to launch it like `c:\dev\bin\gopls.exe`
+   * @param  args - Addtional arguments to pass to the spawned process like `["--stdio"]`
+   * @param wsf - The path to the workspace folder to run the lsp for
+   * @returns  If it could or could not start it
    */
   async _start(command: string, args: string[], wsf: string): Promise<boolean> {
-    if (!command || typeof command !== "string")
-      throw new TypeError("command must be a non-empty string");
+    assertString(command);
+    assertStringArray(args);
+    assertString(wsf);
 
-    if (!args || !Array.isArray(args))
-      throw new TypeError("args must be an array");
+    const languageId = this._languageId as languageId;
+    assertString(languageId);
 
-    if (!wsf || typeof wsf !== "string")
-      throw new TypeError("workSpaceFolder must be a non-empty string");
-
-    if (!this._languageId) throw new Error("languageId is null");
-
-    const _workSpaceFolder = path.normalize(path.resolve(wsf));
-    const jsonRpcProcess = new JsonRpcProcess(
-      command,
-      args,
-      wsf,
-      this._languageId,
-    );
+    const workSpaceFolder = path.resolve(path.normalize(wsf));
+    const jsonRpcProcess = new JsonRpcProcess(command, args, wsf, languageId);
 
     try {
-      if (this._workSpaceRpcMap.has(_workSpaceFolder)) {
+      if (this._workSpaceRpcMap.has(workSpaceFolder)) {
         logger.warn(
-          `Language server already started for command: ${command} at workspace folder: ${_workSpaceFolder}`,
+          `Language server already started`,
+          this.createInfoBumpObject(),
         );
         return true;
       }
-      this._workSpaceRpcMap.set(_workSpaceFolder, jsonRpcProcess);
+      this._workSpaceRpcMap.set(workSpaceFolder, jsonRpcProcess);
 
       await jsonRpcProcess.Start();
 
@@ -82,36 +83,31 @@ export class JsonRpcLanguageServer {
         capabilities: {},
         processId: jsonRpcProcess.GetPid() ?? null,
         clientInfo: {
-          name: path.basename(_workSpaceFolder),
+          name: path.basename(workSpaceFolder),
           version: "1",
         },
         workspaceFolders: [
           {
-            name: path.basename(_workSpaceFolder),
-            uri: createUri(_workSpaceFolder),
+            name: path.basename(workSpaceFolder),
+            uri: createUri(workSpaceFolder),
           },
         ],
-        rootUri: createUri(_workSpaceFolder),
+        rootUri: createUri(workSpaceFolder),
       };
 
       await jsonRpcProcess.SendRequest("initialize", params);
       jsonRpcProcess.Initialized();
 
       // notify ui lsp ready for given lang and workspace
-      broadcastToAll("lsp:on:ready", this._languageId, wsf);
+      broadcastToAll("lsp:on:ready", languageId, wsf);
 
-      logger.info(
-        `Language server started for command: ${command} at workspace folder: ${wsf}`,
-      );
+      logger.info(`Language server started `, this.createInfoBumpObject());
       return true;
     } catch (error) {
-      logger.error(
-        error,
-        `Failed to start language server. command: ${command} workspace folder ${wsf}`,
-      );
+      logger.error("Failed to start lsp ", this.createInfoBumpObject(), error);
 
       jsonRpcProcess.Shutdown();
-      this._workSpaceRpcMap.delete(_workSpaceFolder);
+      this._workSpaceRpcMap.delete(workSpaceFolder);
 
       throw error;
     }

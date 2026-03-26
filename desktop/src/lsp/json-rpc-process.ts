@@ -169,16 +169,16 @@ export class JsonRpcProcess {
 
   /**
    * Required for spawn of the process to work and properly spawn and communicate as needed
-   * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
-   * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
-   * @param {string} workSpaceFolder - The workspace this is for exmaple `c:/dev/some/project/`
-   * @param {languageId | null} languageId - The specific language this is for exmaple `go` or `js` etc
+   * @param  command - The command to spawn the LSP such as `gopls` or the path to the binary
+   * @param  args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
+   * @param  workSpaceFolder - The workspace this is for exmaple `c:/dev/some/project/`
+   * @param  languageId - The specific language this is for exmaple `go` or `js` etc
    */
   constructor(
     command: string,
     args: string[],
     workSpaceFolder: string,
-    languageId: languageId | null,
+    languageId: languageId,
   ) {
     assertString(command);
     assertStringArray(args);
