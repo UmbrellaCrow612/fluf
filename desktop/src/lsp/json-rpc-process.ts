@@ -8,7 +8,9 @@ import { broadcastToAll } from "../broadcast.js";
 import type {
   DidChangeTextDocumentParams,
   DidCloseTextDocumentParams,
+  DidOpenTextDocumentParams,
   NotificationMessage,
+  RequestMessage,
   ResponseMessage,
   TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
@@ -72,16 +74,15 @@ function isResponseMessage(value: unknown): value is ResponseMessage {
   return true;
 }
 
-/**
- * Type guard to check if an object is a NotificationMessage
- */
-function isNotificationMessage(obj: any): obj is NotificationMessage {
+function isNotificationMessage(obj: unknown): obj is NotificationMessage {
   if (typeof obj !== "object" || obj === null) return false;
-  if (typeof obj.method !== "string") return false;
+  const record = obj as Record<string, unknown>;
+  const method = typeof record["method"];
+  if (method !== "string") return false;
   if (
-    obj.params !== undefined &&
-    !Array.isArray(obj.params) &&
-    typeof obj.params !== "object"
+    record["params"] !== undefined &&
+    !Array.isArray(record["params"]) &&
+    typeof record["params"] !== "object"
   )
     return false;
   return true;
@@ -127,7 +128,7 @@ export class JsonRpcProcess {
     number,
     {
       resolve: (value: ResponseMessage["result"]) => void;
-      reject: (reason?: any) => void;
+      reject: (reason?: unknown) => void;
       timeout: NodeJS.Timeout;
     }
   > = new Map();
@@ -198,6 +199,16 @@ export class JsonRpcProcess {
       reject(new Error(`Process error: ${error.message}`));
     });
     this._pendingRequests.clear();
+  }
+
+  /**
+   * Assert that the process ir running
+   */
+  private assertIsStarted() {
+    if (!this.IsStarted()) {
+      logger.error("Process not started ", this._createInfoDumpObject());
+      throw new Error("Process not started");
+    }
   }
 
   /**
@@ -333,10 +344,6 @@ export class JsonRpcProcess {
    * Notify interested parties of a notification message from the LSP
    */
   private _handleNotificationMessage(notification: NotificationMessage): void {
-    if (!isNotificationMessage(notification)) {
-      return;
-    }
-
     const languageId = this._languageId as languageId;
     assertString(languageId);
     const workSpaceFolder = this._workSpaceFolder as string;
@@ -352,20 +359,11 @@ export class JsonRpcProcess {
 
   /**
    * Write a request to the stdin stream of the process
-   * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} message The message
+   * @param message The message
    */
-  private _write(
-    message: import("vscode-languageserver-protocol").RequestMessage,
-  ) {
+  private _writeToStdin(message: RequestMessage) {
     assertObject(message);
-
-    if (!this._isStarted) {
-      logger.error(
-        `Cannot write to process as it is not yet started `,
-        this._createInfoDumpObject(),
-      );
-      return;
-    }
+    this.assertIsStarted();
 
     if (!this._spawnRef) {
       logger.error("Process does not exist ", this._createInfoDumpObject());
@@ -382,7 +380,7 @@ export class JsonRpcProcess {
     try {
       const json = JSON.stringify(message);
       const contentLength = Buffer.byteLength(json, "utf8");
-      const writeContent = `Content-Length: ${contentLength}\r\n\r\n${json}`;
+      const writeContent = `Content-Length: ${String(contentLength)}\r\n\r\n${json}`;
 
       this._spawnRef.stdin.write(writeContent);
     } catch (error) {
@@ -417,7 +415,11 @@ export class JsonRpcProcess {
    * @returns {boolean} If it is or is not
    */
   public IsStarted(): boolean {
-    return this._isStarted;
+    if (this._isStarted && this._spawnRef !== null && !this._spawnRef.killed) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -425,8 +427,8 @@ export class JsonRpcProcess {
    */
   public async Start(): Promise<void> {
     try {
-      if (this._isStarted) {
-        logger.info(`JSON Rpc already started for command ${this._command}`);
+      if (this.IsStarted()) {
+        logger.info(`Process already running `, this._createInfoDumpObject());
         return;
       }
 
@@ -506,7 +508,9 @@ export class JsonRpcProcess {
    * Write exit request - call after `shutdown request`
    */
   public Exit() {
-    this._write({
+    this.assertIsStarted();
+
+    this._writeToStdin({
       jsonrpc: "2.0",
       method: "exit",
       id: null,
@@ -517,7 +521,9 @@ export class JsonRpcProcess {
    * Call after making a initlized  request
    */
   public Initialized() {
-    this._write({
+    this.assertIsStarted();
+
+    this._writeToStdin({
       jsonrpc: "2.0",
       method: "initialized",
       params: {},
@@ -533,28 +539,19 @@ export class JsonRpcProcess {
    */
   public SendRequest(
     method: LanguageServerProtocolMethod,
-    params: any,
-  ): Promise<any> {
-    if (!method || typeof method !== "string")
-      throw new TypeError("method must be a non-empty string");
-
-    if (params !== undefined && params !== null && typeof params !== "object")
-      throw new TypeError("params must be an object, null, or undefined");
-
-    if (!this._isStarted) {
-      return Promise.reject(
-        new Error(`Process not started for command: ${this._command}`),
-      );
-    }
+    params: unknown,
+  ): Promise<unknown> {
+    assertString(method);
+    this.assertIsStarted();
 
     try {
       const requestId = this._getId();
+
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          if (this._pendingRequests.has(requestId)) {
-            this._pendingRequests
-              .get(requestId)
-              ?.reject(new Error("Request timed out"));
+          const pendingRequest = this._pendingRequests.get(requestId);
+          if (pendingRequest) {
+            pendingRequest.reject(new Error("Request timed out"));
             this._pendingRequests.delete(requestId);
           }
         }, 4500);
@@ -565,17 +562,18 @@ export class JsonRpcProcess {
           timeout,
         });
 
-        this._write({
+        this._writeToStdin({
           id: requestId,
           jsonrpc: "2.0",
           method,
-          params,
+          params: params as object,
         });
       });
     } catch (error) {
       logger.error(
+        "Failed to send request ",
+        this._createInfoDumpObject(),
         error,
-        `Failed to send request for command: ${this._command}`,
       );
 
       throw error;
@@ -596,36 +594,27 @@ export class JsonRpcProcess {
     version: number,
     text: string,
   ): void {
-    if (!uri || typeof uri !== "string")
-      throw new TypeError("uri must be a non-empty string");
+    this.assertIsStarted();
+    assertString(uri);
+    assertUri(uri);
+    assertString(languageId);
+    assertNonNegativeNumber(version);
+    assertString(text);
 
-    if (!languageId || typeof languageId !== "string")
-      throw new TypeError("languageId must be a non-empty string");
-
-    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
-
-    if (
-      typeof version !== "number" ||
-      !Number.isInteger(version) ||
-      version < 0
-    )
-      throw new TypeError("version must be a non-negative integer");
-
-    if (typeof text !== "string") throw new TypeError("text must be a string");
-
-    this._write({
-      jsonrpc: "2.0",
-      /** @type {LanguageServerProtocolMethod} */
-      method: "textDocument/didOpen",
-      /** @type {import("vscode-languageserver-protocol").DidOpenTextDocumentParams} */
-      params: {
-        textDocument: {
-          uri: uri,
-          languageId: languageId,
-          version: version,
-          text: text,
-        },
+    const method: LanguageServerProtocolMethod = "textDocument/didOpen";
+    const params: DidOpenTextDocumentParams = {
+      textDocument: {
+        uri: uri,
+        languageId: languageId,
+        version: version,
+        text: text,
       },
+    };
+
+    this._writeToStdin({
+      jsonrpc: "2.0",
+      method: method,
+      params: params,
       id: null,
     });
   }
@@ -642,6 +631,7 @@ export class JsonRpcProcess {
     version: number,
     contentChanges: TextDocumentContentChangeEvent[],
   ): void {
+    this.assertIsStarted();
     assertString(uri);
     assertUri(uri);
     assertNonNegativeNumber(version);
@@ -656,7 +646,7 @@ export class JsonRpcProcess {
       contentChanges: contentChanges,
     };
 
-    this._write({
+    this._writeToStdin({
       jsonrpc: "2.0",
       method: method,
       params: params,
@@ -670,6 +660,7 @@ export class JsonRpcProcess {
    * @returns {void}
    */
   public DidCloseTextDocument(uri: string): void {
+    this.assertIsStarted();
     assertString(uri);
     assertUri(uri);
 
@@ -680,7 +671,7 @@ export class JsonRpcProcess {
       },
     };
 
-    this._write({
+    this._writeToStdin({
       jsonrpc: "2.0",
       method: method,
       params: params,

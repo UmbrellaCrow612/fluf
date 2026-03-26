@@ -1,4 +1,3 @@
-import type { ILanguageServer } from "./../type.js";
 import path from "path";
 import type { ILanguageServerStopAllResult, languageId } from "../type.js";
 import { JsonRpcProcess } from "./json-rpc-process.js";
