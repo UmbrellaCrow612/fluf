@@ -4,8 +4,15 @@ import { JsonRpcProcess } from "./json-rpc-process.js";
 import { logger } from "../logger.js";
 import { createUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
-import type { InitializeParams } from "vscode-languageserver-protocol";
-import { assertString, assertStringArray } from "../assert.js";
+import type {
+  InitializeParams,
+  TextDocumentContentChangeEvent,
+} from "vscode-languageserver-protocol";
+import {
+  assertNonNegativeNumber,
+  assertString,
+  assertStringArray,
+} from "../assert.js";
 
 /**
  * Base class that implements common JSON-RPC LSP functionality.
@@ -50,13 +57,26 @@ export class JsonRpcLanguageServer {
   }
 
   /**
+   * Normalize a path like string
+   * @param pathLike Path
+   * @returns Normalized string
+   */
+  private normalizePath(pathLike: string) {
+    return path.resolve(path.normalize(pathLike));
+  }
+
+  /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
    * @param command - The command like `gopls` or path to the xe binary to launch it like `c:\dev\bin\gopls.exe`
    * @param  args - Addtional arguments to pass to the spawned process like `["--stdio"]`
    * @param wsf - The path to the workspace folder to run the lsp for
    * @returns  If it could or could not start it
    */
-  async _start(command: string, args: string[], wsf: string): Promise<boolean> {
+  public async _start(
+    command: string,
+    args: string[],
+    wsf: string,
+  ): Promise<boolean> {
     assertString(command);
     assertStringArray(args);
     assertString(wsf);
@@ -64,7 +84,7 @@ export class JsonRpcLanguageServer {
     const languageId = this._languageId as languageId;
     assertString(languageId);
 
-    const workSpaceFolder = path.resolve(path.normalize(wsf));
+    const workSpaceFolder = this.normalizePath(wsf);
     const jsonRpcProcess = new JsonRpcProcess(command, args, wsf, languageId);
 
     try {
@@ -115,41 +135,39 @@ export class JsonRpcLanguageServer {
 
   /**
    * Stop the language server at a given workspace folder if one was started
-   * @param {string} workSpaceFolder - The workspace folder to stop
-   * @returns {Promise<boolean>} If it could or could not
+   * @param workSpaceFolder - The workspace folder to stop
+   * @returns If it could or could not
    */
-  async _stop(workSpaceFolder: string): Promise<boolean> {
-    if (!workSpaceFolder || typeof workSpaceFolder !== "string")
-      throw new TypeError("workspace-folder must be a non empty string ");
+  public async _stop(workSpaceFolder: string): Promise<boolean> {
+    assertString(workSpaceFolder);
 
     try {
-      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
-      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
+      const workspaceFolder = this.normalizePath(workSpaceFolder);
+      const process = this._workSpaceRpcMap.get(workspaceFolder);
 
-      if (!rc) {
+      if (!process) {
         return true;
       }
 
       try {
-        await rc.SendRequest("shutdown", {});
-      } catch (/** @type {any}*/ error: any) {
-        logger.error(error, `Shutdown requested hanged`);
+        await process.SendRequest("shutdown", {});
+      } catch (error) {
+        logger.error("Failed to shutdown lsp process ", error);
       }
 
-      rc.Exit();
-      rc.Shutdown();
+      try {
+        process.Exit();
+      } catch (error) {
+        logger.error("Failed to exit process ", error);
+      }
+      process.Shutdown();
 
-      this._workSpaceRpcMap.delete(_workSpaceFolder);
+      this._workSpaceRpcMap.delete(workspaceFolder);
 
-      logger.info(
-        `Language server stopped for command: ${rc.GetCommand()} at workspace folder: ${workSpaceFolder}`,
-      );
+      logger.info(`Language server stopped `, this.createInfoBumpObject());
       return true;
-    } catch (/** @type {any}*/ error: any) {
-      logger.error(
-        error,
-        `Failed to stop language server for work space folder ${workSpaceFolder}`,
-      );
+    } catch (error) {
+      logger.error("Failed to stop language server ", error);
 
       throw error;
     }
@@ -157,11 +175,10 @@ export class JsonRpcLanguageServer {
 
   /**
    * Stop all language servers active for all workspaces
-   * @returns {Promise<ILanguageServerStopAllResult[]>} All stop values for all workspaces
+   * @returns  All stop values for all workspaces
    */
-  async _stopAll(): Promise<ILanguageServerStopAllResult[]> {
+  public async _stopAll(): Promise<ILanguageServerStopAllResult[]> {
     const wsfs = Array.from(this._workSpaceRpcMap.keys());
-    /** @type {ILanguageServerStopAllResult[]} */
     const result: ILanguageServerStopAllResult[] = [];
 
     for (const wsf of wsfs) {
@@ -179,71 +196,70 @@ export class JsonRpcLanguageServer {
    * @param {string} workSpaceFolder - The workspace folder to check
    * @returns {boolean} If it is or is not
    */
-  _isRunning(workSpaceFolder: string): boolean {
-    return this._workSpaceRpcMap.has(
-      path.normalize(path.resolve(workSpaceFolder)),
-    );
+  public _isRunning(workSpaceFolder: string): boolean {
+    return this._workSpaceRpcMap.has(this.normalizePath(workSpaceFolder));
   }
 
   /**
    * Get a list of workspace folders that have a active LSP process running for them
-   * @returns {string[]} List of workspace folder paths
+   * @returns List of workspace folder paths
    */
-  _getWorkSpaceFolders(): string[] {
+  public _getWorkSpaceFolders(): string[] {
     return Array.from(this._workSpaceRpcMap.keys());
   }
 
   /**
    * Open a document in the language server process
-   * @param {string} workSpaceFolder - The workspace folder path
-   * @param {string} filePath - The documents file path
-   * @param {string} languageId - The language it for example `go` or `js`
-   * @param {number} version - The documents version
-   * @param {string} text - The documents full text content
-   * @returns {void} Write's to the process
+   * @param  workSpaceFolder - The workspace folder path
+   * @param  filePath - The documents file path
+   * @param  languageId - The language it for example `go` or `js`
+   * @param version - The documents version
+   * @param  text - The documents full text content
+   * @returns  Write's to the process
    */
-  _didOpenTextDocument(
+  public _didOpenTextDocument(
     workSpaceFolder: string,
     filePath: string,
     languageId: string,
     version: number,
     text: string,
   ): void {
-    if (!workSpaceFolder || typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non-empty string");
-
-    if (!filePath || typeof filePath !== "string")
-      throw new TypeError("filePath must be a non-empty string");
-
-    if (!languageId || typeof languageId !== "string")
-      throw new TypeError("languageId must be a non-empty string");
-
-    if (typeof version !== "number" || version < 0)
-      throw new TypeError("version must be a non-negative number");
-
-    if (typeof text !== "string") throw new TypeError("text must be a string");
+    assertString(workSpaceFolder);
+    assertString(filePath);
+    assertString(languageId);
+    assertNonNegativeNumber(version);
+    assertString(text);
 
     try {
-      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+      const workspaceFolder = this.normalizePath(workSpaceFolder);
 
-      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
-      if (!rc) {
-        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
-        return;
-      }
-
-      if (!rc.IsStarted()) {
-        logger.error(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+      const process = this._workSpaceRpcMap.get(workspaceFolder);
+      if (!process) {
+        logger.warn(
+          `No LSP process is running for `,
+          this.createInfoBumpObject(),
         );
         return;
       }
 
-      rc.DidOpenTextDocument(createUri(filePath), languageId, version, text);
+      if (!process.IsStarted()) {
+        logger.error(
+          `LSP process not yet started `,
+          this.createInfoBumpObject(),
+        );
+        return;
+      }
+
+      process.DidOpenTextDocument(
+        createUri(filePath),
+        languageId,
+        version,
+        text,
+      );
     } catch (error) {
       logger.error(
-        error,
-        `Failed to open document for workspace folder ${workSpaceFolder} filePath: ${filePath} languageId: ${languageId} version:${version} content-length: ${text.length}`,
+        "Failed to open text document ",
+        this.createInfoBumpObject(),
       );
 
       throw error;
@@ -252,17 +268,17 @@ export class JsonRpcLanguageServer {
 
   /**
    * Send document changes
-   * @param {string} workSpaceFolder - The workspace folder path
-   * @param {string} filePath - Path to the file that changed
-   * @param {number} version - The documents version after changes
-   * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} changes - List of changes applied to the document
-   * @returns {void} Nothing
+   * @param  workSpaceFolder - The workspace folder path
+   * @param filePath - Path to the file that changed
+   * @param  version - The documents version after changes
+   * @param  changes - List of changes applied to the document
+   * @returns  Nothing
    */
-  _didChangeTextDocument(
+  public _didChangeTextDocument(
     workSpaceFolder: string,
     filePath: string,
     version: number,
-    changes: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
+    changes: TextDocumentContentChangeEvent[],
   ): void {
     if (!workSpaceFolder || typeof workSpaceFolder !== "string")
       throw new TypeError("workSpaceFolder must be a non-empty string");
