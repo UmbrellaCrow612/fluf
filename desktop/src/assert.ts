@@ -3,7 +3,7 @@
  * @param value The value to assert as an array
  * @throws Error if the value isn't an array
  */
-export function assertArray(value: any): void {
+export function assertArray(value: unknown): void {
   if (!Array.isArray(value)) {
     throw new TypeError(
       `Assertion failed: received type ${typeof value} but expected an array`,
@@ -16,7 +16,7 @@ export function assertArray(value: any): void {
  * @param value The value to assert as a string
  * @throws Error if the type isn't a string
  */
-export function assertString(value: any): void {
+export function assertString(value: unknown): void {
   const type = typeof value;
   if (type !== "string" || value?.length === 0) {
     throw new TypeError(
@@ -30,7 +30,7 @@ export function assertString(value: any): void {
  * @param value The value to assert as a string array
  * @throws Error if the value isn't a string array or is empty
  */
-export function assertStringArray(value: any): void {
+export function assertStringArray(value: unknown): void {
   assertArray(value);
 
   if (value.length === 0) {
@@ -72,7 +72,7 @@ export function assertObject(value: any): void {
  * @param value The value to assert as a non-negative number
  * @throws Error if the value isn't a number, is NaN, or is negative
  */
-export function assertNonNegativeNumber(value: any): void {
+export function assertNonNegativeNumber(value: unknown): void {
   const type = typeof value;
 
   if (type !== "number" || Number.isNaN(value)) {
