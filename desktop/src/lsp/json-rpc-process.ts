@@ -537,10 +537,10 @@ export class JsonRpcProcess {
    * @param {any} params - Any shape of params for the request being sent
    * @returns {Promise<any>} The promise to await and the value from the request parsed or error
    */
-  public SendRequest(
+  public SendRequest<T>(
     method: LanguageServerProtocolMethod,
     params: unknown,
-  ): Promise<unknown> {
+  ): Promise<T> {
     assertString(method);
     this.assertIsStarted();
 

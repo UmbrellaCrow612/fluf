@@ -5,12 +5,16 @@ import { logger } from "../logger.js";
 import { createUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
 import type {
+  Hover,
+  HoverParams,
   InitializeParams,
+  Position,
   TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
 import {
   assertArray,
   assertNonNegativeNumber,
+  assertObject,
   assertString,
   assertStringArray,
 } from "../assert.js";
@@ -320,92 +324,87 @@ export class JsonRpcLanguageServer {
    * @param {string} filePath - The path to the file to close
    * @returns {void} Nothing
    */
-  _didCloseTextDocument(workSpaceFolder: string, filePath: string): void {
-    if (typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non empty string");
-    if (typeof filePath !== "string")
-      throw new TypeError("filePath must be a non empty string");
+  public _didCloseTextDocument(
+    workSpaceFolder: string,
+    filePath: string,
+  ): void {
+    assertString(workSpaceFolder);
+    assertString(filePath);
 
     try {
-      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+      const workspaceFolder = this.normalizePath(workSpaceFolder);
 
-      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
-      if (!rc) {
-        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
+      const process = this._workSpaceRpcMap.get(workspaceFolder);
+      if (!process) {
+        logger.warn(`No LSP process is running `, this.createInfoBumpObject());
         return;
       }
 
-      if (!rc.IsStarted()) {
+      if (!process.IsStarted()) {
         logger.error(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          `LSP process not yet started`,
+          this.createInfoBumpObject(),
         );
         return;
       }
 
-      rc.DidCloseTextDocument(createUri(filePath));
+      process.DidCloseTextDocument(createUri(filePath));
     } catch (error) {
       logger.error(
+        "Failed to close document ",
+        this.createInfoBumpObject(),
         error,
-        `Failed to close document work workspace folder: ${workSpaceFolder} file: ${filePath}`,
       );
+
       throw error;
     }
   }
 
   /**
    * Get hover information
-   * @param {string} workSpaceFolder - The workspace where the file lives
-   * @param {string} filePath - The path to the file to close
-   * @param {import("vscode-languageserver-protocol").Position} position - The position at which to get the hover information
-   * @returns {Promise<import("vscode-languageserver-protocol").Hover>} The hover information
+   * @param  workSpaceFolder - The workspace where the file lives
+   * @param  filePath - The path to the file to close
+   * @param  position - The position at which to get the hover information
+   * @returns The hover information
    */
-  _hover(
+  public _hover(
     workSpaceFolder: string,
     filePath: string,
-    position: import("vscode-languageserver-protocol").Position,
-  ): Promise<import("vscode-languageserver-protocol").Hover> {
-    if (typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non empty string");
-    if (typeof filePath !== "string")
-      throw new TypeError("filePath must be a non empty string");
-    if (typeof position !== "object")
-      throw new TypeError("position must be a object");
+    position: Position,
+  ): Promise<Hover> {
+    assertString(workSpaceFolder);
+    assertString(filePath);
+    assertObject(position);
 
     try {
-      const _workSpaceFolder = path.normalize(path.resolve(workSpaceFolder));
+      const workspaceFolder = this.normalizePath(workSpaceFolder);
 
-      const rc = this._workSpaceRpcMap.get(_workSpaceFolder);
-      if (!rc) {
-        logger.warn(`No LSP process is running for ${_workSpaceFolder}`);
-        return Promise.reject(
-          new Error(`No LSP process is running for ${_workSpaceFolder}`),
-        );
+      const process = this._workSpaceRpcMap.get(workspaceFolder);
+      if (!process) {
+        logger.warn(`No LSP process is running `, this.createInfoBumpObject());
+        return Promise.reject(new Error(`No LSP process is running`));
       }
 
-      if (!rc.IsStarted()) {
+      if (!process.IsStarted()) {
         logger.error(
-          `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
+          `LSP process not yet started `,
+          this.createInfoBumpObject(),
         );
-        return Promise.reject(
-          new Error(
-            `LSP process not yet started for command: ${rc.GetCommand()} workspace folder: ${_workSpaceFolder}`,
-          ),
-        );
+        return Promise.reject(new Error(`LSP process not yet started`));
       }
 
-      /** @type {import("vscode-languageserver-protocol").HoverParams} */
-      const params: import("vscode-languageserver-protocol").HoverParams = {
+      const params: HoverParams = {
         position,
         textDocument: {
           uri: createUri(filePath),
         },
       };
 
-      return rc.SendRequest("textDocument/hover", params);
+      return process.SendRequest<Hover>("textDocument/hover", params);
     } catch (error) {
       logger.error(
-        error,
-        `Failed to get hover information for workspace: ${workSpaceFolder} file: ${filePath}, pos: ${position.character} ${position.line}`,
+        "Failed to get hover information ",
+        this.createInfoBumpObject(),
       );
 
       throw error;
