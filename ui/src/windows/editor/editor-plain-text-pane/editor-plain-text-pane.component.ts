@@ -20,6 +20,7 @@ import { EditorFileStateService } from "../core/services/editor-file-state.servi
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
+import { linter, Diagnostic } from "@codemirror/lint";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -76,6 +77,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly normalizedFilePath = signal<string | null>(null);
 
   /**
+   * Contains the current diagnostics for the file
+   */
+  private readonly diagnostics = signal<Diagnostic[]>([]);
+
+  /**
    * Keeps track of the selected directory in the editor
    */
   private readonly selectedDirectory = computed(() =>
@@ -85,13 +91,12 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   constructor() {
     useEffect(
       async (_, fileNode) => {
-        this.cleanUpState();
-
         if (!fileNode) {
           this.error.set("No open file");
           return;
         }
 
+        this.cleanUpState();
         await this.displayPlainTextEditor(fileNode);
       },
       [this.activeNode],
@@ -262,8 +267,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         console.log("Using cahche view");
         this.editorView = cachedView;
         this.editorView.focus();
-
         this.hydrateDataOnChange(cachedView);
+        this.initLanguageServer();
         return;
       }
 
@@ -287,9 +292,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         parent: container,
         extensions: this.createExtensions(),
       });
-
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
+      this.initLanguageServer();
     } catch (error: any) {
       console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
@@ -297,6 +302,21 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       this.isLoading.set(false);
     }
   }
+
+  /**
+   * Gets the linter extension to display linting in the UI
+   * @returns A extension that returns linting for the UI display
+   */
+  private readonly linterExtension = (): Extension => {
+    return linter((view) => {
+      return this.diagnostics();
+    });
+  };
+
+  /**
+   * Initlizes language server logic
+   */
+  private initLanguageServer = () => {};
 
   /**
    * Creates editor extensions
@@ -308,6 +328,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       this.updateListener,
       editorPlainTextPaneThemeExtension,
       history(),
+      this.linterExtension(),
     ];
   };
 
@@ -317,6 +338,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    */
   private cleanUpState(): void {
     this.saveCurrentState();
+
+    this.diagnostics.set([]);
 
     const editorView = this.editorView;
     if (editorView) {
