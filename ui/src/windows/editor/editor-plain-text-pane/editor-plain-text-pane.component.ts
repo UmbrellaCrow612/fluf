@@ -30,6 +30,8 @@ import { getLanguageId } from "../core/lsp/languageId";
 import { EditorDocumentVersionService } from "../core/lsp/editor-document-version.service";
 import { PublishDiagnosticsParams } from "vscode-languageserver-protocol";
 import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
+import { ViewUpdate } from "@codemirror/view";
+import { viewUpdateToLSPChanges } from "../core/lsp/change";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -146,10 +148,31 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     this.hydrateDataOnChange(update.view);
 
     const normalizedPath = this.normalizedFilePath();
-    if (normalizedPath && update.docChanged) {
+    if (!normalizedPath) {
+      console.error("The current file opened in UI has not set it's file path");
+      return;
+    }
+    const workspaceFolder = this.selectedDirectory();
+    if (!workspaceFolder) {
+      console.error("There is not a workspace / selected directory in UI");
+      return;
+    }
+
+    const languageId = this.languageId();
+
+    if (update.docChanged) {
+      this.editorDocumentVersionService.updateVersion(normalizedPath);
+
       this.editorFileStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),
+      );
+
+      this.sendDidChangeTextDocument(
+        workspaceFolder,
+        languageId,
+        normalizedPath,
+        update,
       );
 
       if (this.autoSaveOn()) {
@@ -429,6 +452,39 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
         },
       ),
     );
+  };
+
+  /**
+   * Send document change to sync backend document view with view changes in the UI
+   * @param workspaceFolder The workspace folder
+   * @param languageId The language server to send it to if null then it means there isnt a language server to send it to
+   * @param filePath The file being updated
+   * @param update The changes
+   */
+  private sendDidChangeTextDocument = async (
+    workspaceFolder: string,
+    languageId: languageId | null,
+    filePath: string,
+    update: ViewUpdate,
+  ): Promise<void> => {
+    try {
+      if (!languageId) {
+        console.warn("No LSP to send changes to");
+        return; // no lsp for the document extension
+      }
+      const version = this.editorDocumentVersionService.getVersion(filePath);
+      const changes = viewUpdateToLSPChanges(update);
+
+      this.editorLanguageServerProtocolService.didChangeTextDocument(
+        workspaceFolder,
+        languageId,
+        filePath,
+        version,
+        changes,
+      );
+    } catch (error) {
+      console.error("Failed to send text document did change ", error);
+    }
   };
 
   /**
