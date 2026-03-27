@@ -485,19 +485,15 @@ export type gitBlameLineInformation = {
   /**
    * The commit ID; if it is `00000000`, it means it has not been committed
    */
-  commit: string | "00000000";
+  commit: string;
   /**
    * The author's name (first and last) or `Not Committed Yet`
    */
-  author: string | "Not Committed Yet";
+  author: string;
   /**
    * A datetime string of when it was committed, or last modified if not committed
    */
   dateTime: string;
-  /**
-   * The content changed or you're going to commit
-   */
-  content: string;
 };
 /**
  * Get git blame information for a given file and line

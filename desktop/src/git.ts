@@ -15,59 +15,122 @@ import type {
 import { logger } from "./logger.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
 
+function toDateTimeString(unixSeconds: number, tzOffset: string): string {
+  // Parse the offset string "+0100" or "-0500"
+  const sign = tzOffset[0] === "+" ? 1 : -1;
+  const hours = parseInt(tzOffset.slice(1, 3), 10);
+  const minutes = parseInt(tzOffset.slice(3, 5), 10);
+  const offsetMs = sign * (hours * 60 + minutes) * 60 * 1000;
+
+  // Apply offset to get local time as a UTC date
+  const localDate = new Date(unixSeconds * 1000 + offsetMs);
+
+  // Format using UTC methods (since we've already baked in the offset)
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  const year = localDate.getUTCFullYear();
+  const month = pad(localDate.getUTCMonth() + 1);
+  const day = pad(localDate.getUTCDate());
+  const hour = pad(localDate.getUTCHours());
+  const minute = pad(localDate.getUTCMinutes());
+  const second = pad(localDate.getUTCSeconds());
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second} ${tzOffset}`;
+}
+
 /**
- * Parses git blame stdout into structured information
+ * Information given to you about running of the git command
+ */
+type gitCommandContext = {
+  /**
+   * The stdout parsed
+   */
+  stdout: string;
+
+  /**
+   * The stderror parsed
+   */
+  stderror: string;
+
+  /**
+   * Exit code
+   */
+  code: number | null;
+
+  /**
+   * Promise reject
+   */
+  reject: (reason: unknown) => void;
+
+  /**
+   * Promise resolve
+   */
+  resolve: (stdout: string) => void;
+};
+
+/**
+ * Provide custom logic when the process exits and perform logic, Note you must resolve or reject the promise.
+ */
+type onGitCommandExit = (context: gitCommandContext) => void;
+
+/**
+ * Parses git blame stdout into structured information assumes `--porcelain` was passed
  * @param stdout - The raw output from git blame command
  * @returns Parsed blame information or null if parsing fails
- *
- * @example
- * parseGitBlameLine(`00000000 (Not Committed Yet 2026-03-25 12:07:23 +0000 500)   content: string;`)
- * // Returns: { commit: "00000000", author: "Not Committed Yet", dateTime: "2026-03-25 12:07:23 +0000", content: "  content: string;" }
- *
- * parseGitBlameLine(`0cfd9080 (Yousaf Wazir 2026-02-17 17:18:00 +0000 550)    * - The folder to look in`)
- * // Returns: { commit: "0cfd9080", author: "Yousaf Wazir", dateTime: "2026-02-17 17:18:00 +0000", content: "   * - The folder to look in" }
  */
 export function parseGitBlameLine(
   stdout: string,
 ): gitBlameLineInformation | null {
-  if (!stdout || !stdout.trim()) {
+  try {
+    if (!stdout || !stdout.trim()) {
+      return null;
+    }
+
+    const authorMatch = stdout.match(/(?<=author )[^\n]*/);
+    if (!authorMatch || !authorMatch[0]) {
+      throw new Error("Could not match author");
+    }
+
+    const commitMatch = stdout.match(/^\S+/);
+    if (!commitMatch || !commitMatch[0]) {
+      throw new Error("Could not match commit");
+    }
+
+    const timeMatch = stdout.match(/committer-time\s+(\d+)/);
+    if (!timeMatch || !timeMatch[0]) {
+      throw new Error("Could not match time");
+    }
+
+    const timeTzMatch = stdout.match(/committer-tz\s+([+-]\d+)/);
+    if (!timeTzMatch || !timeTzMatch[0]) {
+      throw new Error("Could not match time zone");
+    }
+
+    const datetime = toDateTimeString(Number(timeMatch[0]), timeTzMatch[0]);
+
+    return {
+      author: authorMatch[0],
+      commit: commitMatch[0].slice(0, 8),
+      dateTime: datetime,
+    };
+  } catch (error) {
+    logger.error("Failed to parse git stdout ", error);
     return null;
   }
-
-  // Normalize line endings and trim
-  const line = stdout.trim().replace(/\r\n/g, "\n").split("\n")[0];
-
-  if (!line) {
-    return null;
-  }
-
-  // Git blame format: <commit> (<author> <date> <time> <timezone> <line-number>) <content>
-  const blameRegex =
-    /^([0-9a-f]{8,40})\s+\((.+?)\s+(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+[+-]\d{4})\s+\d+\)\s(.*)$/;
-
-  const match = line.match(blameRegex);
-
-  if (!match) {
-    return null;
-  }
-
-  const [, commit, author, dateTime, content] = match;
-
-  return {
-    commit: commit as "00000000" | string,
-    author: author!.trim() as "Not Committed Yet" | string,
-    dateTime: dateTime as string,
-    content: content as string,
-  };
 }
 
 /**
  * Run git command
  * @param directory The directory to run the cmds in
  * @param flags Addtional git commands and flags
+ * @param [onExit=null] Custom logic you want to perform on exit instead of the default behvaiour
  * @returns Stdout of the git process
  */
-function runGitCommand(directory: string, flags: string[]): Promise<string> {
+function runGitCommand(
+  directory: string,
+  flags: string[],
+  onExit: onGitCommandExit | null = null,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(new Error("Git process hanged"));
@@ -76,9 +139,26 @@ function runGitCommand(directory: string, flags: string[]): Promise<string> {
     try {
       const process = spawn("git", flags, { cwd: directory });
       let stdout = "";
+      let stderror = "";
 
-      process.stdout.on("data", (chunk) => {
+      const context: gitCommandContext = {
+        resolve,
+        reject,
+        get stdout() {
+          return stdout;
+        },
+        get stderror() {
+          return stderror;
+        },
+        code: null,
+      };
+
+      process.stdout.on("data", (chunk: Buffer) => {
         stdout += chunk.toString();
+      });
+
+      process.stderr.on("data", (chunk: Buffer) => {
+        stderror += chunk.toString();
       });
 
       process.on("error", (err) => {
@@ -89,6 +169,12 @@ function runGitCommand(directory: string, flags: string[]): Promise<string> {
 
       process.on("exit", (code) => {
         clearTimeout(timeoutId);
+        context.code = code;
+
+        if (onExit) {
+          onExit(context);
+          return;
+        }
 
         if (code === 0) {
           resolve(stdout);
@@ -99,7 +185,7 @@ function runGitCommand(directory: string, flags: string[]): Promise<string> {
     } catch (error) {
       logger.error("Failed to run git commands ", flags);
       clearTimeout(timeoutId);
-      reject(error);
+      reject(error as Error);
     }
   });
 }
@@ -148,12 +234,27 @@ const gitBlameLineImpl: CombinedCallback<
     const directory = path.resolve(path.normalize(dir));
     const filePath = path.resolve(path.normalize(fp));
 
-    const stdout = await runGitCommand(directory, [
-      "blame",
-      "-L",
-      `${start},${end}`,
-      filePath,
-    ]);
+    const stdout = await runGitCommand(
+      directory,
+      [
+        "blame",
+        "-L",
+        `${String(start)},${String(end)}`,
+        filePath,
+        "--porcelain",
+      ],
+      (ctx) => {
+        if (ctx.code === 0) {
+          ctx.resolve(ctx.stdout);
+        } else {
+          if (ctx.code === 128) {
+            ctx.resolve(""); // we do this as if they request blame on lines that dont exist it throws error this way to just returns null git emitts 128 code
+          } else {
+            ctx.reject(new Error("Git blame exited with non zero code"));
+          }
+        }
+      },
+    );
 
     return parseGitBlameLine(stdout);
   } catch (error) {
