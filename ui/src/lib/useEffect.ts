@@ -5,7 +5,7 @@ import {
   EffectRef,
   Signal,
   untracked,
-} from '@angular/core';
+} from "@angular/core";
 
 /**
  * Extract the inner type from a Signal.
@@ -126,8 +126,8 @@ export const useEffect = <const T extends readonly Signal<unknown>[]>(
     (onCleanup: EffectCleanupRegisterFn) => {
       const values = dependencies.map((dep) => dep()) as DependenciesValues<T>;
 
-      untracked(() => {
-        callback(onCleanup, ...values);
+      untracked(async () => {
+        await callback(onCleanup, ...values);
       });
     },
     {
