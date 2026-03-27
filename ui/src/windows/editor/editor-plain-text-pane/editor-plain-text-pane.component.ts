@@ -36,6 +36,8 @@ import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
 import { Tooltip, ViewUpdate, hoverTooltip } from "@codemirror/view";
 import { viewUpdateToLSPChanges } from "../core/lsp/change";
 import { marked } from "marked";
+import { autocompletion, CompletionSource } from "@codemirror/autocomplete";
+import { lspCompletionListToCodeMirror } from "../core/lsp/completion";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -615,7 +617,70 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       this.linterExtension(),
       lintGutter(),
       this.hoverTooltipExtension(),
+      this.autoCompleteExtension(),
     ];
+  };
+
+  /**
+   * Create a auto complete extension
+   * @returns Extension that enables auto complete
+   */
+  private readonly autoCompleteExtension = (): Extension => {
+    return autocompletion({
+      override: [this.autoCompleteOverrideSource],
+      activateOnTyping: true,
+    });
+  };
+
+  /**
+   * Runs the actual logic to get completions based on the current context
+   * @param ctx The editor context
+   * @returns Completion list of items to show in the UI
+   */
+  private readonly autoCompleteOverrideSource: CompletionSource = async (
+    ctx,
+  ) => {
+    try {
+      const languageId = this.languageId();
+      if (!languageId) {
+        return null; // no lsp
+      }
+
+      const workspaceFolder = this.selectedDirectory();
+      if (!workspaceFolder) {
+        console.error("Could not workspace folder");
+        return null;
+      }
+
+      const filePath = this.normalizedFilePath();
+      if (!filePath) {
+        console.error("Could not find files path");
+        return null;
+      }
+
+      const line = ctx.state.doc.lineAt(ctx.pos);
+
+      const position: vscodePosition = {
+        line: line.number - 1, // CodeMirror lines are 1-based, LSP is 0-based
+        character: ctx.pos - line.from, // offset from start of line
+      };
+
+      const result = await this.editorLanguageServerProtocolService.completion(
+        workspaceFolder,
+        languageId,
+        filePath,
+        position,
+      );
+      if (!result) {
+        return null;
+      }
+
+      const word = ctx.matchBefore(/\w*/);
+      return lspCompletionListToCodeMirror(result, word?.from ?? ctx.pos);
+    } catch (error) {
+      console.log("Could not get completions ", error);
+      return null;
+    }
   };
 
   /**
