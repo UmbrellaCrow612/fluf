@@ -28,10 +28,14 @@ import {
 import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language-server-protocol.service";
 import { getLanguageId } from "../core/lsp/languageId";
 import { EditorDocumentVersionService } from "../core/lsp/editor-document-version.service";
-import { PublishDiagnosticsParams } from "vscode-languageserver-protocol";
+import {
+  PublishDiagnosticsParams,
+  Position as vscodePosition,
+} from "vscode-languageserver-protocol";
 import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
-import { ViewUpdate } from "@codemirror/view";
+import { Tooltip, ViewUpdate, hoverTooltip } from "@codemirror/view";
 import { viewUpdateToLSPChanges } from "../core/lsp/change";
+import { marked } from "marked";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -368,6 +372,80 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   };
 
   /**
+   * Creates the hover tooltip extension to get hover information
+   * @returns Extension that allows tooltip hover information
+   */
+  private readonly hoverTooltipExtension = (): Extension => {
+    return hoverTooltip((view, pos, side) => {
+      try {
+        const languageId = this.languageId();
+        if (!languageId) {
+          return null;
+        }
+
+        const workspaceFolder = this.selectedDirectory();
+        if (!workspaceFolder) {
+          throw new Error("Workspace folder is undefined");
+        }
+
+        const filePath = this.normalizedFilePath();
+        if (!filePath) {
+          throw new Error("Current file path is null");
+        }
+
+        const { from, to, text, number } = view.state.doc.lineAt(pos);
+        let start = pos,
+          end = pos;
+        while (start > from && /\w/.test(text[start - from - 1])) start--;
+        while (end < to && /\w/.test(text[end - from])) end++;
+        if ((start == pos && side < 0) || (end == pos && side > 0)) return null;
+
+        const position: vscodePosition = {
+          line: number - 1, // CodeMirror is 1-based, LSP expects 0-based
+          character: pos - from, // offset from the start of the line
+        };
+
+        const tooltTipPromise = async (): Promise<Tooltip | null> => {
+          const result = await this.editorLanguageServerProtocolService.hover(
+            workspaceFolder,
+            languageId,
+            filePath,
+            position,
+          );
+
+          if (!result) {
+            console.warn("Could not get hover information");
+            return null;
+          }
+
+          return {
+            pos: start,
+            end,
+            above: true,
+            create(view) {
+              const dom = document.createElement("div");
+              const contents = result.contents as any;
+
+              if (contents.king === "markdown") {
+                dom.innerHTML = marked.parse(contents.value) as string;
+              } else {
+                dom.textContent = contents.value;
+              }
+
+              return { dom };
+            },
+          };
+        };
+
+        return tooltTipPromise();
+      } catch (error) {
+        console.error("Could not get hover information ", error);
+        return null;
+      }
+    });
+  };
+
+  /**
    * Initlizes language server logic
    * @param node - The open file
    * @param docString The documents content
@@ -529,6 +607,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       history(),
       this.linterExtension(),
       lintGutter(),
+      this.hoverTooltipExtension(),
     ];
   };
 
