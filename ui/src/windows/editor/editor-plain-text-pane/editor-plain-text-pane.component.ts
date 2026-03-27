@@ -405,6 +405,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
           character: pos - from, // offset from the start of the line
         };
 
+        /**
+         * Used to return a promise that resolves to a toltip, we do this as the callback passed to `hoverTooltip` cannot be async itself, but we can return a promise
+         * that resolve to a tooltip
+         * @returns Promise that resolve to a tooltip or not
+         */
         const tooltTipPromise = async (): Promise<Tooltip | null> => {
           const result = await this.editorLanguageServerProtocolService.hover(
             workspaceFolder,
@@ -427,7 +432,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
               const contents = result.contents as any;
 
               if (contents.king === "markdown") {
-                dom.innerHTML = marked.parse(contents.value) as string;
+                dom.innerHTML = marked.parse(contents.value, {
+                  async: false,
+                }) as string;
               } else {
                 dom.textContent = contents.value;
               }
