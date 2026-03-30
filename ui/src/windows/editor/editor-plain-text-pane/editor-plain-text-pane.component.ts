@@ -30,6 +30,7 @@ import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language
 import { getLanguageId } from "../core/lsp/languageId";
 import { EditorDocumentVersionService } from "../core/lsp/editor-document-version.service";
 import {
+  Location as vsCodeLocation,
   PublishDiagnosticsParams,
   Position as vscodePosition,
 } from "vscode-languageserver-protocol";
@@ -40,7 +41,7 @@ import { marked } from "marked";
 import { autocompletion, CompletionSource } from "@codemirror/autocomplete";
 import { lspCompletionListToCodeMirror } from "../core/lsp/completion";
 import { EditorFileOpenerService } from "../core/services/editor-file-opener.service";
-import { KeyMaster } from "umbr-key-master";
+import { createGoToDefinitionHoverStyles } from "./extensions/hover";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -51,7 +52,7 @@ import { KeyMaster } from "umbr-key-master";
   templateUrl: "./editor-plain-text-pane.component.html",
   styleUrl: "./editor-plain-text-pane.component.css",
 })
-export class EditorPlainTextPaneComponent implements OnDestroy {
+export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
@@ -125,6 +126,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     this.editorStateService.selectedDirectoryPath(),
   );
 
+  /**
+   * Holds if the user has control pressed
+   */
+  private readonly isControlPressed = signal(false);
+
   constructor() {
     useEffect(
       async (_, fileNode) => {
@@ -140,8 +146,39 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
     );
   }
 
+  private onControlPressed = (event: KeyboardEvent) => {
+    if (event.key !== "Control") {
+      return;
+    }
+
+    this.isControlPressed.set(true);
+  };
+
+  private onControlPressReleased = (event: KeyboardEvent) => {
+    if (event.key !== "Control") {
+      return;
+    }
+
+    this.isControlPressed.set(false);
+  };
+
+  private createControlListerners = () => {
+    document.addEventListener("keydown", this.onControlPressed);
+    document.addEventListener("keyup", this.onControlPressReleased);
+  };
+
+  private disposeControlListerners = () => {
+    document.removeEventListener("keydown", this.onControlPressed);
+    document.removeEventListener("keyup", this.onControlPressReleased);
+  };
+
+  ngOnInit(): void {
+    this.createControlListerners();
+  }
+
   ngOnDestroy(): void {
     this.cleanUpState();
+    this.disposeControlListerners();
   }
 
   /**
@@ -427,12 +464,18 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
               return null;
             }
 
-            if (Array.isArray(result)) {
-              const location = result[0];
+            const goToDefinitionInEditor = async (location: vsCodeLocation) => {
               const uri = location.uri;
               const asPathLike = await this.electronApi.pathApi.fromUri(uri);
               const node = await this.electronApi.fsApi.getNode(asPathLike);
               this.editorFileOpenerService.openFileNodeInEditor(node);
+            };
+
+            if (Array.isArray(result)) {
+              const location = result[0];
+              await goToDefinitionInEditor(location);
+            } else {
+              await goToDefinitionInEditor(result);
             }
 
             return null;
@@ -693,6 +736,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       this.hoverTooltipExtension(),
       this.autoCompleteExtension(),
       this.goToDefinitionExtension(),
+      createGoToDefinitionHoverStyles(this.isControlPressed),
     ];
   };
 
