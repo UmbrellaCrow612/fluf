@@ -1,0 +1,18 @@
+<dialog #contextMenu class="application_context_dialog">
+  @if (isLoading()) {
+    <div>Loading</div>
+  }
+
+  <!---->
+
+  @if (error()) {
+    <div>
+      {{ error() }}
+    </div>
+  }
+
+  <!---->
+  @if (!isLoading() && !error()) {
+    <ng-container *ngComponentOutlet="componentToRender()"></ng-container>
+  }
+</dialog>

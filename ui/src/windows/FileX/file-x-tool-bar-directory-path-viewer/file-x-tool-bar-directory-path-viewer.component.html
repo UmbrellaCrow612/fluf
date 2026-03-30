@@ -1,6 +1,6 @@
 <div class="file_x_dir_viewer">
   @if (showDirectoryPathEditor()) {
-    <app-file-x-path-input-editor (userFocusLostEvent)="switchEditor()"/>
+    <app-file-x-path-input-editor (userFocusLostEvent)="switchEditor()" />
   } @else {
     <span (click)="switchEditor()" class="directory_display">
       @for (child of children(); track $index) {

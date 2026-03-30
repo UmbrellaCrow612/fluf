@@ -1,28 +1,88 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
 import fs from "fs/promises";
 import path from "path";
-import type {
-  languageId,
-  LanguageServerProtocolMethod,
-} from "../type.js";
+import type { languageId, LanguageServerProtocolMethod } from "../type.js";
 import { logger } from "../logger.js";
-import { isUri } from "./uri.js";
+import { assertUri } from "./uri.js";
 import { broadcastToAll } from "../broadcast.js";
 import type {
+  DidChangeTextDocumentParams,
+  DidCloseTextDocumentParams,
+  DidOpenTextDocumentParams,
   NotificationMessage,
+  RequestMessage,
   ResponseMessage,
+  TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
+import {
+  assertArray,
+  assertNonNegativeNumber,
+  assertObject,
+  assertString,
+  assertStringArray,
+} from "../assert.js";
 
 /**
- * Type guard to check if an object is a NotificationMessage
+ * Type guard that checks whether an unknown value is a valid {@link ResponseMessage}.
+ *
+ * A value qualifies as a `ResponseMessage` if it satisfies all of the following:
+ * - Is a non-null object
+ * - Has a `jsonrpc` property equal to `"2.0"`
+ * - Has an `id` property that is a number, string, or `null`
+ * - Has either a `result` property (on success) or an `error` property (on failure), but not both
+ *
+ * @param value - The value to test.
+ * @returns `true` if `value` is a {@link ResponseMessage}, narrowing its type accordingly.
+ *
+ * @example
+ * const raw = JSON.parse(line);
+ * if (isResponseMessage(raw)) {
+ *   // raw is now typed as ResponseMessage
+ *   console.log(raw.id, raw.result);
+ * }
  */
-function isNotificationMessage(obj: any): obj is NotificationMessage {
+function isResponseMessage(value: unknown): value is ResponseMessage {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  // Must be a JSON-RPC 2.0 message
+  if (record["jsonrpc"] !== "2.0") {
+    return false;
+  }
+
+  // id must be a number, string, or null — undefined is not allowed
+  const id = record["id"];
+  if (typeof id !== "number" && typeof id !== "string" && id !== null) {
+    return false;
+  }
+
+  const hasResult = "result" in record;
+  const hasError = "error" in record;
+
+  // A response must carry either a result or an error, but never both
+  if (!hasResult && !hasError) {
+    return false;
+  }
+
+  if (hasResult && hasError) {
+    return false;
+  }
+
+  return true;
+}
+
+function isNotificationMessage(obj: unknown): obj is NotificationMessage {
   if (typeof obj !== "object" || obj === null) return false;
-  if (typeof obj.method !== "string") return false;
+  const record = obj as Record<string, unknown>;
+  const method = typeof record["method"];
+  if (method !== "string") return false;
   if (
-    obj.params !== undefined &&
-    !Array.isArray(obj.params) &&
-    typeof obj.params !== "object"
+    record["params"] !== undefined &&
+    !Array.isArray(record["params"]) &&
+    typeof record["params"] !== "object"
   )
     return false;
   return true;
@@ -43,14 +103,6 @@ export class JsonRpcProcess {
   private _command: string | null = null;
 
   /**
-   * Get the command spawned for a given the given process
-   * @returns {string | null}
-   */
-  GetCommand(): string | null {
-    return this._command;
-  }
-
-  /**
    * Aguments passed on spawn
    * @type {string[]}
    */
@@ -68,14 +120,6 @@ export class JsonRpcProcess {
   private _isStarted = false;
 
   /**
-   * Check if the process is running
-   * @returns {boolean} If it is or is not
-   */
-  IsStarted(): boolean {
-    return this._isStarted;
-  }
-
-  /**
    * Holds the pending requests made to the process.
    *
    * Each entry in the map corresponds to a request ID and its associated handlers.
@@ -83,14 +127,14 @@ export class JsonRpcProcess {
   private _pendingRequests: Map<
     number,
     {
-      resolve: (value: ResponseMessage["result"]) => void;
-      reject: (reason?: any) => void;
+      resolve: (value: any) => void;
+      reject: (reason?: unknown) => void;
       timeout: NodeJS.Timeout;
     }
   > = new Map();
 
   /** Holds the next ID  */
-  private _id = 0;
+  private _id = 1;
   /**
    * Gets the next id
    * @returns {number} - The next id
@@ -112,14 +156,6 @@ export class JsonRpcProcess {
   private _pid: number | undefined = undefined;
 
   /**
-   * Get the PID number of the process
-   * @returns {number | undefined}
-   */
-  GetPid(): number | undefined {
-    return this._pid;
-  }
-
-  /**
    * Holds the workspace folder this was spawned for for exmaple `c:/dev/some/project`
    * @type {string | null}
    */
@@ -133,30 +169,21 @@ export class JsonRpcProcess {
 
   /**
    * Required for spawn of the process to work and properly spawn and communicate as needed
-   * @param {string} command - The command to spawn the LSP such as `gopls` or the path to the binary
-   * @param {string[]} args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
-   * @param {string} workSpaceFolder - The workspace this is for exmaple `c:/dev/some/project/`
-   * @param {languageId | null} languageId - The specific language this is for exmaple `go` or `js` etc
+   * @param  command - The command to spawn the LSP such as `gopls` or the path to the binary
+   * @param  args - Any addtional arguments to pass to the command on spawn such as `["--stdio"]`
+   * @param  workSpaceFolder - The workspace this is for exmaple `c:/dev/some/project/`
+   * @param  languageId - The specific language this is for exmaple `go` or `js` etc
    */
   constructor(
     command: string,
     args: string[],
     workSpaceFolder: string,
-    languageId: languageId | null,
+    languageId: languageId,
   ) {
-    if (!command || typeof command !== "string")
-      throw new TypeError("command must be a non-empty string");
-
-    if (!Array.isArray(args)) throw new TypeError("args must be an array");
-
-    if (!args.every((arg) => typeof arg === "string"))
-      throw new TypeError("all elements in args must be strings");
-
-    if (typeof workSpaceFolder !== "string")
-      throw new TypeError("workSpaceFolder must be a non empty string");
-
-    if (typeof languageId !== "string")
-      throw new TypeError("languageId must be a non empty string");
+    assertString(command);
+    assertStringArray(args);
+    assertString(workSpaceFolder);
+    assertString(languageId);
 
     this._command = command;
     this._args = args;
@@ -165,284 +192,36 @@ export class JsonRpcProcess {
   }
 
   /**
-   * Start the process
+   * Clears up pendinbg promises
    */
-  async Start() {
-    if (!this._workSpaceFolder || this._workSpaceFolder.length === 0)
-      throw new TypeError("workSpaceFolder must be a non empty string");
-
-    if (!this._command) throw new Error("Command not passed");
-
-    try {
-      if (this._isStarted) {
-        logger.info(`JSON Rpc already started for command ${this._command}`);
-        return;
-      }
-
-      await fs.access(this._workSpaceFolder);
-
-      this._spawnRef = spawn(this._command, this._args);
-
-      this._pid = this._spawnRef.pid;
-
-      this._spawnRef.stdout.on("data", (chunk) => {
-        this._stdoutBuffer = Buffer.concat([this._stdoutBuffer, chunk]);
-        this._parseStdout();
-      });
-
-      this._spawnRef.stderr.on("data", (chunk) => {
-        logger.error(`LSP stderr: ${chunk.toString()}`);
-      });
-
-      this._spawnRef.on("error", (error) => {
-        logger.error(`Process error for ${this._command}: ${error.message}`);
-        this._isStarted = false;
-        this._pendingRequests.forEach(({ reject }) => {
-          reject(new Error(`Process error: ${error.message}`));
-        });
-        this._pendingRequests.clear();
-      });
-
-      this._spawnRef.on("exit", (code, signal) => {
-        logger.info(
-          `Process ${this._command} exited with code ${code}, signal ${signal}`,
-        );
-        this._isStarted = false;
-        this._pendingRequests.forEach(({ reject }) => {
-          reject(new Error(`Process exited with code ${code}`));
-        });
-        this._pendingRequests.clear();
-      });
-
-      this._isStarted = true;
-    } catch (error) {
-      this._isStarted = false;
-
-      logger.error(
-        error,
-        `Failed to start JSON RPC process with command ${this._command}`,
-      );
-
-      throw error;
-    }
-  }
-
-  /**
-   * Shutdown the process and cleanup resources - not the same as stop - this is like a extreme cleanup at the very end
-   * @returns {void}
-   */
-  Shutdown(): void {
-    this._isStarted = false;
-
-    if (this._spawnRef && !this._spawnRef.killed) {
-      this._spawnRef.kill("SIGTERM");
-
-      setTimeout(() => {
-        if (this._spawnRef && !this._spawnRef.killed) {
-          this._spawnRef.kill("SIGKILL");
-        }
-      }, 1000);
-    }
-
+  private _rejectPendingRequests(error: Error) {
     this._pendingRequests.forEach(({ reject }) => {
-      reject(new Error("Process shutdown"));
+      reject(new Error(`Process error: ${error.message}`));
     });
-
     this._pendingRequests.clear();
-    this._spawnRef = null;
   }
 
   /**
-   * Write exit request - call after `shutdown request`
+   * Assert that the process ir running
    */
-  Exit() {
-    this._write({
-      jsonrpc: "2.0",
-      method: "exit",
-      id: null,
-    });
-  }
-
-  /**
-   * Call after making a initlized  request
-   */
-  Initialized() {
-    this._write({
-      jsonrpc: "2.0",
-      method: "initialized",
-      params: {},
-      id: null,
-    });
-  }
-
-  /**
-   * Make a request to the process and await a response
-   * @param {LanguageServerProtocolMethod} method - The specific method to send
-   * @param {any} params - Any shape of params for the request being sent
-   * @returns {Promise<any>} The promise to await and the value from the request parsed or error
-   */
-  SendRequest(method: LanguageServerProtocolMethod, params: any): Promise<any> {
-    if (!method || typeof method !== "string")
-      throw new TypeError("method must be a non-empty string");
-
-    if (params !== undefined && params !== null && typeof params !== "object")
-      throw new TypeError("params must be an object, null, or undefined");
-
-    if (!this._isStarted) {
-      return Promise.reject(
-        new Error(`Process not started for command: ${this._command}`),
-      );
-    }
-
-    try {
-      const requestId = this._getId();
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          if (this._pendingRequests.has(requestId)) {
-            this._pendingRequests
-              .get(requestId)
-              ?.reject(new Error("Request timed out"));
-            this._pendingRequests.delete(requestId);
-          }
-        }, 4500);
-
-        this._pendingRequests.set(requestId, {
-          resolve,
-          reject,
-          timeout,
-        });
-
-        this._write({
-          id: requestId,
-          jsonrpc: "2.0",
-          method,
-          params,
-        });
-      });
-    } catch (error) {
-      logger.error(
-        error,
-        `Failed to send request for command: ${this._command}`,
-      );
-
-      throw error;
+  private assertIsStarted() {
+    if (!this.IsStarted()) {
+      logger.error("Process not started ", this._createInfoDumpObject());
+      throw new Error("Process not started");
     }
   }
 
   /**
-   * Send a textDocument/didOpen notification to the LSP
-   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
-   * @param {string} languageId - The language identifier (e.g., "go", "python", "javascript")
-   * @param {number} version - The initial document version (typically starts at 1)
-   * @param {string} text - The full text content of the document
-   * @returns {void}
+   * Creates a info object about the given process
+   * @returns Object containg information about the given process
    */
-  DidOpenTextDocument(
-    uri: string,
-    languageId: string,
-    version: number,
-    text: string,
-  ): void {
-    if (!uri || typeof uri !== "string")
-      throw new TypeError("uri must be a non-empty string");
-
-    if (!languageId || typeof languageId !== "string")
-      throw new TypeError("languageId must be a non-empty string");
-
-    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
-
-    if (
-      typeof version !== "number" ||
-      !Number.isInteger(version) ||
-      version < 0
-    )
-      throw new TypeError("version must be a non-negative integer");
-
-    if (typeof text !== "string") throw new TypeError("text must be a string");
-
-    this._write({
-      jsonrpc: "2.0",
-      /** @type {LanguageServerProtocolMethod} */
-      method: "textDocument/didOpen",
-      /** @type {import("vscode-languageserver-protocol").DidOpenTextDocumentParams} */
-      params: {
-        textDocument: {
-          uri: uri,
-          languageId: languageId,
-          version: version,
-          text: text,
-        },
-      },
-      id: null,
-    });
-  }
-
-  /**
-   * Send a textDocument/didChange notification to the LSP
-   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
-   * @param {number} version - The document version (increments with each change)
-   * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} contentChanges - The content changes
-   * @returns {void}
-   */
-  DidChangeTextDocument(
-    uri: string,
-    version: number,
-    contentChanges: import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[],
-  ): void {
-    if (!uri || typeof uri !== "string")
-      throw new TypeError("uri must be a non-empty string");
-
-    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
-
-    if (
-      typeof version !== "number" ||
-      !Number.isInteger(version) ||
-      version < 0
-    )
-      throw new TypeError("version must be a non-negative integer");
-
-    if (!Array.isArray(contentChanges))
-      throw new TypeError("contentChanges must be an array");
-
-    this._write({
-      jsonrpc: "2.0",
-      /** @type {LanguageServerProtocolMethod} */
-      method: "textDocument/didChange",
-      /** @type {import("vscode-languageserver-protocol").DidChangeTextDocumentParams} */
-      params: {
-        textDocument: {
-          uri: uri,
-          version: version,
-        },
-        contentChanges: contentChanges,
-      },
-      id: null,
-    });
-  }
-
-  /**
-   * Send a textDocument/didClose notification to the LSP
-   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
-   * @returns {void}
-   */
-  DidCloseTextDocument(uri: string): void {
-    if (!uri || typeof uri !== "string")
-      throw new TypeError("uri must be a non-empty string");
-
-    if (!isUri(uri)) throw new TypeError("uri must be a valid URI format");
-
-    this._write({
-      jsonrpc: "2.0",
-      /** @type {LanguageServerProtocolMethod} */
-      method: "textDocument/didClose",
-      /** @type {import("vscode-languageserver-protocol").DidCloseTextDocumentParams} */
-      params: {
-        textDocument: {
-          uri: uri,
-        },
-      },
-      id: null,
-    });
+  private _createInfoDumpObject() {
+    return {
+      command: this._command,
+      args: this._args,
+      workSpaceFolder: this._workSpaceFolder,
+      languageId: this._languageId,
+    };
   }
 
   /**
@@ -481,21 +260,26 @@ export class JsonRpcProcess {
       // Move buffer advancement BEFORE parsing to prevent infinite loops
       this._stdoutBuffer = this._stdoutBuffer.subarray(messageEnd);
 
-      let response;
+      let response: ResponseMessage | null = null;
       try {
-        response = JSON.parse(messageBody);
-      } catch (/** @type {any}*/ err: any) {
-        logger.error(err, `Failed to parse JSON for command: ${this._command}`);
-        logger.error("Raw body: ", messageBody);
+        response = JSON.parse(messageBody) as ResponseMessage;
+      } catch (err) {
+        logger.error(
+          "Failed to parse stdout message ",
+          this._createInfoDumpObject(),
+          messageBody,
+          err,
+        );
         continue;
       }
 
       try {
         this._handle(response);
-      } catch (/** @type {any}*/ err: any) {
+      } catch (err) {
         logger.error(
+          "Failed to notify message ",
+          this._createInfoDumpObject(),
           err,
-          `Failed to notify response for command: ${this._command}`,
         );
         // Continue processing even if notification fails
       }
@@ -507,50 +291,45 @@ export class JsonRpcProcess {
    * @param {ResponseMessage} responseMessage - The parsed message from the LSP
    * @returns {void} Nothing
    */
-  private _resolveRequests(responseMessage: ResponseMessage): void {
-    if (responseMessage.id !== null) {
-      const requestId = Number(responseMessage.id);
-      if (!this._pendingRequests.has(requestId)) {
-        return;
-      }
-
-      const obj = this._pendingRequests.get(requestId)!;
-
-      if (responseMessage.error) {
-        clearTimeout(obj.timeout);
-        obj.reject(responseMessage.error);
-      } else {
-        clearTimeout(obj.timeout);
-        obj?.resolve(responseMessage.result);
-      }
-
-      this._pendingRequests.delete(requestId);
+  private _resolvePendingRequests(responseMessage: ResponseMessage): void {
+    if (!isResponseMessage(responseMessage)) {
+      return;
     }
+
+    const requestId = Number(responseMessage.id);
+    if (!this._pendingRequests.has(requestId)) {
+      return;
+    }
+
+    const obj = this._pendingRequests.get(requestId);
+    if (!obj) {
+      throw new Error("Pending requests object is null");
+    }
+
+    if (responseMessage.error) {
+      clearTimeout(obj.timeout);
+      obj.reject(responseMessage.error);
+    } else {
+      clearTimeout(obj.timeout);
+      obj.resolve(responseMessage.result);
+    }
+
+    this._pendingRequests.delete(requestId);
   }
 
   /**
    * Handles a response message from the LSP and notifies any listeners
-   * @param {import("vscode-languageserver-protocol").ResponseMessage} response
+   * @param {ResponseMessage} response
    */
-  private _handle(
-    response: import("vscode-languageserver-protocol").ResponseMessage,
-  ) {
-    this._resolveRequests(response);
-    if (!this._languageId) {
-      logger.error("No language ID provided when calling handle");
-      throw new Error("No language ID provided when calling handle");
-    }
-    if (!this._workSpaceFolder) {
-      logger.error("No workspace folder provided when calling handle");
-      throw new Error("No workspace folder provided when calling handle");
-    }
+  private _handle(response: ResponseMessage) {
+    this._resolvePendingRequests(response);
 
-    broadcastToAll(
-      "lsp:data",
-      response,
-      this._languageId,
-      this._workSpaceFolder,
-    );
+    const languageId = this._languageId as languageId;
+    assertString(languageId);
+    const workSpaceFolder = this._workSpaceFolder as string;
+    assertString(workSpaceFolder);
+
+    broadcastToAll("lsp:data", response, languageId, workSpaceFolder);
 
     if (isNotificationMessage(response)) {
       this._handleNotificationMessage(response);
@@ -561,42 +340,34 @@ export class JsonRpcProcess {
    * Notify interested parties of a notification message from the LSP
    */
   private _handleNotificationMessage(notification: NotificationMessage): void {
-    if (!this._languageId) throw new Error("No language id cannot send events");
-    if (!this._workSpaceFolder)
-      throw new Error("No workspace folder cannot send events");
+    const languageId = this._languageId as languageId;
+    assertString(languageId);
+    const workSpaceFolder = this._workSpaceFolder as string;
+    assertString(workSpaceFolder);
 
     broadcastToAll(
       "lsp:notification",
       notification,
-      this._languageId,
-      this._workSpaceFolder,
+      languageId,
+      workSpaceFolder,
     );
   }
 
   /**
    * Write a request to the stdin stream of the process
-   * @param {Partial<import("vscode-languageserver-protocol").RequestMessage>} message The message
+   * @param message The message
    */
-  private _write(
-    message: import("vscode-languageserver-protocol").RequestMessage,
-  ) {
-    if (!message || typeof message !== "object")
-      throw new TypeError("message must be an object");
-
-    if (!this._isStarted) {
-      logger.error(
-        `Cannot write to process command: ${this._command} as it is not yet started`,
-      );
-      return;
-    }
+  private _writeToStdin(message: RequestMessage) {
+    assertObject(message);
+    this.assertIsStarted();
 
     if (!this._spawnRef) {
-      logger.error(`No child process spawned for command: ${this._command}`);
+      logger.error("Process does not exist ", this._createInfoDumpObject());
       throw new Error("Trying to write to child process but it is undefined");
     }
 
     if (!this._spawnRef.stdin.writable) {
-      logger.error(`Cannot write to process command: ${this._command}`);
+      logger.error("Cannot write to process ", this._createInfoDumpObject());
       throw new Error(
         "Trying to write to child process but stdin is not writable",
       );
@@ -605,15 +376,302 @@ export class JsonRpcProcess {
     try {
       const json = JSON.stringify(message);
       const contentLength = Buffer.byteLength(json, "utf8");
-      const writeContent = `Content-Length: ${contentLength}\r\n\r\n${json}`;
+      const writeContent = `Content-Length: ${String(contentLength)}\r\n\r\n${json}`;
+
       this._spawnRef.stdin.write(writeContent);
     } catch (error) {
       logger.error(
-        `Failed to write to stdin stream of command: ${this._command} error: `,
+        "Failed to write to stdin stream of process ",
+        this._createInfoDumpObject(),
         error,
       );
 
       throw error;
     }
+  }
+
+  /**
+   * Get the PID number of the process
+   * @returns {number | undefined}
+   */
+  public GetPid(): number | undefined {
+    return this._pid;
+  }
+
+  /**
+   * Get the command spawned for a given the given process
+   * @returns {string | null}
+   */
+  public GetCommand(): string | null {
+    return this._command;
+  }
+
+  /**
+   * Check if the process is running
+   * @returns {boolean} If it is or is not
+   */
+  public IsStarted(): boolean {
+    if (this._isStarted && this._spawnRef !== null && !this._spawnRef.killed) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Start the process
+   */
+  public async Start(): Promise<void> {
+    try {
+      if (this.IsStarted()) {
+        logger.info(`Process already running `, this._createInfoDumpObject());
+        return;
+      }
+
+      const workspaceFolder = this._workSpaceFolder as string;
+      assertString(workspaceFolder);
+      const command = this._command as string;
+      assertString(command);
+
+      await fs.access(workspaceFolder);
+
+      this._spawnRef = spawn(command, this._args);
+
+      this._pid = this._spawnRef.pid;
+
+      this._spawnRef.stdout.on("data", (chunk) => {
+        this._stdoutBuffer = Buffer.concat([this._stdoutBuffer, chunk]);
+        this._parseStdout();
+      });
+
+      this._spawnRef.stderr.on("data", (chunk) => {
+        logger.error(`LSP stderr: ${chunk.toString()}`);
+      });
+
+      this._spawnRef.on("error", (error) => {
+        logger.error("Process error ", this._createInfoDumpObject(), error);
+        this._rejectPendingRequests(error);
+      });
+
+      this._spawnRef.on("exit", (code, signal) => {
+        logger.info(
+          "Process exited ",
+          this._createInfoDumpObject(),
+          code,
+          signal,
+        );
+        if (code !== 0) {
+          this._rejectPendingRequests(
+            new Error("Process exited with non zero code"),
+          );
+        }
+      });
+
+      this._isStarted = true;
+    } catch (error) {
+      logger.error(
+        "Failed to start process ",
+        this._createInfoDumpObject(),
+        error,
+      );
+
+      throw error;
+    }
+  }
+
+  /**
+   * Shutdown the process and cleanup resources - not the same as stop - this is like a extreme cleanup at the very end
+   * @returns {void}
+   */
+  public Shutdown(): void {
+    this._isStarted = false;
+
+    if (this._spawnRef && !this._spawnRef.killed) {
+      this._spawnRef.kill("SIGTERM");
+
+      setTimeout(() => {
+        if (this._spawnRef && !this._spawnRef.killed) {
+          this._spawnRef.kill("SIGKILL");
+          this._spawnRef = null;
+        }
+      }, 1000);
+    }
+
+    this._rejectPendingRequests(new Error("Process shutting down"));
+  }
+
+  /**
+   * Write exit request - call after `shutdown request`
+   */
+  public Exit() {
+    this.assertIsStarted();
+
+    this._writeToStdin({
+      jsonrpc: "2.0",
+      method: "exit",
+      id: null,
+    });
+  }
+
+  /**
+   * Call after making a initlized  request
+   */
+  public Initialized() {
+    this.assertIsStarted();
+
+    this._writeToStdin({
+      jsonrpc: "2.0",
+      method: "initialized",
+      params: {},
+      id: null,
+    });
+  }
+
+  /**
+   * Make a request to the process and await a response
+   * @param {LanguageServerProtocolMethod} method - The specific method to send
+   * @param {any} params - Any shape of params for the request being sent
+   * @returns {Promise<any>} The promise to await and the value from the request parsed or error
+   */
+  public SendRequest<T>(
+    method: LanguageServerProtocolMethod,
+    params: unknown,
+  ): Promise<T> {
+    assertString(method);
+    this.assertIsStarted();
+
+    try {
+      const requestId = this._getId();
+
+      return new Promise<T>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          const pendingRequest = this._pendingRequests.get(requestId);
+          if (pendingRequest) {
+            pendingRequest.reject(new Error("Request timed out"));
+            this._pendingRequests.delete(requestId);
+          }
+        }, 4500);
+
+        this._pendingRequests.set(requestId, {
+          resolve,
+          reject,
+          timeout,
+        });
+
+        this._writeToStdin({
+          id: requestId,
+          jsonrpc: "2.0",
+          method,
+          params: params as object,
+        });
+      });
+    } catch (error) {
+      logger.error(
+        "Failed to send request ",
+        this._createInfoDumpObject(),
+        error,
+      );
+
+      throw error;
+    }
+  }
+
+  /**
+   * Send a textDocument/didOpen notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @param {string} languageId - The language identifier (e.g., "go", "python", "javascript")
+   * @param {number} version - The initial document version (typically starts at 1)
+   * @param {string} text - The full text content of the document
+   * @returns {void}
+   */
+  public DidOpenTextDocument(
+    uri: string,
+    languageId: string,
+    version: number,
+    text: string,
+  ): void {
+    this.assertIsStarted();
+    assertString(uri);
+    assertUri(uri);
+    assertString(languageId);
+    assertNonNegativeNumber(version);
+    assertString(text);
+
+    const method: LanguageServerProtocolMethod = "textDocument/didOpen";
+    const params: DidOpenTextDocumentParams = {
+      textDocument: {
+        uri: uri,
+        languageId: languageId,
+        version: version,
+        text: text,
+      },
+    };
+
+    this._writeToStdin({
+      jsonrpc: "2.0",
+      method: method,
+      params: params,
+      id: null,
+    });
+  }
+
+  /**
+   * Send a textDocument/didChange notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @param {number} version - The document version (increments with each change)
+   * @param {import("vscode-languageserver-protocol").TextDocumentContentChangeEvent[]} contentChanges - The content changes
+   * @returns {void}
+   */
+  public DidChangeTextDocument(
+    uri: string,
+    version: number,
+    contentChanges: TextDocumentContentChangeEvent[],
+  ): void {
+    this.assertIsStarted();
+    assertString(uri);
+    assertUri(uri);
+    assertNonNegativeNumber(version);
+    assertArray(contentChanges);
+
+    const method: LanguageServerProtocolMethod = "textDocument/didChange";
+    const params: DidChangeTextDocumentParams = {
+      textDocument: {
+        uri: uri,
+        version: version,
+      },
+      contentChanges: contentChanges,
+    };
+
+    this._writeToStdin({
+      jsonrpc: "2.0",
+      method: method,
+      params: params,
+      id: null,
+    });
+  }
+
+  /**
+   * Send a textDocument/didClose notification to the LSP
+   * @param {string} uri - The document URI (e.g., "file:///path/to/file.go")
+   * @returns {void}
+   */
+  public DidCloseTextDocument(uri: string): void {
+    this.assertIsStarted();
+    assertString(uri);
+    assertUri(uri);
+
+    const method: LanguageServerProtocolMethod = "textDocument/didClose";
+    const params: DidCloseTextDocumentParams = {
+      textDocument: {
+        uri: uri,
+      },
+    };
+
+    this._writeToStdin({
+      jsonrpc: "2.0",
+      method: method,
+      params: params,
+      id: null,
+    });
   }
 }

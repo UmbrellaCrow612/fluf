@@ -1,4 +1,5 @@
 import path from "path";
+import { assertString } from "../assert.js";
 
 /**
  * Converts a local file path into an LSP-compliant DocumentUri.
@@ -15,9 +16,7 @@ import path from "path";
  * createUri('/home/user/file.txt');    // 'file:///home/user/file.txt'
  */
 export function createUri(filePath: string): string {
-  if (typeof filePath !== "string") {
-    throw new TypeError("filePath must be a string");
-  }
+  assertString(filePath);
 
   // Resolve relative paths to absolute
   let absolutePath = path.normalize(path.resolve(filePath));
@@ -39,6 +38,37 @@ export function createUri(filePath: string): string {
 }
 
 /**
+ * Converts an LSP-compliant DocumentUri back into a local file system path.
+ *
+ * Handles both Windows (drive letter) and Unix paths. Decodes any
+ * percent-encoded characters in the URI.
+ *
+ * @param {string} uri - The DocumentUri string to convert.
+ * @returns {string} The local file system path.
+ *
+ * @example
+ * fromUri('file:///C:/project/readme.md'); // 'C:\\project\\readme.md' (Windows)
+ * fromUri('file:///home/user/file.txt');   // '/home/user/file.txt'
+ */
+export function fromUri(uri: string): string {
+  assertUri(uri);
+
+  // Strip the file:// scheme
+  let uriPath = uri.slice("file://".length);
+
+  // Decode percent-encoded characters
+  uriPath = decodeURIComponent(uriPath);
+
+  // Windows: /C:/path → C:\path
+  if (/^\/[a-zA-Z]:/.test(uriPath)) {
+    uriPath = uriPath.slice(1); // remove leading slash
+    return path.normalize(uriPath.replace(/\//g, path.sep));
+  }
+
+  return path.normalize(uriPath);
+}
+
+/**
  * Check if a string is a valid document URI
  * @param {string} uri - The string to check
  * @returns {boolean} True if the string is a valid file URI, false otherwise
@@ -49,4 +79,19 @@ export function isUri(uri: string): boolean {
   }
 
   return uri.startsWith("file://");
+}
+
+/**
+ * Assert a value is a valid file URI (DocumentUri)
+ * @param value The value to assert as a URI
+ * @throws Error if the value isn't a string or isn't a valid file URI
+ */
+export function assertUri(value: any): void {
+  assertString(value);
+
+  if (!isUri(value)) {
+    throw new Error(
+      `Assertion failed: received "${value}" but expected a valid file URI (e.g., "file:///path/to/file")`,
+    );
+  }
 }

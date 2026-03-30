@@ -1,0 +1,39 @@
+.application_context_dialog {
+  /* Positioning */
+  position: fixed;
+  margin: 0;
+  padding: 0;
+
+  /* Background & Surface */
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+
+  /* Elevation */
+  box-shadow: var(--shadow-lg);
+
+  /* Typography */
+  color: var(--text-primary);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+
+  /* Layout */
+  min-width: 200px;
+  max-width: 50vw;
+  min-height: 100px;
+  max-height: 50vh;
+
+  /* Overflow handling */
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+
+  /* Reset dialog defaults */
+  border: none;
+  outline: none;
+}
+

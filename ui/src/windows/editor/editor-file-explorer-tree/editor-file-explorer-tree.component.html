@@ -1,0 +1,21 @@
+@if (!error()) {
+  <div class="editor_file_explorer_tree_container scroll_bar">
+    @for (node of rootNodeChildren(); track node.path) {
+      <app-editor-file-explorer-tree-item
+        [fileNode]="node"
+        [depth]="0"
+        [rootNodeChildren]="rootNodeChildren()"
+        [activeNode]="activeNode()"
+        (rootNodeChildrenUpdated)="this.rootNodeChildrenUpdated.emit($event)"
+        (itemSelected)="itemSelected.emit($event)"
+      />
+    }
+  </div>
+}
+<!---->
+
+@if (error()) {
+  <div>
+    {{ error() }}
+  </div>
+}

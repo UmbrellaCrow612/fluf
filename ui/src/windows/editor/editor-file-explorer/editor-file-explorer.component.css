@@ -1,0 +1,46 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor_file_explorer_container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor_file_explorer_container.active {
+  border: 1px solid var(--border-focus);
+  border-radius: 2px;
+}
+
+.editor_file_explorer_top_container {
+  padding: 10px;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editor_file_explorer_actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  justify-content: end;
+  min-height: 0;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.editor_file_explorer_title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}

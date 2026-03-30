@@ -10,7 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FileXTab } from '../types';
 import { ChangeActiveDirectory } from '../utils';

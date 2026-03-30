@@ -1,0 +1,137 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.editor_footer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow-y: hidden;
+  overflow-x: auto;
+  padding: 4px 12px;
+  min-height: 28px;
+  min-width: 0;
+
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-default);
+  font-family: var(--code-editor-font-family);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.editor_footer_cursor_position {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  transition: all 0.15s ease;
+}
+
+.editor_footer_git_branch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  padding: 2px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  transition: all 0.15s ease;
+  cursor: default;
+  border: 1px solid transparent;
+}
+
+.editor_footer_git_branch:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.git_branch_icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.git_branch_name {
+  font-family: var(--code-editor-font-family);
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor_footer_git_blame {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  transition: all 0.15s ease;
+  cursor: default;
+  border: 1px solid transparent;
+}
+
+.editor_footer_git_blame:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.git_blame_author {
+  font-weight: 500;
+  color: var(--text-secondary);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.git_blame_commit {
+  font-family: var(--code-editor-font-family);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background-color: var(--bg-secondary);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.git_blame_commit:empty,
+.git_blame_commit[style*="00000000"] {
+  display: none;
+}
+
+.git_blame_date {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* Special styling for uncommitted changes */
+.editor_footer_git_blame:has(.git_blame_author[style*="Not Committed Yet"]) {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.editor_footer_git_blame:has(.git_blame_author[style*="Not Committed Yet"])
+  .git_blame_author {
+  color: var(--text-tertiary);
+}

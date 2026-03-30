@@ -1,0 +1,17 @@
+<div class="editor_main_content_bottom_frame">
+  <div class="editor_main_content_bottom_actions">
+    @for (item of callToActions(); track $index) {
+      <button
+        class="btn"
+        [class.active]="activeBottomElement() === item.element"
+        (click)="selectEditorBottomElement(item.element)"
+      >
+        {{ item.label }}
+      </button>
+    }
+  </div>
+
+  <button matIconButton matTooltip="Close panel" (click)="closeBottomPanel()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>

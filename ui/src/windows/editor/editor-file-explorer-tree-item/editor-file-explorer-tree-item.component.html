@@ -1,0 +1,98 @@
+<!-- Render normal node -->
+@if (fileNode().mode === "default") {
+  <div
+    class="editor_file_explorer_tree_item"
+    [class.active]="isActive()"
+    [matTooltip]="fileNode().path"
+    [matTooltipShowDelay]="matTooltipShowDelayInMilliseconds()"
+    tabindex="0"
+    (click)="selectTreeItem($event)"
+    [style.paddingLeft]="paddingLeftValue()"
+    (contextmenu)="displayContextMenu($event)"
+  >
+    @if (fileNode().isDirectory) {
+      <mat-icon
+        [fontIcon]="
+          fileNode().expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
+        "
+      />
+    }
+
+    <!---->
+    <mat-icon
+      [ariaLabel]="fileNode().isDirectory ? 'folder' : 'file'"
+      [fontIcon]="fileNode().isDirectory ? 'folder' : 'description'"
+    />
+
+    <!---->
+    <span class="editor_file_explorer_tree_item_name">
+      {{ fileNode().name }}
+    </span>
+  </div>
+
+  <!---->
+
+  @if (isFetchingChildren() && !fetchingChildrenError()) {
+    <div [style.paddingLeft]="paddingLeftValue()">Loading</div>
+  }
+  <!---->
+  @if (!isFetchingChildren() && fetchingChildrenError()) {
+    <div [style.paddingLeft]="paddingLeftValue()">
+      {{ fetchingChildrenError() }}
+    </div>
+  }
+
+  <!---->
+
+  <!-- Render sub children if expanded -->
+  @if (fileNode().children.length > 0 && fileNode().expanded) {
+    @for (node of fileNode().children; track node.path) {
+      <!--
+       Note: you need pass all to children outputs and inputs to these children as well 
+      -->
+      <app-editor-file-explorer-tree-item
+        [fileNode]="node"
+        [depth]="depth() + 1"
+        [rootNodeChildren]="rootNodeChildren()"
+        [activeNode]="activeNode()"
+        (rootNodeChildrenUpdated)="rootNodeChildrenUpdated.emit($event)"
+        (itemSelected)="itemSelected.emit($event)"
+      />
+    }
+  }
+}
+
+<!--Render create \ rename node -->
+@if (fileNode().mode !== "default") {
+  <form
+    class="create_tree_item_form"
+    [style.paddingLeft]="paddingLeftValue()"
+    [formGroup]="createInputForm"
+    (ngSubmit)="createOrRenameFileOrFolder($event)"
+  >
+    <mat-icon
+      [ariaLabel]="
+        fileNode().mode === 'createFile' ? 'Create file' : 'Create folder'
+      "
+      [fontIcon]="fileNode().mode === 'createFile' ? 'description' : 'folder'"
+    />
+    <input
+      type="text"
+      class="create_tree_item_input"
+      #create_tree_item_input
+      (blur)="deleteTemporaryNodes()"
+      formControlName="name"
+    />
+  </form>
+
+  @if (
+    !isCreatingOrRenamingFileOrFolder() && createOrRenameFileOrFolderError()
+  ) {
+    <div
+      class="create_tree_item_form_error"
+      [style.paddingLeft]="paddingLeftValue()"
+    >
+      {{ createOrRenameFileOrFolderError() }}
+    </div>
+  }
+}

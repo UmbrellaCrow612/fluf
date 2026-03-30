@@ -15,7 +15,7 @@ import { FileXSearchComponent } from '../file-x-search/file-x-search.component';
 import { FileXContextService } from '../file-x-context/file-x-context.service';
 import { FileXBackHistoryItem, FileXForwardHistoryItem } from '../types';
 import { ChangeActiveDirectory } from '../utils';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 import { FileXInMemoryContextService } from '../file-x-context/file-x-in-memory-context.service';
 
 @Component({

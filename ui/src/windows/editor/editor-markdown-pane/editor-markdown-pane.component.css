@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.editor_markdown_pane {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}

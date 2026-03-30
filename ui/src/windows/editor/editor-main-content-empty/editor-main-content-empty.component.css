@@ -1,0 +1,188 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor_main_content_empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 2rem;
+  min-height: 0;
+  min-width: 0;
+
+  /* Background with subtle gradient overlay */
+  background:
+    radial-gradient(
+      ellipse at top,
+      rgba(189, 147, 249, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at bottom,
+      rgba(98, 114, 164, 0.05) 0%,
+      transparent 50%
+    ),
+    var(--bg-primary);
+
+  /* Typography base */
+  font-family: var(--code-editor-font-family);
+  line-height: var(--code-editor-line-height);
+  color: var(--text-primary);
+
+  /* Selection styling */
+  user-select: none;
+}
+
+.editor_main_content_empty h1 {
+  /* Reset */
+  margin: 0 0 1.5rem 0;
+  padding: 0;
+
+  /* Typography */
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+
+  /* Gradient text effect using Dracula purple/pink */
+  background: linear-gradient(
+    135deg,
+    var(--text-primary) 0%,
+    var(--xterm-magenta) 50%,
+    var(--xterm-cyan) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  /* Subtle glow */
+  filter: drop-shadow(0 0 30px rgba(189, 147, 249, 0.3));
+
+  /* Cursor blink animation (like a terminal cursor) */
+  position: relative;
+}
+
+/* Blinking cursor after "Fluf" */
+.editor_main_content_empty h1::after {
+  content: "_";
+  -webkit-text-fill-color: var(--xterm-green);
+  animation: blink 1s step-end infinite;
+  margin-left: 0.1em;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.editor_main_content_empty p {
+  /* Reset */
+  margin: 0;
+  padding: 0;
+
+  /* Typography */
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+
+  /* Subtle code-comment styling */
+  font-style: italic;
+
+  /* Add comment syntax decoration */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Add // before the welcome text like a code comment */
+.editor_main_content_empty p::before {
+  content: "//";
+  color: var(--text-tertiary);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* Add username highlighting */
+.editor_main_content_empty p {
+  /* Highlight the name portion with different color */
+  & strong,
+  & span.username {
+    color: var(--xterm-green);
+    font-weight: 500;
+    font-style: normal;
+  }
+}
+
+/* Alternative: if you want to wrap the name in a span */
+.editor_main_content_empty p span {
+  color: var(--xterm-green);
+  font-style: normal;
+}
+
+/* Line numbers decoration on the left (subtle) */
+.editor_main_content_empty::before {
+  content: "1\A 2\A 3\A 4\A 5";
+  white-space: pre;
+  position: absolute;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+
+  font-family: var(--code-editor-font-family);
+  font-size: 0.875rem;
+  line-height: 2;
+  color: var(--code-editor-line-number);
+  text-align: right;
+
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Subtle grid pattern overlay */
+.editor_main_content_empty::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-default) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-default) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure content sits above grid */
+.editor_main_content_empty > * {
+  position: relative;
+  z-index: 1;
+}
+
+.editor_main_content_empty h1:hover {
+  filter: drop-shadow(0 0 40px rgba(189, 147, 249, 0.5));
+  transition: filter 0.3s ease;
+}
+
+.editor_main_content_empty p:hover {
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .editor_main_content_empty {
+    padding: 1.5rem;
+  }
+
+  .editor_main_content_empty::before {
+    display: none; /* Hide line numbers on mobile */
+  }
+
+  .editor_main_content_empty p {
+    font-size: 1rem;
+  }
+}

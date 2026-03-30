@@ -6,6 +6,4 @@ import { Component } from '@angular/core';
   templateUrl: './file-x-directory-content-icon-view.component.html',
   styleUrl: './file-x-directory-content-icon-view.component.css',
 })
-export class FileXDirectoryContentIconViewComponent {
-
-}
+export class FileXDirectoryContentIconViewComponent {}

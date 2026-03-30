@@ -1,0 +1,5 @@
+<div class="editor_open_files_container scroll_bar">
+  @for (item of currentOpenFiles(); track item.path) {
+    <app-editor-open-file-item [fileNode]="item" />
+  }
+</div>

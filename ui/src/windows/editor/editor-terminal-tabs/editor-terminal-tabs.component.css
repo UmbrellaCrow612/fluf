@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor_terminal_tabs {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  padding: 1px 8px;
+  align-items: center;
+}
+
+.editor_terminal_tabs_tab_items {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}

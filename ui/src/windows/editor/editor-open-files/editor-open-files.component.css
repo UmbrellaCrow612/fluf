@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  padding: 2px;
+  background-color: var(--bg-secondary);
+}
+
+.editor_open_files_container {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: hidden;
+  overflow-x: auto;
+}

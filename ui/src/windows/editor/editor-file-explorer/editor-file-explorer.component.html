@@ -1,0 +1,54 @@
+<div
+  class="editor_file_explorer_container"
+  (click)="focusFileExplorerRoot()"
+  [class.active]="isRootNodeActive()"
+>
+  <div class="editor_file_explorer_top_container">
+    <span class="editor_file_explorer_title"> File explorer </span>
+
+    <div class="editor_file_explorer_actions scroll_bar">
+      <button
+        matIconButton
+        aria-label="New file"
+        matTooltip="New File"
+        (click)="createNode($event, 'createFile')"
+        [disabled]="shouldDisableFileExplorerActions()"
+      >
+        <mat-icon>note_add</mat-icon>
+      </button>
+      <button
+        matIconButton
+        aria-label="New folder"
+        matTooltip="New Folder"
+        (click)="createNode($event, 'createFolder')"
+        [disabled]="shouldDisableFileExplorerActions()"
+      >
+        <mat-icon>create_new_folder</mat-icon>
+      </button>
+      <button
+        matIconButton
+        aria-label="Refresh"
+        matTooltip="Refresh"
+        (click)="refreshDirectory()"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button
+        matIconButton
+        aria-label="Collapse"
+        matTooltip="Collapse"
+        (click)="collapseDirectoryNodes()"
+      >
+        <mat-icon>unfold_less</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <app-editor-file-explorer-tree
+    [rootNode]="rootNode()"
+    [rootNodeChildren]="rootNodeChildren()"
+    [activeNode]="activeNode()"
+    (rootNodeChildrenUpdated)="updateRootNodeChildren($event)"
+    (itemSelected)="itemSelected($event)"
+  />
+</div>

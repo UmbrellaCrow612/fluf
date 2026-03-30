@@ -1,0 +1,27 @@
+:host {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor_main_content_container {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.default_flex {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor_main_content_wrapper {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}

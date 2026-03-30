@@ -1,0 +1,19 @@
+@if (isLoading() && !error()) {
+  <div>Loading</div>
+}
+
+<!---->
+
+@if (!isLoading() && error()) {
+  <div>
+    {{ error() }}
+  </div>
+}
+
+<!---->
+
+@if (!isLoading() && !error()) {
+  <div class="editor_pdf_pane">
+    <iframe [src]="pdfSrcUrl()" width="100%" height="100%"></iframe>
+  </div>
+}

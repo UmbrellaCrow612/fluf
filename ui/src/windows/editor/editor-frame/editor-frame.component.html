@@ -1,0 +1,50 @@
+<mat-toolbar class="editor_frame_container">
+  <span class="editor_frame_title">Fluf</span>
+
+  <div class="editor_frame_action_with_menus">
+    <div class="editor_frame_actions">
+      @for (item of editorFrameActionWithMenus(); track $index) {
+        <button
+          matButton
+          [matMenuTriggerFor]="menu"
+          [ariaLabel]="item.tooltip"
+          [id]="'editor_frame_action_with_menu' + item.id"
+        >
+          {{ item.label }}
+        </button>
+        <mat-menu #menu="matMenu">
+          @for (child of item.children; track $index) {
+            <button mat-menu-item (click)="child.onClick()">
+              <span>{{ child.label }}</span>
+            </button>
+          }
+        </mat-menu>
+      }
+    </div>
+  </div>
+
+  <div class="editor_frame_actions">
+    <button
+      matIconButton
+      aria-label="Minimize editor"
+      matTooltip="Minimize"
+      (click)="minimizeWindow()"
+    >
+      <mat-icon>minimize</mat-icon>
+    </button>
+    <button
+      matIconButton
+      [matTooltip]="isMaximized() ? 'Restore' : 'Maximize'"
+      (click)="maximizerOrRestoreWindow()"
+    >
+      @if (isMaximized()) {
+        <mat-icon>filter_none</mat-icon>
+      } @else {
+        <mat-icon>crop_square</mat-icon>
+      }
+    </button>
+    <button mat-icon-button matTooltip="Close" (click)="closeWindow()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>

@@ -15,6 +15,7 @@ import type {
   fsExists,
   fsGetNode,
   fsRemove,
+  fsRename,
   fsStopWatching,
   fsWatch,
   fuzzyFindDirectorys,
@@ -43,10 +44,7 @@ const watcherAbortsMap: Map<string, AbortController> = new Map();
  * @param {import("node:fs").Dirent<string>[]} dirItems - List of items read
  * @returns {Promise<import("./type").fileNode[]>} List of filenodes
  */
-const mapDirItemsToFileNodes = async (
-  basePath: string,
-  dirItems: Dirent[],
-) => {
+const mapDirItemsToFileNodes = async (basePath: string, dirItems: Dirent[]) => {
   /** @type {import("./type").fileNode[]} */
   const filenodes: fileNode[] = [];
 
@@ -147,12 +145,20 @@ const watchImpl: CombinedCallback<IpcMainEventCallback, fsWatch> = async (
     logger.info("Watching path: ", norm);
 
     for await (const event of watcher) {
+      if (
+        event?.filename &&
+        event.filename?.toLowerCase().trim().includes(".git")
+      ) {
+        logger.warn("Ignoring changes in .git folder");
+        return;
+      }
+
       broadcastToAll("fs:change", fileOrFolderPath, event);
     }
   } catch (error: unknown) {
     if (error instanceof Error && error.name === "AbortError") return;
 
-    logger.error(error, "Failed to watch directory");
+    logger.error("Failed to watch directory", error, fileOrFolderPath);
 
     throw error;
   }
@@ -452,6 +458,33 @@ const countItemsInDirectoryImpl: CombinedCallback<
   }
 };
 
+const fsRenameImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  fsRename
+> = async (_, fromPath, toPath) => {
+  try {
+    const normFrom = path.normalize(fromPath);
+    const normToPath = path.normalize(toPath);
+
+    await fs.access(normFrom); // make sure target exists
+    try {
+      await fs.access(normToPath);
+    } catch (error: any) {
+      // make sure to path doesnt already exit i.e not found is good case
+      if (error.code !== "ENOENT") {
+        throw error; // Re-throw permission errors, etc.
+      }
+    }
+
+    await fs.rename(normFrom, normToPath);
+
+    return true;
+  } catch (error) {
+    logger.error(`Failed to rename from: ${fromPath} to: ${toPath} `, error);
+    return false;
+  }
+};
+
 /**
  * If any directory are being watch or files stop listening to them
  */
@@ -512,6 +545,10 @@ export interface FSEvents {
     args: [pathLike: string];
     return: fileNode;
   };
+  "fs:rename": {
+    args: [fromPath: string, toPath: string];
+    return: boolean;
+  };
   "dir:read": {
     args: [pathLike: string];
     return: fileNode[];
@@ -553,4 +590,5 @@ export const registerFsListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.on("fs:unwatch", unwatchImpl);
   typedIpcMain.handle("file:save:to", saveToImpl);
   typedIpcMain.handle("file:select", selectFileImpl);
+  typedIpcMain.handle("fs:rename", fsRenameImpl);
 };

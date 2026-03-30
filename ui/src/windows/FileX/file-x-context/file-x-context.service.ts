@@ -11,7 +11,7 @@ import {
   FileXTab,
 } from '../types';
 import { FILE_X_STORE_DATA } from '../store-key-constants';
-import { getElectronApi } from '../../../utils';
+import { getElectronApi } from '../../../shared/electron';
 
 /**
  * Stores the file x context in a central place and offers a signal based API, this is becuase the given data is stored in a file and read from it then

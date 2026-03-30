@@ -1,0 +1,98 @@
+/* Dialog Base Styles */
+.confirmation_dialog {
+  /* Reset and positioning */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  /* Visual styling using your tokens */
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+
+  /* Sizing */
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 90vh;
+
+  /* Animation support */
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Show state */
+.confirmation_dialog[open] {
+  opacity: 1;
+}
+
+/* Backdrop styling */
+.confirmation_dialog::backdrop {
+  background-color: var(--bg-overlay);
+  backdrop-filter: blur(2px);
+}
+
+/* Dialog content layout */
+.dialog_message {
+  display: block;
+  padding: 24px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Actions container */
+.dialog_actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 24px 24px;
+  border-top: 1px solid var(--border-default);
+  padding-top: 16px;
+  margin-top: 0;
+}
+
+/* Button styling using tokens */
+.dialog_actions button {
+  padding: 10px 20px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dialog_actions button:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+.dialog_actions button:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px rgba(189, 147, 249, 0.3);
+}
+
+/* Primary action (Confirm) - last button */
+.dialog_actions button:last-child {
+  background-color: var(--bg-active);
+  border-color: var(--bg-active);
+  color: var(--text-inverse);
+}
+
+.dialog_actions button:last-child:hover {
+  background-color: var(--bg-selected);
+  border-color: var(--bg-selected);
+}
+
+/* Disabled state */
+.dialog_actions button:disabled {
+  background-color: var(--bg-disabled);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}

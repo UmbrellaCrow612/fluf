@@ -17,15 +17,13 @@ A simple text editor written in electron and angular
 
 - Node PTY integrated terminals - full terminal features
 
-- View text files, images, and PDFs with syntax highlighting, code editing, and saving
+- View text files, images, and PDFs, video and audio files, markdown and word docs. Code has syntax highlighting LSP and edit saves.
 
 - Create custom themes and switch between them
 
 - Hot key support
 
-- Markdown previews
-
-- Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones and custom TypeScript impl (UI errors etc)
+- Any JSON RPC LSP support for now python (pyright) and go (gopls) but can extend easily to add new ones and custom TypeScript impl (Show UI errors etc)
 
 - Hover information and auto complete via LSP
 

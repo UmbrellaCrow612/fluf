@@ -1,0 +1,23 @@
+@if (!isLoading() && error()) {
+  <div class="editor_image_pane_error">
+    <span>
+      {{ error() }}
+    </span>
+  </div>
+}
+
+<!---->
+
+@if (isLoading() && !error()) {
+  <div class="editor_image_pane_loading">
+    <span>Loading</span>
+  </div>
+}
+
+<!---->
+
+@if (!isLoading() && !error()) {
+  <div class="editor_image_pane">
+    <img [src]="imageSrc()" alt="Image" />
+  </div>
+}

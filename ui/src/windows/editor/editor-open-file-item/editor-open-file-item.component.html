@@ -1,0 +1,32 @@
+<div
+  class="editor_open_files_file_item"
+  [class.active]="isActive()"
+  (click)="selectFileTabItem($event)"
+  [matTooltip]="openFileTooltip()"
+  [matTooltipShowDelay]="tooltTipDelayInMs"
+  tabindex="0"
+>
+  <mat-icon>
+    {{ fileIcon() }}
+  </mat-icon>
+  <div class="file_item_name_container">
+    <span class="file_item_name">
+      @if (isDirty()) {
+        <span>*</span>
+      }
+
+      {{ fileNode().name }}
+    </span>
+  </div>
+
+  <button
+    matIconButton
+    aria-label="Close file"
+    matTooltip="Close file"
+    (mouseenter)="$event.stopPropagation()"
+    [class.active]="isActive()"
+    (click)="closeFileTabItem($event)"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</div>

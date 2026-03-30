@@ -102,7 +102,15 @@ export type fsApi = {
    * - Count the amount of items a directory has - not recusive just the top layer of items count.
    */
   countItemsInDirectory: countItemsInDirectory;
+  /**
+   * Rename a path from to
+   */
+  rename: fsRename;
 };
+/**
+ * Rename a path from one path to a given path
+ */
+export type fsRename = (fromPath: string, toPath: string) => Promise<boolean>;
 /**
  * Counts the number of items in a given directory quickly
  */
@@ -126,7 +134,7 @@ export type fsWatch = (fileOrFolderPath: string) => void;
  */
 export type saveTo = (
   content: string,
-  options?: Electron.SaveDialogOptions  ,
+  options?: Electron.SaveDialogOptions,
 ) => Promise<boolean>;
 /**
  * Reads the contents of a file.
@@ -240,7 +248,7 @@ export type fileNode = {
  * The mode a node is in - if it is default it means it's just a file or folder - if the other two then it means
  * that the given node is going to be rendered as a editor to create said file or folder
  */
-export type fileNodeMode = "createFile" | "createFolder" | "default";
+export type fileNodeMode = "createFile" | "createFolder" | "rename" | "default";
 /**
  * Contains all utils related to the electron chroium window
  */
@@ -287,6 +295,10 @@ export type chromeWindowClose = () => void;
  */
 export type chromeWindowRestore = () => void;
 /**
+ * Converts a Path URI to it's path like convert part
+ */
+export type pathFromUri = (uri: string) => Promise<string>;
+/**
  * Contains all helpers todo with path
  */
 export type pathApi = {
@@ -314,7 +326,31 @@ export type pathApi = {
    * - Get the root path of the system such as  `C:\` or `/` based on the system
    */
   getRootPath: getRootPath;
+  /**
+   * Calls path dirname
+   */
+  dirname: pathDirname;
+  /**
+   * Gets the path to the user profile
+   */
+  getDefaultProfilePath: getDefaultProfilePath;
+  /**
+   * Walks a path and gives you all ancestor paths
+   */
+  buildPathSegments: buildPathSegments;
+  /**
+   * Get a URI file path to a path like
+   */
+  fromUri: pathFromUri;
 };
+/**
+ * Gets the user profile default path
+ */
+export type getDefaultProfilePath = () => Promise<string>;
+/**
+ * Calls path dirname on the given path
+ */
+export type pathDirname = (pathLike: string) => Promise<string>;
 /**
  * Gets the root path based on the platform for windows it will return somthing like `C:\` and on others like linux
  * `/`
@@ -336,6 +372,13 @@ export type pathSep = () => Promise<"\\" | "/">;
  * Method to fix a filepath
  */
 export type normalizePath = (path: string) => Promise<string>;
+/**
+ * Walks a given path and returns all ancestor segments.
+ * @example
+ * buildPathSegments('/foo/bar/baz')
+ * // ['/foo', '/foo/bar', '/foo/bar/baz']
+ */
+export type buildPathSegments = (pathLike: string) => Promise<string[]>;
 /**
  * Get the relative path
  */
@@ -434,70 +477,41 @@ export type ripgrepApi = {
  * Callback structure for callback
  */
 export type voidCallback = () => void;
-export type gitFileStatus =
-  | "modified"
-  | "deleted"
-  | "new file"
-  | "renamed"
-  | "untracked"
-  | "unknown";
-export type gitFileEntry = {
-  /**
-   * - The status of the file (e.g., modified, deleted, untracked, etc.)
-   */
-  status: gitFileStatus;
-  /**
-   * - The file path affected
-   */
-  file: string;
-};
-export type gitSection = "staged" | "unstaged" | "untracked" | "ignored" | null;
-export type gitStatusResult = {
-  /**
-   * - The current branch name
-   */
-  branch: string | null;
-  /**
-   * - The descriptive status of the branch (ahead/behind/diverged)
-   */
-  branchStatus: string | null;
-  /**
-   * - Files staged for commit
-   */
-  staged: gitFileEntry[];
-  /**
-   * - Files modified but not staged
-   */
-  unstaged: gitFileEntry[];
-  /**
-   * - Untracked files
-   */
-  untracked: gitFileEntry[];
-  /**
-   * - Ignored files (only if shown with `--ignored`)
-   */
-  ignored: gitFileEntry[];
-  /**
-   * - Whether the working directory is clean
-   */
-  clean: boolean;
-};
-/**
- * Runs git status in the current project and returns the result
- */
-export type gitStatus = (directory: string) => Promise<gitStatusResult | null>;
 /**
  * Checks if the OS has git installed
  */
 export type hasGit = () => Promise<boolean>;
 /**
- * Checks if the given folder has git Initialized
+ * Get the current branch a given directory is on
+ * @returns The branch name or null if git is not on the directory or system
  */
-export type isGitInitialized = (directory: string) => Promise<boolean>;
+export type gitCurrentBranch = (directory: string) => Promise<string | null>;
 /**
- * Initialize git into a given folder
+ * Information parsed from git blame
  */
-export type initializeGit = (directory: string) => Promise<boolean>;
+export type gitBlameLineInformation = {
+  /**
+   * The commit ID; if it is `00000000`, it means it has not been committed
+   */
+  commit: string;
+  /**
+   * The author's name (first and last) or `Not Committed Yet`
+   */
+  author: string;
+  /**
+   * A datetime string of when it was committed, or last modified if not committed
+   */
+  dateTime: string;
+};
+/**
+ * Get git blame information for a given file and line
+ */
+export type gitBlameLine = (
+  directory: string,
+  filePath: string,
+  start: number,
+  end: number,
+) => Promise<gitBlameLineInformation | null>;
 /**
  * Object that contains all the git helper functions
  */
@@ -507,17 +521,13 @@ export type gitApi = {
    */
   hasGit: hasGit;
   /**
-   * - Checks if a folder has git tracking
+   * Get the current branch a given path is on
    */
-  isGitInitialized: isGitInitialized;
+  getCurrentBranch: gitCurrentBranch;
   /**
-   * - Init git inot a folder
+   * Get git blame information for a given line
    */
-  initializeGit: initializeGit;
-  /**
-   * - Run git status in a folder and get the result
-   */
-  gitStatus: gitStatus;
+  gitBlameLine: gitBlameLine;
 };
 /**
  * Result object returned from fsearch
@@ -648,9 +658,14 @@ export type clipboardApi = {
   writeImage: writeImageToClipboard;
 };
 /**
- * Create a shell
+ * Represents a PID number of a shell
  */
-export type createShell = (directory: string) => Promise<number>;
+export type shellPid = number;
+/**
+ * Create a shell
+ * @returns Shell PID or -1 on failure
+ */
+export type createShell = (directory: string) => Promise<-1 | shellPid>;
 /**
  * Kill a specific shell by it's PID
  */
@@ -686,6 +701,31 @@ export type onShellExit = (
   callback: onShellExitCallback,
 ) => voidCallback;
 /**
+ * Check if a specific shell is alive / exists
+ */
+export type isShellAlive = (pid: number) => Promise<boolean>;
+/**
+ * Information about a shell
+ */
+export type shellInformation = {
+  /**
+   * The pty rows
+   */
+  rows: number;
+  /**
+   * The pty cols
+   */
+  cols: number;
+  /**
+   * The title of the process
+   */
+  title: string;
+};
+/**
+ * Get information about a specific shell
+ */
+export type getShellInformation = (pid: number) => Promise<shellInformation>;
+/**
  * Contains all the method to interact with shell's for terminals to use
  */
 export type shellApi = {
@@ -713,6 +753,14 @@ export type shellApi = {
    * - Listen to a specific shell exit and run logic
    */
   onExit: onShellExit;
+  /**
+   * Check if a shell if alive / exists
+   */
+  isAlive: isShellAlive;
+  /**
+   * Get information about a specific shell
+   */
+  getInformation: getShellInformation;
 };
 /**
  * List of all methods that can be in the method of a request / message / Notification

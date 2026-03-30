@@ -1,0 +1,23 @@
+<div
+  class="editor_terminal_tab_item"
+  tabindex="0"
+  [class.active]="isActive()"
+  [matTooltip]="label()"
+  [matTooltipShowDelay]="tooltipShowDelay()"
+  [matTooltipDisabled]="isHoveringChild()"
+  (click)="selectTerminal()"
+>
+  <span class="editor_terminal_tab_item_label">
+    {{ label() }}
+  </span>
+
+  <span
+    class="editor_terminal_tab_item_close"
+    [matTooltip]="'delete: ' + label() + ' pid:' + shellPid()"
+    (mouseenter)="childHovered()"
+    (mouseleave)="childHoverLeave()"
+    (click)="deleteShell($event)"
+  >
+    <mat-icon fontIcon="delete"></mat-icon>
+  </span>
+</div>

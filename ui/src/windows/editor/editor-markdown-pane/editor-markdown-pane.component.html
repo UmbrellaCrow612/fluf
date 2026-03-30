@@ -1,0 +1,15 @@
+<div class="editor_markdown_pane scroll_bar" #markdownTargetContainer>
+  @if (isLoading()) {
+    <div>Loading</div>
+  }
+
+  <!---->
+
+  @if (error()) {
+    <div>
+      {{ error() }}
+    </div>
+  }
+
+  <!---->
+</div>

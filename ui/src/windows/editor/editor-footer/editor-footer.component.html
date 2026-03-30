@@ -1,0 +1,34 @@
+<footer class="editor_footer scroll_bar">
+  @if (hasGit() && currentBranch()) {
+    <div
+      class="editor_footer_git_branch"
+      [matTooltip]="'current branch ' + this.currentBranch()"
+    >
+      <span class="git_branch_icon">
+        <mat-icon fontIcon="alt_route" />
+      </span>
+      <span class="git_branch_name">{{ currentBranch() }}</span>
+    </div>
+  }
+
+  @if (gitBlameLineInformation()) {
+    <div class="editor_footer_git_blame" matTooltip="Git blame for line">
+      <span class="git_blame_author">
+        {{ gitBlameLineInformation()?.author }}
+      </span>
+      <span class="git_blame_commit">
+        {{ gitBlameLineInformation()?.commit }}
+      </span>
+      <span class="git_blame_date">
+        {{ gitBlameLineInformation()?.dateTime | date }}
+      </span>
+    </div>
+  }
+  <!---->
+
+  @if (selectedLines()) {
+    <div class="editor_footer_cursor_position" matTooltip="Current line column of cursor">
+      Ln {{ selectedLines()?.line }}, Col {{ selectedLines()?.column }}
+    </div>
+  }
+</footer>

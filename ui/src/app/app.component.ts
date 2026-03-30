@@ -1,37 +1,35 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ApplicationContextService } from './context/application-context.service';
-import { ContextMenuComponent } from './context-menu/context-menu.component';
-import { ConfirmationMenuComponent } from './confirmation-menu/confirmation-menu.component';
-import { CommandServerService } from './command-server/command-server.service';
+import { ApplicationContextMenuService } from '../shared/services/application-context-menu.service';
+import { ApplicationContextMenuComponent } from '../shared/application-context-menu/application-context-menu.component';
+import { ApplicationConfirmationService } from '../shared/services/application-confirmation.service';
+import { ApplicationConfirmationComponent } from "../shared/application-confirmation/application-confirmation.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ContextMenuComponent, ConfirmationMenuComponent],
+  imports: [RouterOutlet, ApplicationContextMenuComponent, ApplicationConfirmationComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
-export class AppComponent implements OnInit {
-  private readonly applicationContextService = inject(
-    ApplicationContextService,
+export class AppComponent {
+  private readonly applicationContextMenuService = inject(
+    ApplicationContextMenuService,
   );
-  private readonly commandServerService = inject(CommandServerService);
-
-  ngOnInit(): void {
-    this.commandServerService.register();
-  }
-
-  /**
-   * Keeps track if it should show the generic context menu
-   */
-  shouldShowContextMenu = computed(() =>
-    this.applicationContextService.showContextMenu(),
+  private readonly applicationConfirmationService = inject(
+    ApplicationConfirmationService,
   );
 
   /**
-   * Keeps track if it should show the generic confirmation menu
+   * Keeps track if it should show the application context menu component
    */
-  showShowConfirmationMenu = computed(() =>
-    this.applicationContextService.showConfirmationMenu(),
+  public readonly displayContextMenu: Signal<boolean> = computed(() =>
+    this.applicationContextMenuService.displayContextMenu(),
+  );
+
+  /**
+   * Keeps track if it should show the confirmation dialog
+   */
+  public readonly displayConfirmationMenu: Signal<boolean> = computed(() =>
+    this.applicationConfirmationService.displayDialog(),
   );
 }

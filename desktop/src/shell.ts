@@ -12,9 +12,12 @@ import path from "path";
 import type {
   CombinedCallback,
   createShell,
+  getShellInformation,
   IpcMainInvokeEventCallback,
+  isShellAlive,
   killShell,
   resizeShell,
+  shellInformation,
   writeToShell,
 } from "./type.js";
 import { logger } from "./logger.js";
@@ -52,13 +55,15 @@ const createImpl: CombinedCallback<
       return err;
     }
 
-    await fs.access(path.normalize(directory));
+    const norm = path.normalize(directory);
+
+    await fs.access(norm);
 
     const pty = spawn(shell, [], {
       name: "xterm-color",
       cols: 80,
       rows: 30,
-      cwd: directory,
+      cwd: norm,
       env: process.env,
     });
 
@@ -96,10 +101,7 @@ const createImpl: CombinedCallback<
     return pty.pid;
   } catch (error) {
     logger.error(
-      "Create shell failed " +
-        JSON.stringify(error) +
-        " Directory path " +
-        directory,
+      "Create shell failed " + error + " Directory path " + directory,
     );
     return err;
   }
@@ -162,6 +164,46 @@ const writeImpl: CombinedCallback<IpcMainInvokeEventCallback, writeToShell> = (
   shell.write(content);
 };
 
+const shellAliveImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  isShellAlive
+> = (_, pid) => {
+  try {
+    const shell = shells.get(pid);
+    if (!shell) return Promise.resolve(false);
+
+    // Check if process is still running by sending signal 0
+    process.kill(pid, 0);
+    return Promise.resolve(true);
+  } catch (error) {
+    logger.error("Failed to check if shell is alive pid: ", pid, error);
+    return Promise.resolve(false);
+  }
+};
+
+const shellInformationImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  getShellInformation
+> = (_, pid) => {
+  try {
+    const shell = shells.get(pid);
+    if (!shell) {
+      throw new Error(`Shell with PID ${pid} not found`);
+    }
+
+    const info: shellInformation = {
+      cols: shell.cols,
+      rows: shell.rows,
+      title: shell.process,
+    };
+
+    return Promise.resolve(info);
+  } catch (error) {
+    logger.error("Failed to get shell information for pid: ", pid, error);
+    throw error;
+  }
+};
+
 /**
  * Kills shells
  */
@@ -218,6 +260,16 @@ export interface ShellEvents {
     args: [pid: number, exit: { exitCode: number; signal?: number }];
     return: void;
   };
+
+  "shell:is:alive": {
+    args: [pid: number];
+    return: boolean;
+  };
+
+  "shell:information": {
+    args: [pid: number];
+    return: shellInformation;
+  };
 }
 
 /**
@@ -228,4 +280,6 @@ export const registerShellListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("shell:kill", killImpl);
   typedIpcMain.on("shell:resize", resizeImpl);
   typedIpcMain.on("shell:write", writeImpl);
+  typedIpcMain.handle("shell:is:alive", shellAliveImpl);
+  typedIpcMain.handle("shell:information", shellInformationImpl);
 };

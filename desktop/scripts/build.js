@@ -24,12 +24,12 @@ const stagingPath = path.join(__dirname, "../staging");
 
 const typeFilePath = path.join(__dirname, "../src/type.ts");
 const typeFileDestination = path.join(__dirname, "../../ui/src/gen/type.ts");
-const preloadFilePath = path.join(stagingPath, "preload.js");
+const preloadFilePath = path.join(stagingPath, "preload.cjs");
 const packageJsonPath = path.join(__dirname, "../package.json");
 const stagingIndexJsFilePath = path.join(stagingPath, "index.js");
 const stagingIndexJsFileDestinationPath = path.join(distPath, "index.js");
-const stagingPreloadJsFile = path.join(stagingPath, "preload.js");
-const stagingPreloadJsFileDestinationPath = path.join(distPath, "preload.js");
+const stagingPreloadJsFile = path.join(stagingPath, "preload.cjs");
+const stagingPreloadJsFileDestinationPath = path.join(distPath, "preload.cjs");
 const envFilePath = path.join(__dirname, "../.env");
 
 /** @type {string[]} */

@@ -1,0 +1,19 @@
+@if (isLoading()) {
+  <div>Loading</div>
+}
+
+<!---->
+
+@if (error()) {
+  <div>
+    {{ error() }}
+  </div>
+}
+
+<!---->
+
+@if (!isLoading() && !error()) {
+  <div class="editor_audio_pane">
+    <audio controls [src]="audioSrc()"></audio>
+  </div>
+}

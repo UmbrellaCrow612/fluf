@@ -1,0 +1,24 @@
+<div class="editor_sidebar_container">
+  <div class="editor_sidebar_actions">
+    @for (item of sideBarElements(); track $index) {
+      <button
+        matIconButton
+        [ariaLabel]="item.tooltip"
+        [matTooltip]="item.tooltip"
+        (click)="selectSidebarItem(item)"
+        [class.editor_sidebar_action_active]="activeElement() === item.element"
+      >
+        <mat-icon>{{ item.icon }}</mat-icon>
+      </button>
+    }
+  </div>
+
+  <div class="editor_sidebar_extra_actions">
+    <button matIconButton matTooltip="Account">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <button matIconButton matTooltip="Settings">
+      <mat-icon>settings</mat-icon>
+    </button>
+  </div>
+</div>

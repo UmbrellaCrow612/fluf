@@ -1,5 +1,5 @@
 import { fileNode } from '../../gen/type';
-import { getElectronApi } from '../../utils';
+import { getElectronApi } from '../../shared/electron';
 import { FileXContextService } from './file-x-context/file-x-context.service';
 import { FileXInMemoryContextService } from './file-x-context/file-x-in-memory-context.service';
 import { FILE_X_STORE_DATA } from './store-key-constants';

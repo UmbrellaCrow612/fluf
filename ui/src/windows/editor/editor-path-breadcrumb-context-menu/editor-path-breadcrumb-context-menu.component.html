@@ -1,0 +1,23 @@
+@if (isLoading()) {
+  <div>Loading</div>
+}
+
+<!---->
+
+@if (error()) {
+  <div>
+    {{ error() }}
+  </div>
+}
+
+<!---->
+
+@if (!error() && !isLoading()) {
+  <app-editor-file-explorer-tree
+    [rootNode]="targetNode()!"
+    [activeNode]="activeNode()"
+    [rootNodeChildren]="targetNodeChildren()"
+    (rootNodeChildrenUpdated)="updateRootNodeChildren($event)"
+    (itemSelected)="updateActiveNode($event)"
+  />
+}

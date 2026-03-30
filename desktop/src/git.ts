@@ -3,225 +3,269 @@
  */
 
 import { spawn } from "child_process";
-import fs from "fs/promises";
-import path from "path";
+import path from "node:path";
 import type {
   CombinedCallback,
-  gitFileEntry,
-  gitSection,
-  gitStatus,
-  gitStatusResult,
+  gitBlameLine,
+  gitBlameLineInformation,
+  gitCurrentBranch,
   hasGit,
-  initializeGit,
   IpcMainInvokeEventCallback,
-  isGitInitialized,
 } from "./type.js";
 import { logger } from "./logger.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
 
-/**
- * Parses the stdout from `git status` and returns a structured JSON object.
- *
- * @param {string} stdout - The raw stdout string from `git status`
- * @returns {import("./type").gitStatusResult} A structured representation of the git status
- */
-function parseGitStatus(stdout: string): gitStatusResult {
-  const lines = stdout.split(/\r?\n/);
-  /** @type {import("./type").gitStatusResult} */
-  const result: gitStatusResult = {
-    branch: null,
-    branchStatus: null,
-    staged: [],
-    unstaged: [],
-    untracked: [],
-    ignored: [],
-    clean: false,
-  };
+function toDateTimeString(unixSeconds: number, tzOffset: string): string {
+  // Parse the offset string "+0100" or "-0500"
+  const sign = tzOffset[0] === "+" ? 1 : -1;
+  const hours = parseInt(tzOffset.slice(1, 3), 10);
+  const minutes = parseInt(tzOffset.slice(3, 5), 10);
+  const offsetMs = sign * (hours * 60 + minutes) * 60 * 1000;
 
-  /** @type {import("./type").gitSection} */
-  let section: gitSection = null;
+  // Apply offset to get local time as a UTC date
+  const localDate = new Date(unixSeconds * 1000 + offsetMs);
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
+  // Format using UTC methods (since we've already baked in the offset)
+  const pad = (n: number) => String(n).padStart(2, "0");
 
-    // Skip git hint lines
-    if (trimmed.startsWith("(use ")) continue;
-    if (trimmed.startsWith("(all conflicts")) continue;
-    if (trimmed.startsWith("(fix conflicts")) continue;
-    if (trimmed.startsWith("no changes added")) continue;
+  const year = localDate.getUTCFullYear();
+  const month = pad(localDate.getUTCMonth() + 1);
+  const day = pad(localDate.getUTCDate());
+  const hour = pad(localDate.getUTCHours());
+  const minute = pad(localDate.getUTCMinutes());
+  const second = pad(localDate.getUTCSeconds());
 
-    // --- Branch info ---
-    if (trimmed.startsWith("On branch")) {
-      result.branch = trimmed.replace("On branch ", "").trim();
-      continue;
-    }
-
-    if (trimmed.startsWith("Your branch")) {
-      result.branchStatus = trimmed;
-      continue;
-    }
-
-    // --- Section markers ---
-    if (trimmed.startsWith("Changes to be committed:")) {
-      section = "staged";
-      continue;
-    }
-    if (trimmed.startsWith("Changes not staged for commit:")) {
-      section = "unstaged";
-      continue;
-    }
-    if (trimmed.startsWith("Untracked files:")) {
-      section = "untracked";
-      continue;
-    }
-    if (trimmed.startsWith("Ignored files:")) {
-      section = "ignored";
-      continue;
-    }
-
-    if (trimmed.includes("nothing to commit, working tree clean")) {
-      result.clean = true;
-      continue;
-    }
-
-    // --- Parse file lines within known sections ---
-    if (
-      section &&
-      ["staged", "unstaged", "untracked", "ignored"].includes(section)
-    ) {
-      const match = trimmed.match(
-        /^(modified:|deleted:|new file:|renamed:|.+->.+)?\s*(.+)$/,
-      );
-      if (match) {
-        const status: any = match[1] ? match[1].replace(":", "").trim() : null;
-        const file = match[2] ? match[2].trim() : null;
-
-        if (file) {
-          /** @type {import("./type").gitFileEntry} */
-          const entry: gitFileEntry = {
-            status: status || "untracked",
-            file,
-          };
-
-          result /** @type {"staged"|"unstaged"|"untracked"|"ignored"} */[
-            section
-          ]
-            .push(entry);
-        }
-      }
-    }
-  }
-
-  return result;
+  return `${year}-${month}-${day} ${hour}:${minute}:${second} ${tzOffset}`;
 }
 
 /**
- * Spawn a Git command and return structured output
- * @param {string[]} args - List of args to run ["init"]
- * @param {string} cwd - The directory to run the cmds in
- * @param {number} [timeOut=5000] - The timeout for a git cmd's to take before it fails
- * @returns {Promise<string>}
+ * Information given to you about running of the git command
+ */
+type gitCommandContext = {
+  /**
+   * The stdout parsed
+   */
+  stdout: string;
+
+  /**
+   * The stderror parsed
+   */
+  stderror: string;
+
+  /**
+   * Exit code
+   */
+  code: number | null;
+
+  /**
+   * Promise reject
+   */
+  reject: (reason: unknown) => void;
+
+  /**
+   * Promise resolve
+   */
+  resolve: (stdout: string) => void;
+};
+
+/**
+ * Provide custom logic when the process exits and perform logic, Note you must resolve or reject the promise.
+ */
+type onGitCommandExit = (context: gitCommandContext) => void;
+
+/**
+ * Parses git blame stdout into structured information assumes `--porcelain` was passed
+ * @param stdout - The raw output from git blame command
+ * @returns Parsed blame information or null if parsing fails
+ */
+export function parseGitBlameLine(
+  stdout: string,
+): gitBlameLineInformation | null {
+  try {
+    if (!stdout || !stdout.trim()) {
+      return null;
+    }
+
+    const authorMatch = stdout.match(/(?<=author )[^\n]*/);
+    if (!authorMatch || !authorMatch[0]) {
+      throw new Error("Could not match author");
+    }
+
+    const commitMatch = stdout.match(/^\S+/);
+    if (!commitMatch || !commitMatch[0]) {
+      throw new Error("Could not match commit");
+    }
+
+    const timeMatch = stdout.match(/committer-time\s+(\d+)/);
+    if (!timeMatch || !timeMatch[0]) {
+      throw new Error("Could not match time");
+    }
+
+    const timeTzMatch = stdout.match(/committer-tz\s+([+-]\d+)/);
+    if (!timeTzMatch || !timeTzMatch[0]) {
+      throw new Error("Could not match time zone");
+    }
+
+    const datetime = toDateTimeString(Number(timeMatch[0]), timeTzMatch[0]);
+
+    return {
+      author: authorMatch[0],
+      commit: commitMatch[0].slice(0, 8),
+      dateTime: datetime,
+    };
+  } catch (error) {
+    logger.error("Failed to parse git stdout ", error);
+    return null;
+  }
+}
+
+/**
+ * Run git command
+ * @param directory The directory to run the cmds in
+ * @param flags Addtional git commands and flags
+ * @param [onExit=null] Custom logic you want to perform on exit instead of the default behvaiour
+ * @returns Stdout of the git process
  */
 function runGitCommand(
-  args: string[],
-  cwd: string,
-  timeOut: number = 5000,
+  directory: string,
+  flags: string[],
+  onExit: onGitCommandExit | null = null,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const gitProc = spawn("git", args, {
-      cwd: path.normalize(path.resolve(cwd)),
-    });
+    const timeoutId = setTimeout(() => {
+      reject(new Error("Git process hanged"));
+    }, 5000);
 
-    let stdoutData = "";
-    let stderrData = "";
-    let finished = false;
+    try {
+      const process = spawn("git", flags, { cwd: directory });
+      let stdout = "";
+      let stderror = "";
 
-    const timeout = setTimeout(() => {
-      if (!finished) {
-        finished = true;
-        gitProc.kill("SIGTERM");
-        reject(new Error("Git command timed out"));
-      }
-    }, timeOut);
+      const context: gitCommandContext = {
+        resolve,
+        reject,
+        get stdout() {
+          return stdout;
+        },
+        get stderror() {
+          return stderror;
+        },
+        code: null,
+      };
 
-    gitProc.stdout.on("data", (data) => {
-      stdoutData += data.toString();
-    });
+      process.stdout.on("data", (chunk: Buffer) => {
+        stdout += chunk.toString();
+      });
 
-    gitProc.stderr.on("data", (data) => {
-      stderrData += data.toString();
-    });
+      process.stderr.on("data", (chunk: Buffer) => {
+        stderror += chunk.toString();
+      });
 
-    gitProc.on("close", (code) => {
-      if (finished) return;
-      finished = true;
-      clearTimeout(timeout);
+      process.on("error", (err) => {
+        logger.error("Git process failed to spawn ", err);
+        clearTimeout(timeoutId);
+        reject(err);
+      });
 
-      if (code !== 0) {
-        reject(
-          new Error(stderrData.trim() || `Git exited with code ${code}`),
-        ); return;
-      }
+      process.on("exit", (code) => {
+        clearTimeout(timeoutId);
+        context.code = code;
 
-      resolve(stdoutData.trim());
-    });
+        if (onExit) {
+          onExit(context);
+          return;
+        }
+
+        if (code === 0) {
+          resolve(stdout);
+        } else {
+          reject(new Error("Git process exited with non zero code"));
+        }
+      });
+    } catch (error) {
+      logger.error("Failed to run git commands ", flags);
+      clearTimeout(timeoutId);
+      reject(error as Error);
+    }
   });
 }
 
-const hasGitImpl: hasGit = async () => {
-  try {
-    const version = await runGitCommand(["--version"], process.cwd());
-    return version.startsWith("git");
-  } catch {
-    return false;
-  }
-};
-
-const gitInitImpl: CombinedCallback<
+const hasGitImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
-  initializeGit
-> = async (_, dir) => {
-  const p = path.normalize(path.resolve(dir));
-
+  hasGit
+> = async () => {
   try {
-    await runGitCommand(["init"], p);
-
+    const basePath = path.resolve("/");
+    await runGitCommand(basePath, ["--version"]);
     return true;
   } catch (error) {
-    logger.error("Failed to init git repo " + p + " " + JSON.stringify(error));
+    logger.error("System does not have git or run git command failed ", error);
     return false;
   }
 };
 
-const igGitInit: CombinedCallback<
+const gitCurrentBranchImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
-  isGitInitialized
-> = async (_, dir) => {
-  const gitPath = path.join(path.normalize(path.resolve(dir)), ".git");
-
+  gitCurrentBranch
+> = async (_, directory) => {
   try {
-    await fs.access(gitPath);
-    return true;
+    const branch = await runGitCommand(directory, [
+      "rev-parse",
+      "--abbrev-ref",
+      "HEAD",
+    ]);
+
+    return branch;
   } catch (error) {
-    logger.error(error, `Failed to check if git is init in directory ${dir}`);
-    return false;
+    logger.error(
+      "Failed to check current git branch for path ",
+      directory,
+      error,
+    );
+    return null;
   }
 };
 
-const gitStatusImpl: CombinedCallback<
+const gitBlameLineImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
-  gitStatus
-> = async (_, dir) => {
+  gitBlameLine
+> = async (_, dir, fp, start, end) => {
   try {
+    const directory = path.resolve(path.normalize(dir));
+    const filePath = path.resolve(path.normalize(fp));
+
     const stdout = await runGitCommand(
-      ["status"],
-      path.normalize(path.resolve(dir)),
+      directory,
+      [
+        "blame",
+        "-L",
+        `${String(start)},${String(end)}`,
+        filePath,
+        "--porcelain",
+      ],
+      (ctx) => {
+        if (ctx.code === 0) {
+          ctx.resolve(ctx.stdout);
+        } else {
+          if (ctx.code === 128) {
+            ctx.resolve(""); // we do this as if they request blame on lines that dont exist it throws error this way to just returns null git emitts 128 code
+          } else {
+            ctx.reject(new Error("Git blame exited with non zero code"));
+          }
+        }
+      },
     );
 
-    return parseGitStatus(stdout);
-  } catch (err) {
-    logger.error("Failed to check status " + JSON.stringify(err));
+    return parseGitBlameLine(stdout);
+  } catch (error) {
+    logger.error(
+      "Failed to get git blame information ",
+      dir,
+      fp,
+      start,
+      end,
+      error,
+    );
     return null;
   }
 };
@@ -234,17 +278,13 @@ export interface GitEvents {
     args: [];
     return: boolean;
   };
-  "git:init": {
+  "git:current:branch": {
     args: [directory: string];
-    return: boolean;
+    return: string | null;
   };
-  "git:is:init": {
-    args: [directory: string];
-    return: boolean;
-  };
-  "git:status": {
-    args: [directory: string];
-    return: gitStatusResult | null;
+  "git:blame:line": {
+    args: [directory: string, filePath: string, start: number, end: number];
+    return: gitBlameLineInformation | null;
   };
 }
 
@@ -253,7 +293,6 @@ export interface GitEvents {
  */
 export const registerGitListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("has:git", hasGitImpl);
-  typedIpcMain.handle("git:init", gitInitImpl);
-  typedIpcMain.handle("git:is:init", igGitInit);
-  typedIpcMain.handle("git:status", gitStatusImpl);
+  typedIpcMain.handle("git:current:branch", gitCurrentBranchImpl);
+  typedIpcMain.handle("git:blame:line", gitBlameLineImpl);
 };

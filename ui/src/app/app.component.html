@@ -1,9 +1,10 @@
 <router-outlet />
 
-@if (shouldShowContextMenu()) {
-  <app-context-menu />
+@if (displayContextMenu()) {
+  <app-application-context-menu />
 }
 
-@if (showShowConfirmationMenu()) {
-  <app-confirmation-menu />
+<!---->
+@if (displayConfirmationMenu()) {
+  <app-application-confirmation />
 }

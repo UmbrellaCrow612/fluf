@@ -1,0 +1,32 @@
+.editor_terminal_tab_item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 125px;
+  background-color: var(--bg-secondary);
+  padding: 3px 6px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.35s ease-in-out;
+  user-select: none;
+}
+
+.editor_terminal_tab_item:is(:hover, :focus) .editor_terminal_tab_item_close {
+  opacity: 1;
+}
+
+.editor_terminal_tab_item.active {
+  border-bottom: 1px solid var(--border-focus);
+}
+
+.editor_terminal_tab_item_label {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.editor_terminal_tab_item_close {
+  opacity: 0;
+  transition: opacity 0.35s ease-in-out;
+}

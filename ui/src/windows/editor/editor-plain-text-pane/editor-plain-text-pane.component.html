@@ -1,0 +1,18 @@
+<div class="editor_plain_text_pane_container">
+  @if (!isLoading() && !error() && activeNode()) {
+    <app-editor-path-breadcrumb-bar [fileNode]="activeNode()!" />
+  }
+
+  <div #editorPlainTextPane class="target_container scroll_bar">
+    @if (isLoading()) {
+      <div>Loading</div>
+    }
+
+    <!---->
+    @if (error()) {
+      <div>
+        {{ error() }}
+      </div>
+    }
+  </div>
+</div>

@@ -13,10 +13,11 @@
     script-src 'self' 'unsafe-inline';
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com data:;
-    img-src 'self' data: blob: image:;
-    frame-src 'self' pdf:; 
-    connect-src 'self' image: http://localhost:* ws://localhost:*; 
+    img-src 'self' data: blob: image: fluf:;
+    frame-src 'self' pdf: fluf:;  
+    connect-src 'self' image: fluf: http://localhost:* ws://localhost:*;
     object-src 'none';
+    media-src 'self' fluf:;
   "
     />
     <link

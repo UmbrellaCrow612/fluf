@@ -1,0 +1,14 @@
+<div class="editor_main_content_container">
+  <app-editor-sidebar />
+  <div class="editor_main_content_wrapper" id="editor_main_content_wrapper">
+    @if (shouldRenderSideBarComponent()) {
+      <div class="default_flex">
+        <ng-container
+          *ngComponentOutlet="sideBarComponentToRender()"
+          class="default_flex"
+        />
+      </div>
+    }
+    <app-editor-main-content-manager class="default_flex" />
+  </div>
+</div>

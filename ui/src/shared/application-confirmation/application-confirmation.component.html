@@ -1,0 +1,8 @@
+<dialog #confirmationDialog class="confirmation_dialog">
+  <span #message class="dialog_message"></span>
+
+  <div class="dialog_actions">
+    <button (click)="confirm(false)">Cancel</button>
+    <button (click)="confirm(true)">Confirm</button>
+  </div>
+</dialog>

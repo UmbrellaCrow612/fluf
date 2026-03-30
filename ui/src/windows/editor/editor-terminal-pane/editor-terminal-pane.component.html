@@ -1,0 +1,20 @@
+<div class="editor_terminal_pane">
+  @if (!shellPid()) {
+    <div class="default_flex align_center">
+      <span>No active shell</span>
+    </div>
+  }
+
+  <!---->
+  <div
+    #xtermContainerTarget
+    [class.xterm_container]="shellPid() !== null"
+    class="scroll_bar"
+  >
+    @if (createTerminalError()) {
+      <div class="default_flex align_center">
+        {{ createTerminalError() }}
+      </div>
+    }
+  </div>
+</div>
