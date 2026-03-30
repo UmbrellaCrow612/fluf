@@ -382,11 +382,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
    * @returns Extension that handles hover go to definition
    */
   private readonly goToDefinitionExtension = (): Extension => {
-    return hoverTooltip((view, pos, side) => {
-      try {
+    return EditorView.domEventHandlers({
+      click: (pointerEvent, view) => {
         const languageId = this.languageId();
         if (!languageId) {
-          return null;
+          return;
         }
 
         const workspaceFolder = this.selectedDirectory();
@@ -399,23 +399,21 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
           throw new Error("Current file path is null");
         }
 
-        const { from, to, text, number } = view.state.doc.lineAt(pos);
-        let start = pos,
-          end = pos;
-        while (start > from && /\w/.test(text[start - from - 1])) start--;
-        while (end < to && /\w/.test(text[end - from])) end++;
-        if ((start == pos && side < 0) || (end == pos && side > 0)) return null;
+        if (!pointerEvent.ctrlKey) {
+          return;
+        }
+
+        const cursorPos = view.state.selection.main.head;
+
+        // Get line and column info
+        const line = view.state.doc.lineAt(cursorPos);
 
         const position: vscodePosition = {
-          line: number - 1, // CodeMirror is 1-based, LSP expects 0-based
-          character: pos - from, // offset from the start of the line
+          line: line.number - 1, // CodeMirror is 1-based, LSP expects 0-based
+          character: cursorPos - line.from, // column offset from start of line
         };
 
-        /**
-         * Returns a promise that resolve the go to definition
-         * @returns Promise that resolve the go to definition
-         */
-        const goToDefinitionPromise = async (): Promise<null> => {
+        const click = async () => {
           try {
             const result =
               await this.editorLanguageServerProtocolService.definition(
@@ -438,17 +436,14 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
             }
 
             return null;
-          } catch (error) {
-            console.error("Failed to get go to definition ", error);
+          } catch (error: any) {
+            console.error("Failed to get go to definition ", error.message);
             return null;
           }
         };
 
-        return goToDefinitionPromise();
-      } catch (error) {
-        console.error("Could not create a go to definition extension ", error);
-        return null;
-      }
+        click();
+      },
     });
   };
 
