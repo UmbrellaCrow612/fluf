@@ -1,7 +1,6 @@
 import { logger } from "../logger.js";
 import { GoLanguageServer } from "./impl/golsp.js";
 import { PythonLanguageServer } from "./impl/pythonlsp.js";
-import { TypeScriptLanguageServer } from "./impl/typescriptlsp.js";
 import { LanguageServerManager } from "./manager.js";
 import type {
   CombinedCallback,
@@ -30,10 +29,6 @@ import type {
 const languageServerManager = new LanguageServerManager();
 languageServerManager.Register("go", new GoLanguageServer("go"));
 languageServerManager.Register("python", new PythonLanguageServer("python"));
-languageServerManager.Register(
-  "typescript",
-  new TypeScriptLanguageServer("typescript"),
-);
 
 /**
  * Helper to stop and clean up all language servers
