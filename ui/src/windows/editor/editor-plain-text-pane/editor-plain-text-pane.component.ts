@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   OnDestroy,
+  OnInit,
   signal,
   Signal,
   viewChild,
@@ -38,6 +39,8 @@ import { viewUpdateToLSPChanges } from "../core/lsp/change";
 import { marked } from "marked";
 import { autocompletion, CompletionSource } from "@codemirror/autocomplete";
 import { lspCompletionListToCodeMirror } from "../core/lsp/completion";
+import { EditorFileOpenerService } from "../core/services/editor-file-opener.service";
+import { KeyMaster } from "umbr-key-master";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -64,6 +67,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   private readonly editorDocumentVersionService = inject(
     EditorDocumentVersionService,
   );
+  private readonly editorFileOpenerService = inject(EditorFileOpenerService);
 
   /**
    * Keeps track of the current open file in the editor
@@ -374,6 +378,81 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
   };
 
   /**
+   * Creates a extension that handles go to definition
+   * @returns Extension that handles hover go to definition
+   */
+  private readonly goToDefinitionExtension = (): Extension => {
+    return hoverTooltip((view, pos, side) => {
+      try {
+        const languageId = this.languageId();
+        if (!languageId) {
+          return null;
+        }
+
+        const workspaceFolder = this.selectedDirectory();
+        if (!workspaceFolder) {
+          throw new Error("Workspace folder is undefined");
+        }
+
+        const filePath = this.normalizedFilePath();
+        if (!filePath) {
+          throw new Error("Current file path is null");
+        }
+
+        const { from, to, text, number } = view.state.doc.lineAt(pos);
+        let start = pos,
+          end = pos;
+        while (start > from && /\w/.test(text[start - from - 1])) start--;
+        while (end < to && /\w/.test(text[end - from])) end++;
+        if ((start == pos && side < 0) || (end == pos && side > 0)) return null;
+
+        const position: vscodePosition = {
+          line: number - 1, // CodeMirror is 1-based, LSP expects 0-based
+          character: pos - from, // offset from the start of the line
+        };
+
+        /**
+         * Returns a promise that resolve the go to definition
+         * @returns Promise that resolve the go to definition
+         */
+        const goToDefinitionPromise = async (): Promise<null> => {
+          try {
+            const result =
+              await this.editorLanguageServerProtocolService.definition(
+                workspaceFolder,
+                languageId,
+                filePath,
+                position,
+              );
+
+            if (!result) {
+              return null;
+            }
+
+            if (Array.isArray(result)) {
+              const location = result[0];
+              const uri = location.uri;
+              const asPathLike = await this.electronApi.pathApi.fromUri(uri);
+              const node = await this.electronApi.fsApi.getNode(asPathLike);
+              this.editorFileOpenerService.openFileNodeInEditor(node);
+            }
+
+            return null;
+          } catch (error) {
+            console.error("Failed to get go to definition ", error);
+            return null;
+          }
+        };
+
+        return goToDefinitionPromise();
+      } catch (error) {
+        console.error("Could not create a go to definition extension ", error);
+        return null;
+      }
+    });
+  };
+
+  /**
    * Creates the hover tooltip extension to get hover information
    * @returns Extension that allows tooltip hover information
    */
@@ -618,6 +697,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy {
       lintGutter(),
       this.hoverTooltipExtension(),
       this.autoCompleteExtension(),
+      this.goToDefinitionExtension(),
     ];
   };
 

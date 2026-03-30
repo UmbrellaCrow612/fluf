@@ -12,6 +12,7 @@ import type {
   IpcMainInvokeEventCallback,
   normalizePath,
   pathDirname,
+  pathFromUri,
   pathIsabsolute,
   pathJoin,
   pathSep,
@@ -19,6 +20,7 @@ import type {
 } from "./type.js";
 import { logger } from "./logger.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
+import { fromUri } from "./lsp/uri.js";
 
 const normImpl: CombinedCallback<IpcMainInvokeEventCallback, normalizePath> = (
   _,
@@ -151,6 +153,19 @@ const buildPathSegmentsImpl: CombinedCallback<
   }
 };
 
+const pathFromUriImpl: CombinedCallback<
+  IpcMainInvokeEventCallback,
+  pathFromUri
+> = (_, uriPath) => {
+  try {
+    return Promise.resolve(fromUri(uriPath));
+  } catch (error) {
+    logger.error("Failed to convert uri to path ", error);
+
+    throw error;
+  }
+};
+
 /**
  * All path event operations
  */
@@ -191,6 +206,10 @@ export interface PathEvents {
     args: [pathLike: string];
     return: string[];
   };
+  "path:from:uri": {
+    args: [uri: string];
+    return: string;
+  };
 }
 
 /**
@@ -206,4 +225,5 @@ export const registerPathListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.handle("path:dirname", pathDirnameImpl);
   typedIpcMain.handle("path:default:profile", getDefaultProfilePathImpl);
   typedIpcMain.handle("path:build:segments", buildPathSegmentsImpl);
+  typedIpcMain.handle("path:from:uri", pathFromUriImpl);
 };

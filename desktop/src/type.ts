@@ -295,6 +295,10 @@ export type chromeWindowClose = () => void;
  */
 export type chromeWindowRestore = () => void;
 /**
+ * Converts a Path URI to it's path like convert part
+ */
+export type pathFromUri = (uri: string) => Promise<string>;
+/**
  * Contains all helpers todo with path
  */
 export type pathApi = {
@@ -334,6 +338,10 @@ export type pathApi = {
    * Walks a path and gives you all ancestor paths
    */
   buildPathSegments: buildPathSegments;
+  /**
+   * Get a URI file path to a path like
+   */
+  fromUri: pathFromUri;
 };
 /**
  * Gets the user profile default path

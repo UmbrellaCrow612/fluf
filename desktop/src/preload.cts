@@ -215,6 +215,7 @@ const pathApi: pathApi = {
     typedIpcRender.invoke("path:default:profile", ...args),
   buildPathSegments: (...args) =>
     typedIpcRender.invoke("path:build:segments", ...args),
+  fromUri: (...args) => typedIpcRender.invoke("path:from:uri", ...args),
 };
 
 const shellApi: shellApi = {
@@ -269,7 +270,7 @@ const gitApi: gitApi = {
   hasGit: (...args) => typedIpcRender.invoke("has:git", ...args),
   getCurrentBranch: (...args) =>
     typedIpcRender.invoke("git:current:branch", ...args),
-  gitBlameLine: (...args) => typedIpcRender.invoke("git:blame:line", ...args)
+  gitBlameLine: (...args) => typedIpcRender.invoke("git:blame:line", ...args),
 };
 
 const fsearchApi: fsearchApi = {
