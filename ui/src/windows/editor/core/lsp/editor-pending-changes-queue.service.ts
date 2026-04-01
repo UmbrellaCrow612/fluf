@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { normalize } from "../../../../lib/path";
 import { languageId, voidCallback } from "../../../../gen/type";
 
 /**
