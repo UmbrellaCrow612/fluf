@@ -1,21 +1,22 @@
-import { inject, Injectable } from '@angular/core';
-import { fileNode } from '../../../../gen/type';
-import { EditorStateService } from '../../core/state/editor-state.service';
-import { EditorImageService } from './editor-image.service.service';
-import { EditorVideoService } from './editor-video.service';
-import { EditorAudioService } from './editor-audio.service';
-import { addFileNodeIfNotExists } from '../../../../shared/file-node-helpers';
+import { inject, Injectable } from "@angular/core";
+import { fileNode } from "../../../../gen/type";
+import { EditorStateService } from "../../core/state/editor-state.service";
+import { EditorImageService } from "./editor-image.service.service";
+import { EditorVideoService } from "./editor-video.service";
+import { EditorAudioService } from "./editor-audio.service";
+import { addFileNodeIfNotExists } from "../../../../shared/file-node-helpers";
 import {
   EDITOR_MAIN_ACTIVE_ELEMENT,
   editorMainActiveElement,
-} from '../state/type';
+} from "../state/type";
+import { normalize } from "../../../../lib/path";
 
 /**
  * Manages file node interactions within the editor, including opening files,
  * tracking open files, and routing files to appropriate editor components.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class EditorFileOpenerService {
   private readonly editorStateService = inject(EditorStateService);
@@ -36,7 +37,7 @@ export class EditorFileOpenerService {
    */
   public openFileNodeInEditor(target: fileNode): void {
     if (target.isDirectory) {
-      console.error('Cannot open a directory in the editor');
+      console.error("Cannot open a directory in the editor");
       return;
     }
 
@@ -64,9 +65,13 @@ export class EditorFileOpenerService {
    * @param target - The file node to set as active
    */
   private setActiveFile(target: fileNode): void {
-    const clonedTarget = structuredClone(target);
-    this.editorStateService.currentOpenFileInEditor.set(clonedTarget);
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(clonedTarget);
+    const current = this.editorStateService.currentOpenFileInEditor();
+    if (current && normalize(current.path) === normalize(target.path)) {
+      return;
+    }
+
+    this.editorStateService.currentOpenFileInEditor.set(target);
+    this.editorStateService.fileExplorerActiveFileOrFolder.set(target);
   }
 
   /**
@@ -74,6 +79,10 @@ export class EditorFileOpenerService {
    * @param value The valu to change it to
    */
   private setMainActiveElementInState(value: editorMainActiveElement) {
+    const current = this.editorStateService.editorMainActiveElement();
+    if (current && current === value) {
+      return;
+    }
     this.editorStateService.editorMainActiveElement.set(value);
   }
 
@@ -110,7 +119,9 @@ export class EditorFileOpenerService {
       return;
     }
 
-    this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR);
+    this.setMainActiveElementInState(
+      EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR,
+    );
   }
 
   /**
@@ -118,6 +129,6 @@ export class EditorFileOpenerService {
    * @param extension The file extension
    */
   private isPdf(extension: string): boolean {
-    return extension === '.pdf';
+    return extension === ".pdf";
   }
 }
