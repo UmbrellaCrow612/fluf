@@ -1,16 +1,21 @@
-import { Diagnostic } from '@codemirror/lint';
-import { fileNode, gitBlameLineInformation, languageId } from '../../../../gen/type';
+import { Diagnostic } from "@codemirror/lint";
+import {
+  fileNode,
+  gitBlameLineInformation,
+  languageId,
+} from "../../../../gen/type";
+import { Location } from "vscode-languageserver-protocol";
 
 /**
  * Represents which elements from the sidebar can be in an active state,
  * i.e., the elements that can be clicked to show their rendered component.
  */
 export const EDITOR_SIDE_BAR_ACTIVE_ELEMENT = {
-  FILE_EXPLORER: 'file-explorer',
-  SEARCH: 'search',
-  SOURCE_CONTROL: 'source-control',
-  RUN_AND_DEBUG: 'run-and-debug',
-  EXTENSIONS: 'extensions',
+  FILE_EXPLORER: "file-explorer",
+  SEARCH: "search",
+  SOURCE_CONTROL: "source-control",
+  RUN_AND_DEBUG: "run-and-debug",
+  EXTENSIONS: "extensions",
 } as const;
 
 /**
@@ -32,8 +37,8 @@ export type editorSideBarActiveElement =
  * Represents which elements can be active in the bottom editor popup.
  */
 export const EDITOR_BOTTOM_ACTIVE_ELEMENT = {
-  TERMINAL: 'terminal',
-  PROBLEMS: 'problems',
+  TERMINAL: "terminal",
+  PROBLEMS: "problems",
 } as const;
 
 /**
@@ -55,13 +60,13 @@ export type editorBottomActiveElement =
  * All the components that can be rendered in the middle of the text editor.
  */
 export const EDITOR_MAIN_ACTIVE_ELEMENT = {
-  PLAIN_TEXT_FILE_EDITOR: 'plain-text-file-editor',
-  IMAGE_EDITOR: 'image-editor',
-  VIDEO_EDITOR: 'video-editor',
-  PDF_EDITOR: 'pdf-editor',
-  UNKNOWN: 'unknown',
-  AUDIO_EDITOR: 'audio-editor',
-  MARKDOWN_EDITOR: 'markdown-editor',
+  PLAIN_TEXT_FILE_EDITOR: "plain-text-file-editor",
+  IMAGE_EDITOR: "image-editor",
+  VIDEO_EDITOR: "video-editor",
+  PDF_EDITOR: "pdf-editor",
+  UNKNOWN: "unknown",
+  AUDIO_EDITOR: "audio-editor",
+  MARKDOWN_EDITOR: "markdown-editor",
 } as const;
 
 /**
@@ -139,6 +144,11 @@ export type EditorState = {
    * Keeps track if it should auto saves changes in files beofre closing
    */
   autoSave: boolean;
+
+  /**
+   * Holds the location of where to scroll to when a file is opened
+   */
+  scrollToDefinitionLocation: Location | null;
 };
 
 /**
@@ -216,5 +226,5 @@ export type EditorInMemoryState = {
   /**
    * Holds the current git blame information for the cusor line
    */
-  gitBlameLineInformation: gitBlameLineInformation | null
+  gitBlameLineInformation: gitBlameLineInformation | null;
 };

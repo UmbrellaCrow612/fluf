@@ -1,7 +1,7 @@
-import { effect, Injectable, signal } from '@angular/core';
-import { EditorState } from './type';
+import { effect, Injectable, signal } from "@angular/core";
+import { EditorState } from "./type";
 
-const LOCAL_STORAGE_KEY = 'editor-app-context';
+const LOCAL_STORAGE_KEY = "editor-app-context";
 
 /**
  * Central state management service for the editor application.
@@ -21,85 +21,92 @@ const LOCAL_STORAGE_KEY = 'editor-app-context';
  * this.editorState.sideBarActiveElement.set('explorer');
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class EditorStateService {
   /**
    * Exposes sideBarActiveElement signal
    */
   public readonly sideBarActiveElement = signal<
-    EditorState['sideBarActiveElement']
-  >(this.restoreField('sideBarActiveElement', null));
+    EditorState["sideBarActiveElement"]
+  >(this.restoreField("sideBarActiveElement", null));
 
   /**
    * Exposes directoryFileNodes signal
    */
   public readonly directoryFileNodes = signal<
-    EditorState['directoryFileNodes']
-  >(this.restoreField('directoryFileNodes', null));
+    EditorState["directoryFileNodes"]
+  >(this.restoreField("directoryFileNodes", null));
 
   /**
    * Exposes selectedDirectoryPath signal
    */
   public readonly selectedDirectoryPath = signal<
-    EditorState['selectedDirectoryPath']
-  >(this.restoreField('selectedDirectoryPath', null));
+    EditorState["selectedDirectoryPath"]
+  >(this.restoreField("selectedDirectoryPath", null));
 
   /**
    * Exposes fileExplorerActiveFileOrFolder signal
    */
   public readonly fileExplorerActiveFileOrFolder = signal<
-    EditorState['fileExplorerActiveFileOrFolder']
-  >(this.restoreField('fileExplorerActiveFileOrFolder', null));
+    EditorState["fileExplorerActiveFileOrFolder"]
+  >(this.restoreField("fileExplorerActiveFileOrFolder", null));
 
   /**
    * Exposes openFiles signal
    */
-  public readonly openFiles = signal<EditorState['openFiles']>(
-    this.restoreField('openFiles', null),
+  public readonly openFiles = signal<EditorState["openFiles"]>(
+    this.restoreField("openFiles", null),
   );
 
   /**
    * Exposes currentOpenFileInEditor signal
    */
   public readonly currentOpenFileInEditor = signal<
-    EditorState['currentOpenFileInEditor']
-  >(this.restoreField('currentOpenFileInEditor', null));
+    EditorState["currentOpenFileInEditor"]
+  >(this.restoreField("currentOpenFileInEditor", null));
 
   /**
    * Exposes displayFileEditorBottom signal
    */
   public readonly displayFileEditorBottom = signal<
-    EditorState['displayFileEditorBottom']
-  >(this.restoreField('displayFileEditorBottom', null));
+    EditorState["displayFileEditorBottom"]
+  >(this.restoreField("displayFileEditorBottom", null));
 
   /**
    * Exposes fileEditorBottomActiveElement signal
    */
   public readonly editorBottomActiveElement = signal<
-    EditorState['editorBottomActiveElement']
-  >(this.restoreField('editorBottomActiveElement', null));
+    EditorState["editorBottomActiveElement"]
+  >(this.restoreField("editorBottomActiveElement", null));
 
   /**
    * Exposes the editorMainActiveElement signal
    */
   public readonly editorMainActiveElement = signal<
-    EditorState['editorMainActiveElement']
-  >(this.restoreField('editorMainActiveElement', null));
+    EditorState["editorMainActiveElement"]
+  >(this.restoreField("editorMainActiveElement", null));
 
   /**
    * Exposes editorTheme signal
    */
-  public readonly editorTheme = signal<EditorState['editorTheme']>(
-    this.restoreField('editorTheme', null),
+  public readonly editorTheme = signal<EditorState["editorTheme"]>(
+    this.restoreField("editorTheme", null),
   );
 
   /**
    * Exposes auto save signal
    */
-  public readonly autoSave = signal<EditorState['autoSave']>(
-    this.restoreField('autoSave', false),
+  public readonly autoSave = signal<EditorState["autoSave"]>(
+    this.restoreField("autoSave", false),
   );
+
+  /**
+   * Exposes scrollToDefinitionLocation signal
+   */
+  public readonly scrollToDefinitionLocation = signal<
+    EditorState["scrollToDefinitionLocation"]
+  >(this.restoreField("scrollToDefinitionLocation", null));
 
   constructor() {
     effect(() => {
@@ -115,7 +122,7 @@ export class EditorStateService {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     } catch (err) {
-      console.warn('[ContextService] Failed to persist context', err);
+      console.warn("[ContextService] Failed to persist context", err);
     }
   }
 
@@ -132,6 +139,7 @@ export class EditorStateService {
       selectedDirectoryPath: this.selectedDirectoryPath(),
       editorTheme: this.editorTheme(),
       autoSave: this.autoSave(),
+      scrollToDefinitionLocation: this.scrollToDefinitionLocation(),
     };
   }
 
@@ -149,6 +157,8 @@ export class EditorStateService {
     this.editorBottomActiveElement.set(null);
     this.editorMainActiveElement.set(null);
     this.editorTheme.set(null);
+    this.autoSave.set(false);
+    this.scrollToDefinitionLocation.set(null);
   }
 
   /**
