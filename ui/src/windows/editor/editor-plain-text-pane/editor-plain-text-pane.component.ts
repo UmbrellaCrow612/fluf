@@ -1,4 +1,4 @@
-import { Extension } from "@codemirror/state";
+import { Compartment, Extension } from "@codemirror/state";
 import { history, historyField } from "@codemirror/commands";
 import {
   Component,
@@ -117,11 +117,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private readonly normalizedFilePath = signal<string | null>(null);
 
   /**
-   * Contains the current diagnostics for the file
-   */
-  private readonly diagnostics = signal<CmDiagnostic[]>([]);
-
-  /**
    * Contains the current language ID
    */
   private readonly languageId = signal<languageId | null>(null);
@@ -142,6 +137,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
    * Holds if the user has control pressed
    */
   private readonly isControlPressed = signal(false);
+
+  /**
+   * Linter compartment
+   */
+  private readonly linterCompartment = new Compartment();
 
   constructor() {
     useEffect(
@@ -386,7 +386,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         this.editorView.focus();
         this.hydrateDataOnChange(cachedView);
 
-        await this.initLanguageServer(
+        void this.initLanguageServer(
           node,
           cachedView.state.doc.toString(),
           cachedView,
@@ -417,7 +417,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
 
-      await this.initLanguageServer(node, docString, this.editorView);
+      this.initLanguageServer(node, docString, this.editorView);
     } catch (error: any) {
       console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
@@ -425,16 +425,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       this.isLoading.set(false);
     }
   }
-
-  /**
-   * Gets the linter extension to display linting in the UI
-   * @returns A extension that returns linting for the UI display
-   */
-  private readonly linterExtension = (): Extension => {
-    return linter((view) => {
-      return this.diagnostics();
-    });
-  };
 
   /**
    * Creates a extension that handles go to definition
@@ -606,7 +596,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   };
 
   /**
-   * Initlizes language server logic
+   * Fire and forget - Initlizes language server logic
    * @param node - The open file
    * @param docString The documents content
    */
@@ -628,7 +618,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     }
 
     try {
-      await this.editorLanguageServerProtocolService.start(
+      void this.editorLanguageServerProtocolService.start(
+        // fire and forget dont wait
         workspaceFolder,
         languageId,
       );
@@ -651,9 +642,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     if (lspAlreadyRunning) {
       this.editorLspLifecycleTracker.markReady(languageId);
       this.sendOpenTextDocument(workspaceFolder, languageId, node, docString);
+      this.editorPendingChangesQueueService.runChangeCallbacks(languageId);
     } else {
       this.unsubCallbacks.push(
         this.editorLanguageServerProtocolService.onReady(() => {
+          console.log("On ready ran");
           this.editorLspLifecycleTracker.markReady(languageId);
           this.sendOpenTextDocument(
             workspaceFolder,
@@ -699,7 +692,11 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
             }
           }
 
-          this.diagnostics.set(diags);
+          view.dispatch({
+            effects: this.linterCompartment.reconfigure(
+              this.buildLinterExtension(diags),
+            ),
+          });
         },
       ),
     );
@@ -729,15 +726,18 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
 
       const isReady = this.editorLspLifecycleTracker.isReady(languageId);
       if (!isReady) {
-        this.editorPendingChangesQueueService.addChangeCallback(() => {
-          this.editorLanguageServerProtocolService.didChangeTextDocument(
-            workspaceFolder,
-            languageId,
-            filePath,
-            version,
-            changes,
-          );
-        });
+        this.editorPendingChangesQueueService.addChangeCallback(
+          languageId,
+          () => {
+            this.editorLanguageServerProtocolService.didChangeTextDocument(
+              workspaceFolder,
+              languageId,
+              filePath,
+              version,
+              changes,
+            );
+          },
+        );
         return;
       }
 
@@ -793,13 +793,24 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       this.updateListener,
       editorPlainTextPaneThemeExtension,
       history(),
-      this.linterExtension(),
+      this.linterCompartment.of(this.buildLinterExtension()),
       lintGutter(),
       this.hoverTooltipExtension(),
       this.autoCompleteExtension(),
       this.goToDefinitionExtension(),
       createGoToDefinitionHoverStyles(this.isControlPressed),
     ];
+  };
+
+  /**
+   * Builds linter extension
+   * @param diags The diagnostics
+   * @returns Extension
+   */
+  private readonly buildLinterExtension = (
+    diags: CmDiagnostic[] = [],
+  ): Extension => {
+    return linter(() => diags);
   };
 
   /**

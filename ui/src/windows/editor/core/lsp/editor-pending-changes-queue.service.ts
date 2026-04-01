@@ -16,9 +16,22 @@ export class EditorPendingChangesQueueService {
 
   /**
    * Add a callback to call when the lsp becomes ready
+   * @param languageId The lsp
    * @param callback The callback which has the logic to send the change to the backend LSP
    */
-  public addChangeCallback(callback: voidCallback): void {}
+  public addChangeCallback(
+    languageId: languageId,
+    callback: voidCallback,
+  ): void {
+    const callbacksArray = this.pendingChangesMap.get(languageId);
+    if (!callbacksArray) {
+      this.pendingChangesMap.set(languageId, [callback]);
+      return;
+    } else {
+      callbacksArray.push(callback);
+    }
+  }
+
   /**
    * Run all the stored pending change callbacks for the given lsp
    * @param languageId The lsp
@@ -26,11 +39,11 @@ export class EditorPendingChangesQueueService {
   public runChangeCallbacks(languageId: languageId): void {
     const callbacks = this.pendingChangesMap.get(languageId);
     if (!callbacks) {
+      console.error("No callbacks to run");
       return;
     }
 
     for (const callback of callbacks) {
-      console.error("ran cb");
       callback();
     }
 
