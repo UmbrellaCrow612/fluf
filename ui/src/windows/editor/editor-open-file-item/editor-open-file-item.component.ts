@@ -21,6 +21,8 @@ import { EditorSessionStateService } from "../core/services/editor-session-state
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { useEffect } from "../../../lib/useEffect";
 import { Diagnostic } from "vscode-languageserver-protocol";
+import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language-server-protocol.service";
+import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 
 @Component({
   selector: "app-editor-open-file-item",
@@ -40,6 +42,12 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   );
   private readonly editorDocumentDiagnosticService = inject(
     EditorDocumentDiagnosticService,
+  );
+  private readonly editorLanguageServerProtocolService = inject(
+    EditorLanguageServerProtocolService,
+  );
+  private readonly editorDocumentLanguageIdService = inject(
+    EditorDocumentLanguageIdService,
   );
   private unsub: voidCallback | null = null;
 
@@ -82,11 +90,6 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * TODO: on close check if there are unsaved changes for file and not auto save on then display warning beofre closing and restting state
-   * if press save apply changes to a string then save them to the file
-   */
-
-  /**
    * Input file node to render for the given item
    */
   public fileNode = input.required<fileNode>();
@@ -105,6 +108,13 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
    * Keeps track if the current file is dirty
    */
   public readonly isDirty = signal(false);
+
+  /**
+   * Keep track selected directory
+   */
+  private readonly workspaceFolder = computed(() =>
+    this.editorStateService.selectedDirectoryPath(),
+  );
 
   /**
    * Keep track if the given file tab is the one open / active
@@ -162,8 +172,26 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
       }
     }
 
+    const workspaceFolder = this.workspaceFolder();
+    if (!workspaceFolder) {
+      console.error("Could not get workspace folder to close document");
+      return;
+    }
+
     this.editorFileStateService.reset(this.fileNode().path);
     this.editorSessionStateService.removeCache(this.fileNode().path);
+
+    const languageId = this.editorDocumentLanguageIdService.getLanguageId(
+      this.fileNode().path,
+    );
+    if (languageId) {
+      this.editorLanguageServerProtocolService.didCloseTextDocument(
+        workspaceFolder,
+        languageId,
+        this.fileNode().path,
+      );
+      console.log("Send text document closed");
+    }
 
     let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());

@@ -49,6 +49,7 @@ import {
 import { EditorLspLifecycleTracker } from "../core/lsp/editor-lsp-lifecycle-tracker";
 import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-changes-queue.service";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
+import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -84,6 +85,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   );
   private readonly editorDocumentDiagnosticService = inject(
     EditorDocumentDiagnosticService,
+  );
+  private readonly editorDocumentLanguageIdService = inject(
+    EditorDocumentLanguageIdService,
   );
 
   /**
@@ -613,6 +617,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     if (!languageId) {
       return;
     }
+    this.editorDocumentLanguageIdService.setLanguageId(node.path, languageId);
 
     const workspaceFolder = this.selectedDirectory();
     if (!workspaceFolder) {

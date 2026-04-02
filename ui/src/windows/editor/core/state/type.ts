@@ -178,11 +178,6 @@ export type EditorInMemoryState = {
   isCreateFileOrFolderActive: boolean | null;
 
   /**
-   * Contains a list of all specific files by their path and a map of specific diagnostic error types and then all the diagnostics of that type.
-   */
-  problems: Map<string, Diagnostic[]>;
-
-  /**
    * Contains a list of active shell PIDs.
    */
   shells: number[] | null;
