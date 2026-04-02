@@ -6,16 +6,11 @@ import { EditorView } from "codemirror";
 
 const electronApi = getElectronApi();
 
-const impl = async (
-  location: Location,
-  fpOpener: EditorFileOpenerService,
-  state: EditorStateService,
-) => {
+const impl = async (location: Location, fpOpener: EditorFileOpenerService) => {
   const uri = location.uri;
   const asPathLike = await electronApi.pathApi.fromUri(uri);
   const node = await electronApi.fsApi.getNode(asPathLike);
-  state.scrollToDefinitionLocation.set(location);
-  fpOpener.openFileNodeInEditor(node);
+  fpOpener.openFileNodeInEditor(node, location);
 };
 
 /**
@@ -30,9 +25,9 @@ export const goToDefinitionInEditor = async (
 ) => {
   try {
     if (Array.isArray(definition)) {
-      await impl(definition[0], fpOpener, state);
+      await impl(definition[0], fpOpener);
     } else {
-      await impl(definition, fpOpener, state);
+      await impl(definition, fpOpener);
     }
   } catch (error) {
     console.error("Failed to go to definition");

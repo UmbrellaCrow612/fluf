@@ -10,6 +10,7 @@ import {
   editorMainActiveElement,
 } from "../state/type";
 import { normalize } from "../../../../lib/path";
+import { Location as vscodeLocation } from "vscode-languageserver-protocol";
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -33,9 +34,13 @@ export class EditorFileOpenerService {
    * - Routes the file to the appropriate editor component based on file type
    *
    * @param target - The file node to open in the editor
+   * @param [location=null] To scroll to a specific location when opening a file in the editor
    * @returns Nothing; errors are logged to console for invalid operations
    */
-  public openFileNodeInEditor(target: fileNode): void {
+  public openFileNodeInEditor(
+    target: fileNode,
+    location: vscodeLocation | null = null,
+  ): void {
     if (target.isDirectory) {
       console.error("Cannot open a directory in the editor");
       return;
@@ -44,6 +49,23 @@ export class EditorFileOpenerService {
     this.addToOpenFiles(target);
     this.setActiveFile(target);
     this.setMainEditorComponent(target);
+    this.scrollToLocation(location);
+  }
+
+  /**
+   * Updates the scroll location value to trigger a scroll to with a delay
+   * @param location The LSP location
+   */
+  private scrollToLocation(location: vscodeLocation | null = null) {
+    if (!location) {
+      return;
+    }
+
+    // use set timeout but could be better liek emit document ready ? Instead of replying in luck with timeout
+
+    setTimeout(() => {
+      this.editorStateService.scrollToDefinitionLocation.set(location);
+    }, 250);
   }
 
   /**
