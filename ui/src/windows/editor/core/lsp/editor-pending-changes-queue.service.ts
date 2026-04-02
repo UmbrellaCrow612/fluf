@@ -38,7 +38,6 @@ export class EditorPendingChangesQueueService {
   public runChangeCallbacks(languageId: languageId): void {
     const callbacks = this.pendingChangesMap.get(languageId);
     if (!callbacks) {
-      console.error("No callbacks to run");
       return;
     }
 

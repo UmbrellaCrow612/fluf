@@ -177,11 +177,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   };
 
   private onControlPressReleased = (event: KeyboardEvent) => {
-    if (event.key !== "Control") {
-      return;
+    if (event.key === "Control") {
+      this.isControlPressed.set(false);
     }
-
-    this.isControlPressed.set(false);
   };
 
   private createControlListerners = () => {
@@ -417,7 +415,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
 
-      this.initLanguageServer(node, docString, this.editorView);
+      void this.initLanguageServer(node, docString, this.editorView);
     } catch (error: any) {
       console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
@@ -678,6 +676,13 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
 
           const diags: CmDiagnostic[] = [];
 
+          view.dispatch({
+            // reset
+            effects: this.linterCompartment.reconfigure(
+              this.buildLinterExtension([]),
+            ),
+          });
+
           for (const vscodeDiag of params.diagnostics) {
             const mappedDiag = vscodeToCodeMirrorDiagnostic(
               vscodeDiag,
@@ -873,6 +878,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         return null;
       }
 
+      console.log(result);
+
       const word = ctx.matchBefore(/\w*/);
       return lspCompletionListToCodeMirror(result, word?.from ?? ctx.pos);
     } catch (error) {
@@ -888,7 +895,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private cleanUpState(): void {
     this.saveCurrentState();
 
-    this.diagnostics.set([]);
     this.languageId.set(null);
 
     for (const callback of this.unsubCallbacks) {

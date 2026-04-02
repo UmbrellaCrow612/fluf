@@ -50,21 +50,18 @@ export function scrollToVSCodeLocation(
   const { start } = location.range;
   const doc = view.state.doc;
 
-  // VSCode lines are 0-based; CodeMirror's line() also accepts 1-based,
-  // so add 1 to convert.
   const line = doc.line(start.line + 1);
-
-  // Clamp character offset to line length to avoid going out of bounds
   const ch = Math.min(start.character, line.length);
-
-  // Absolute offset into the document
   const pos = line.from + ch;
 
-  // Dispatch a scroll effect to bring the position into view
   view.dispatch({
+    selection: { anchor: pos, head: pos },
     effects: EditorView.scrollIntoView(pos, {
-      y: "center", // 'start' | 'end' | 'nearest' | 'center'
+      y: "center",
       x: "nearest",
     }),
+    scrollIntoView: true,
   });
+
+  view.focus();
 }
