@@ -7,23 +7,26 @@ import {
   OnInit,
   signal,
   Signal,
-} from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { fileNode, voidCallback } from '../../../gen/type';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
-import { removeFileNodeIfExists } from '../../../shared/file-node-helpers';
-import { ApplicationConfirmationService } from '../../../shared/services/application-confirmation.service';
-import { EditorFileStateService } from '../core/services/editor-file-state.service';
-import { EditorSessionStateService } from '../core/services/editor-session-state.service';
+} from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { fileNode, voidCallback } from "../../../gen/type";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { EditorFileOpenerService } from "../core/services/editor-file-opener.service";
+import { removeFileNodeIfExists } from "../../../shared/file-node-helpers";
+import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
+import { EditorFileStateService } from "../core/services/editor-file-state.service";
+import { EditorSessionStateService } from "../core/services/editor-session-state.service";
+import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
+import { useEffect } from "../../../lib/useEffect";
+import { Diagnostic } from "vscode-languageserver-protocol";
 
 @Component({
-  selector: 'app-editor-open-file-item',
+  selector: "app-editor-open-file-item",
   imports: [MatButtonModule, MatIconModule, MatTooltipModule],
-  templateUrl: './editor-open-file-item.component.html',
-  styleUrl: './editor-open-file-item.component.css',
+  templateUrl: "./editor-open-file-item.component.html",
+  styleUrl: "./editor-open-file-item.component.css",
 })
 export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
@@ -32,9 +35,36 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
     ApplicationConfirmationService,
   );
   private readonly editorFileStateService = inject(EditorFileStateService);
-  private readonly editorSessionStateService = inject(EditorSessionStateService)
-
+  private readonly editorSessionStateService = inject(
+    EditorSessionStateService,
+  );
+  private readonly editorDocumentDiagnosticService = inject(
+    EditorDocumentDiagnosticService,
+  );
   private unsub: voidCallback | null = null;
+
+  /**
+   * Displays count of error diagnostic it has for file
+   * @param diagnostics List of diagnostics
+   */
+  private displayDocumentDiagnostics = (diagnostics: Diagnostic[]) => {
+    this.errorDiagnosticCount.set(diagnostics.length);
+  };
+
+  constructor() {
+    useEffect(
+      (_, count) => {
+        if (count > 0) {
+          this.displayDocumentDiagnostics(
+            this.editorDocumentDiagnosticService.getDiagnostics(
+              this.fileNode().path,
+            ),
+          );
+        }
+      },
+      [this.editorDocumentDiagnosticService.valueChanged],
+    );
+  }
 
   ngOnInit() {
     this.openFileTooltip.set(this.fileNode().path);
@@ -64,7 +94,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   /**
    * Holds the tooltip for hover information
    */
-  public openFileTooltip = signal('');
+  public openFileTooltip = signal("");
 
   /**
    * How long it takes for the parent tooltip to show
@@ -86,29 +116,34 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   );
 
   /**
+   * Holds how many error diagnostics this document has
+   */
+  public readonly errorDiagnosticCount = signal(0);
+
+  /**
    * The icon name displayed for the given file based on it's extension computed once
    */
   public fileIcon: Signal<string> = computed(() => {
     return (
       this.fileIconListMapNames.find(
         (x) => x.fileExtension == this.fileNode().extension,
-      )?.iconName ?? 'description'
+      )?.iconName ?? "description"
     );
   });
 
   private fileIconListMapNames: { fileExtension: string; iconName: string }[] =
     [
       {
-        fileExtension: '.html',
-        iconName: 'html',
+        fileExtension: ".html",
+        iconName: "html",
       },
       {
-        fileExtension: '.css',
-        iconName: 'css',
+        fileExtension: ".css",
+        iconName: "css",
       },
       {
-        fileExtension: '.js',
-        iconName: 'javascript',
+        fileExtension: ".js",
+        iconName: "javascript",
       },
     ];
 
@@ -120,7 +155,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
 
     if (this.isDirty()) {
       const confirmed = await this.applicationConfirmationService.request(
-        'This file has unsaved changes are you sure you want to close it',
+        "This file has unsaved changes are you sure you want to close it",
       );
       if (!confirmed) {
         return;
@@ -128,7 +163,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
     }
 
     this.editorFileStateService.reset(this.fileNode().path);
-    this.editorSessionStateService.removeCache(this.fileNode().path)
+    this.editorSessionStateService.removeCache(this.fileNode().path);
 
     let openfiles = this.editorStateService.openFiles() ?? [];
     removeFileNodeIfExists(openfiles, this.fileNode());

@@ -48,6 +48,7 @@ import {
 } from "../core/lsp/definition";
 import { EditorLspLifecycleTracker } from "../core/lsp/editor-lsp-lifecycle-tracker";
 import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-changes-queue.service";
+import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -80,6 +81,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   );
   private readonly editorPendingChangesQueueService = inject(
     EditorPendingChangesQueueService,
+  );
+  private readonly editorDocumentDiagnosticService = inject(
+    EditorDocumentDiagnosticService,
   );
 
   /**
@@ -673,6 +677,17 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
             );
             return;
           }
+
+          const filePath = this.normalizedFilePath();
+          if (!filePath) {
+            console.error("No file path found");
+            return;
+          }
+
+          this.editorDocumentDiagnosticService.setDiagnostics(
+            filePath,
+            params.diagnostics,
+          );
 
           const diags: CmDiagnostic[] = [];
 
