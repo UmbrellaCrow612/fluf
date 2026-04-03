@@ -1,23 +1,25 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { fileNode } from '../../../gen/type';
-import { EditorFileExplorerTreeComponent } from '../editor-file-explorer-tree/editor-file-explorer-tree.component';
-import { ApplicationContextMenuService } from '../../../shared/services/application-context-menu.service';
-import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
+import { Component, inject, OnInit, signal } from "@angular/core";
+import { fileNode } from "../../../gen/type";
+import { EditorFileExplorerTreeComponent } from "../editor-file-explorer-tree/editor-file-explorer-tree.component";
+import { ApplicationContextMenuService } from "../../../shared/services/application-context-menu.service";
+import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 
 /**
  * Displays a menu contetx menu breadcrumb bar item is clicked and displays a tree view for the given node similar to vscode
  */
 @Component({
-  selector: 'app-editor-path-breadcrumb-context-menu',
+  selector: "app-editor-path-breadcrumb-context-menu",
   imports: [EditorFileExplorerTreeComponent],
-  templateUrl: './editor-path-breadcrumb-context-menu.component.html',
-  styleUrl: './editor-path-breadcrumb-context-menu.component.css',
+  templateUrl: "./editor-path-breadcrumb-context-menu.component.html",
+  styleUrl: "./editor-path-breadcrumb-context-menu.component.css",
 })
 export class EditorPathBreadcrumbContextMenuComponent implements OnInit {
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
-  private readonly editorFileOpenerService = inject(EditorFileOpenerService)
+  private readonly editorDocumentOpenerService = inject(
+    EditorDocumentOpenerService,
+  );
   /**
    * Holds error state
    */
@@ -59,12 +61,12 @@ export class EditorPathBreadcrumbContextMenuComponent implements OnInit {
       this.error.set(null);
 
       if (!node || !node.isDirectory) {
-        throw new Error('Node must be a directory for a root node');
+        throw new Error("Node must be a directory for a root node");
       }
 
       this.targetNode.set(node);
     } catch (error: any) {
-      console.error('Failed to display tree viwer ', error);
+      console.error("Failed to display tree viwer ", error);
       this.error.set(`Failed to display tree viwer ${error?.message}`);
     } finally {
       this.isLoading.set(false);
@@ -86,9 +88,9 @@ export class EditorPathBreadcrumbContextMenuComponent implements OnInit {
   public updateActiveNode(node: fileNode) {
     this.activeNode.set(node);
 
-    if(!node.isDirectory){
-      this.editorFileOpenerService.openFileNodeInEditor(node)
-      this.applicationContextMenuService.close()
+    if (!node.isDirectory) {
+      this.editorDocumentOpenerService.openFileNodeInEditor(node);
+      this.applicationContextMenuService.close();
     }
   }
 }

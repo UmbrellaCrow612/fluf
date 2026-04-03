@@ -17,7 +17,7 @@ import { EditorStateService } from "../core/state/editor-state.service";
 import { basicSetup, EditorView } from "codemirror";
 import { useEffect } from "../../../lib/useEffect";
 import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
-import { EditorFileStateService } from "../core/services/editor-file-state.service";
+import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
@@ -40,14 +40,18 @@ import { viewUpdateToLSPChanges } from "../core/lsp/change";
 import { marked } from "marked";
 import { autocompletion, CompletionSource } from "@codemirror/autocomplete";
 import { lspCompletionListToCodeMirror } from "../core/lsp/completion";
-import { EditorFileOpenerService } from "../core/services/editor-file-opener.service";
+import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import { createGoToDefinitionHoverStyles } from "./extensions/hover";
 import {
   goToDefinitionInEditor,
   scrollToVSCodeLocation,
 } from "../core/lsp/definition";
-import { EditorLspLifecycleTracker } from "../core/lsp/editor-lsp-lifecycle-tracker";
+import { EditorLanguageServerProtocolLifecycleTracker } from "../core/lsp/editor-language-server-protocol-lifecycle-tracker";
 import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-changes-queue.service";
+import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
+import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
+import { normalize } from "../../../lib/path";
+import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -64,7 +68,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     EditorInMemoryStateService,
   );
   private readonly electronApi = getElectronApi();
-  private readonly editorFileStateService = inject(EditorFileStateService);
+  private readonly editorDocumentStateService = inject(
+    EditorDocumentStateService,
+  );
   private readonly editorSessionStateService = inject(
     EditorSessionStateService,
   );
@@ -74,12 +80,23 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private readonly editorDocumentVersionService = inject(
     EditorDocumentVersionService,
   );
-  private readonly editorFileOpenerService = inject(EditorFileOpenerService);
-  private readonly editorLspLifecycleTracker = inject(
-    EditorLspLifecycleTracker,
+  private readonly editorDocumentOpenerService = inject(
+    EditorDocumentOpenerService,
+  );
+  private readonly editorLanguageServerProtocolLifecycleTracker = inject(
+    EditorLanguageServerProtocolLifecycleTracker,
   );
   private readonly editorPendingChangesQueueService = inject(
     EditorPendingChangesQueueService,
+  );
+  private readonly editorDocumentDiagnosticService = inject(
+    EditorDocumentDiagnosticService,
+  );
+  private readonly editorDocumentLanguageIdService = inject(
+    EditorDocumentLanguageIdService,
+  );
+  private readonly editorDocumentOpenTrackerService = inject(
+    EditorDocumentOpenTrackerService,
   );
 
   /**
@@ -177,11 +194,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   };
 
   private onControlPressReleased = (event: KeyboardEvent) => {
-    if (event.key !== "Control") {
-      return;
+    if (event.key === "Control") {
+      this.isControlPressed.set(false);
     }
-
-    this.isControlPressed.set(false);
   };
 
   private createControlListerners = () => {
@@ -232,7 +247,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     if (update.docChanged) {
       this.editorDocumentVersionService.updateVersion(normalizedPath);
 
-      this.editorFileStateService.trackChange(
+      this.editorDocumentStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),
       );
@@ -245,7 +260,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       );
 
       if (this.autoSaveOn()) {
-        await this.editorFileStateService.save(normalizedPath);
+        await this.editorDocumentStateService.save(normalizedPath);
       }
     }
   });
@@ -401,7 +416,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
        */
       let docString: string = "";
 
-      const draft = this.editorFileStateService.getDraft(normalizedPath);
+      const draft = this.editorDocumentStateService.getDraft(normalizedPath);
       if (draft) {
         docString = draft;
         console.log("Using saved draft");
@@ -417,7 +432,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
 
-      this.initLanguageServer(node, docString, this.editorView);
+      void this.initLanguageServer(node, docString, this.editorView);
     } catch (error: any) {
       console.error("Failed to load file ", error);
       this.error.set(`Failed to load file ${error?.message}`);
@@ -438,7 +453,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
           return;
         }
 
-        const isReady = this.editorLspLifecycleTracker.isReady(languageId);
+        const isReady =
+          this.editorLanguageServerProtocolLifecycleTracker.isReady(languageId);
         if (!isReady) {
           console.warn("LSP not reayd cannot go to definition");
           return;
@@ -484,7 +500,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
 
             await goToDefinitionInEditor(
               result,
-              this.editorFileOpenerService,
+              this.editorDocumentOpenerService,
               this.editorStateService,
             );
 
@@ -529,7 +545,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         while (end < to && /\w/.test(text[end - from])) end++;
         if ((start == pos && side < 0) || (end == pos && side > 0)) return null;
 
-        const isReady = this.editorLspLifecycleTracker.isReady(languageId);
+        const isReady =
+          this.editorLanguageServerProtocolLifecycleTracker.isReady(languageId);
         if (!isReady) {
           return {
             pos: start,
@@ -611,6 +628,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     if (!languageId) {
       return;
     }
+    this.editorDocumentLanguageIdService.setLanguageId(node.path, languageId);
 
     const workspaceFolder = this.selectedDirectory();
     if (!workspaceFolder) {
@@ -640,14 +658,16 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     }
 
     if (lspAlreadyRunning) {
-      this.editorLspLifecycleTracker.markReady(languageId);
+      this.editorLanguageServerProtocolLifecycleTracker.markReady(languageId);
       this.sendOpenTextDocument(workspaceFolder, languageId, node, docString);
       this.editorPendingChangesQueueService.runChangeCallbacks(languageId);
     } else {
       this.unsubCallbacks.push(
         this.editorLanguageServerProtocolService.onReady(() => {
           console.log("On ready ran");
-          this.editorLspLifecycleTracker.markReady(languageId);
+          this.editorLanguageServerProtocolLifecycleTracker.markReady(
+            languageId,
+          );
           this.sendOpenTextDocument(
             workspaceFolder,
             languageId,
@@ -662,21 +682,42 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     this.unsubCallbacks.push(
       this.editorLanguageServerProtocolService.onNotification(
         "textDocument/publishDiagnostics",
-        (message) => {
+        async (message) => {
           console.log("Backend diagnostic ", message);
 
           const params = message?.params as
             | undefined
             | PublishDiagnosticsParams;
 
-          if (!params || !params?.diagnostics) {
+          if (!params || !params?.diagnostics || !params.uri) {
             console.error(
               "textDocument/publishDiagnostics produced a none matching object notification",
             );
             return;
           }
 
+          const uri = params.uri;
+          const documentFilePath = await this.electronApi.pathApi.fromUri(uri);
+
+          this.editorDocumentDiagnosticService.setDiagnostics(
+            documentFilePath,
+            params.diagnostics,
+          );
+
+          // Only update current UI diags if there for THIS document
+          const openFilePath = this.normalizedFilePath()!;
+          if (normalize(documentFilePath) !== normalize(openFilePath)) {
+            return;
+          }
+
           const diags: CmDiagnostic[] = [];
+
+          view.dispatch({
+            // reset
+            effects: this.linterCompartment.reconfigure(
+              this.buildLinterExtension([]),
+            ),
+          });
 
           for (const vscodeDiag of params.diagnostics) {
             const mappedDiag = vscodeToCodeMirrorDiagnostic(
@@ -724,7 +765,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       const version = this.editorDocumentVersionService.getVersion(filePath);
       const changes = viewUpdateToLSPChanges(update);
 
-      const isReady = this.editorLspLifecycleTracker.isReady(languageId);
+      const isReady =
+        this.editorLanguageServerProtocolLifecycleTracker.isReady(languageId);
       if (!isReady) {
         this.editorPendingChangesQueueService.addChangeCallback(
           languageId,
@@ -769,6 +811,12 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       const filePath = node.path;
       const version = this.editorDocumentVersionService.getVersion(filePath);
 
+      const isAlreadyOpen =
+        this.editorDocumentOpenTrackerService.isOpend(filePath);
+      if (isAlreadyOpen) {
+        return;
+      }
+
       this.editorLanguageServerProtocolService.didOpenTextDocument(
         workspaceFolder,
         languageId,
@@ -776,6 +824,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         version,
         docString,
       );
+      this.editorDocumentOpenTrackerService.opened(filePath);
 
       console.log("Sent text document open lsp");
     } catch (error) {
@@ -850,7 +899,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         return null;
       }
 
-      const isReady = this.editorLspLifecycleTracker.isReady(languageId);
+      const isReady =
+        this.editorLanguageServerProtocolLifecycleTracker.isReady(languageId);
       if (!isReady) {
         console.warn("LSP not ready for auto completes");
         return null;
@@ -873,6 +923,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         return null;
       }
 
+      console.log(result);
+
       const word = ctx.matchBefore(/\w*/);
       return lspCompletionListToCodeMirror(result, word?.from ?? ctx.pos);
     } catch (error) {
@@ -888,7 +940,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private cleanUpState(): void {
     this.saveCurrentState();
 
-    this.diagnostics.set([]);
     this.languageId.set(null);
 
     for (const callback of this.unsubCallbacks) {

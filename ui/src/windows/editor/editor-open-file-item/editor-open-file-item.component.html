@@ -1,6 +1,7 @@
 <div
   class="editor_open_files_file_item"
   [class.active]="isActive()"
+  [class.error]="errorDiagnosticCount() > 0"
   (click)="selectFileTabItem($event)"
   [matTooltip]="openFileTooltip()"
   [matTooltipShowDelay]="tooltTipDelayInMs"
@@ -13,6 +14,11 @@
     <span class="file_item_name">
       @if (isDirty()) {
         <span>*</span>
+      }
+
+      <!-- -->
+      @if (errorDiagnosticCount() > 0) {
+        <span style="padding-left: 2px">{{ errorDiagnosticCount() }}</span>
       }
 
       {{ fileNode().name }}

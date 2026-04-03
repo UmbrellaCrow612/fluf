@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { fileNode } from "../../../../gen/type";
-import { EditorStateService } from "../../core/state/editor-state.service";
+import { EditorStateService } from "../state/editor-state.service";
 import { EditorImageService } from "./editor-image.service.service";
 import { EditorVideoService } from "./editor-video.service";
 import { EditorAudioService } from "./editor-audio.service";
@@ -10,6 +10,7 @@ import {
   editorMainActiveElement,
 } from "../state/type";
 import { normalize } from "../../../../lib/path";
+import { Location as vscodeLocation } from "vscode-languageserver-protocol";
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -18,7 +19,7 @@ import { normalize } from "../../../../lib/path";
 @Injectable({
   providedIn: "root",
 })
-export class EditorFileOpenerService {
+export class EditorDocumentOpenerService {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);
@@ -33,9 +34,13 @@ export class EditorFileOpenerService {
    * - Routes the file to the appropriate editor component based on file type
    *
    * @param target - The file node to open in the editor
+   * @param [location=null] To scroll to a specific location when opening a file in the editor
    * @returns Nothing; errors are logged to console for invalid operations
    */
-  public openFileNodeInEditor(target: fileNode): void {
+  public openFileNodeInEditor(
+    target: fileNode,
+    location: vscodeLocation | null = null,
+  ): void {
     if (target.isDirectory) {
       console.error("Cannot open a directory in the editor");
       return;
@@ -44,6 +49,23 @@ export class EditorFileOpenerService {
     this.addToOpenFiles(target);
     this.setActiveFile(target);
     this.setMainEditorComponent(target);
+    this.scrollToLocation(location);
+  }
+
+  /**
+   * Updates the scroll location value to trigger a scroll to with a delay
+   * @param location The LSP location
+   */
+  private scrollToLocation(location: vscodeLocation | null = null) {
+    if (!location) {
+      return;
+    }
+
+    // use set timeout but could be better liek emit document ready ? Instead of replying in luck with timeout
+
+    setTimeout(() => {
+      this.editorStateService.scrollToDefinitionLocation.set(location);
+    }, 250);
   }
 
   /**

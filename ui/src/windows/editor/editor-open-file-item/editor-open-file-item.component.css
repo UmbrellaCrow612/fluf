@@ -19,9 +19,8 @@
   background-color: var(--bg-tertiary);
   color: var(--text-secondary);
   cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
 }
 
 .editor_open_files_file_item:hover {
@@ -29,10 +28,9 @@
   color: var(--text-primary);
 }
 
-.editor_open_files_file_item.active {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  border-color: var(--border-focus);
+.editor_open_files_file_item.error {
+  color: var(--text-error);
+  border-color: var(--text-error);
 }
 
 .file_item_name_container {
@@ -57,9 +55,7 @@
 .editor_open_files_file_item button {
   opacity: 0;
   color: var(--text-tertiary);
-  transition:
-    opacity 0.15s ease,
-    color 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .editor_open_files_file_item:hover button {
@@ -74,8 +70,12 @@
   background-color: var(--bg-primary);
   color: var(--text-primary);
   border-color: var(--border-focus);
-
   border-bottom: 1px solid var(--border-default);
+}
+
+.editor_open_files_file_item.active.error {
+  color: var(--text-error);
+  border-color: var(--text-error);
 }
 
 .editor_open_files_file_item.active button {

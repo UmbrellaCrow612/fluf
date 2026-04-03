@@ -75,6 +75,19 @@ export class JsonRpcLanguageServer {
   }
 
   /**
+   * Await a delay in the thread
+   * @param ms How long to wait it milliseconds
+   * @returns Promise to await
+   */
+  private _delay(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    });
+  }
+
+  /**
    * Start the language server for a given work space folder, spawn's the command for the given workspace if not already.
    * @param command - The command like `gopls` or path to the xe binary to launch it like `c:\dev\bin\gopls.exe`
    * @param  args - Addtional arguments to pass to the spawned process like `["--stdio"]`
@@ -127,7 +140,8 @@ export class JsonRpcLanguageServer {
       await jsonRpcProcess.SendRequest("initialize", params);
       jsonRpcProcess.Initialized();
 
-      // notify ui lsp ready for given lang and workspace
+      // notify ui lsp ready for given lang and workspace wait a bit for LSP to become ready
+      await this._delay(2000);
       broadcastToAll("lsp:on:ready", languageId, wsf);
 
       logger.info(`Language server started `, this.createInfoBumpObject());

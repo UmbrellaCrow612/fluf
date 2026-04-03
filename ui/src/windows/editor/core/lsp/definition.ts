@@ -1,6 +1,6 @@
 import { Definition, Location } from "vscode-languageserver-protocol";
 import { getElectronApi } from "../../../../shared/electron";
-import { EditorFileOpenerService } from "../services/editor-file-opener.service";
+import { EditorDocumentOpenerService } from "../services/editor-document-opener.service";
 import { EditorStateService } from "../state/editor-state.service";
 import { EditorView } from "codemirror";
 
@@ -8,14 +8,12 @@ const electronApi = getElectronApi();
 
 const impl = async (
   location: Location,
-  fpOpener: EditorFileOpenerService,
-  state: EditorStateService,
+  fpOpener: EditorDocumentOpenerService,
 ) => {
   const uri = location.uri;
   const asPathLike = await electronApi.pathApi.fromUri(uri);
   const node = await electronApi.fsApi.getNode(asPathLike);
-  state.scrollToDefinitionLocation.set(location);
-  fpOpener.openFileNodeInEditor(node);
+  fpOpener.openFileNodeInEditor(node, location);
 };
 
 /**
@@ -25,14 +23,14 @@ const impl = async (
  */
 export const goToDefinitionInEditor = async (
   definition: Definition,
-  fpOpener: EditorFileOpenerService,
+  fpOpener: EditorDocumentOpenerService,
   state: EditorStateService,
 ) => {
   try {
     if (Array.isArray(definition)) {
-      await impl(definition[0], fpOpener, state);
+      await impl(definition[0], fpOpener);
     } else {
-      await impl(definition, fpOpener, state);
+      await impl(definition, fpOpener);
     }
   } catch (error) {
     console.error("Failed to go to definition");
@@ -50,21 +48,18 @@ export function scrollToVSCodeLocation(
   const { start } = location.range;
   const doc = view.state.doc;
 
-  // VSCode lines are 0-based; CodeMirror's line() also accepts 1-based,
-  // so add 1 to convert.
   const line = doc.line(start.line + 1);
-
-  // Clamp character offset to line length to avoid going out of bounds
   const ch = Math.min(start.character, line.length);
-
-  // Absolute offset into the document
   const pos = line.from + ch;
 
-  // Dispatch a scroll effect to bring the position into view
   view.dispatch({
+    selection: { anchor: pos, head: pos },
     effects: EditorView.scrollIntoView(pos, {
-      y: "center", // 'start' | 'end' | 'nearest' | 'center'
+      y: "center",
       x: "nearest",
     }),
+    scrollIntoView: true,
   });
+
+  view.focus();
 }

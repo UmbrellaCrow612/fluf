@@ -1,11 +1,11 @@
-import { inject, Injectable } from '@angular/core';
-import { EditorDraftFileService } from './editor-draft-file.service';
+import { inject, Injectable } from "@angular/core";
+import { EditorDocumentDraftService } from "./editor-document-draft.service";
 import {
   EditorDirtyFileChangeCallback,
-  EditorDirtyFileService,
-} from './editor-dirty-file.service';
-import { useEffect } from '../../../../lib/useEffect';
-import { EditorInMemoryStateService } from '../state/editor-in-memory-state.service';
+  EditorDocumentDirtyService,
+} from "./editor-document-dirty.service";
+import { useEffect } from "../../../../lib/useEffect";
+import { EditorInMemoryStateService } from "../state/editor-in-memory-state.service";
 
 /**
  * Centralizes document state management by coordinating draft storage
@@ -13,11 +13,11 @@ import { EditorInMemoryStateService } from '../state/editor-in-memory-state.serv
  * document changes, checking unsaved status, and saving files.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
-export class EditorFileStateService {
-  private readonly draftService = inject(EditorDraftFileService);
-  private readonly dirtyService = inject(EditorDirtyFileService);
+export class EditorDocumentStateService {
+  private readonly draftService = inject(EditorDocumentDraftService);
+  private readonly documentDirtyService = inject(EditorDocumentDirtyService);
   private readonly inMemoryState = inject(EditorInMemoryStateService);
 
   /**
@@ -28,7 +28,7 @@ export class EditorFileStateService {
    */
   public trackChange(filePath: string, content: string): void {
     this.draftService.setDraft(filePath, content);
-    this.dirtyService.markDirty(filePath);
+    this.documentDirtyService.markDirty(filePath);
   }
 
   /**
@@ -37,20 +37,7 @@ export class EditorFileStateService {
    * @returns `true` if the file has unsaved draft changes, otherwise `false`.
    */
   public isDirty(filePath: string): boolean {
-    return this.dirtyService.isDirty(filePath);
-  }
-
-  /**
-   * Listen to when a files dirty state changes
-   * @param filePath The file to listen for dirty changes
-   * @param callback The callback to run
-   * @returns Unsub callback
-   */
-  public onDirtyChange(
-    filePath: string,
-    callback: EditorDirtyFileChangeCallback,
-  ) {
-    return this.dirtyService.onDirtyChange(filePath, callback);
+    return this.documentDirtyService.isDirty(filePath);
   }
 
   /**
@@ -71,10 +58,15 @@ export class EditorFileStateService {
   public async save(filePath: string): Promise<boolean> {
     const success = await this.draftService.saveDraft(filePath);
     if (success) {
-      this.dirtyService.markClean(filePath);
+      this.documentDirtyService.markClean(filePath);
     }
     return success;
   }
+
+  /**
+   * Exposes signal to subscribe to when dirty state changed
+   */
+  public readonly dirtyChanged = this.documentDirtyService.valueChanged;
 
   /**
    * Saves all documents that have unsaved changes.
@@ -83,7 +75,7 @@ export class EditorFileStateService {
    */
   public async saveAll(): Promise<void> {
     await this.draftService.saveDrafts();
-    await this.dirtyService.markAll(false);
+    this.documentDirtyService.markAll(false);
   }
 
   /**
@@ -92,7 +84,7 @@ export class EditorFileStateService {
    */
   public reset(filePath: string): void {
     this.draftService.removeDraft(filePath);
-    this.dirtyService.markClean(filePath);
+    this.documentDirtyService.markClean(filePath);
   }
 
   /**
@@ -100,7 +92,7 @@ export class EditorFileStateService {
    * @returns IF any file has unsaved changes
    */
   public hasAnyDirty(): boolean {
-    return this.dirtyService.hasAnyDirty();
+    return this.documentDirtyService.hasAnyDirty();
   }
 
   /**
