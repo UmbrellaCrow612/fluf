@@ -13,7 +13,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { EditorStateService } from "../core/state/editor-state.service";
 import { fileNode, voidCallback } from "../../../gen/type";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { EditorFileOpenerService } from "../core/services/editor-file-opener.service";
+import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import { removeFileNodeIfExists } from "../../../shared/file-node-helpers";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
 import { EditorFileStateService } from "../core/services/editor-file-state.service";
@@ -32,7 +32,9 @@ import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-lan
 })
 export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   private readonly editorStateService = inject(EditorStateService);
-  private readonly editorFileOpenerService = inject(EditorFileOpenerService);
+  private readonly editorDocumentOpenerService = inject(
+    EditorDocumentOpenerService,
+  );
   private readonly applicationConfirmationService = inject(
     ApplicationConfirmationService,
   );
@@ -201,7 +203,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
     if (this.isActive()) {
       let nextAvNode: fileNode | null = openfiles[0];
       if (nextAvNode) {
-        this.editorFileOpenerService.openFileNodeInEditor(nextAvNode);
+        this.editorDocumentOpenerService.openFileNodeInEditor(nextAvNode);
       }
     }
   }
@@ -210,6 +212,6 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
    * Selects the given tab item node as the new active
    */
   public selectFileTabItem(event: Event) {
-    this.editorFileOpenerService.openFileNodeInEditor(this.fileNode());
+    this.editorDocumentOpenerService.openFileNodeInEditor(this.fileNode());
   }
 }

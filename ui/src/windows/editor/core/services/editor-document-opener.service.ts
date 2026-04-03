@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { fileNode } from "../../../../gen/type";
-import { EditorStateService } from "../../core/state/editor-state.service";
+import { EditorStateService } from "../state/editor-state.service";
 import { EditorImageService } from "./editor-image.service.service";
 import { EditorVideoService } from "./editor-video.service";
 import { EditorAudioService } from "./editor-audio.service";
@@ -19,7 +19,7 @@ import { Location as vscodeLocation } from "vscode-languageserver-protocol";
 @Injectable({
   providedIn: "root",
 })
-export class EditorFileOpenerService {
+export class EditorDocumentOpenerService {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);

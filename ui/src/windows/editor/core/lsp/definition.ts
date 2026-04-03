@@ -1,12 +1,15 @@
 import { Definition, Location } from "vscode-languageserver-protocol";
 import { getElectronApi } from "../../../../shared/electron";
-import { EditorFileOpenerService } from "../services/editor-file-opener.service";
+import { EditorDocumentOpenerService } from "../services/editor-document-opener.service";
 import { EditorStateService } from "../state/editor-state.service";
 import { EditorView } from "codemirror";
 
 const electronApi = getElectronApi();
 
-const impl = async (location: Location, fpOpener: EditorFileOpenerService) => {
+const impl = async (
+  location: Location,
+  fpOpener: EditorDocumentOpenerService,
+) => {
   const uri = location.uri;
   const asPathLike = await electronApi.pathApi.fromUri(uri);
   const node = await electronApi.fsApi.getNode(asPathLike);
@@ -20,7 +23,7 @@ const impl = async (location: Location, fpOpener: EditorFileOpenerService) => {
  */
 export const goToDefinitionInEditor = async (
   definition: Definition,
-  fpOpener: EditorFileOpenerService,
+  fpOpener: EditorDocumentOpenerService,
   state: EditorStateService,
 ) => {
   try {

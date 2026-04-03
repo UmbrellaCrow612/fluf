@@ -40,7 +40,7 @@ import { viewUpdateToLSPChanges } from "../core/lsp/change";
 import { marked } from "marked";
 import { autocompletion, CompletionSource } from "@codemirror/autocomplete";
 import { lspCompletionListToCodeMirror } from "../core/lsp/completion";
-import { EditorFileOpenerService } from "../core/services/editor-file-opener.service";
+import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import { createGoToDefinitionHoverStyles } from "./extensions/hover";
 import {
   goToDefinitionInEditor,
@@ -76,7 +76,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private readonly editorDocumentVersionService = inject(
     EditorDocumentVersionService,
   );
-  private readonly editorFileOpenerService = inject(EditorFileOpenerService);
+  private readonly editorDocumentOpenerService = inject(
+    EditorDocumentOpenerService,
+  );
   private readonly editorLspLifecycleTracker = inject(
     EditorLspLifecycleTracker,
   );
@@ -490,7 +492,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
 
             await goToDefinitionInEditor(
               result,
-              this.editorFileOpenerService,
+              this.editorDocumentOpenerService,
               this.editorStateService,
             );
 

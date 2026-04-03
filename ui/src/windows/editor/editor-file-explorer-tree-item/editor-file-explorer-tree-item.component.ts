@@ -9,38 +9,40 @@ import {
   signal,
   Signal,
   viewChild,
-} from '@angular/core';
-import { fileNode } from '../../../gen/type';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatIconModule } from '@angular/material/icon';
-import { EditorFileOpenerService } from '../core/services/editor-file-opener.service';
+} from "@angular/core";
+import { fileNode } from "../../../gen/type";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatIconModule } from "@angular/material/icon";
+import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import {
   removeTempoaryFileNodes,
   replaceFileNode,
-} from '../../../shared/file-node-helpers';
-import { getElectronApi } from '../../../shared/electron';
+} from "../../../shared/file-node-helpers";
+import { getElectronApi } from "../../../shared/electron";
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
-} from '@angular/forms';
-import { ApplicationContextMenuService } from '../../../shared/services/application-context-menu.service';
-import { EditorFileExplorerContextMenuComponent } from '../editor-file-explorer-context-menu/editor-file-explorer-context-menu.component';
-import { normalize } from '../../../lib/path';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
+} from "@angular/forms";
+import { ApplicationContextMenuService } from "../../../shared/services/application-context-menu.service";
+import { EditorFileExplorerContextMenuComponent } from "../editor-file-explorer-context-menu/editor-file-explorer-context-menu.component";
+import { normalize } from "../../../lib/path";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 
 /**
  * Used to render a given file node content and it's children
  */
 @Component({
-  selector: 'app-editor-file-explorer-tree-item',
+  selector: "app-editor-file-explorer-tree-item",
   imports: [MatTooltipModule, MatIconModule, ReactiveFormsModule],
-  templateUrl: './editor-file-explorer-tree-item.component.html',
-  styleUrl: './editor-file-explorer-tree-item.component.css',
+  templateUrl: "./editor-file-explorer-tree-item.component.html",
+  styleUrl: "./editor-file-explorer-tree-item.component.css",
 })
 export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
-  private readonly editorFileOpenerService = inject(EditorFileOpenerService);
+  private readonly editorDocumentOpenerService = inject(
+    EditorDocumentOpenerService,
+  );
   private readonly electronApi = getElectronApi();
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
@@ -53,7 +55,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    * Refrence to the UI element that is rendered when the mode of the file node is set to create a file or folder
    */
   private readonly createInput = viewChild<ElementRef<HTMLInputElement>>(
-    'create_tree_item_input',
+    "create_tree_item_input",
   );
 
   /**
@@ -106,7 +108,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   /**
    * Keeps track if there was any error when fetching children
    */
-  public readonly fetchingChildrenError = signal<string | null>('');
+  public readonly fetchingChildrenError = signal<string | null>("");
 
   /**
    * Keeps track when creating a file or folder in the system
@@ -138,7 +140,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
      * The name of the file or folder to create
      */
     name: new FormControl(
-      { value: '', disabled: this.isCreatingOrRenamingFileOrFolder() },
+      { value: "", disabled: this.isCreatingOrRenamingFileOrFolder() },
       {
         validators: [Validators.required],
       },
@@ -154,9 +156,9 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    * Gets errors for create input name field
    */
   public getCreateInputError(): string {
-    const control = this.createInputForm.get('name');
-    if (control?.hasError('required')) return 'Name is required';
-    return '';
+    const control = this.createInputForm.get("name");
+    if (control?.hasError("required")) return "Name is required";
+    return "";
   }
 
   /**
@@ -184,7 +186,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       const fileOrFolderName = this.createInputForm.controls.name.value!;
 
       // Handle rename mode
-      if (this.fileNode().mode === 'rename') {
+      if (this.fileNode().mode === "rename") {
         await this.handleRename(fileOrFolderName);
         return;
       }
@@ -198,28 +200,28 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       const exists = await this.electronApi.fsApi.exists(pathToCreate);
       if (exists) {
         const errMessage =
-          this.fileNode().mode === 'createFile'
-            ? 'File already exists'
-            : 'Folder already exists';
+          this.fileNode().mode === "createFile"
+            ? "File already exists"
+            : "Folder already exists";
         throw new Error(errMessage);
       }
 
-      if (this.fileNode().mode === 'createFile') {
+      if (this.fileNode().mode === "createFile") {
         const res = await this.electronApi.fsApi.createFile(pathToCreate);
         if (!res) {
-          throw new Error('Failed to create file');
+          throw new Error("Failed to create file");
         }
       } else {
         const res = await this.electronApi.fsApi.createDirectory(pathToCreate);
         if (!res) {
-          throw new Error('Failed to create folder');
+          throw new Error("Failed to create folder");
         }
       }
 
-      console.log('created at path ', pathToCreate);
+      console.log("created at path ", pathToCreate);
       this.deleteTemporaryNodes();
     } catch (error: any) {
-      console.error('Failed to create / rename file or folder ', error);
+      console.error("Failed to create / rename file or folder ", error);
       this.createOrRenameFileOrFolderError.set(
         `Failed to crerate file or folder ${error?.message}`,
       );
@@ -249,8 +251,8 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     if (exists) {
       throw new Error(
         this.fileNode().isDirectory
-          ? 'A folder with this name already exists'
-          : 'A file with this name already exists',
+          ? "A folder with this name already exists"
+          : "A file with this name already exists",
       );
     }
 
@@ -261,8 +263,8 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     if (!suc) {
       throw new Error(
         this.fileNode().isDirectory
-          ? 'Folder rename failed'
-          : 'File reanem failed',
+          ? "Folder rename failed"
+          : "File reanem failed",
       );
     }
 
@@ -276,11 +278,11 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    */
   private focusUserIntoCreateInput = (): void => {
     const mode = this.fileNode().mode;
-    if (mode !== 'default') {
+    if (mode !== "default") {
       const input = this.createInput()?.nativeElement;
       if (!input) {
         console.error(
-          'Cannot find create input even thou it should be rendered',
+          "Cannot find create input even thou it should be rendered",
         );
         return;
       }
@@ -293,7 +295,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
    */
   private setInitalInputValue() {
     const mode = this.fileNode().mode;
-    if (mode === 'rename') {
+    if (mode === "rename") {
       this.createInputForm.controls.name.setValue(this.fileNode().name);
     }
   }
@@ -334,10 +336,10 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     const node = this.fileNode();
     const nodes = this.rootNodeChildren();
 
-    this.itemSelected.emit(node)
+    this.itemSelected.emit(node);
 
     if (!node.isDirectory) {
-      this.editorFileOpenerService.openFileNodeInEditor(node);
+      this.editorDocumentOpenerService.openFileNodeInEditor(node);
       return;
     }
 
@@ -346,7 +348,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       copy.expanded = false;
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
-        console.error('Failed to replce node ', JSON.stringify(node));
+        console.error("Failed to replce node ", JSON.stringify(node));
       }
 
       this.rootNodeChildrenUpdated.emit(nodes);
@@ -358,7 +360,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
       copy.expanded = true;
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
-        console.error('Failed to replce node ', JSON.stringify(node));
+        console.error("Failed to replce node ", JSON.stringify(node));
       }
 
       this.rootNodeChildrenUpdated.emit(nodes);
@@ -376,12 +378,12 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
 
       const success = replaceFileNode(nodes, node, copy);
       if (!success) {
-        console.error('Failed to replce node ', JSON.stringify(node));
+        console.error("Failed to replce node ", JSON.stringify(node));
       }
 
       this.rootNodeChildrenUpdated.emit(nodes);
     } catch (error: any) {
-      console.error('Failed to fetch children for node ', error);
+      console.error("Failed to fetch children for node ", error);
       this.fetchingChildrenError.set(
         `Failed to fetch children for node ${error?.message}`,
       );
