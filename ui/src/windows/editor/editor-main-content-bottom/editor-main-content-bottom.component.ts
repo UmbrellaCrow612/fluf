@@ -1,20 +1,21 @@
-import { Component, computed, inject, Signal, Type } from '@angular/core';
-import { EditorMainContentBottomFrameComponent } from '../editor-main-content-bottom-frame/editor-main-content-bottom-frame.component';
-import { Renderable } from '../../../lib/ng-component-outlet/type';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { NgComponentOutlet } from '@angular/common';
-import { EditorTerminalComponent } from '../editor-terminal/editor-terminal.component';
-import { EditorMainContentBottomEmptyComponent } from '../editor-main-content-bottom-empty/editor-main-content-bottom-empty.component';
-import { EDITOR_BOTTOM_ACTIVE_ELEMENT } from '../core/state/type';
+import { Component, computed, inject, Signal, Type } from "@angular/core";
+import { EditorMainContentBottomFrameComponent } from "../editor-main-content-bottom-frame/editor-main-content-bottom-frame.component";
+import { Renderable } from "../../../lib/ng-component-outlet/type";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { NgComponentOutlet } from "@angular/common";
+import { EditorTerminalComponent } from "../editor-terminal/editor-terminal.component";
+import { EditorMainContentBottomEmptyComponent } from "../editor-main-content-bottom-empty/editor-main-content-bottom-empty.component";
+import { EDITOR_BOTTOM_ACTIVE_ELEMENT } from "../core/state/type";
+import { EditorProblemsComponent } from "../editor-problems/editor-problems.component";
 
 /**
  * Represents the bottom section of the main content which contains stuff like the terminal etc, manages which one to show
  */
 @Component({
-  selector: 'app-editor-main-content-bottom',
+  selector: "app-editor-main-content-bottom",
   imports: [EditorMainContentBottomFrameComponent, NgComponentOutlet],
-  templateUrl: './editor-main-content-bottom.component.html',
-  styleUrl: './editor-main-content-bottom.component.css',
+  templateUrl: "./editor-main-content-bottom.component.html",
+  styleUrl: "./editor-main-content-bottom.component.css",
 })
 export class EditorMainContentBottomComponent {
   private readonly editorStateService = inject(EditorStateService);
@@ -29,6 +30,15 @@ export class EditorMainContentBottomComponent {
         return (
           this.editorStateService.editorBottomActiveElement() ===
           EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL
+        );
+      }),
+    },
+    {
+      component: EditorProblemsComponent,
+      condition: computed(() => {
+        return (
+          this.editorStateService.editorBottomActiveElement() ===
+          EDITOR_BOTTOM_ACTIVE_ELEMENT.PROBLEMS
         );
       }),
     },

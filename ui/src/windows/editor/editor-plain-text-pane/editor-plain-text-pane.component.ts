@@ -50,6 +50,7 @@ import { EditorLanguageServerProtocolLifecycleTracker } from "../core/lsp/editor
 import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-changes-queue.service";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
+import { normalize } from "../../../lib/path";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -677,14 +678,14 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     this.unsubCallbacks.push(
       this.editorLanguageServerProtocolService.onNotification(
         "textDocument/publishDiagnostics",
-        (message) => {
+        async (message) => {
           console.log("Backend diagnostic ", message);
 
           const params = message?.params as
             | undefined
             | PublishDiagnosticsParams;
 
-          if (!params || !params?.diagnostics) {
+          if (!params || !params?.diagnostics || !params.uri) {
             console.error(
               "textDocument/publishDiagnostics produced a none matching object notification",
             );
@@ -701,6 +702,13 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
             filePath,
             params.diagnostics,
           );
+
+          // Only update current UI diags if there for THIS document
+          const uri = params.uri;
+          const documentFilePath = await this.electronApi.pathApi.fromUri(uri);
+          if (normalize(documentFilePath) !== normalize(filePath)) {
+            return;
+          }
 
           const diags: CmDiagnostic[] = [];
 
