@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { EditorDraftFileService } from "../services/editor-draft-file.service";
+import { EditorDocumentDraftService } from "./editor-document-draft.service";
 import {
   EditorDirtyFileChangeCallback,
   EditorDocumentDirtyService,
@@ -16,7 +16,7 @@ import { EditorInMemoryStateService } from "../state/editor-in-memory-state.serv
   providedIn: "root",
 })
 export class EditorDocumentStateService {
-  private readonly draftService = inject(EditorDraftFileService);
+  private readonly draftService = inject(EditorDocumentDraftService);
   private readonly documentDirtyService = inject(EditorDocumentDirtyService);
   private readonly inMemoryState = inject(EditorInMemoryStateService);
 

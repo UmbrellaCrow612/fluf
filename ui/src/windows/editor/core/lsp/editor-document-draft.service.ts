@@ -1,14 +1,14 @@
-import { Injectable } from '@angular/core';
-import { getElectronApi } from '../../../../shared/electron';
-import { normalize } from '../../../../lib/path';
+import { Injectable } from "@angular/core";
+import { getElectronApi } from "../../../../shared/electron";
+import { normalize } from "../../../../lib/path";
 
 /**
  * Holds files and their current draft content that is not yet saved.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
-export class EditorDraftFileService {
+export class EditorDocumentDraftService {
   private readonly electronApi = getElectronApi();
 
   /**
@@ -85,20 +85,20 @@ export class EditorDraftFileService {
       const normalizedPath = normalize(filePath);
       const draft = this.fileDraftMap.get(normalizedPath);
       if (!draft) {
-        console.warn("No draft found for file path ", filePath)
+        console.warn("No draft found for file path ", filePath);
         return false;
       }
 
       const success = await this.electronApi.fsApi.write(normalizedPath, draft);
       if (!success) {
-        console.error("Failed to write to file path ", filePath, draft)
+        console.error("Failed to write to file path ", filePath, draft);
         return false;
       }
 
       this.removeDraft(normalizedPath);
       return true;
     } catch (error) {
-      console.error('Failed to save draft for file path:', filePath, error);
+      console.error("Failed to save draft for file path:", filePath, error);
       return false;
     }
   }
@@ -110,7 +110,7 @@ export class EditorDraftFileService {
     for (const filePath of this.fileDraftMap.keys()) {
       const success = await this.saveDraft(filePath);
       if (!success) {
-        console.error('Failed to save draft for file path:', filePath);
+        console.error("Failed to save draft for file path:", filePath);
       }
     }
   }

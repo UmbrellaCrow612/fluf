@@ -5,7 +5,7 @@ import { EditorFooterComponent } from "../editor-footer/editor-footer.component"
 import { EditorKeyBindingService } from "../editor-key-bindings/editor-key-binding.service";
 import { EditorTerminalService } from "../editor-terminal/services/editor-terminal.service";
 import { EditorSateValidationService } from "../core/state/editor-sate-validation.service";
-import { EditorDraftFileService } from "../core/services/editor-draft-file.service";
+import { EditorDocumentDraftService } from "../core/lsp/editor-document-draft.service";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 
 /**
