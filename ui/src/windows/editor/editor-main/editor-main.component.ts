@@ -6,7 +6,7 @@ import { EditorKeyBindingService } from "../editor-key-bindings/editor-key-bindi
 import { EditorTerminalService } from "../editor-terminal/services/editor-terminal.service";
 import { EditorSateValidationService } from "../core/state/editor-sate-validation.service";
 import { EditorDraftFileService } from "../core/services/editor-draft-file.service";
-import { EditorDocumentStateService } from "../core/lsp/editor-file-state.service";
+import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 
 /**
  * Main entry point component rendered for the editor

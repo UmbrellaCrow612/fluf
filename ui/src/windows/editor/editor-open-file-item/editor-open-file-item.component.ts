@@ -16,7 +16,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import { removeFileNodeIfExists } from "../../../shared/file-node-helpers";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
-import { EditorDocumentStateService } from "../core/lsp/editor-file-state.service";
+import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { useEffect } from "../../../lib/useEffect";

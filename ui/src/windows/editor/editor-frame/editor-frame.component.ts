@@ -11,7 +11,7 @@ import {
   EDITOR_BOTTOM_ACTIVE_ELEMENT,
   EDITOR_SIDE_BAR_ACTIVE_ELEMENT,
 } from "../core/state/type";
-import { EditorDocumentStateService } from "../core/lsp/editor-file-state.service";
+import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
 
 /**

@@ -17,7 +17,7 @@ import { EditorStateService } from "../core/state/editor-state.service";
 import { basicSetup, EditorView } from "codemirror";
 import { useEffect } from "../../../lib/useEffect";
 import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
-import { EditorDocumentStateService } from "../core/lsp/editor-file-state.service";
+import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
