@@ -696,21 +696,17 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
             return;
           }
 
-          const filePath = this.normalizedFilePath();
-          if (!filePath) {
-            console.error("No file path found");
-            return;
-          }
+          const uri = params.uri;
+          const documentFilePath = await this.electronApi.pathApi.fromUri(uri);
 
           this.editorDocumentDiagnosticService.setDiagnostics(
-            filePath,
+            documentFilePath,
             params.diagnostics,
           );
 
           // Only update current UI diags if there for THIS document
-          const uri = params.uri;
-          const documentFilePath = await this.electronApi.pathApi.fromUri(uri);
-          if (normalize(documentFilePath) !== normalize(filePath)) {
+          const openFilePath = this.normalizedFilePath()!;
+          if (normalize(documentFilePath) !== normalize(openFilePath)) {
             return;
           }
 

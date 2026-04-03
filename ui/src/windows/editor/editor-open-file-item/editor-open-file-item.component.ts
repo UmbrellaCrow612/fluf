@@ -66,29 +66,19 @@ export class EditorOpenFileItemComponent implements OnInit {
   };
 
   constructor() {
-    useEffect(
-      (_, count) => {
-        if (count > 0) {
-          this.displayDocumentDiagnostics(
-            this.editorDocumentDiagnosticService.getDiagnostics(
-              this.fileNode().path,
-            ),
-          );
-        }
-      },
-      [this.editorDocumentDiagnosticService.valueChanged],
-    );
+    useEffect(() => {
+      this.displayDocumentDiagnostics(
+        this.editorDocumentDiagnosticService.getDiagnostics(
+          this.fileNode().path,
+        ),
+      );
+    }, [this.editorDocumentDiagnosticService.valueChanged]);
 
-    useEffect(
-      (_, count) => {
-        if (count > 0) {
-          this.isDirty.set(
-            this.editorDocumentStateService.isDirty(this.fileNode().path),
-          );
-        }
-      },
-      [this.editorDocumentStateService.dirtyChanged],
-    );
+    useEffect(() => {
+      this.isDirty.set(
+        this.editorDocumentStateService.isDirty(this.fileNode().path),
+      );
+    }, [this.editorDocumentStateService.dirtyChanged]);
   }
 
   ngOnInit() {
