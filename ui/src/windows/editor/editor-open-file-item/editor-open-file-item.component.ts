@@ -3,7 +3,6 @@ import {
   computed,
   inject,
   input,
-  OnDestroy,
   OnInit,
   signal,
   Signal,
@@ -30,7 +29,7 @@ import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-lan
   templateUrl: "./editor-open-file-item.component.html",
   styleUrl: "./editor-open-file-item.component.css",
 })
-export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
+export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorDocumentOpenerService = inject(
     EditorDocumentOpenerService,
@@ -53,7 +52,6 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   private readonly editorDocumentLanguageIdService = inject(
     EditorDocumentLanguageIdService,
   );
-  private unsub: voidCallback | null = null;
 
   /**
    * Displays count of error diagnostic it has for file
@@ -76,21 +74,21 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
       },
       [this.editorDocumentDiagnosticService.valueChanged],
     );
+
+    useEffect(
+      (_, count) => {
+        if (count > 0) {
+          this.isDirty.set(
+            this.editorDocumentStateService.isDirty(this.fileNode().path),
+          );
+        }
+      },
+      [this.editorDocumentStateService.dirtyChanged],
+    );
   }
 
   ngOnInit() {
     this.openFileTooltip.set(this.fileNode().path);
-
-    this.unsub = this.editorDocumentStateService.onDirtyChange(
-      this.fileNode().path,
-      (isDirty) => {
-        this.isDirty.set(isDirty);
-      },
-    );
-  }
-
-  ngOnDestroy() {
-    this.unsub?.();
   }
 
   /**

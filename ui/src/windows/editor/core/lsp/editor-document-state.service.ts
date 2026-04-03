@@ -41,19 +41,6 @@ export class EditorDocumentStateService {
   }
 
   /**
-   * Listen to when a files dirty state changes
-   * @param filePath The file to listen for dirty changes
-   * @param callback The callback to run
-   * @returns Unsub callback
-   */
-  public onDirtyChange(
-    filePath: string,
-    callback: EditorDirtyFileChangeCallback,
-  ) {
-    return this.documentDirtyService.onDirtyChange(filePath, callback);
-  }
-
-  /**
    * Gets the draft content for a document.
    * @param filePath - The path to the file.
    * @returns The draft content if it exists, otherwise `undefined`.
@@ -77,13 +64,18 @@ export class EditorDocumentStateService {
   }
 
   /**
+   * Exposes signal to subscribe to when dirty state changed
+   */
+  public readonly dirtyChanged = this.documentDirtyService.valueChanged;
+
+  /**
    * Saves all documents that have unsaved changes.
    * Iterates through all drafts and attempts to save each one.
    * @returns A promise that resolves when all save operations are complete.
    */
   public async saveAll(): Promise<void> {
     await this.draftService.saveDrafts();
-    await this.documentDirtyService.markAll(false);
+    this.documentDirtyService.markAll(false);
   }
 
   /**
