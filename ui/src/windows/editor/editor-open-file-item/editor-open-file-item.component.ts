@@ -22,6 +22,7 @@ import { useEffect } from "../../../lib/useEffect";
 import { Diagnostic } from "vscode-languageserver-protocol";
 import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language-server-protocol.service";
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
+import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 
 @Component({
   selector: "app-editor-open-file-item",
@@ -51,6 +52,9 @@ export class EditorOpenFileItemComponent implements OnInit {
   );
   private readonly editorDocumentLanguageIdService = inject(
     EditorDocumentLanguageIdService,
+  );
+  private readonly editorDocumentOpenTrackerService = inject(
+    EditorDocumentOpenTrackerService,
   );
 
   /**
@@ -182,6 +186,7 @@ export class EditorOpenFileItemComponent implements OnInit {
 
     this.editorDocumentStateService.reset(this.fileNode().path);
     this.editorSessionStateService.removeCache(this.fileNode().path);
+    this.editorDocumentOpenTrackerService.close(this.fileNode().path);
 
     const languageId = this.editorDocumentLanguageIdService.getLanguageId(
       this.fileNode().path,

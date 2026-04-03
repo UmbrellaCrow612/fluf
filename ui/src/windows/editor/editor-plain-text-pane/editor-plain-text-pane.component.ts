@@ -51,6 +51,7 @@ import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-cha
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { normalize } from "../../../lib/path";
+import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -93,6 +94,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   );
   private readonly editorDocumentLanguageIdService = inject(
     EditorDocumentLanguageIdService,
+  );
+  private readonly editorDocumentOpenTrackerService = inject(
+    EditorDocumentOpenTrackerService,
   );
 
   /**
@@ -811,6 +815,12 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       const filePath = node.path;
       const version = this.editorDocumentVersionService.getVersion(filePath);
 
+      const isAlreadyOpen =
+        this.editorDocumentOpenTrackerService.isOpend(filePath);
+      if (isAlreadyOpen) {
+        return;
+      }
+
       this.editorLanguageServerProtocolService.didOpenTextDocument(
         workspaceFolder,
         languageId,
@@ -818,6 +828,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         version,
         docString,
       );
+      this.editorDocumentOpenTrackerService.opened(filePath);
 
       console.log("Sent text document open lsp");
     } catch (error) {
