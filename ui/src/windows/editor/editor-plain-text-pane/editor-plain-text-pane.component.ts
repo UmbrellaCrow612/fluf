@@ -17,7 +17,7 @@ import { EditorStateService } from "../core/state/editor-state.service";
 import { basicSetup, EditorView } from "codemirror";
 import { useEffect } from "../../../lib/useEffect";
 import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
-import { EditorFileStateService } from "../core/services/editor-file-state.service";
+import { EditorDocumentStateService } from "../core/lsp/editor-file-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
@@ -66,7 +66,9 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     EditorInMemoryStateService,
   );
   private readonly electronApi = getElectronApi();
-  private readonly editorFileStateService = inject(EditorFileStateService);
+  private readonly editorDocumentStateService = inject(
+    EditorDocumentStateService,
+  );
   private readonly editorSessionStateService = inject(
     EditorSessionStateService,
   );
@@ -240,7 +242,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     if (update.docChanged) {
       this.editorDocumentVersionService.updateVersion(normalizedPath);
 
-      this.editorFileStateService.trackChange(
+      this.editorDocumentStateService.trackChange(
         normalizedPath,
         update.state.doc.toString(),
       );
@@ -253,7 +255,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       );
 
       if (this.autoSaveOn()) {
-        await this.editorFileStateService.save(normalizedPath);
+        await this.editorDocumentStateService.save(normalizedPath);
       }
     }
   });
@@ -409,7 +411,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
        */
       let docString: string = "";
 
-      const draft = this.editorFileStateService.getDraft(normalizedPath);
+      const draft = this.editorDocumentStateService.getDraft(normalizedPath);
       if (draft) {
         docString = draft;
         console.log("Using saved draft");

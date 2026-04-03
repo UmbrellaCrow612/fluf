@@ -1,11 +1,11 @@
-import { inject, Injectable } from '@angular/core';
-import { EditorDraftFileService } from './editor-draft-file.service';
+import { inject, Injectable } from "@angular/core";
+import { EditorDraftFileService } from "../services/editor-draft-file.service";
 import {
   EditorDirtyFileChangeCallback,
   EditorDirtyFileService,
-} from './editor-dirty-file.service';
-import { useEffect } from '../../../../lib/useEffect';
-import { EditorInMemoryStateService } from '../state/editor-in-memory-state.service';
+} from "../services/editor-dirty-file.service";
+import { useEffect } from "../../../../lib/useEffect";
+import { EditorInMemoryStateService } from "../state/editor-in-memory-state.service";
 
 /**
  * Centralizes document state management by coordinating draft storage
@@ -13,9 +13,9 @@ import { EditorInMemoryStateService } from '../state/editor-in-memory-state.serv
  * document changes, checking unsaved status, and saving files.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
-export class EditorFileStateService {
+export class EditorDocumentStateService {
   private readonly draftService = inject(EditorDraftFileService);
   private readonly dirtyService = inject(EditorDirtyFileService);
   private readonly inMemoryState = inject(EditorInMemoryStateService);

@@ -16,7 +16,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import { removeFileNodeIfExists } from "../../../shared/file-node-helpers";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
-import { EditorFileStateService } from "../core/services/editor-file-state.service";
+import { EditorDocumentStateService } from "../core/lsp/editor-file-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { useEffect } from "../../../lib/useEffect";
@@ -38,7 +38,9 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   private readonly applicationConfirmationService = inject(
     ApplicationConfirmationService,
   );
-  private readonly editorFileStateService = inject(EditorFileStateService);
+  private readonly editorDocumentStateService = inject(
+    EditorDocumentStateService,
+  );
   private readonly editorSessionStateService = inject(
     EditorSessionStateService,
   );
@@ -79,7 +81,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.openFileTooltip.set(this.fileNode().path);
 
-    this.unsub = this.editorFileStateService.onDirtyChange(
+    this.unsub = this.editorDocumentStateService.onDirtyChange(
       this.fileNode().path,
       (isDirty) => {
         this.isDirty.set(isDirty);
@@ -180,7 +182,7 @@ export class EditorOpenFileItemComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.editorFileStateService.reset(this.fileNode().path);
+    this.editorDocumentStateService.reset(this.fileNode().path);
     this.editorSessionStateService.removeCache(this.fileNode().path);
 
     const languageId = this.editorDocumentLanguageIdService.getLanguageId(
