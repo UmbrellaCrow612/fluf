@@ -8,7 +8,7 @@ import { languageId } from "../../../../gen/type";
 @Injectable({
   providedIn: "root",
 })
-export class EditorLspLifecycleTracker {
+export class EditorLanguageServerProtocolLifecycleTracker {
   /**
    * Keeps track of specific LSP and if it is ready
    */
