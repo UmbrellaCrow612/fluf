@@ -2,8 +2,8 @@ import { inject, Injectable } from "@angular/core";
 import { EditorDraftFileService } from "../services/editor-draft-file.service";
 import {
   EditorDirtyFileChangeCallback,
-  EditorDirtyFileService,
-} from "../services/editor-dirty-file.service";
+  EditorDocumentDirtyService,
+} from "./editor-document-dirty.service";
 import { useEffect } from "../../../../lib/useEffect";
 import { EditorInMemoryStateService } from "../state/editor-in-memory-state.service";
 
@@ -17,7 +17,7 @@ import { EditorInMemoryStateService } from "../state/editor-in-memory-state.serv
 })
 export class EditorDocumentStateService {
   private readonly draftService = inject(EditorDraftFileService);
-  private readonly dirtyService = inject(EditorDirtyFileService);
+  private readonly documentDirtyService = inject(EditorDocumentDirtyService);
   private readonly inMemoryState = inject(EditorInMemoryStateService);
 
   /**
@@ -28,7 +28,7 @@ export class EditorDocumentStateService {
    */
   public trackChange(filePath: string, content: string): void {
     this.draftService.setDraft(filePath, content);
-    this.dirtyService.markDirty(filePath);
+    this.documentDirtyService.markDirty(filePath);
   }
 
   /**
@@ -37,7 +37,7 @@ export class EditorDocumentStateService {
    * @returns `true` if the file has unsaved draft changes, otherwise `false`.
    */
   public isDirty(filePath: string): boolean {
-    return this.dirtyService.isDirty(filePath);
+    return this.documentDirtyService.isDirty(filePath);
   }
 
   /**
@@ -50,7 +50,7 @@ export class EditorDocumentStateService {
     filePath: string,
     callback: EditorDirtyFileChangeCallback,
   ) {
-    return this.dirtyService.onDirtyChange(filePath, callback);
+    return this.documentDirtyService.onDirtyChange(filePath, callback);
   }
 
   /**
@@ -71,7 +71,7 @@ export class EditorDocumentStateService {
   public async save(filePath: string): Promise<boolean> {
     const success = await this.draftService.saveDraft(filePath);
     if (success) {
-      this.dirtyService.markClean(filePath);
+      this.documentDirtyService.markClean(filePath);
     }
     return success;
   }
@@ -83,7 +83,7 @@ export class EditorDocumentStateService {
    */
   public async saveAll(): Promise<void> {
     await this.draftService.saveDrafts();
-    await this.dirtyService.markAll(false);
+    await this.documentDirtyService.markAll(false);
   }
 
   /**
@@ -92,7 +92,7 @@ export class EditorDocumentStateService {
    */
   public reset(filePath: string): void {
     this.draftService.removeDraft(filePath);
-    this.dirtyService.markClean(filePath);
+    this.documentDirtyService.markClean(filePath);
   }
 
   /**
@@ -100,7 +100,7 @@ export class EditorDocumentStateService {
    * @returns IF any file has unsaved changes
    */
   public hasAnyDirty(): boolean {
-    return this.dirtyService.hasAnyDirty();
+    return this.documentDirtyService.hasAnyDirty();
   }
 
   /**

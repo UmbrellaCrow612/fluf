@@ -1,6 +1,6 @@
-import { Injectable, signal, Signal } from '@angular/core';
-import { voidCallback } from '../../../../gen/type';
-import { normalize } from '../../../../lib/path';
+import { Injectable, signal, Signal } from "@angular/core";
+import { voidCallback } from "../../../../gen/type";
+import { normalize } from "../../../../lib/path";
 
 /**
  * Shape of the callback that runs when a dirty file change happens.
@@ -14,9 +14,9 @@ export type EditorDirtyFileChangeCallback = (
  * Uses a Map-based callback system for reactive updates on individual file dirty states.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
-export class EditorDirtyFileService {
+export class EditorDocumentDirtyService {
   /** Internal map tracking the dirty state of each file by normalized path. */
   private readonly fileDirtyMap = new Map<string, boolean>();
 
