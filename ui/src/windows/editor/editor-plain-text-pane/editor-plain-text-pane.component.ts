@@ -31,10 +31,8 @@ import { getLanguageId } from "../core/lsp/languageId";
 import { EditorDocumentVersionService } from "../core/lsp/editor-document-version.service";
 import {
   Location as vsCodeLocation,
-  PublishDiagnosticsParams,
   Position as vscodePosition,
 } from "vscode-languageserver-protocol";
-import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
 import { Tooltip, ViewUpdate, hoverTooltip } from "@codemirror/view";
 import { viewUpdateToLSPChanges } from "../core/lsp/change";
 import { marked } from "marked";
@@ -50,8 +48,8 @@ import { EditorLanguageServerProtocolLifecycleTracker } from "../core/lsp/editor
 import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-changes-queue.service";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
-import { normalize } from "../../../lib/path";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
+import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -183,6 +181,46 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       },
       [this.editorStateService.scrollToDefinitionLocation],
     );
+
+    useEffect(() => {
+      const view = this.editorView;
+      if (!view) {
+        return;
+      }
+
+      const filePath = this.normalizedFilePath();
+      if (!filePath) {
+        return;
+      }
+
+      const codeMirrorDiags: CmDiagnostic[] = [];
+      const storedDiags =
+        this.editorDocumentDiagnosticService.getDiagnostics(filePath);
+
+      view.dispatch({
+        // reset
+        effects: this.linterCompartment.reconfigure(
+          this.buildLinterExtension([]),
+        ),
+      });
+
+      for (const vscodeDiag of storedDiags) {
+        const mappedDiag = vscodeToCodeMirrorDiagnostic(vscodeDiag, view.state);
+        if (mappedDiag) {
+          codeMirrorDiags.push(mappedDiag);
+        } else {
+          console.error("Failed to map vscode diagnostic to editor diagnostic");
+        }
+      }
+
+      view.dispatch({
+        effects: this.linterCompartment.reconfigure(
+          this.buildLinterExtension(codeMirrorDiags),
+        ),
+      });
+
+      console.log("Rendering code mirror diags in UI");
+    }, [this.editorDocumentDiagnosticService.valueChanged]);
   }
 
   private onControlPressed = (event: KeyboardEvent) => {
@@ -678,69 +716,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         }),
       );
     }
-
-    this.unsubCallbacks.push(
-      this.editorLanguageServerProtocolService.onNotification(
-        "textDocument/publishDiagnostics",
-        async (message) => {
-          console.log("Backend diagnostic ", message);
-
-          const params = message?.params as
-            | undefined
-            | PublishDiagnosticsParams;
-
-          if (!params || !params?.diagnostics || !params.uri) {
-            console.error(
-              "textDocument/publishDiagnostics produced a none matching object notification",
-            );
-            return;
-          }
-
-          const uri = params.uri;
-          const documentFilePath = await this.electronApi.pathApi.fromUri(uri);
-
-          this.editorDocumentDiagnosticService.setDiagnostics(
-            documentFilePath,
-            params.diagnostics,
-          );
-
-          // Only update current UI diags if there for THIS document
-          const openFilePath = this.normalizedFilePath()!;
-          if (normalize(documentFilePath) !== normalize(openFilePath)) {
-            return;
-          }
-
-          const diags: CmDiagnostic[] = [];
-
-          view.dispatch({
-            // reset
-            effects: this.linterCompartment.reconfigure(
-              this.buildLinterExtension([]),
-            ),
-          });
-
-          for (const vscodeDiag of params.diagnostics) {
-            const mappedDiag = vscodeToCodeMirrorDiagnostic(
-              vscodeDiag,
-              view.state,
-            );
-            if (mappedDiag) {
-              diags.push(mappedDiag);
-            } else {
-              console.error(
-                "Failed to map vscode diagnostic to editor diagnostic",
-              );
-            }
-          }
-
-          view.dispatch({
-            effects: this.linterCompartment.reconfigure(
-              this.buildLinterExtension(diags),
-            ),
-          });
-        },
-      ),
-    );
   };
 
   /**

@@ -6,8 +6,12 @@ import {
   LanguageServerOnDataCallback,
   LanguageServerOnNotificationCallback,
   LanguageServerProtocolMethod,
+  voidCallback,
 } from "../../../../gen/type";
 import { getElectronApi } from "../../../../shared/electron";
+import { PublishDiagnosticsParams } from "vscode-languageserver-protocol";
+import { EditorDocumentDiagnosticService } from "./editor-document-diagnostic.service";
+import { inject } from "@angular/core/primitives/di";
 
 /**
  * Used to get / send diagnostics for files for the editor
@@ -17,6 +21,10 @@ import { getElectronApi } from "../../../../shared/electron";
 })
 export class EditorLanguageServerProtocolService implements ILanguageServerClient {
   private readonly electronApi = getElectronApi();
+  private readonly editorDocumentDiagnosticService = inject(
+    EditorDocumentDiagnosticService,
+  );
+  private unsub: voidCallback | null = null;
 
   public start(workSpaceFolder: string, languageId: languageId) {
     return this.electronApi.lspClient.start(workSpaceFolder, languageId);
@@ -133,5 +141,43 @@ export class EditorLanguageServerProtocolService implements ILanguageServerClien
     callback: LanguageServerOnNotificationCallback,
   ) {
     return this.electronApi.lspClient.onNotification(method, callback);
+  }
+
+  /**
+   * Registers listner for when LSP responds with document diagnostics
+   */
+  public registerOnPublishDiagnosticslisterner(): void {
+    this.unsub?.();
+
+    this.unsub = this.electronApi.lspClient.onNotification(
+      "textDocument/publishDiagnostics",
+      async (message) => {
+        console.log("Backend diagnostic ", message);
+
+        const params = message?.params as undefined | PublishDiagnosticsParams;
+
+        if (!params || !params?.diagnostics || !params.uri) {
+          console.error(
+            "textDocument/publishDiagnostics produced a none matching object notification",
+          );
+          return;
+        }
+
+        const uri = params.uri;
+        const documentFilePath = await this.electronApi.pathApi.fromUri(uri);
+
+        this.editorDocumentDiagnosticService.setDiagnostics(
+          documentFilePath,
+          params.diagnostics,
+        );
+      },
+    );
+  }
+
+  /**
+   * Runs destroy logic
+   */
+  public destroy() {
+    this.unsub?.();
   }
 }
