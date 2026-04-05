@@ -66,6 +66,7 @@ export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> = n
 ```
 
 - Services that keep track of file paths on thw low level normilze the file paths beofre setting them in maps etc but consumer just passes the paths as normal
+- - Refer to dynamic component that can be rendered as panes that can be shown
 # Docs
 
 - The angular material icons https://fonts.google.com/icons?icon.set=Material+Icons&icon.size=24&icon.color=%231f1f1f

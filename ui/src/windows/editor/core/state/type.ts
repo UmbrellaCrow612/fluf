@@ -1,37 +1,9 @@
-import { Diagnostic } from "@codemirror/lint";
 import {
   fileNode,
   gitBlameLineInformation,
   languageId,
 } from "../../../../gen/type";
 import { Location } from "vscode-languageserver-protocol";
-
-/**
- * Represents which elements from the sidebar can be in an active state,
- * i.e., the elements that can be clicked to show their rendered component.
- */
-export const EDITOR_SIDE_BAR_ACTIVE_ELEMENT = {
-  FILE_EXPLORER: "file-explorer",
-  SEARCH: "search",
-  SOURCE_CONTROL: "source-control",
-  RUN_AND_DEBUG: "run-and-debug",
-  EXTENSIONS: "extensions",
-} as const;
-
-/**
- * Contains a list of valid seditor side bar active elements
- */
-export const EDITOR_VALID__SIDE_BAR_ACTIVE_ELEMENTS =
-  new Set<editorSideBarActiveElement>(
-    Object.values(EDITOR_SIDE_BAR_ACTIVE_ELEMENT),
-  );
-
-/**
- * Represents a valid value for the editor side bar active element
- */
-export type editorSideBarActiveElement =
-  | (typeof EDITOR_SIDE_BAR_ACTIVE_ELEMENT)[keyof typeof EDITOR_SIDE_BAR_ACTIVE_ELEMENT]
-  | null;
 
 /**
  * Represents which elements can be active in the bottom editor popup.
@@ -86,11 +58,6 @@ export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> =
  * Represents editor application-wide state that persists between sessions for the editor.
  */
 export type EditorState = {
-  /**
-   * Current active sidebar element.
-   */
-  sideBarActiveElement: editorSideBarActiveElement;
-
   /**
    * List of nodes read from the selected directory.
    */

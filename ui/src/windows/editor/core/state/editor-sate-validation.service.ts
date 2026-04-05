@@ -1,23 +1,22 @@
-import { inject, Injectable } from '@angular/core';
-import { EditorStateService } from './editor-state.service';
-import { getElectronApi } from '../../../../shared/electron';
-import { useEffect } from '../../../../lib/useEffect';
+import { inject, Injectable } from "@angular/core";
+import { EditorStateService } from "./editor-state.service";
+import { getElectronApi } from "../../../../shared/electron";
+import { useEffect } from "../../../../lib/useEffect";
 import {
   EDITOR_VALID_BOTTOM_ACTIVE_ELEMENTS,
   EDITOR_VALID_MAIN_ACTIVE_ELEMENTS,
-  EDITOR_VALID__SIDE_BAR_ACTIVE_ELEMENTS,
-} from './type';
+} from "./type";
 
 /**
  * Severity levels for validation warnings
  */
-type LogLevel = 'warn' | 'error' | 'info' | 'debug';
+type LogLevel = "warn" | "error" | "info" | "debug";
 
 /**
  * Structured warning logger for editor state validation
  */
 interface ValidationWarning {
-  type: 'directory' | 'element' | 'state';
+  type: "directory" | "element" | "state";
   issue: string;
   value?: unknown;
   action: string;
@@ -36,14 +35,14 @@ interface ValidationWarning {
  * await validationService.EnsureStateIsValid();
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class EditorSateValidationService {
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
   /** Prefix for all validation logs to make them easily filterable in console */
-  private readonly LOG_PREFIX = '[EditorStateValidation]';
+  private readonly LOG_PREFIX = "[EditorStateValidation]";
 
   /**
    * Sets up reactive validation that runs when state changes.
@@ -65,13 +64,6 @@ export class EditorSateValidationService {
 
     useEffect(
       (_, element) => {
-        this.validateSideBarActiveElement(element);
-      },
-      [this.editorStateService.sideBarActiveElement],
-    );
-
-    useEffect(
-      (_, element) => {
         this.validateBottomActiveElement(element);
       },
       [this.editorStateService.editorBottomActiveElement],
@@ -89,9 +81,6 @@ export class EditorSateValidationService {
       this.validateMainActiveElement(
         this.editorStateService.editorMainActiveElement(),
       );
-      this.validateSideBarActiveElement(
-        this.editorStateService.sideBarActiveElement(),
-      );
       this.validateBottomActiveElement(
         this.editorStateService.editorBottomActiveElement(),
       );
@@ -99,11 +88,11 @@ export class EditorSateValidationService {
         this.editorStateService.selectedDirectoryPath(),
       );
     } catch (error) {
-      this.log('error', {
-        type: 'state',
-        issue: 'Critical validation failure during EnsureStateIsValid',
+      this.log("error", {
+        type: "state",
+        issue: "Critical validation failure during EnsureStateIsValid",
         value: error instanceof Error ? error.message : String(error),
-        action: 'Resetting entire editor state',
+        action: "Resetting entire editor state",
         timestamp: Date.now(),
       });
       this.editorStateService.reset();
@@ -118,12 +107,12 @@ export class EditorSateValidationService {
       return;
     }
 
-    if (typeof element !== 'string') {
-      this.log('warn', {
-        type: 'element',
+    if (typeof element !== "string") {
+      this.log("warn", {
+        type: "element",
         issue: `Invalid type for bottom active element: expected string, got ${typeof element}`,
         value: element,
-        action: 'Resetting editorBottomActiveElement to null',
+        action: "Resetting editorBottomActiveElement to null",
         timestamp: Date.now(),
       });
       this.editorStateService.editorBottomActiveElement.set(null);
@@ -131,11 +120,11 @@ export class EditorSateValidationService {
     }
 
     if (!EDITOR_VALID_BOTTOM_ACTIVE_ELEMENTS.has(element as any)) {
-      this.log('warn', {
-        type: 'element',
-        issue: 'Bottom active element is not in the valid set',
+      this.log("warn", {
+        type: "element",
+        issue: "Bottom active element is not in the valid set",
         value: element,
-        action: 'Resetting editorBottomActiveElement to null',
+        action: "Resetting editorBottomActiveElement to null",
         timestamp: Date.now(),
       });
       this.editorStateService.editorBottomActiveElement.set(null);
@@ -152,12 +141,12 @@ export class EditorSateValidationService {
       return;
     }
 
-    if (typeof directory !== 'string') {
-      this.log('warn', {
-        type: 'directory',
+    if (typeof directory !== "string") {
+      this.log("warn", {
+        type: "directory",
         issue: `Invalid type for directory path: expected string, got ${typeof directory}`,
         value: directory,
-        action: 'Resetting selectedDirectoryPath to null',
+        action: "Resetting selectedDirectoryPath to null",
         timestamp: Date.now(),
       });
       this.editorStateService.selectedDirectoryPath.set(null);
@@ -165,11 +154,11 @@ export class EditorSateValidationService {
     }
 
     if (directory.length < 1) {
-      this.log('warn', {
-        type: 'directory',
-        issue: 'Empty directory path provided',
+      this.log("warn", {
+        type: "directory",
+        issue: "Empty directory path provided",
         value: directory,
-        action: 'Resetting selectedDirectoryPath to null',
+        action: "Resetting selectedDirectoryPath to null",
         timestamp: Date.now(),
       });
       this.editorStateService.selectedDirectoryPath.set(null);
@@ -179,21 +168,21 @@ export class EditorSateValidationService {
     try {
       const exists = await this.electronApi.fsApi.exists(directory);
       if (!exists) {
-        this.log('warn', {
-          type: 'directory',
-          issue: 'Directory does not exist on filesystem',
+        this.log("warn", {
+          type: "directory",
+          issue: "Directory does not exist on filesystem",
           value: directory,
-          action: 'Resetting selectedDirectoryPath to null',
+          action: "Resetting selectedDirectoryPath to null",
           timestamp: Date.now(),
         });
         this.editorStateService.selectedDirectoryPath.set(null);
       }
     } catch (error) {
-      this.log('error', {
-        type: 'directory',
-        issue: 'Filesystem check failed during directory validation',
+      this.log("error", {
+        type: "directory",
+        issue: "Filesystem check failed during directory validation",
         value: directory,
-        action: 'Resetting selectedDirectoryPath to null',
+        action: "Resetting selectedDirectoryPath to null",
         timestamp: Date.now(),
       });
       this.editorStateService.selectedDirectoryPath.set(null);
@@ -208,12 +197,12 @@ export class EditorSateValidationService {
       return;
     }
 
-    if (typeof element !== 'string') {
-      this.log('warn', {
-        type: 'element',
+    if (typeof element !== "string") {
+      this.log("warn", {
+        type: "element",
         issue: `Invalid type for main active element: expected string, got ${typeof element}`,
         value: element,
-        action: 'Resetting editorMainActiveElement to null',
+        action: "Resetting editorMainActiveElement to null",
         timestamp: Date.now(),
       });
       this.editorStateService.editorMainActiveElement.set(null);
@@ -221,47 +210,14 @@ export class EditorSateValidationService {
     }
 
     if (!EDITOR_VALID_MAIN_ACTIVE_ELEMENTS.has(element as any)) {
-      this.log('warn', {
-        type: 'element',
-        issue: 'Main active element is not in the valid set',
+      this.log("warn", {
+        type: "element",
+        issue: "Main active element is not in the valid set",
         value: element,
-        action: 'Resetting editorMainActiveElement to null',
+        action: "Resetting editorMainActiveElement to null",
         timestamp: Date.now(),
       });
       this.editorStateService.editorMainActiveElement.set(null);
-    }
-  }
-
-  /**
-   * Validates sidebar active element and resets if invalid.
-   * @param element - The sidebar active element to validate
-   */
-  private validateSideBarActiveElement(element: unknown): void {
-    if (element === null) {
-      return;
-    }
-
-    if (typeof element !== 'string') {
-      this.log('warn', {
-        type: 'element',
-        issue: `Invalid type for sidebar active element: expected string, got ${typeof element}`,
-        value: element,
-        action: 'Resetting editorSideBarActiveElement to null',
-        timestamp: Date.now(),
-      });
-      this.editorStateService.sideBarActiveElement.set(null);
-      return;
-    }
-
-    if (!EDITOR_VALID__SIDE_BAR_ACTIVE_ELEMENTS.has(element as any)) {
-      this.log('warn', {
-        type: 'element',
-        issue: 'Sidebar active element is not in the valid set',
-        value: element,
-        action: 'Resetting editorSideBarActiveElement to null',
-        timestamp: Date.now(),
-      });
-      this.editorStateService.sideBarActiveElement.set(null);
     }
   }
 
@@ -279,16 +235,16 @@ export class EditorSateValidationService {
     };
 
     switch (level) {
-      case 'error':
+      case "error":
         console.error(formattedMessage, details);
         break;
-      case 'warn':
+      case "warn":
         console.warn(formattedMessage, details);
         break;
-      case 'info':
+      case "info":
         console.info(formattedMessage, details);
         break;
-      case 'debug':
+      case "debug":
         console.debug(formattedMessage, details);
         break;
     }

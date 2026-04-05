@@ -25,13 +25,6 @@ const LOCAL_STORAGE_KEY = "editor-app-context";
 })
 export class EditorStateService {
   /**
-   * Exposes sideBarActiveElement signal
-   */
-  public readonly sideBarActiveElement = signal<
-    EditorState["sideBarActiveElement"]
-  >(this.restoreField("sideBarActiveElement", null));
-
-  /**
    * Exposes directoryFileNodes signal
    */
   public readonly directoryFileNodes = signal<
@@ -128,7 +121,6 @@ export class EditorStateService {
 
   public getSnapShot(): EditorState {
     return {
-      sideBarActiveElement: this.sideBarActiveElement(),
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
       directoryFileNodes: this.directoryFileNodes(),
       displayFileEditorBottom: this.displayFileEditorBottom(),
@@ -147,7 +139,6 @@ export class EditorStateService {
    * Resets the state of all fields to their default
    */
   public reset() {
-    this.sideBarActiveElement.set(null);
     this.directoryFileNodes.set(null);
     this.selectedDirectoryPath.set(null);
     this.fileExplorerActiveFileOrFolder.set(null);

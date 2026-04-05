@@ -6,7 +6,7 @@
         [ariaLabel]="item.tooltip"
         [matTooltip]="item.tooltip"
         (click)="selectSidebarItem(item)"
-        [class.editor_sidebar_action_active]="activeElement() === item.element"
+        [class.editor_sidebar_action_active]="activeElement() === item.pane"
       >
         <mat-icon>{{ item.icon }}</mat-icon>
       </button>

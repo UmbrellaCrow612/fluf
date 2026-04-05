@@ -7,13 +7,14 @@ import { getElectronApi } from "../../../shared/electron";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { EditorStateService } from "../core/state/editor-state.service";
 import { MatMenuModule } from "@angular/material/menu";
-import {
-  EDITOR_BOTTOM_ACTIVE_ELEMENT,
-  EDITOR_SIDE_BAR_ACTIVE_ELEMENT,
-} from "../core/state/type";
+import { EDITOR_BOTTOM_ACTIVE_ELEMENT } from "../core/state/type";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
 import { EditorDocumentSavingService } from "../core/lsp/editor-document-saving.service";
+import {
+  EDITOR_SIDE_BAR_PANE_ELEMENTS,
+  EditorSidebarPaneService,
+} from "../core/pane/editor-sidebar-pane.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -85,6 +86,7 @@ export class EditorFrameComponent implements OnInit {
   private readonly editorDocumentSavingService = inject(
     EditorDocumentSavingService,
   );
+  private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
 
   /**
    * Holds state if the given chrome window is maximized
@@ -211,8 +213,8 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "File explorer",
             onClick: () => {
-              this.editorStateService.sideBarActiveElement.set(
-                EDITOR_SIDE_BAR_ACTIVE_ELEMENT.FILE_EXPLORER,
+              this.editorSidebarPaneService.changePane(
+                EDITOR_SIDE_BAR_PANE_ELEMENTS.FILE_EXPLORER,
               );
             },
             id: "file_explor",
@@ -220,7 +222,9 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Search",
             onClick: () => {
-              this.editorStateService.sideBarActiveElement.set("search");
+              this.editorSidebarPaneService.changePane(
+                EDITOR_SIDE_BAR_PANE_ELEMENTS.SEARCH,
+              );
             },
             id: "search",
           },
@@ -228,8 +232,8 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Version control",
             onClick: () => {
-              this.editorStateService.sideBarActiveElement.set(
-                "source-control",
+              this.editorSidebarPaneService.changePane(
+                EDITOR_SIDE_BAR_PANE_ELEMENTS.SOURCE_CONTROL,
               );
             },
             id: "version_control",
