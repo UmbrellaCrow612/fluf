@@ -1,16 +1,24 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { getElectronApi } from '../../../shared/electron';
-import { MatIconModule } from '@angular/material/icon';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { DatePipe } from '@angular/common';
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  Signal,
+  signal,
+} from "@angular/core";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
+import { getElectronApi } from "../../../shared/electron";
+import { MatIconModule } from "@angular/material/icon";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { DatePipe } from "@angular/common";
+import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 
 @Component({
-  selector: 'app-editor-footer',
+  selector: "app-editor-footer",
   imports: [MatIconModule, MatTooltipModule, DatePipe],
-  templateUrl: './editor-footer.component.html',
-  styleUrl: './editor-footer.component.css',
+  templateUrl: "./editor-footer.component.html",
+  styleUrl: "./editor-footer.component.css",
 })
 export class EditorFooterComponent implements OnInit {
   private readonly editorInMemoryStateService = inject(
@@ -18,6 +26,9 @@ export class EditorFooterComponent implements OnInit {
   );
   private readonly electronApi = getElectronApi();
   private readonly editorStateService = inject(EditorStateService);
+  private readonly editorDocumentDiagnosticService = inject(
+    EditorDocumentDiagnosticService,
+  );
 
   /**
    * Keeps track if the system has GIT version control
@@ -50,6 +61,22 @@ export class EditorFooterComponent implements OnInit {
     this.editorStateService.selectedDirectoryPath(),
   );
 
+  /**
+   * Holds count of how many diagnostic error we have
+   */
+  public readonly diagnosticErrorCount: Signal<number> = computed(() => {
+    this.editorDocumentDiagnosticService.valueChanged(); // dep
+    let count = 0;
+    const map = this.editorDocumentDiagnosticService.getAllDiagnostics();
+
+    for (const [_, diags] of map) {
+      if (diags.length > 0) {
+        count += 1;
+      }
+    }
+    return count;
+  });
+
   async ngOnInit() {
     await this.checkIfSystemHasGit();
     await this.getCurrentGitBranch();
@@ -60,7 +87,7 @@ export class EditorFooterComponent implements OnInit {
       const hasGit = await this.electronApi.gitApi.hasGit();
       this.hasGit.set(hasGit);
     } catch (error) {
-      console.error('Failed to check if system has git ', error);
+      console.error("Failed to check if system has git ", error);
     }
   }
 
@@ -74,7 +101,7 @@ export class EditorFooterComponent implements OnInit {
       const branch = await this.electronApi.gitApi.getCurrentBranch(dir);
       this.currentBranch.set(branch);
     } catch (error) {
-      console.error('Failed to get current git branch ', error);
+      console.error("Failed to get current git branch ", error);
     }
   }
 }

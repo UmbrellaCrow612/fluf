@@ -1,6 +1,7 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { getElectronApi } from "../../../../shared/electron";
 import { normalize } from "../../../../lib/path";
+import { EditorDocumentSavingService } from "./editor-document-saving.service";
 
 /**
  * Holds files and their current draft content that is not yet saved.
@@ -10,6 +11,9 @@ import { normalize } from "../../../../lib/path";
 })
 export class EditorDocumentDraftService {
   private readonly electronApi = getElectronApi();
+  private readonly editorDocumentSavingService = inject(
+    EditorDocumentSavingService,
+  );
 
   /**
    * Holds a file path and its draft content.
@@ -78,10 +82,18 @@ export class EditorDocumentDraftService {
   /**
    * Attempts to save the current draft for the file if it exists.
    * @param filePath - The path to the file.
+   * @param multiSave If this transaction is part of a multi save
    * @returns Whether it could save the draft as the new content of the file path.
    */
-  public async saveDraft(filePath: string): Promise<boolean> {
+  public async saveDraft(
+    filePath: string,
+    multiSave: boolean,
+  ): Promise<boolean> {
     try {
+      if (!multiSave) {
+        this.editorDocumentSavingService.setSaving(true);
+      }
+
       const normalizedPath = normalize(filePath);
       const draft = this.fileDraftMap.get(normalizedPath);
       if (!draft) {
@@ -100,6 +112,10 @@ export class EditorDocumentDraftService {
     } catch (error) {
       console.error("Failed to save draft for file path:", filePath, error);
       return false;
+    } finally {
+      if (!multiSave) {
+        this.editorDocumentSavingService.setSaving(false);
+      }
     }
   }
 
@@ -107,11 +123,19 @@ export class EditorDocumentDraftService {
    * Attempts to save all drafts.
    */
   public async saveDrafts(): Promise<void> {
-    for (const filePath of this.fileDraftMap.keys()) {
-      const success = await this.saveDraft(filePath);
-      if (!success) {
-        console.error("Failed to save draft for file path:", filePath);
+    try {
+      this.editorDocumentSavingService.setSaving(true);
+
+      for (const filePath of this.fileDraftMap.keys()) {
+        const success = await this.saveDraft(filePath, true);
+        if (!success) {
+          console.error("Failed to save draft for file path:", filePath);
+        }
       }
+    } catch (error) {
+      console.error("Failed to save drafts ", error);
+    } finally {
+      this.editorDocumentSavingService.setSaving(false);
     }
   }
 }

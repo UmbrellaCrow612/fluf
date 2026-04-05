@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import {
   ILanguageServerClient,
   ILanguageServerClientOnReadyCallback,
@@ -11,7 +11,6 @@ import {
 import { getElectronApi } from "../../../../shared/electron";
 import { PublishDiagnosticsParams } from "vscode-languageserver-protocol";
 import { EditorDocumentDiagnosticService } from "./editor-document-diagnostic.service";
-import { inject } from "@angular/core/primitives/di";
 
 /**
  * Used to get / send diagnostics for files for the editor

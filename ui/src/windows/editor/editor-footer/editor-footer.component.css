@@ -135,3 +135,10 @@
   .git_blame_author {
   color: var(--text-tertiary);
 }
+
+.editor_footer_diagnostic_count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-error);
+}

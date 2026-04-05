@@ -31,4 +31,13 @@
       Ln {{ selectedLines()?.line }}, Col {{ selectedLines()?.column }}
     </div>
   }
+
+  <!---->
+
+  @if(diagnosticErrorCount() > 0){
+    <div class="editor_footer_diagnostic_count" [matTooltip]="diagnosticErrorCount() + ' Errors'">
+      <mat-icon fontIcon="error"/>
+      <span>{{diagnosticErrorCount()}}</span>
+    </div>
+  }
 </footer>

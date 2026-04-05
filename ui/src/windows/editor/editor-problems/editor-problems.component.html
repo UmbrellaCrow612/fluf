@@ -1,1 +1,27 @@
-<div class="editor_problems scroll_bar"></div>
+<div class="editor_problems scroll_bar">
+  @for (entry of fileDiagnostics(); track entry.filePath) {
+    <div class="file-group">
+      <div class="file-header">
+        <mat-icon class="file-icon">insert_drive_file</mat-icon>
+        <span class="file-path">{{ entry.filePath }}</span>
+        <span class="diagnostic-count">{{ entry.diagnostics.length }}</span>
+      </div>
+
+      <ul class="diagnostic-list">
+        @for (diagnostic of entry.diagnostics; track $index) {
+          <li class="diagnostic-item" [attr.data-severity]="getSeverityClass(diagnostic.severity)">
+            <span class="severity-pip"></span>
+            <mat-icon class="severity-icon">{{ getSeverityMatIcon(diagnostic.severity) }}</mat-icon>
+            <span class="message">{{ diagnostic.message }}</span>
+            <span class="location">Ln {{ diagnostic.range.start.line + 1 }}, Col {{ diagnostic.range.start.character + 1 }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  } @empty {
+    <div class="no-problems">
+      <mat-icon class="no-problems-icon">check_circle</mat-icon>
+      <span>No problems detected</span>
+    </div>
+  }
+</div>

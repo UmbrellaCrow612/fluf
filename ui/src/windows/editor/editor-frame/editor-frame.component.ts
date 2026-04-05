@@ -13,6 +13,7 @@ import {
 } from "../core/state/type";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
+import { EditorDocumentSavingService } from "../core/lsp/editor-document-saving.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -81,6 +82,9 @@ export class EditorFrameComponent implements OnInit {
   private readonly applicationConfirmationService = inject(
     ApplicationConfirmationService,
   );
+  private readonly editorDocumentSavingService = inject(
+    EditorDocumentSavingService,
+  );
 
   /**
    * Holds state if the given chrome window is maximized
@@ -107,6 +111,12 @@ export class EditorFrameComponent implements OnInit {
       if (!confirmed) {
         return;
       }
+    }
+
+    const isSaving = this.editorDocumentSavingService.isSaving();
+    if (isSaving) {
+      console.warn("Cannot close window process while backend is saving");
+      return;
     }
 
     this.electronApi.chromeWindowApi.close();
