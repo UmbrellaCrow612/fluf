@@ -15,7 +15,7 @@ export class EditorDocumentVersionService {
    * @param filePath The documents file path
    * @returns The current version
    */
-  getVersion(filePath: string): number {
+  public getVersion(filePath: string): number {
     const norm = normalize(filePath);
 
     const version = this.docVersionMap.get(norm);
@@ -32,7 +32,7 @@ export class EditorDocumentVersionService {
    * Update the local stored version of a document path
    * @param filePath The document file path
    */
-  updateVersion(filePath: string): void {
+  public updateVersion(filePath: string): void {
     const norm = normalize(filePath);
 
     let version = this.docVersionMap.get(norm);

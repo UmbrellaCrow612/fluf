@@ -32,6 +32,7 @@ import { EditorDocumentVersionService } from "../core/lsp/editor-document-versio
 import {
   Location as vsCodeLocation,
   Position as vscodePosition,
+  Diagnostic as vscodeDiagnostic,
 } from "vscode-languageserver-protocol";
 import { Tooltip, ViewUpdate, hoverTooltip } from "@codemirror/view";
 import { viewUpdateToLSPChanges } from "../core/lsp/change";
@@ -193,35 +194,44 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         return;
       }
 
-      const codeMirrorDiags: CmDiagnostic[] = [];
-      const storedDiags =
-        this.editorDocumentDiagnosticService.getDiagnostics(filePath);
-
-      view.dispatch({
-        // reset
-        effects: this.linterCompartment.reconfigure(
-          this.buildLinterExtension([]),
-        ),
-      });
-
-      for (const vscodeDiag of storedDiags) {
-        const mappedDiag = vscodeToCodeMirrorDiagnostic(vscodeDiag, view.state);
-        if (mappedDiag) {
-          codeMirrorDiags.push(mappedDiag);
-        } else {
-          console.error("Failed to map vscode diagnostic to editor diagnostic");
-        }
-      }
-
-      view.dispatch({
-        effects: this.linterCompartment.reconfigure(
-          this.buildLinterExtension(codeMirrorDiags),
-        ),
-      });
-
-      console.log("Rendering code mirror diags in UI");
+      this.hydrateDiagnostics(filePath, view);
     }, [this.editorDocumentDiagnosticService.valueChanged]);
   }
+
+  /**
+   * Hydrate the diagnostics to the UI
+   * @param filePath - the current document
+   * @param view The UI
+   */
+  private hydrateDiagnostics = (filePath: string, view: EditorView) => {
+    const codeMirrorDiags: CmDiagnostic[] = [];
+    const storedDiags =
+      this.editorDocumentDiagnosticService.getDiagnostics(filePath);
+
+    view.dispatch({
+      // reset
+      effects: this.linterCompartment.reconfigure(
+        this.buildLinterExtension([]),
+      ),
+    });
+
+    for (const vscodeDiag of storedDiags) {
+      const mappedDiag = vscodeToCodeMirrorDiagnostic(vscodeDiag, view.state);
+      if (mappedDiag) {
+        codeMirrorDiags.push(mappedDiag);
+      } else {
+        console.error("Failed to map vscode diagnostic to editor diagnostic");
+      }
+    }
+
+    view.dispatch({
+      effects: this.linterCompartment.reconfigure(
+        this.buildLinterExtension(codeMirrorDiags),
+      ),
+    });
+
+    console.log("Rendering code mirror diags in UI");
+  };
 
   private onControlPressed = (event: KeyboardEvent) => {
     if (event.key !== "Control") {
@@ -438,6 +448,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         this.editorView = cachedView;
         this.editorView.focus();
         this.hydrateDataOnChange(cachedView);
+        this.hydrateDiagnostics(normalizedPath, this.editorView);
 
         void this.initLanguageServer(
           node,
@@ -469,6 +480,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
       });
       this.editorView.focus();
       this.hydrateDataOnChange(this.editorView);
+      this.hydrateDiagnostics(normalizedPath, this.editorView);
 
       void this.initLanguageServer(node, docString, this.editorView);
     } catch (error: any) {
