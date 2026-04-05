@@ -1,24 +1,31 @@
-import { Component, computed, inject, Signal } from '@angular/core';
-import { EditorFileExplorerTreeComponent } from '../editor-file-explorer-tree/editor-file-explorer-tree.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { fileNode, fileNodeMode } from '../../../gen/type';
-import { A11yModule } from '@angular/cdk/a11y';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { EditorStateService } from '../core/state/editor-state.service';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  inject,
+  Signal,
+} from "@angular/core";
+import { EditorFileExplorerTreeComponent } from "../editor-file-explorer-tree/editor-file-explorer-tree.component";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { fileNode, fileNodeMode } from "../../../gen/type";
+import { A11yModule } from "@angular/cdk/a11y";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
+import { EditorStateService } from "../core/state/editor-state.service";
 import {
   collapseFileNodeFirstLayer,
   findFileNodeByPath,
   replaceFileNode,
-} from '../../../shared/file-node-helpers';
-import { normalize } from '../../../lib/path';
+} from "../../../shared/file-node-helpers";
+import { normalize } from "../../../lib/path";
+import { EditorSidebarPaneService } from "../core/pane/editor-sidebar-pane.service";
 
 /**
  * Renders a file explorer with the current files and folders in the select directory
  */
 @Component({
-  selector: 'app-editor-file-explorer',
+  selector: "app-editor-file-explorer",
   imports: [
     EditorFileExplorerTreeComponent,
     MatButtonModule,
@@ -26,14 +33,19 @@ import { normalize } from '../../../lib/path';
     MatTooltipModule,
     A11yModule,
   ],
-  templateUrl: './editor-file-explorer.component.html',
-  styleUrl: './editor-file-explorer.component.css',
+  templateUrl: "./editor-file-explorer.component.html",
+  styleUrl: "./editor-file-explorer.component.css",
 })
-export class EditorFileExplorerComponent {
+export class EditorFileExplorerComponent implements AfterViewInit {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
+  private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
+
+  public ngAfterViewInit() {
+    this.editorSidebarPaneService.resolvePane();
+  }
 
   /**
    * Creates a simple node that represents a node that will render as a create node for a file or folder
@@ -46,12 +58,12 @@ export class EditorFileExplorerComponent {
     return {
       children: [],
       expanded: false,
-      extension: '',
+      extension: "",
       isDirectory: false,
-      lastModified: '',
+      lastModified: "",
       mode: mode,
-      name: '',
-      parentName: '',
+      name: "",
+      parentName: "",
       parentPath: parentPath,
       path: path,
       size: 0,
@@ -65,12 +77,12 @@ export class EditorFileExplorerComponent {
     return {
       children: [],
       expanded: false,
-      extension: '',
+      extension: "",
       isDirectory: false,
-      lastModified: '',
-      mode: 'default',
-      name: '',
-      parentName: '',
+      lastModified: "",
+      mode: "default",
+      name: "",
+      parentName: "",
       parentPath: this.editorStateService.selectedDirectoryPath()!,
       path: this.editorStateService.selectedDirectoryPath()!,
       size: 1,
@@ -179,7 +191,7 @@ export class EditorFileExplorerComponent {
     // Find the parent node to add the new node to
     const parentNode = findFileNodeByPath(nodes, targetDirPath);
     if (!parentNode) {
-      console.error('Could not find parent node for creating new file/folder');
+      console.error("Could not find parent node for creating new file/folder");
       return;
     }
 
