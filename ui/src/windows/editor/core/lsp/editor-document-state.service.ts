@@ -56,7 +56,7 @@ export class EditorDocumentStateService {
    *          or `false` if it failed or no draft existed.
    */
   public async save(filePath: string): Promise<boolean> {
-    const success = await this.draftService.saveDraft(filePath);
+    const success = await this.draftService.saveDraft(filePath, false);
     if (success) {
       this.documentDirtyService.markClean(filePath);
     }
