@@ -1,7 +1,6 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { getElectronApi } from "../../../../shared/electron";
 import { normalize } from "../../../../lib/path";
-import { inject } from "@angular/core/primitives/di";
 import { EditorDocumentSavingService } from "./editor-document-saving.service";
 
 /**

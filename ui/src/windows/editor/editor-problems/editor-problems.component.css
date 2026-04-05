@@ -12,3 +12,85 @@
   flex: 1;
   overflow-y: auto;
 }
+
+.file-group {
+  margin-bottom: 4px;
+}
+
+.file-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--panel-section-header-background, #1e1e1e);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.file-path {
+  flex: 1;
+  color: var(--foreground, #ccc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diagnostic-count {
+  background: var(--badge-background, #4d4d4d);
+  color: var(--badge-foreground, #fff);
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.diagnostic-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.diagnostic-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 8px 3px 24px;
+  font-size: 12px;
+}
+
+.diagnostic-item:hover {
+  background: var(--list-hover-background, #2a2d2e);
+}
+
+.severity-icon {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.message {
+  flex: 1;
+  color: var(--foreground, #ccc);
+}
+.location {
+  color: var(--descriptionForeground, #888);
+  white-space: nowrap;
+}
+
+.severity-error .severity-icon {
+  color: var(--editorError-foreground, #f14c4c);
+}
+.severity-warning .severity-icon {
+  color: var(--editorWarning-foreground, #cca700);
+}
+.severity-info .severity-icon {
+  color: var(--editorInfo-foreground, #3794ff);
+}
+.severity-hint .severity-icon {
+  color: var(--editorHint-foreground, #b4b4b4);
+}
+
+.no-problems {
+  padding: 16px;
+  text-align: center;
+  color: var(--descriptionForeground, #888);
+  font-size: 12px;
+}
