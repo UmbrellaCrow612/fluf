@@ -2,7 +2,7 @@ import { AfterViewInit, Component, inject, signal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { getElectronApi } from "../../../shared/electron";
 import { EditorStateService } from "../core/state/editor-state.service";
-import { EditorSidebarPaneService } from "../core/pane/editor-sidebar-pane.service";
+import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
 
 /**
  * Shown when there isnt any select directory and allows users to select a directory

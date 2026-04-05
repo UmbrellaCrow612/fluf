@@ -14,7 +14,7 @@ import { EditorDocumentSavingService } from "../core/lsp/editor-document-saving.
 import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   EditorSidebarPaneService,
-} from "../core/pane/editor-sidebar-pane.service";
+} from "../core/panes/editor-sidebar-pane.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options

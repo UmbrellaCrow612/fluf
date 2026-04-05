@@ -7,7 +7,7 @@ import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   editorSidebarPane,
   EditorSidebarPaneService,
-} from "../core/pane/editor-sidebar-pane.service";
+} from "../core/panes/editor-sidebar-pane.service";
 
 /**
  * Represents a clickable side bar element

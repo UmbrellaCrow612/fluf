@@ -1,71 +1,37 @@
-import { computed, Injectable, Signal, signal } from "@angular/core";
+import { computed, Signal, signal } from "@angular/core";
 
 /**
- * Represents which pane elements from the sidebar can be in an active state,
- * i.e., the elements that can be clicked to show their rendered component.
- */
-export const EDITOR_SIDE_BAR_PANE_ELEMENTS = {
-  FILE_EXPLORER: "file-explorer",
-  SEARCH: "search",
-  SOURCE_CONTROL: "source-control",
-  RUN_AND_DEBUG: "run-and-debug",
-  EXTENSIONS: "extensions",
-} as const;
-
-/**
- * Contains a list of valid editor side bar active pane elements
- */
-export const EDITOR_VALID_SIDEBAR_PANES = new Set<editorSidebarPane>(
-  Object.values(EDITOR_SIDE_BAR_PANE_ELEMENTS),
-);
-
-/**
- * Represents a valid value for the editor side bar pane element
- */
-export type editorSidebarPane =
-  | (typeof EDITOR_SIDE_BAR_PANE_ELEMENTS)[keyof typeof EDITOR_SIDE_BAR_PANE_ELEMENTS]
-  | null;
-
-/**
- * localStorage key used to persist the active sidebar pane
- */
-const SIDEBAR_PANE_STORAGE_KEY = "editor-sidebar-pane";
-
-/**
- * How long {@link EditorSidebarPaneService.changePane} will wait for a pane
- * to call {@link EditorSidebarPaneService.resolvePane} before rejecting.
+ * How long {@link EditorPaneServiceBase.changePane} will wait for a pane
+ * to call {@link EditorPaneServiceBase.resolvePane} before rejecting.
  */
 const PANE_RENDER_TIMEOUT_MS = 5_000;
 
 /**
- * Manages the active pane displayed in the editor sidebar.
+ * Abstract base class for editor pane services.
  *
- * Persists the active pane to localStorage on every change and restores
- * it on initialization. Invalid or missing persisted values fall back to `null`.
+ * Provides signal-based active-pane tracking, localStorage persistence, and a
+ * render-acknowledgement contract via {@link changePane} / {@link resolvePane}.
  *
- * ### Render-acknowledgement contract
- * {@link changePane} returns a `Promise<void>` that only resolves once the
- * newly activated pane component calls {@link resolvePane} (typically from
- * `ngAfterViewInit`). If no acknowledgement arrives within
- * {@link PANE_RENDER_TIMEOUT_MS} milliseconds the promise rejects.
- * Calling {@link changePane} again before the current promise settles
- * immediately rejects the superseded promise with the string `'superseded'`.
+ * ### Implementing a new pane service
+ * 1. Extend this class with the concrete pane union type as the type parameter.
+ * 2. Pass the valid-panes `Set` and the localStorage key to `super()`.
+ * 3. Decorate the subclass with `@Injectable({ providedIn: 'root' })`.
  *
  * @example
- * // Activate a pane and wait for it to render
- * await this.editorSidebarPaneService.changePane('file-explorer');
+ * \@Injectable({ providedIn: 'root' })
+ * export class EditorSidebarPaneService extends EditorPaneServiceBase<editorSidebarPane> {
+ *   constructor() {
+ *     super(EDITOR_VALID_SIDEBAR_PANES, 'editor-sidebar-pane');
+ *   }
+ * }
  *
- * // Read the currently active pane
- * const pane = this.editorSidebarPaneService.pane();
+ * @typeParam T - The union of valid pane string literals for the panel, plus `null`.
  */
-@Injectable({
-  providedIn: "root",
-})
-export class EditorSidebarPaneService {
+export abstract class EditorPaneServiceBase<T extends string> {
   /**
-   * Holds the current pane signal
+   * Holds the current pane signal.
    */
-  private readonly _pane = signal<editorSidebarPane>(this.restoreState());
+  private readonly _pane = signal<T | null>(this._restoreState());
 
   /**
    * Resolve function of the currently pending {@link changePane} promise.
@@ -87,47 +53,53 @@ export class EditorSidebarPaneService {
 
   /**
    * Exposes which pane is currently active/showing.
-   * Emits `null` when no pane is active (i.e. the sidebar is collapsed).
+   * Emits `null` when no pane is active (i.e. the panel is collapsed).
    *
    * @example
    * // Bind in a component
-   * protected readonly activePane = this.editorSidebarPaneService.pane;
+   * protected readonly activePane = this.paneService.pane;
    *
    * // Read imperatively
-   * const current = this.editorSidebarPaneService.pane();
+   * const current = this.paneService.pane();
    */
-  public readonly pane: Signal<editorSidebarPane> = computed(() =>
-    this._pane(),
-  );
+  public readonly pane: Signal<T | null> = computed(() => this._pane());
 
   /**
-   * Changes the active sidebar pane and persists the change to localStorage.
+   * @param _validPanes  - Set of all valid pane values for this panel.
+   * @param _storageKey  - localStorage key under which the active pane is persisted.
+   */
+  protected constructor(
+    private readonly _validPanes: ReadonlySet<T>,
+    private readonly _storageKey: string,
+  ) {}
+
+  /**
+   * Changes the active pane and persists the change to localStorage.
    *
    * Returns a `Promise<void>` that settles as follows:
    *
    * | Scenario | Settlement |
    * |---|---|
    * | `pane` equals the currently active pane | Resolves immediately |
-   * | `pane` is `null` (close sidebar) | Resolves immediately |
+   * | `pane` is `null` (close panel) | Resolves immediately |
    * | Pane calls {@link resolvePane} within {@link PANE_RENDER_TIMEOUT_MS} | Resolves |
    * | {@link PANE_RENDER_TIMEOUT_MS} elapses with no acknowledgement | Rejects with `Error` |
    * | {@link changePane} is called again before the promise settles | Rejects with `'superseded'` |
-   * | `pane` is not a member of {@link EDITOR_VALID_SIDEBAR_PANES} | Rejects with `Error` |
+   * | `pane` is not a member of the valid-panes `Set` | Rejects with `Error` |
    *
-   * @param pane - The pane to activate, or `null` to close the sidebar.
+   * @param pane - The pane to activate, or `null` to close the panel.
    * @returns A promise that resolves once the activated pane has fully rendered.
    */
-  public changePane(pane: editorSidebarPane): Promise<void> {
+  public changePane(pane: T | null): Promise<void> {
     const current = this._pane();
 
     if (current === pane) {
       return Promise.resolve();
     }
 
-    if (pane !== null && !EDITOR_VALID_SIDEBAR_PANES.has(pane)) {
-      console.warn(
-        `[EditorSidebarPaneService] Cannot set sidebar pane to invalid value: "${pane}"`,
-      );
+    if (pane !== null && !this._validPanes.has(pane)) {
+      const label = this.constructor.name;
+      console.warn(`[${label}] Cannot set pane to invalid value: "${pane}"`);
       return Promise.reject(new Error(`Invalid pane: "${pane}"`));
     }
 
@@ -135,9 +107,9 @@ export class EditorSidebarPaneService {
     this._clearPending("superseded");
 
     this._pane.set(pane);
-    this.saveState(pane);
+    this._saveState(pane);
 
-    // Closing the sidebar renders nothing, so no acknowledgement is expected.
+    // Closing the panel renders nothing, so no acknowledgement is expected.
     if (pane === null) {
       return Promise.resolve();
     }
@@ -148,9 +120,10 @@ export class EditorSidebarPaneService {
 
       this._pendingTimeout = setTimeout(() => {
         if (this._pendingReject) {
+          const label = this.constructor.name;
           this._pendingReject(
             new Error(
-              `[EditorSidebarPaneService] Pane "${pane}" did not call resolvePane() within ${PANE_RENDER_TIMEOUT_MS}ms`,
+              `[${label}] Pane "${pane}" did not call resolvePane() within ${PANE_RENDER_TIMEOUT_MS}ms`,
             ),
           );
         }
@@ -168,7 +141,7 @@ export class EditorSidebarPaneService {
    *
    * @example
    * ngAfterViewInit(): void {
-   *   this.editorSidebarPaneService.resolvePane();
+   *   this.paneService.resolvePane();
    * }
    *
    * This method is a no-op when no {@link changePane} promise is pending (e.g.
@@ -218,16 +191,16 @@ export class EditorSidebarPaneService {
    *
    * @param pane - The pane value to persist, or `null` to clear it.
    */
-  private saveState(pane: editorSidebarPane): void {
+  private _saveState(pane: T | null): void {
     try {
       if (pane === null) {
-        localStorage.removeItem(SIDEBAR_PANE_STORAGE_KEY);
+        localStorage.removeItem(this._storageKey);
       } else {
-        localStorage.setItem(SIDEBAR_PANE_STORAGE_KEY, pane);
+        localStorage.setItem(this._storageKey, pane);
       }
     } catch (err) {
       console.warn(
-        "[EditorSidebarPaneService] Failed to persist pane state",
+        `[${this.constructor.name}] Failed to persist pane state`,
         err,
       );
     }
@@ -237,19 +210,19 @@ export class EditorSidebarPaneService {
    * Reads and validates the persisted pane value from localStorage.
    *
    * Returns `null` if nothing is stored, the stored value is not a member of
-   * {@link EDITOR_VALID_SIDEBAR_PANES}, or localStorage is unavailable.
+   * the valid-panes `Set`, or localStorage is unavailable.
    *
-   * @returns The restored {@link editorSidebarPane} value, or `null`.
+   * @returns The restored pane value, or `null`.
    */
-  private restoreState(): editorSidebarPane {
+  private _restoreState(): T | null {
     try {
-      const raw = localStorage.getItem(SIDEBAR_PANE_STORAGE_KEY);
+      const raw = localStorage.getItem(this._storageKey);
       if (!raw) return null;
 
-      const value = raw as editorSidebarPane;
-      if (!EDITOR_VALID_SIDEBAR_PANES.has(value)) {
+      const value = raw as T;
+      if (!this._validPanes.has(value)) {
         console.warn(
-          `[EditorSidebarPaneService] Discarding invalid persisted pane value: "${raw}"`,
+          `[${this.constructor.name}] Discarding invalid persisted pane value: "${raw}"`,
         );
         return null;
       }
@@ -257,7 +230,7 @@ export class EditorSidebarPaneService {
       return value;
     } catch (err) {
       console.warn(
-        "[EditorSidebarPaneService] Failed to restore pane state",
+        `[${this.constructor.name}] Failed to restore pane state`,
         err,
       );
       return null;

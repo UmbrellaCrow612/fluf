@@ -19,7 +19,7 @@ import {
   replaceFileNode,
 } from "../../../shared/file-node-helpers";
 import { normalize } from "../../../lib/path";
-import { EditorSidebarPaneService } from "../core/pane/editor-sidebar-pane.service";
+import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
 
 /**
  * Renders a file explorer with the current files and folders in the select directory

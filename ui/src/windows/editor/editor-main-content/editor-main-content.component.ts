@@ -20,7 +20,7 @@ import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state
 import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   EditorSidebarPaneService,
-} from "../core/pane/editor-sidebar-pane.service";
+} from "../core/panes/editor-sidebar-pane.service";
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
