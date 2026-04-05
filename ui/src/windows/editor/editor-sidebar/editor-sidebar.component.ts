@@ -39,7 +39,6 @@ type editorSideBarItem = {
   styleUrl: "./editor-sidebar.component.css",
 })
 export class EditorSidebarComponent {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
 
   /**
