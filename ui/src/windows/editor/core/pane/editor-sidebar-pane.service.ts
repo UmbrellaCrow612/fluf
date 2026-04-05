@@ -58,6 +58,8 @@ export class EditorSidebarPaneService {
    *
    * // Usage in components
    * public activeElement = this.editorSidebarPaneService.pane;
+   *
+   * // Now you have a computed signal you can use in the typescript class code and also in the template UI
    */
   public readonly pane: Signal<editorSidebarPane> = computed(() =>
     this._pane(),
