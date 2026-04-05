@@ -2,6 +2,7 @@ import { Component, inject, Inject, signal } from "@angular/core";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { Diagnostic as vscodeDiagnostic } from "vscode-languageserver-protocol";
 import { useEffect } from "../../../lib/useEffect";
+import { MatIconModule } from "@angular/material/icon";
 
 type uiDiagnosticItem = {
   filePath: string;
@@ -12,7 +13,7 @@ type uiDiagnosticItem = {
  */
 @Component({
   selector: "app-editor-problems",
-  imports: [],
+  imports: [MatIconModule],
   templateUrl: "./editor-problems.component.html",
   styleUrl: "./editor-problems.component.css",
 })
@@ -64,18 +65,18 @@ export class EditorProblemsComponent {
     }
   }
 
-  public getSeverityIcon(severity: vscodeDiagnostic["severity"]): string {
+  public getSeverityMatIcon(severity: vscodeDiagnostic["severity"]): string {
     switch (severity) {
       case 1:
-        return "✖";
+        return "error";
       case 2:
-        return "⚠";
+        return "warning";
       case 3:
-        return "ℹ";
+        return "info";
       case 4:
-        return "○";
+        return "lightbulb";
       default:
-        return "✖";
+        return "error";
     }
   }
 }
