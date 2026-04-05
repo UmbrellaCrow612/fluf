@@ -60,20 +60,6 @@ export class EditorStateService {
   >(this.restoreField("currentOpenFileInEditor", null));
 
   /**
-   * Exposes displayFileEditorBottom signal
-   */
-  public readonly displayFileEditorBottom = signal<
-    EditorState["displayFileEditorBottom"]
-  >(this.restoreField("displayFileEditorBottom", null));
-
-  /**
-   * Exposes fileEditorBottomActiveElement signal
-   */
-  public readonly editorBottomActiveElement = signal<
-    EditorState["editorBottomActiveElement"]
-  >(this.restoreField("editorBottomActiveElement", null));
-
-  /**
    * Exposes the editorMainActiveElement signal
    */
   public readonly editorMainActiveElement = signal<
@@ -123,9 +109,7 @@ export class EditorStateService {
     return {
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
       directoryFileNodes: this.directoryFileNodes(),
-      displayFileEditorBottom: this.displayFileEditorBottom(),
       editorMainActiveElement: this.editorMainActiveElement(),
-      editorBottomActiveElement: this.editorBottomActiveElement(),
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
       openFiles: this.openFiles(),
       selectedDirectoryPath: this.selectedDirectoryPath(),
@@ -144,8 +128,6 @@ export class EditorStateService {
     this.fileExplorerActiveFileOrFolder.set(null);
     this.openFiles.set(null);
     this.currentOpenFileInEditor.set(null);
-    this.displayFileEditorBottom.set(null);
-    this.editorBottomActiveElement.set(null);
     this.editorMainActiveElement.set(null);
     this.editorTheme.set(null);
     this.autoSave.set(false);

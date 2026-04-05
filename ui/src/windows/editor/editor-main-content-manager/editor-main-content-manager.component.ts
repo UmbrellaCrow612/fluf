@@ -1,39 +1,43 @@
-import { Component, computed, inject, Signal, Type } from '@angular/core';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { EditorOpenFilesComponent } from '../editor-open-files/editor-open-files.component';
-import { NgComponentOutlet } from '@angular/common';
-import { Renderable } from '../../../lib/ng-component-outlet/type';
-import { EditorMainContentBottomComponent } from '../editor-main-content-bottom/editor-main-content-bottom.component';
-import { Resizer } from 'umbr-resizer-two';
-import { useEffect } from '../../../lib/useEffect';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { EditorMainContentEmptyComponent } from '../editor-main-content-empty/editor-main-content-empty.component';
-import { EditorImagePaneComponent } from '../editor-image-pane/editor-image-pane.component';
-import { EditorPdfPaneComponent } from '../editor-pdf-pane/editor-pdf-pane.component';
-import { EditorVideoPaneComponent } from '../editor-video-pane/editor-video-pane.component';
-import { EditorAudioPaneComponent } from '../editor-audio-pane/editor-audio-pane.component';
-import { EditorMarkdownPaneComponent } from '../editor-markdown-pane/editor-markdown-pane.component';
-import { EditorPlainTextPaneComponent } from '../editor-plain-text-pane/editor-plain-text-pane.component';
-import { EDITOR_MAIN_ACTIVE_ELEMENT } from '../core/state/type';
+import { Component, computed, inject, Signal, Type } from "@angular/core";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { EditorOpenFilesComponent } from "../editor-open-files/editor-open-files.component";
+import { NgComponentOutlet } from "@angular/common";
+import { Renderable } from "../../../lib/ng-component-outlet/type";
+import { EditorMainContentBottomComponent } from "../editor-main-content-bottom/editor-main-content-bottom.component";
+import { Resizer } from "umbr-resizer-two";
+import { useEffect } from "../../../lib/useEffect";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
+import { EditorMainContentEmptyComponent } from "../editor-main-content-empty/editor-main-content-empty.component";
+import { EditorImagePaneComponent } from "../editor-image-pane/editor-image-pane.component";
+import { EditorPdfPaneComponent } from "../editor-pdf-pane/editor-pdf-pane.component";
+import { EditorVideoPaneComponent } from "../editor-video-pane/editor-video-pane.component";
+import { EditorAudioPaneComponent } from "../editor-audio-pane/editor-audio-pane.component";
+import { EditorMarkdownPaneComponent } from "../editor-markdown-pane/editor-markdown-pane.component";
+import { EditorPlainTextPaneComponent } from "../editor-plain-text-pane/editor-plain-text-pane.component";
+import { EDITOR_MAIN_ACTIVE_ELEMENT } from "../core/state/type";
+import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
  * stuff like the terminal problems etc
  */
 @Component({
-  selector: 'app-editor-main-content-manager',
+  selector: "app-editor-main-content-manager",
   imports: [
     EditorOpenFilesComponent,
     NgComponentOutlet,
     EditorMainContentBottomComponent,
   ],
-  templateUrl: './editor-main-content-manager.component.html',
-  styleUrl: './editor-main-content-manager.component.css',
+  templateUrl: "./editor-main-content-manager.component.html",
+  styleUrl: "./editor-main-content-manager.component.css",
 })
 export class EditorMainContentManagerComponent {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
+  );
+  private readonly editorDisplayBottomService = inject(
+    EditorDisplayBottomService,
   );
 
   private resizer: Resizer | null = null;
@@ -43,18 +47,15 @@ export class EditorMainContentManagerComponent {
     useEffect(
       (_, should) => {
         console.log(
-          '[EditorMainContentManagerComponent] MainContentManagerResizer effect ran',
+          "[EditorMainContentManagerComponent] MainContentManagerResizer effect ran",
         );
-        if (should) {
+        if (should === "true") {
           this.renderResizer();
         } else {
           this.disposeResizer();
         }
       },
-      [this.editorStateService.displayFileEditorBottom],
-      {
-        debugName: 'MainContentManagerResizer',
-      },
+      [this.editorDisplayBottomService.pane],
     );
   }
 
@@ -63,26 +64,26 @@ export class EditorMainContentManagerComponent {
 
     this.resizerTimeout = setTimeout(() => {
       const container = document.getElementById(
-        'editor_main_content_manager_central_container',
+        "editor_main_content_manager_central_container",
       ) as HTMLDivElement;
 
       if (!container) {
         throw new Error(
-          'Cannot render resizer as container is missing from DOM',
+          "Cannot render resizer as container is missing from DOM",
         );
       }
 
       this.resizer = new Resizer(
         {
           container,
-          classNames: ['resize_handle_base'],
-          direction: 'vertical',
+          classNames: ["resize_handle_base"],
+          direction: "vertical",
           handleStyles: {
-            height: '6px',
-            cursor: 'row-resize',
+            height: "6px",
+            cursor: "row-resize",
           },
           minFlex: 0.3,
-          storageKey: 'editor_main_content_manager_component_resizer_key',
+          storageKey: "editor_main_content_manager_component_resizer_key",
         },
         {
           onBeginDrag: () => {
@@ -132,8 +133,8 @@ export class EditorMainContentManagerComponent {
    * Indicates if it should rende the bottom section of the editor which contains stuff like terminal etc
    */
   public shouldRenderBottomSection: Signal<boolean> = computed(() => {
-    let should = this.editorStateService.displayFileEditorBottom();
-    return typeof should === 'boolean' && should;
+    let should = this.editorDisplayBottomService.pane();
+    return typeof should === "string" && should === "true";
   });
 
   /**

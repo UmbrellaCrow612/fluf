@@ -53,8 +53,11 @@ export class EditorSidebarComponent {
    */
   public selectSidebarItem(item: editorSideBarItem) {
     const newValue = this.activeElement() === item.pane ? null : item.pane;
-
-    this.editorSidebarPaneService.changePane(newValue);
+    if (newValue === null) {
+      this.editorSidebarPaneService.activatePane(newValue);
+    } else {
+      this.editorSidebarPaneService.activatePaneAndWait(newValue);
+    }
   }
 
   /**

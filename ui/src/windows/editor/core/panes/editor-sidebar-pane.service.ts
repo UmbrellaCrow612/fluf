@@ -1,4 +1,4 @@
-import { computed, Injectable, Signal, signal } from "@angular/core";
+import { Injectable, Signal, signal } from "@angular/core";
 import { EditorPaneServiceBase } from "./editor-pane.base";
 
 /**

@@ -1,5 +1,5 @@
-import { computed, Injectable, Signal, signal } from "@angular/core";
-import { EditorPaneServiceBase } from "./editor-pane.base";
+import { Injectable, Signal, signal } from "@angular/core";
+import { EditorPaneServiceBase } from "../editor-pane.base";
 
 /**
  * Represents which elements can be active in the bottom editor pane.

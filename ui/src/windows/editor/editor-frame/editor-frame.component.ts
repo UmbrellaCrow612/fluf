@@ -7,7 +7,6 @@ import { getElectronApi } from "../../../shared/electron";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { EditorStateService } from "../core/state/editor-state.service";
 import { MatMenuModule } from "@angular/material/menu";
-import { EDITOR_BOTTOM_ACTIVE_ELEMENT } from "../core/state/type";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
 import { EditorDocumentSavingService } from "../core/lsp/editor-document-saving.service";
@@ -15,6 +14,8 @@ import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   EditorSidebarPaneService,
 } from "../core/panes/editor-sidebar-pane.service";
+import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
+import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -87,6 +88,10 @@ export class EditorFrameComponent implements OnInit {
     EditorDocumentSavingService,
   );
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
+  private readonly editorDisplayBottomService = inject(
+    EditorDisplayBottomService,
+  );
+  private readonly editorBottomPaneService = inject(EditorBottomPaneService);
 
   /**
    * Holds state if the given chrome window is maximized
@@ -194,18 +199,20 @@ export class EditorFrameComponent implements OnInit {
           },
           {
             label: "Problems",
-            onClick: () => {
-              this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set("problems");
+            onClick: async () => {
+              await this.editorDisplayBottomService.activatePaneAndWait("true");
+              await this.editorBottomPaneService.activatePaneAndWait(
+                "problems",
+              );
             },
             id: "problems",
           },
           {
             label: "Terminal",
-            onClick: () => {
-              this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set(
-                EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL,
+            onClick: async () => {
+              await this.editorDisplayBottomService.activatePaneAndWait("true");
+              await this.editorBottomPaneService.activatePaneAndWait(
+                "problems",
               );
             },
             id: "terminal",
@@ -213,7 +220,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "File explorer",
             onClick: () => {
-              this.editorSidebarPaneService.changePane(
+              this.editorSidebarPaneService.activatePaneAndWait(
                 EDITOR_SIDE_BAR_PANE_ELEMENTS.FILE_EXPLORER,
               );
             },
@@ -222,7 +229,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Search",
             onClick: () => {
-              this.editorSidebarPaneService.changePane(
+              this.editorSidebarPaneService.activatePaneAndWait(
                 EDITOR_SIDE_BAR_PANE_ELEMENTS.SEARCH,
               );
             },
@@ -232,7 +239,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Version control",
             onClick: () => {
-              this.editorSidebarPaneService.changePane(
+              this.editorSidebarPaneService.activatePaneAndWait(
                 EDITOR_SIDE_BAR_PANE_ELEMENTS.SOURCE_CONTROL,
               );
             },
@@ -247,21 +254,17 @@ export class EditorFrameComponent implements OnInit {
         children: [
           {
             label: "New terminal",
-            onClick: () => {
-              this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set(
-                EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL,
+            onClick: async () => {
+              await this.editorDisplayBottomService.activatePaneAndWait("true");
+              await this.editorBottomPaneService.activatePaneAndWait(
+                "problems",
               );
               this.editorInMemoryStateService.resetEditorBottomPanelDragHeight.update(
                 (x) => x + 1,
               );
-
-              setTimeout(() => {
-                // we need a slight delay for UI to catch up
-                this.editorInMemoryStateService.createTerminal.update(
-                  (x) => x + 1,
-                );
-              }, 200);
+              this.editorInMemoryStateService.createTerminal.update(
+                (x) => x + 1,
+              );
             },
             id: "new_terminal",
           },

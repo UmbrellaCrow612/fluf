@@ -6,29 +6,6 @@ import {
 import { Location } from "vscode-languageserver-protocol";
 
 /**
- * Represents which elements can be active in the bottom editor popup.
- */
-export const EDITOR_BOTTOM_ACTIVE_ELEMENT = {
-  TERMINAL: "terminal",
-  PROBLEMS: "problems",
-} as const;
-
-/**
- * Contains a list of valid editor bottom active elements
- */
-export const EDITOR_VALID_BOTTOM_ACTIVE_ELEMENTS =
-  new Set<editorBottomActiveElement>(
-    Object.values(EDITOR_BOTTOM_ACTIVE_ELEMENT),
-  );
-
-/**
- * Represents a valid value for the editor bottom active element
- */
-export type editorBottomActiveElement =
-  | (typeof EDITOR_BOTTOM_ACTIVE_ELEMENT)[keyof typeof EDITOR_BOTTOM_ACTIVE_ELEMENT]
-  | null;
-
-/**
  * All the components that can be rendered in the middle of the text editor.
  */
 export const EDITOR_MAIN_ACTIVE_ELEMENT = {
@@ -84,16 +61,6 @@ export type EditorState = {
    * The current file being displayed in the text file editor.
    */
   currentOpenFileInEditor: fileNode | null;
-
-  /**
-   * Indicates whether the file editor bottom section should be shown, which contains the terminal, problems, etc.
-   */
-  displayFileEditorBottom: boolean | null;
-
-  /**
-   * The current active element in the file editor bottom container.
-   */
-  editorBottomActiveElement: editorBottomActiveElement;
 
   /**
    * Represents the main component to render in the middle of the text editor,

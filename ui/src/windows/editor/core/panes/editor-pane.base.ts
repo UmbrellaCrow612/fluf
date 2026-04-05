@@ -1,7 +1,7 @@
-import { computed, Signal, signal } from "@angular/core";
+import { computed, Signal, signal, WritableSignal } from "@angular/core";
 
 /**
- * How long {@link EditorPaneServiceBase.changePane} will wait for a pane
+ * How long {@link EditorPaneServiceBase.activatePaneAndWait} will wait for a pane
  * to call {@link EditorPaneServiceBase.resolvePane} before rejecting.
  */
 const PANE_RENDER_TIMEOUT_MS = 5_000;
@@ -10,7 +10,7 @@ const PANE_RENDER_TIMEOUT_MS = 5_000;
  * Abstract base class for editor pane services.
  *
  * Provides signal-based active-pane tracking, localStorage persistence, and a
- * render-acknowledgement contract via {@link changePane} / {@link resolvePane}.
+ * render-acknowledgement contract via {@link activatePaneAndWait} / {@link resolvePane}.
  *
  * ### Implementing a new pane service
  * 1. Extend this class with the concrete pane union type as the type parameter.
@@ -27,26 +27,26 @@ const PANE_RENDER_TIMEOUT_MS = 5_000;
  *
  * @typeParam T - The union of valid pane string literals for the panel, plus `null`.
  */
-export abstract class EditorPaneServiceBase<T extends string> {
+export abstract class EditorPaneServiceBase<T extends string | null> {
   /**
    * Holds the current pane signal.
    */
-  private readonly _pane = signal<T | null>(this._restoreState());
+  private readonly _pane: WritableSignal<T | null>;
 
   /**
-   * Resolve function of the currently pending {@link changePane} promise.
+   * Resolve function of the currently pending {@link activatePaneAndWait} promise.
    * `null` when no promise is in flight.
    */
   private _pendingResolve: (() => void) | null = null;
 
   /**
-   * Reject function of the currently pending {@link changePane} promise.
+   * Reject function of the currently pending {@link activatePaneAndWait} promise.
    * `null` when no promise is in flight.
    */
   private _pendingReject: ((reason?: unknown) => void) | null = null;
 
   /**
-   * Handle for the render-timeout timer started by {@link changePane}.
+   * Handle for the render-timeout timer started by {@link activatePaneAndWait}.
    * Cleared by {@link _clearPending} whenever the promise settles.
    */
   private _pendingTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -65,54 +65,73 @@ export abstract class EditorPaneServiceBase<T extends string> {
   public readonly pane: Signal<T | null> = computed(() => this._pane());
 
   /**
-   * @param _validPanes  - Set of all valid pane values for this panel.
-   * @param _storageKey  - localStorage key under which the active pane is persisted.
+   * @param _validPanes - Set of all valid pane values for this panel.
+   * @param _storageKey - localStorage key under which the active pane is persisted.
    */
   protected constructor(
     private readonly _validPanes: ReadonlySet<T>,
     private readonly _storageKey: string,
-  ) {}
+  ) {
+    this._pane = signal<T | null>(this._restoreState());
+  }
 
   /**
-   * Changes the active pane and persists the change to localStorage.
+   * Switches the active pane without waiting for it to render.
+   *
+   * Use this for fire-and-forget pane changes where no render acknowledgement
+   * is needed. If the pane value is invalid a warning is logged and the call
+   * is ignored. Any in-flight {@link activatePaneAndWait} promise is rejected
+   * with `'superseded'`.
+   *
+   * @param pane - The pane to activate, or `null` to close the panel.
+   */
+  public activatePane(pane: T | null): void {
+    if (this._pane() === pane) return;
+
+    if (pane !== null && !this._validPanes.has(pane)) {
+      console.warn(
+        `[${this.constructor.name}] Cannot set pane to invalid value: "${pane}"`,
+      );
+      return;
+    }
+
+    this._clearPending("superseded");
+    this._pane.set(pane);
+    this._saveState(pane);
+  }
+
+  /**
+   * Switches the active pane and returns a `Promise<void>` that resolves
+   * once the pane component calls {@link resolvePane}.
    *
    * Returns a `Promise<void>` that settles as follows:
    *
    * | Scenario | Settlement |
    * |---|---|
    * | `pane` equals the currently active pane | Resolves immediately |
-   * | `pane` is `null` (close panel) | Resolves immediately |
    * | Pane calls {@link resolvePane} within {@link PANE_RENDER_TIMEOUT_MS} | Resolves |
    * | {@link PANE_RENDER_TIMEOUT_MS} elapses with no acknowledgement | Rejects with `Error` |
-   * | {@link changePane} is called again before the promise settles | Rejects with `'superseded'` |
+   * | {@link activatePaneAndWait} is called again before the promise settles | Rejects with `'superseded'` |
    * | `pane` is not a member of the valid-panes `Set` | Rejects with `Error` |
    *
-   * @param pane - The pane to activate, or `null` to close the panel.
+   * @param pane - The pane to activate. Cannot be `null` since closing the
+   * panel renders nothing and needs no acknowledgement — use
+   * {@link activatePane} with `null` instead.
    * @returns A promise that resolves once the activated pane has fully rendered.
    */
-  public changePane(pane: T | null): Promise<void> {
-    const current = this._pane();
-
-    if (current === pane) {
-      return Promise.resolve();
-    }
+  public activatePaneAndWait(pane: T | null): Promise<void> {
+    if (this._pane() === pane) return Promise.resolve();
 
     if (pane !== null && !this._validPanes.has(pane)) {
-      const label = this.constructor.name;
-      console.warn(`[${label}] Cannot set pane to invalid value: "${pane}"`);
+      console.warn(
+        `[${this.constructor.name}] Cannot set pane to invalid value: "${pane}"`,
+      );
       return Promise.reject(new Error(`Invalid pane: "${pane}"`));
     }
 
-    // A pane was already pending — it will never render now, so reject it.
     this._clearPending("superseded");
-
     this._pane.set(pane);
     this._saveState(pane);
-
-    // Closing the panel renders nothing, so no acknowledgement is expected.
-    if (pane === null) {
-      return Promise.resolve();
-    }
 
     return new Promise<void>((resolve, reject) => {
       this._pendingResolve = resolve;
@@ -120,10 +139,9 @@ export abstract class EditorPaneServiceBase<T extends string> {
 
       this._pendingTimeout = setTimeout(() => {
         if (this._pendingReject) {
-          const label = this.constructor.name;
           this._pendingReject(
             new Error(
-              `[${label}] Pane "${pane}" did not call resolvePane() within ${PANE_RENDER_TIMEOUT_MS}ms`,
+              `[${this.constructor.name}] Pane "${pane}" did not call resolvePane() within ${PANE_RENDER_TIMEOUT_MS}ms`,
             ),
           );
         }
@@ -136,29 +154,27 @@ export abstract class EditorPaneServiceBase<T extends string> {
    * Notifies the service that the currently active pane has fully rendered.
    *
    * Pane components **must** call this method once their view is ready in order
-   * to resolve the `Promise` returned by {@link changePane}. The conventional
-   * place to do so is `ngAfterViewInit`:
+   * to resolve the `Promise` returned by {@link activatePaneAndWait}. The
+   * conventional place to do so is `ngAfterViewInit`:
    *
    * @example
    * ngAfterViewInit(): void {
    *   this.paneService.resolvePane();
    * }
    *
-   * This method is a no-op when no {@link changePane} promise is pending (e.g.
-   * on the very first render driven by a restored localStorage value), so
-   * components do not need to guard the call.
+   * This method is a no-op when no {@link activatePaneAndWait} promise is
+   * pending (e.g. on the very first render driven by a restored localStorage
+   * value), so components do not need to guard the call.
    */
   public resolvePane(): void {
-    if (!this._pendingResolve) {
-      return;
-    }
+    if (!this._pendingResolve) return;
 
     this._pendingResolve();
     this._clearPending();
   }
 
   /**
-   * Settles and tears down any in-flight {@link changePane} promise.
+   * Settles and tears down any in-flight {@link activatePaneAndWait} promise.
    *
    * If `rejectReason` is provided the pending promise is rejected with that
    * value before state is cleared; otherwise only the timeout and stored

@@ -3,8 +3,8 @@
     @for (item of callToActions(); track $index) {
       <button
         class="btn"
-        [class.active]="activeBottomElement() === item.element"
-        (click)="selectEditorBottomElement(item.element)"
+        [class.active]="activeBottomElement() === item.pane"
+        (click)="selectEditorBottomElement(item.pane)"
       >
         {{ item.label }}
       </button>
