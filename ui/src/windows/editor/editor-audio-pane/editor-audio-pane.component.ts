@@ -1,24 +1,26 @@
-import { Component, computed, inject, signal, Signal } from '@angular/core';
-import { EditorAudioService } from '../core/services/editor-audio.service';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { useEffect } from '../../../lib/useEffect';
-import { fileNode } from '../../../gen/type';
-import { getElectronApi } from '../../../shared/electron';
-import { ApplicationapplicationLocalFileUrlService } from '../../../shared/services/application-local-file-url.service';
+import { Component, computed, inject, signal, Signal } from "@angular/core";
+import { EditorAudioService } from "../core/services/editor-audio.service";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { useEffect } from "../../../lib/useEffect";
+import { fileNode } from "../../../gen/type";
+import { getElectronApi } from "../../../shared/electron";
+import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
 
 /**
  * Allows users to view audio files
  */
 @Component({
-  selector: 'app-editor-audio-pane',
+  selector: "app-editor-audio-pane",
   imports: [],
-  templateUrl: './editor-audio-pane.component.html',
-  styleUrl: './editor-audio-pane.component.css',
+  templateUrl: "./editor-audio-pane.component.html",
+  styleUrl: "./editor-audio-pane.component.css",
 })
 export class EditorAudioPaneComponent {
   private readonly editorAudioService = inject(EditorAudioService);
   private readonly editorStateService = inject(EditorStateService);
-  private readonly applicationLocalFileUrlService = inject(ApplicationapplicationLocalFileUrlService);
+  private readonly applicationLocalFileUrlService = inject(
+    ApplicationLocalFileUrlService,
+  );
   private readonly electronApi = getElectronApi();
 
   /**
@@ -40,7 +42,7 @@ export class EditorAudioPaneComponent {
   /**
    * Holds refrence to the audio source
    */
-  public readonly audioSrc = signal('');
+  public readonly audioSrc = signal("");
 
   constructor() {
     useEffect(
@@ -75,7 +77,7 @@ export class EditorAudioPaneComponent {
       const src = this.applicationLocalFileUrlService.toUrl(norm);
       this.audioSrc.set(src);
     } catch (error: any) {
-      console.error('Failed to load audio file ', error);
+      console.error("Failed to load audio file ", error);
       this.error.set(`Failed to show audio file ${error?.message}`);
     } finally {
       this.isLoading.set(false);

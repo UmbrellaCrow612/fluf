@@ -16,7 +16,6 @@ import {
   EDITOR_BOTTOM_PANE_ELEMENT,
   EditorBottomPaneService,
 } from "../core/panes/bottom/editor-bottom-pane.service";
-import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
 
 /**
  * Represents the bottom section of the main content which contains stuff like the terminal etc, manages which one to show
@@ -29,13 +28,8 @@ import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-
 })
 export class EditorMainContentBottomComponent implements AfterViewInit {
   private readonly editorBottomPaneService = inject(EditorBottomPaneService);
-  private readonly editorDisplayBottomService = inject(
-    EditorDisplayBottomService,
-  );
 
-  public ngAfterViewInit() {
-    this.editorDisplayBottomService.resolvePane();
-  }
+  public ngAfterViewInit() {}
 
   /**
    * Holds list of components that can be rendered as the main content of this component

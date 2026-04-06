@@ -81,6 +81,6 @@ export class EditorMainContentBottomFrameComponent {
    * Closes the bottom panel i.e hides it from UI
    */
   public closeBottomPanel() {
-    this.editorDisplayBottomService.activatePane("false");
+    this.editorDisplayBottomService.hide();
   }
 }

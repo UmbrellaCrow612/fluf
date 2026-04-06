@@ -2,7 +2,6 @@ import { computed, Signal, signal, WritableSignal } from "@angular/core";
 
 /**
  * How long {@link EditorPaneServiceBase.activatePaneAndWait} will wait for a pane
- * to call {@link EditorPaneServiceBase.resolvePane} before rejecting.
  */
 const PANE_RENDER_TIMEOUT_MS = 5_000;
 

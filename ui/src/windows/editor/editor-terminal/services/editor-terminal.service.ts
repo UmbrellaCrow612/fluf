@@ -3,7 +3,6 @@ import { useEffect } from "../../../../lib/useEffect";
 import { EditorInMemoryStateService } from "../../core/state/editor-in-memory-state.service";
 import { voidCallback } from "../../../../gen/type";
 import { getElectronApi } from "../../../../shared/electron";
-import { EditorStateService } from "../../core/state/editor-state.service";
 import { EditorDisplayBottomService } from "../../core/panes/bottom/editor-display-bottom.service";
 
 @Injectable({
@@ -16,7 +15,6 @@ export class EditorTerminalService {
   private readonly editorDisplayBottomService = inject(
     EditorDisplayBottomService,
   );
-  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
 
   /**
@@ -71,7 +69,7 @@ export class EditorTerminalService {
       },
       [
         this.editorInMemoryStateService.shells,
-        this.editorDisplayBottomService.pane,
+        this.editorDisplayBottomService.display,
       ],
     );
   }

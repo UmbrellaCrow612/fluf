@@ -200,7 +200,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Problems",
             onClick: async () => {
-              await this.editorDisplayBottomService.activatePaneAndWait("true");
+              this.editorDisplayBottomService.show();
               await this.editorBottomPaneService.activatePaneAndWait(
                 "problems",
               );
@@ -210,7 +210,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Terminal",
             onClick: async () => {
-              await this.editorDisplayBottomService.activatePaneAndWait("true");
+              this.editorDisplayBottomService.show();
               await this.editorBottomPaneService.activatePaneAndWait(
                 "problems",
               );
@@ -255,7 +255,7 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "New terminal",
             onClick: async () => {
-              await this.editorDisplayBottomService.activatePaneAndWait("true");
+              this.editorDisplayBottomService.show();
               await this.editorBottomPaneService.activatePaneAndWait(
                 "problems",
               );

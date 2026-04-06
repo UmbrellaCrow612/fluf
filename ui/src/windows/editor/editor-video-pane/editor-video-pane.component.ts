@@ -7,34 +7,36 @@ import {
   signal,
   Signal,
   viewChild,
-} from '@angular/core';
-import { EditorVideoService } from '../core/services/editor-video.service';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { fileNode } from '../../../gen/type';
-import { useEffect } from '../../../lib/useEffect';
-import { getElectronApi } from '../../../shared/electron';
-import { ApplicationapplicationLocalFileUrlService } from '../../../shared/services/application-local-file-url.service';
+} from "@angular/core";
+import { EditorVideoService } from "../core/services/editor-video.service";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { fileNode } from "../../../gen/type";
+import { useEffect } from "../../../lib/useEffect";
+import { getElectronApi } from "../../../shared/electron";
+import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
 
 /**
  * Allows user to view video file formatts
  */
 @Component({
-  selector: 'app-editor-video-pane',
+  selector: "app-editor-video-pane",
   imports: [],
-  templateUrl: './editor-video-pane.component.html',
-  styleUrl: './editor-video-pane.component.css',
+  templateUrl: "./editor-video-pane.component.html",
+  styleUrl: "./editor-video-pane.component.css",
 })
 export class EditorVideoPaneComponent implements OnDestroy {
   private readonly editorVideoService = inject(EditorVideoService);
   private readonly editorStateService = inject(EditorStateService);
-  private readonly applicationLocalFileUrlService = inject(ApplicationapplicationLocalFileUrlService);
+  private readonly applicationLocalFileUrlService = inject(
+    ApplicationLocalFileUrlService,
+  );
   private readonly electronApi = getElectronApi();
 
   /**
    * Reference to the video element
    */
   private readonly videoElement =
-    viewChild<ElementRef<HTMLVideoElement>>('videoPlayer');
+    viewChild<ElementRef<HTMLVideoElement>>("videoPlayer");
 
   /**
    * Keeps track of the current open file in the editor
@@ -56,7 +58,7 @@ export class EditorVideoPaneComponent implements OnDestroy {
   /**
    * Holds the file source path to the video to show in the UI
    */
-  public readonly videoSrc = signal('');
+  public readonly videoSrc = signal("");
 
   constructor() {
     useEffect(
@@ -83,19 +85,19 @@ export class EditorVideoPaneComponent implements OnDestroy {
   private cleanUpState() {
     const video = this.videoElement()?.nativeElement;
     if (!video) {
-      console.error('Could not find video element');
+      console.error("Could not find video element");
       return;
     }
 
     if (document.pictureInPictureElement === video) {
       document.exitPictureInPicture().catch((err) => {
-        console.error('Failed to exit Picture-in-Picture:', err);
+        console.error("Failed to exit Picture-in-Picture:", err);
       });
     }
 
     // Pause and clear source to stop buffering
     video.pause();
-    video.removeAttribute('src');
+    video.removeAttribute("src");
     video.load();
   }
 
@@ -118,7 +120,7 @@ export class EditorVideoPaneComponent implements OnDestroy {
       const path = this.applicationLocalFileUrlService.toUrl(norm);
       this.videoSrc.set(path);
     } catch (error: any) {
-      console.error('Failed to show video pane ', error);
+      console.error("Failed to show video pane ", error);
       this.error.set(`Failed to show video editor panel ${error?.message}`);
     } finally {
       this.isLoading.set(false);

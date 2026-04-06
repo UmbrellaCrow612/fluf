@@ -1,8 +1,15 @@
-import { Component, inject, Inject, signal } from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  Inject,
+  signal,
+} from "@angular/core";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { Diagnostic as vscodeDiagnostic } from "vscode-languageserver-protocol";
 import { useEffect } from "../../../lib/useEffect";
 import { MatIconModule } from "@angular/material/icon";
+import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
 
 type uiDiagnosticItem = {
   filePath: string;
@@ -17,15 +24,20 @@ type uiDiagnosticItem = {
   templateUrl: "./editor-problems.component.html",
   styleUrl: "./editor-problems.component.css",
 })
-export class EditorProblemsComponent {
+export class EditorProblemsComponent implements AfterViewInit {
   private readonly editorDocumentDiagnosticService = inject(
     EditorDocumentDiagnosticService,
   );
+  private readonly editorBottomPaneService = inject(EditorBottomPaneService);
 
   constructor() {
     useEffect(() => {
       this.render();
     }, [this.editorDocumentDiagnosticService.valueChanged]);
+  }
+
+  public ngAfterViewInit() {
+    this.editorBottomPaneService.resolvePane();
   }
 
   /**

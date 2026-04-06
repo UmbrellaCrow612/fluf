@@ -133,8 +133,6 @@ export class EditorMainContentComponent {
    */
   public shouldRenderSideBarComponent: Signal<boolean> = computed(() => {
     let should = this.editorSidebarPaneService.pane() !== null;
-    console.log(this.editorSidebarPaneService.pane());
-    console.log(should);
     return should;
   });
 

@@ -49,13 +49,13 @@ export class EditorMainContentManagerComponent {
         console.log(
           "[EditorMainContentManagerComponent] MainContentManagerResizer effect ran",
         );
-        if (should === "true") {
+        if (should) {
           this.renderResizer();
         } else {
           this.disposeResizer();
         }
       },
-      [this.editorDisplayBottomService.pane],
+      [this.editorDisplayBottomService.display],
     );
   }
 
@@ -133,8 +133,8 @@ export class EditorMainContentManagerComponent {
    * Indicates if it should rende the bottom section of the editor which contains stuff like terminal etc
    */
   public shouldRenderBottomSection: Signal<boolean> = computed(() => {
-    let should = this.editorDisplayBottomService.pane();
-    return typeof should === "string" && should === "true";
+    let should = this.editorDisplayBottomService.display();
+    return should;
   });
 
   /**

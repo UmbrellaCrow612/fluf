@@ -1,24 +1,26 @@
-import { Component, computed, inject, signal, Signal } from '@angular/core';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { fileNode } from '../../../gen/type';
-import { useEffect } from '../../../lib/useEffect';
-import { EditorImageService } from '../core/services/editor-image.service.service';
-import { ApplicationapplicationLocalFileUrlService } from '../../../shared/services/application-local-file-url.service';
-import { getElectronApi } from '../../../shared/electron';
+import { Component, computed, inject, signal, Signal } from "@angular/core";
+import { EditorStateService } from "../core/state/editor-state.service";
+import { fileNode } from "../../../gen/type";
+import { useEffect } from "../../../lib/useEffect";
+import { EditorImageService } from "../core/services/editor-image.service.service";
+import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
+import { getElectronApi } from "../../../shared/electron";
 
 /**
  * Displays a image viwer for the current open file and render any specific component needed to render it
  */
 @Component({
-  selector: 'app-editor-image-pane',
+  selector: "app-editor-image-pane",
   imports: [],
-  templateUrl: './editor-image-pane.component.html',
-  styleUrl: './editor-image-pane.component.css',
+  templateUrl: "./editor-image-pane.component.html",
+  styleUrl: "./editor-image-pane.component.css",
 })
 export class EditorImagePaneComponent {
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
-  private readonly applicationLocalFileUrlService = inject(ApplicationapplicationLocalFileUrlService);
+  private readonly applicationLocalFileUrlService = inject(
+    ApplicationLocalFileUrlService,
+  );
   private readonly electronApi = getElectronApi();
 
   /**
@@ -41,7 +43,7 @@ export class EditorImagePaneComponent {
   /**
    * Holds the file URL to the image to render
    */
-  public readonly imageSrc = signal('');
+  public readonly imageSrc = signal("");
 
   constructor() {
     useEffect(
@@ -76,7 +78,7 @@ export class EditorImagePaneComponent {
       const imgSrc = this.applicationLocalFileUrlService.toUrl(norm);
       this.imageSrc.set(imgSrc);
     } catch (error: any) {
-      console.error('Failed to render image pane ', error);
+      console.error("Failed to render image pane ", error);
       this.error.set(`Failed to render image pane ${error?.message}`);
     } finally {
       this.isLoading.set(false);

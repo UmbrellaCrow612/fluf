@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
 /**
  * Used to fetch local files from system by creating a URL path
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
-export class ApplicationapplicationLocalFileUrlService {
+export class ApplicationLocalFileUrlService {
   /**
    * Generates a fluf:// URL for use in img src attributes
    * @param filePath - Absolute path to the local file

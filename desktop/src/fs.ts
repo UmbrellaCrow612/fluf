@@ -33,7 +33,7 @@ import { broadcastToAll } from "./broadcast.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
- * Contains a map of specific path and it's abort controller to stop the watcher for it
+ * Contains a map of specific path and it's abort "control"ler to stop the watcher for it
  * @type {Map<string, AbortController>}
  */
 const watcherAbortsMap: Map<string, AbortController> = new Map();

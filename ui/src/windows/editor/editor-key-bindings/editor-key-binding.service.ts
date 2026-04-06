@@ -26,12 +26,7 @@ export class EditorKeyBindingService {
   public initKeyBindings = async () => {
     try {
       this.keyMaster.add(["Control", "j"], () => {
-        const value = this.editorDisplayBottomService.pane();
-        if (value === "true") {
-          this.editorDisplayBottomService.activatePane("false");
-        } else {
-          this.editorDisplayBottomService.activatePaneAndWait("true");
-        }
+        this.editorDisplayBottomService.logicalOr();
       });
 
       this.keyMaster.add(["Control", "s"], () => {
