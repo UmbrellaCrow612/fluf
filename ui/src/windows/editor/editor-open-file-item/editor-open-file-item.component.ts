@@ -10,10 +10,9 @@ import {
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { EditorStateService } from "../core/state/editor-state.service";
-import { fileNode, voidCallback } from "../../../gen/type";
+import { fileNode } from "../../../gen/type";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
-import { removeFileNodeIfExists } from "../../../shared/file-node-helpers";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
@@ -24,7 +23,7 @@ import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
-import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 @Component({
   selector: "app-editor-open-file-item",

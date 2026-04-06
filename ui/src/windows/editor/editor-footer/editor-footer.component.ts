@@ -13,7 +13,7 @@ import { EditorStateService } from "../core/state/editor-state.service";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { DatePipe } from "@angular/common";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
-import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 @Component({
   selector: "app-editor-footer",

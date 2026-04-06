@@ -17,7 +17,7 @@ import {
 import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
 import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
 import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
-import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options

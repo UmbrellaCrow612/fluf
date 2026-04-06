@@ -51,7 +51,7 @@ import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-dia
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
-import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text

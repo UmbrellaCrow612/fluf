@@ -21,7 +21,7 @@ import {
 import { normalize } from "../../../lib/path";
 import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
 import { EditorFileExplorerService } from "./services/editor-file-explorer.service";
-import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Renders a file explorer with the current files and folders in the select directory

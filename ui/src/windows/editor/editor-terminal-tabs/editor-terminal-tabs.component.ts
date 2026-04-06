@@ -13,7 +13,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { EditorStateService } from "../core/state/editor-state.service";
 import { getElectronApi } from "../../../shared/electron";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
-import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Holds the active tabs and allows crud operations on them

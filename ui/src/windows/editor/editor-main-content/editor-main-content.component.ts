@@ -21,7 +21,7 @@ import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   EditorSidebarPaneService,
 } from "../core/panes/editor-sidebar-pane.service";
-import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
