@@ -39,13 +39,6 @@ export class EditorStateService {
   >(this.restoreField("fileExplorerActiveFileOrFolder", null));
 
   /**
-   * Exposes openFiles signal
-   */
-  public readonly openFiles = signal<EditorState["openFiles"]>(
-    this.restoreField("openFiles", null),
-  );
-
-  /**
    * Exposes currentOpenFileInEditor signal
    */
   public readonly currentOpenFileInEditor = signal<
@@ -103,7 +96,6 @@ export class EditorStateService {
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
       editorMainActiveElement: this.editorMainActiveElement(),
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
-      openFiles: this.openFiles(),
       selectedDirectoryPath: this.selectedDirectoryPath(),
       editorTheme: this.editorTheme(),
       autoSave: this.autoSave(),
@@ -117,7 +109,6 @@ export class EditorStateService {
   public reset() {
     this.selectedDirectoryPath.set(null);
     this.fileExplorerActiveFileOrFolder.set(null);
-    this.openFiles.set(null);
     this.currentOpenFileInEditor.set(null);
     this.editorMainActiveElement.set(null);
     this.editorTheme.set(null);

@@ -16,6 +16,7 @@ import {
 } from "../core/panes/editor-sidebar-pane.service";
 import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
 import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
+import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -92,6 +93,7 @@ export class EditorFrameComponent implements OnInit {
     EditorDisplayBottomService,
   );
   private readonly editorBottomPaneService = inject(EditorBottomPaneService);
+  private readonly editorOpenFilesService = inject(EditorOpenFilesService);
 
   /**
    * Holds state if the given chrome window is maximized
@@ -167,7 +169,7 @@ export class EditorFrameComponent implements OnInit {
               this.editorStateService.selectedDirectoryPath.set(
                 res.filePaths[0],
               );
-              this.editorStateService.openFiles.set(null);
+              this.editorOpenFilesService.reset();
               this.editorStateService.currentOpenFileInEditor.set(null);
               this.editorStateService.editorMainActiveElement.set(null);
               this.editorStateService.fileExplorerActiveFileOrFolder.set(null);

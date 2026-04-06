@@ -11,6 +11,7 @@ import {
 } from "../state/type";
 import { normalize } from "../../../../lib/path";
 import { Location as vscodeLocation } from "vscode-languageserver-protocol";
+import { EditorOpenFilesService } from "../../editor-open-files/services/editor-open-files.service";
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -24,6 +25,7 @@ export class EditorDocumentOpenerService {
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);
   private readonly editorAudioService = inject(EditorAudioService);
+  private readonly editorOpenFilesService = inject(EditorOpenFilesService);
 
   /**
    * Opens a file node in the editor.
@@ -75,9 +77,7 @@ export class EditorDocumentOpenerService {
    * @param target - The file node to add to open files
    */
   private addToOpenFiles(target: fileNode): void {
-    const openFiles = this.editorStateService.openFiles() ?? [];
-    addFileNodeIfNotExists(openFiles, target);
-    this.editorStateService.openFiles.set(structuredClone(openFiles));
+    this.editorOpenFilesService.open(target);
   }
 
   /**

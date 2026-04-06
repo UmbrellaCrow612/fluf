@@ -23,6 +23,7 @@ import { Diagnostic } from "vscode-languageserver-protocol";
 import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language-server-protocol.service";
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
+import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
 
 @Component({
   selector: "app-editor-open-file-item",
@@ -56,6 +57,7 @@ export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorDocumentOpenTrackerService = inject(
     EditorDocumentOpenTrackerService,
   );
+  private readonly editorOpenFilesService = inject(EditorOpenFilesService);
 
   /**
    * Displays count of error diagnostic it has for file
@@ -190,13 +192,11 @@ export class EditorOpenFileItemComponent implements OnInit {
       console.log("Send text document closed");
     }
 
-    let openfiles = this.editorStateService.openFiles() ?? [];
-    removeFileNodeIfExists(openfiles, this.fileNode());
-
-    this.editorStateService.openFiles.set(structuredClone(openfiles));
+    this.editorOpenFilesService.close(this.fileNode());
+    const nodes = this.editorOpenFilesService.nodes();
 
     if (this.isActive()) {
-      let nextAvNode: fileNode | null = openfiles[0];
+      let nextAvNode: fileNode | null = nodes[0];
       if (nextAvNode) {
         this.editorDocumentOpenerService.openFileNodeInEditor(nextAvNode);
       }

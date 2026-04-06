@@ -48,11 +48,6 @@ export type EditorState = {
   fileExplorerActiveFileOrFolder: fileNode | null;
 
   /**
-   * List of open files in the editor to show in the open file tab bar.
-   */
-  openFiles: fileNode[] | null;
-
-  /**
    * The current file being displayed in the text file editor.
    */
   currentOpenFileInEditor: fileNode | null;

@@ -16,6 +16,7 @@ import { EditorMarkdownPaneComponent } from "../editor-markdown-pane/editor-mark
 import { EditorPlainTextPaneComponent } from "../editor-plain-text-pane/editor-plain-text-pane.component";
 import { EDITOR_MAIN_ACTIVE_ELEMENT } from "../core/state/type";
 import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
+import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -39,6 +40,7 @@ export class EditorMainContentManagerComponent {
   private readonly editorDisplayBottomService = inject(
     EditorDisplayBottomService,
   );
+  private readonly editorOpenFilesService = inject(EditorOpenFilesService);
 
   private resizer: Resizer | null = null;
   private resizerTimeout: NodeJS.Timeout | undefined = undefined;
@@ -113,7 +115,7 @@ export class EditorMainContentManagerComponent {
    * Keeps track of if there are no open files in the editor
    */
   private noFilesOpen: Signal<boolean> = computed(() => {
-    const openFiles = this.editorStateService.openFiles();
+    const openFiles = this.editorOpenFilesService.nodes();
     if (!openFiles) {
       return true;
     }
@@ -125,7 +127,7 @@ export class EditorMainContentManagerComponent {
    * Indicates if we should render the component that displays all current open files in the editor
    */
   public shouldRenderOpenFiles: Signal<boolean> = computed(() => {
-    let files = this.editorStateService.openFiles();
+    let files = this.editorOpenFilesService.nodes();
     return Array.isArray(files) && files.length > 0;
   });
 
