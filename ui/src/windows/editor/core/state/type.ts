@@ -36,13 +36,6 @@ export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> =
  */
 export type EditorState = {
   /**
-   * The currently focused / last clicked or last edited file (from the editor) in the file explorer tree.
-   * Used as a signal to show which file was clicked, is currently open in the editor, or as a way to show where you would
-   * create a file or folder node.
-   */
-  fileExplorerActiveFileOrFolder: fileNode | null;
-
-  /**
    * The current file being displayed in the text file editor.
    */
   currentOpenFileInEditor: fileNode | null;

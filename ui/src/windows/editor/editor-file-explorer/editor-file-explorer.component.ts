@@ -104,9 +104,8 @@ export class EditorFileExplorerComponent implements AfterViewInit {
   /**
    * Keeps track of the current file in the editor
    */
-  public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.fileExplorerActiveFileOrFolder(),
-  );
+  public readonly activeNode: Signal<fileNode | null> =
+    this.editorFileExplorerService.activeNode;
 
   /**
    * Updates the session state nodes for the selected directory root node
@@ -121,11 +120,11 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    * @param node The node clicked
    */
   public itemSelected(node: fileNode) {
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(node);
+    this.editorFileExplorerService.updateActive(node);
   }
 
   public readonly isRootNodeActive: Signal<boolean> = computed(() => {
-    const activeNode = this.editorStateService.fileExplorerActiveFileOrFolder();
+    const activeNode = this.editorFileExplorerService.activeNode();
     if (!activeNode) {
       return false;
     }
@@ -174,8 +173,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
     const rootPath = normalize(this.editorWorkspaceService.workspace()!);
     const nodes = this.editorFileExplorerService.nodes();
     const activeNode =
-      this.editorStateService.fileExplorerActiveFileOrFolder() ??
-      this.rootNode();
+      this.editorFileExplorerService.activeNode() ?? this.rootNode();
     const copy = structuredClone(activeNode);
 
     // Determine the target directory path where the new node will be created
@@ -212,6 +210,6 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    * When the user clicks the empty space in the file explroer we set the active node to be the root node
    */
   public focusFileExplorerRoot() {
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(this.rootNode());
+    this.editorFileExplorerService.updateActive(this.rootNode());
   }
 }

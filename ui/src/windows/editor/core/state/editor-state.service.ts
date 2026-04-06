@@ -25,13 +25,6 @@ const LOCAL_STORAGE_KEY = "editor-app-context";
 })
 export class EditorStateService {
   /**
-   * Exposes fileExplorerActiveFileOrFolder signal
-   */
-  public readonly fileExplorerActiveFileOrFolder = signal<
-    EditorState["fileExplorerActiveFileOrFolder"]
-  >(this.restoreField("fileExplorerActiveFileOrFolder", null));
-
-  /**
    * Exposes currentOpenFileInEditor signal
    */
   public readonly currentOpenFileInEditor = signal<
@@ -88,7 +81,6 @@ export class EditorStateService {
     return {
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
       editorMainActiveElement: this.editorMainActiveElement(),
-      fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
       editorTheme: this.editorTheme(),
       autoSave: this.autoSave(),
       scrollToDefinitionLocation: this.scrollToDefinitionLocation(),
@@ -99,7 +91,6 @@ export class EditorStateService {
    * Resets the state of all fields to their default
    */
   public reset() {
-    this.fileExplorerActiveFileOrFolder.set(null);
     this.currentOpenFileInEditor.set(null);
     this.editorMainActiveElement.set(null);
     this.editorTheme.set(null);

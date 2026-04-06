@@ -12,6 +12,7 @@ import {
 import { normalize } from "../../../../lib/path";
 import { Location as vscodeLocation } from "vscode-languageserver-protocol";
 import { EditorOpenFilesService } from "../../editor-open-files/services/editor-open-files.service";
+import { EditorFileExplorerService } from "../../editor-file-explorer/services/editor-file-explorer.service";
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -26,6 +27,9 @@ export class EditorDocumentOpenerService {
   private readonly editorVideoService = inject(EditorVideoService);
   private readonly editorAudioService = inject(EditorAudioService);
   private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorFileExplorerService = inject(
+    EditorFileExplorerService,
+  );
 
   /**
    * Opens a file node in the editor.
@@ -93,7 +97,7 @@ export class EditorDocumentOpenerService {
     }
 
     this.editorStateService.currentOpenFileInEditor.set(target);
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(target);
+    this.editorFileExplorerService.updateActive(target);
   }
 
   /**
