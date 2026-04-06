@@ -51,6 +51,7 @@ import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-dia
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
+import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -97,6 +98,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private readonly editorDocumentOpenTrackerService = inject(
     EditorDocumentOpenTrackerService,
   );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Keeps track of the current open file in the editor
@@ -145,9 +147,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   /**
    * Keeps track of the selected directory in the editor
    */
-  private readonly selectedDirectory = computed(() =>
-    this.editorStateService.selectedDirectoryPath(),
-  );
+  private readonly selectedDirectory = this.editorWorkspaceService.workspace;
 
   /**
    * Holds if the user has control pressed

@@ -21,6 +21,7 @@ import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   EditorSidebarPaneService,
 } from "../core/panes/editor-sidebar-pane.service";
+import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
 
 /**
  * Handles rendering the main central bit of the editor this contains side bar, visual editor and other stuff
@@ -41,6 +42,7 @@ export class EditorMainContentComponent {
     EditorInMemoryStateService,
   );
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   private resizer: Resizer | null = null;
   private sharedHandleStyles: Record<string, string> = {
@@ -140,7 +142,7 @@ export class EditorMainContentComponent {
    * Keep track if user has select a directory
    */
   private hasSelectedDirectory: Signal<boolean> = computed(() => {
-    const selectedDir = this.editorStateService.selectedDirectoryPath();
+    const selectedDir = this.editorWorkspaceService.workspace();
     return selectedDir !== null;
   });
 

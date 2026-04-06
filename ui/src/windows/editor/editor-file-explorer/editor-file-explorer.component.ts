@@ -21,6 +21,7 @@ import {
 import { normalize } from "../../../lib/path";
 import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
 import { EditorFileExplorerService } from "./services/editor-file-explorer.service";
+import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
 
 /**
  * Renders a file explorer with the current files and folders in the select directory
@@ -46,6 +47,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
   private readonly editorFileExplorerService = inject(
     EditorFileExplorerService,
   );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   public ngAfterViewInit() {
     this.editorSidebarPaneService.resolvePane();
@@ -87,8 +89,8 @@ export class EditorFileExplorerComponent implements AfterViewInit {
       mode: "default",
       name: "",
       parentName: "",
-      parentPath: this.editorStateService.selectedDirectoryPath()!,
-      path: this.editorStateService.selectedDirectoryPath()!,
+      parentPath: this.editorWorkspaceService.workspace()!,
+      path: this.editorWorkspaceService.workspace()!,
       size: 1,
     };
   });
@@ -169,9 +171,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
 
     this.editorInMemoryStateService.isCreateFileOrFolderActive.set(true);
 
-    const rootPath = normalize(
-      this.editorStateService.selectedDirectoryPath()!,
-    );
+    const rootPath = normalize(this.editorWorkspaceService.workspace()!);
     const nodes = this.editorFileExplorerService.nodes();
     const activeNode =
       this.editorStateService.fileExplorerActiveFileOrFolder() ??

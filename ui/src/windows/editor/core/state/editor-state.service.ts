@@ -25,13 +25,6 @@ const LOCAL_STORAGE_KEY = "editor-app-context";
 })
 export class EditorStateService {
   /**
-   * Exposes selectedDirectoryPath signal
-   */
-  public readonly selectedDirectoryPath = signal<
-    EditorState["selectedDirectoryPath"]
-  >(this.restoreField("selectedDirectoryPath", null));
-
-  /**
    * Exposes fileExplorerActiveFileOrFolder signal
    */
   public readonly fileExplorerActiveFileOrFolder = signal<
@@ -96,7 +89,6 @@ export class EditorStateService {
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
       editorMainActiveElement: this.editorMainActiveElement(),
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
-      selectedDirectoryPath: this.selectedDirectoryPath(),
       editorTheme: this.editorTheme(),
       autoSave: this.autoSave(),
       scrollToDefinitionLocation: this.scrollToDefinitionLocation(),
@@ -107,7 +99,6 @@ export class EditorStateService {
    * Resets the state of all fields to their default
    */
   public reset() {
-    this.selectedDirectoryPath.set(null);
     this.fileExplorerActiveFileOrFolder.set(null);
     this.currentOpenFileInEditor.set(null);
     this.editorMainActiveElement.set(null);

@@ -24,6 +24,7 @@ import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
+import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
 
 @Component({
   selector: "app-editor-open-file-item",
@@ -58,6 +59,7 @@ export class EditorOpenFileItemComponent implements OnInit {
     EditorDocumentOpenTrackerService,
   );
   private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Displays count of error diagnostic it has for file
@@ -110,9 +112,7 @@ export class EditorOpenFileItemComponent implements OnInit {
   /**
    * Keep track selected directory
    */
-  private readonly workspaceFolder = computed(() =>
-    this.editorStateService.selectedDirectoryPath(),
-  );
+  private readonly workspaceFolder = this.editorWorkspaceService.workspace;
 
   /**
    * Keep track if the given file tab is the one open / active

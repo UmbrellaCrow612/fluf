@@ -3,6 +3,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { getElectronApi } from "../../../shared/electron";
 import { EditorStateService } from "../core/state/editor-state.service";
 import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
+import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
 
 /**
  * Shown when there isnt any select directory and allows users to select a directory
@@ -17,6 +18,7 @@ export class EditorSelectDirectoryComponent implements AfterViewInit {
   private readonly electronApi = getElectronApi();
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   public ngAfterViewInit() {
     this.editorSidebarPaneService.resolvePane();
@@ -58,7 +60,7 @@ export class EditorSelectDirectoryComponent implements AfterViewInit {
         return;
       }
 
-      this.editorStateService.selectedDirectoryPath.set(dir);
+      await this.editorWorkspaceService.changeWorkspace(dir);
     } catch (error: any) {
       console.error("Failed to select directory ", error);
       this.selectionError.set(`Failed to select directory ${error?.message}`);

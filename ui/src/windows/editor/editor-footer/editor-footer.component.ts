@@ -13,6 +13,7 @@ import { EditorStateService } from "../core/state/editor-state.service";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { DatePipe } from "@angular/common";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
+import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
 
 @Component({
   selector: "app-editor-footer",
@@ -29,6 +30,7 @@ export class EditorFooterComponent implements OnInit {
   private readonly editorDocumentDiagnosticService = inject(
     EditorDocumentDiagnosticService,
   );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Keeps track if the system has GIT version control
@@ -57,9 +59,7 @@ export class EditorFooterComponent implements OnInit {
   /**
    * Keeps track of the current selected directory path
    */
-  private readonly selectedDirectory = computed(() =>
-    this.editorStateService.selectedDirectoryPath(),
-  );
+  private readonly selectedDirectory = this.editorWorkspaceService.workspace;
 
   /**
    * Holds count of how many diagnostic error we have

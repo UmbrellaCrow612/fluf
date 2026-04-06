@@ -17,6 +17,7 @@ import {
 import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
 import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
 import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
+import { EditorWorkspaceService } from "../core/services/editor-workspace.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -94,6 +95,7 @@ export class EditorFrameComponent implements OnInit {
   );
   private readonly editorBottomPaneService = inject(EditorBottomPaneService);
   private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Holds state if the given chrome window is maximized
@@ -165,10 +167,13 @@ export class EditorFrameComponent implements OnInit {
               let res = await this.electronApi.fsApi.selectFolder();
               if (res.canceled) return;
 
+              const dir = res.filePaths[0];
+              if (!dir) {
+                return;
+              }
+
               // tood call reset then set select dir as this ro make some util
-              this.editorStateService.selectedDirectoryPath.set(
-                res.filePaths[0],
-              );
+              await this.editorWorkspaceService.changeWorkspace(dir);
               this.editorOpenFilesService.reset();
               this.editorStateService.currentOpenFileInEditor.set(null);
               this.editorStateService.editorMainActiveElement.set(null);

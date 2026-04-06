@@ -1,6 +1,5 @@
 import { inject, Injectable } from "@angular/core";
 import { EditorStateService } from "./editor-state.service";
-import { getElectronApi } from "../../../../shared/electron";
 import { useEffect } from "../../../../lib/useEffect";
 import { EDITOR_VALID_MAIN_ACTIVE_ELEMENTS } from "./type";
 
@@ -36,7 +35,6 @@ interface ValidationWarning {
 })
 export class EditorSateValidationService {
   private readonly editorStateService = inject(EditorStateService);
-  private readonly electronApi = getElectronApi();
 
   /** Prefix for all validation logs to make them easily filterable in console */
   private readonly LOG_PREFIX = "[EditorStateValidation]";
@@ -51,13 +49,6 @@ export class EditorSateValidationService {
       },
       [this.editorStateService.editorMainActiveElement],
     );
-
-    useEffect(
-      async (_, path) => {
-        await this.validateSelectedDirectory(path);
-      },
-      [this.editorStateService.selectedDirectoryPath],
-    );
   }
 
   /**
@@ -71,9 +62,6 @@ export class EditorSateValidationService {
       this.validateMainActiveElement(
         this.editorStateService.editorMainActiveElement(),
       );
-      await this.validateSelectedDirectory(
-        this.editorStateService.selectedDirectoryPath(),
-      );
     } catch (error) {
       this.log("error", {
         type: "state",
@@ -83,64 +71,6 @@ export class EditorSateValidationService {
         timestamp: Date.now(),
       });
       this.editorStateService.reset();
-    }
-  }
-
-  /**
-   * Validates directory path and resets if invalid.
-   */
-  private async validateSelectedDirectory(
-    directory: string | null,
-  ): Promise<void> {
-    if (!directory) {
-      return;
-    }
-
-    if (typeof directory !== "string") {
-      this.log("warn", {
-        type: "directory",
-        issue: `Invalid type for directory path: expected string, got ${typeof directory}`,
-        value: directory,
-        action: "Resetting selectedDirectoryPath to null",
-        timestamp: Date.now(),
-      });
-      this.editorStateService.selectedDirectoryPath.set(null);
-      return;
-    }
-
-    if (directory.length < 1) {
-      this.log("warn", {
-        type: "directory",
-        issue: "Empty directory path provided",
-        value: directory,
-        action: "Resetting selectedDirectoryPath to null",
-        timestamp: Date.now(),
-      });
-      this.editorStateService.selectedDirectoryPath.set(null);
-      return;
-    }
-
-    try {
-      const exists = await this.electronApi.fsApi.exists(directory);
-      if (!exists) {
-        this.log("warn", {
-          type: "directory",
-          issue: "Directory does not exist on filesystem",
-          value: directory,
-          action: "Resetting selectedDirectoryPath to null",
-          timestamp: Date.now(),
-        });
-        this.editorStateService.selectedDirectoryPath.set(null);
-      }
-    } catch (error) {
-      this.log("error", {
-        type: "directory",
-        issue: "Filesystem check failed during directory validation",
-        value: directory,
-        action: "Resetting selectedDirectoryPath to null",
-        timestamp: Date.now(),
-      });
-      this.editorStateService.selectedDirectoryPath.set(null);
     }
   }
 
