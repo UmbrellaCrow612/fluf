@@ -20,6 +20,7 @@ import {
 } from "../../../shared/file-node-helpers";
 import { normalize } from "../../../lib/path";
 import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
+import { EditorFileExplorerService } from "./services/editor-file-explorer.service";
 
 /**
  * Renders a file explorer with the current files and folders in the select directory
@@ -42,6 +43,9 @@ export class EditorFileExplorerComponent implements AfterViewInit {
     EditorInMemoryStateService,
   );
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
+  private readonly editorFileExplorerService = inject(
+    EditorFileExplorerService,
+  );
 
   public ngAfterViewInit() {
     this.editorSidebarPaneService.resolvePane();
@@ -92,9 +96,8 @@ export class EditorFileExplorerComponent implements AfterViewInit {
   /**
    * Keeps track of the current selected directory nodes
    */
-  public readonly rootNodeChildren: Signal<fileNode[]> = computed(
-    () => this.editorStateService.directoryFileNodes() ?? [],
-  );
+  public readonly rootNodeChildren: Signal<fileNode[]> =
+    this.editorFileExplorerService.nodes;
 
   /**
    * Keeps track of the current file in the editor
@@ -108,7 +111,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    * @param nodes The updates nodes
    */
   public updateRootNodeChildren(nodes: fileNode[]) {
-    this.editorStateService.directoryFileNodes.set(nodes);
+    this.editorFileExplorerService.update(nodes);
   }
 
   /**
@@ -146,9 +149,9 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    * Collapses the nodes to root
    */
   public collapseDirectoryNodes() {
-    const nodes = this.editorStateService.directoryFileNodes() ?? [];
+    const nodes = this.editorFileExplorerService.nodes();
     collapseFileNodeFirstLayer(nodes);
-    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorFileExplorerService.update(nodes);
   }
 
   /**
@@ -169,7 +172,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
     const rootPath = normalize(
       this.editorStateService.selectedDirectoryPath()!,
     );
-    const nodes = this.editorStateService.directoryFileNodes() ?? [];
+    const nodes = this.editorFileExplorerService.nodes();
     const activeNode =
       this.editorStateService.fileExplorerActiveFileOrFolder() ??
       this.rootNode();
@@ -184,7 +187,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
         this.createFileOrFolderNode(targetDirPath, targetDirPath, mode),
       );
 
-      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+      this.editorFileExplorerService.update(nodes);
       return;
     }
 
@@ -202,7 +205,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
     );
 
     replaceFileNode(nodes, parentNode, parentCopyNode);
-    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorFileExplorerService.update(nodes);
   }
 
   /**

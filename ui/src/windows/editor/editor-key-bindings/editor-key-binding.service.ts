@@ -1,6 +1,5 @@
 import { inject, Injectable } from "@angular/core";
 import { KeyMaster } from "umbr-key-master";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
 
@@ -12,7 +11,6 @@ import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-
 })
 export class EditorKeyBindingService {
   private readonly keyMaster = new KeyMaster();
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );

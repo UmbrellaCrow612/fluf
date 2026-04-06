@@ -25,13 +25,6 @@ const LOCAL_STORAGE_KEY = "editor-app-context";
 })
 export class EditorStateService {
   /**
-   * Exposes directoryFileNodes signal
-   */
-  public readonly directoryFileNodes = signal<
-    EditorState["directoryFileNodes"]
-  >(this.restoreField("directoryFileNodes", null));
-
-  /**
    * Exposes selectedDirectoryPath signal
    */
   public readonly selectedDirectoryPath = signal<
@@ -108,7 +101,6 @@ export class EditorStateService {
   public getSnapShot(): EditorState {
     return {
       currentOpenFileInEditor: this.currentOpenFileInEditor(),
-      directoryFileNodes: this.directoryFileNodes(),
       editorMainActiveElement: this.editorMainActiveElement(),
       fileExplorerActiveFileOrFolder: this.fileExplorerActiveFileOrFolder(),
       openFiles: this.openFiles(),
@@ -123,7 +115,6 @@ export class EditorStateService {
    * Resets the state of all fields to their default
    */
   public reset() {
-    this.directoryFileNodes.set(null);
     this.selectedDirectoryPath.set(null);
     this.fileExplorerActiveFileOrFolder.set(null);
     this.openFiles.set(null);

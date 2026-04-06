@@ -36,11 +36,6 @@ export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> =
  */
 export type EditorState = {
   /**
-   * List of nodes read from the selected directory.
-   */
-  directoryFileNodes: Array<fileNode> | null;
-
-  /**
    * Folder path selected in the editor.
    */
   selectedDirectoryPath: string | null;
