@@ -47,12 +47,19 @@ export class EditorWorkspaceService {
   /**
    * Rehydrate the saved document
    */
-  private async rehydrateDocument() {
-    await this.setDocument(
-      this.applicationLocalStorageService.get<fileNode | null>(
-        WORKSPACE_DOCUMENT_KEY,
-      ),
-    );
+  private async rehydrateDocument(): Promise<void> {
+    try {
+      await this.setDocument(
+        this.applicationLocalStorageService.get<fileNode | null>(
+          WORKSPACE_DOCUMENT_KEY,
+        ),
+      );
+    } catch (error) {
+      console.error(
+        "[EditorWorkspaceService] Failed to rehydrate document:",
+        error,
+      );
+    }
   }
 
   /**
@@ -60,16 +67,23 @@ export class EditorWorkspaceService {
    * @param document The document
    */
   public async changeDocument(document: fileNode | null): Promise<void> {
-    const current = this._document();
-    if (
-      current &&
-      document &&
-      normalize(document.path) === normalize(current.path)
-    ) {
-      return;
-    }
+    try {
+      const current = this._document();
+      if (
+        current &&
+        document &&
+        normalize(document.path) === normalize(current.path)
+      ) {
+        return;
+      }
 
-    await this.setDocument(document);
+      await this.setDocument(document);
+    } catch (error) {
+      console.error(
+        "[EditorWorkspaceService] Failed to change document:",
+        error,
+      );
+    }
   }
 
   /**
@@ -77,15 +91,21 @@ export class EditorWorkspaceService {
    * @param document The document
    */
   private async setDocument(document: fileNode | null): Promise<void> {
-    const valid = await this.isValidDocument(document);
-    if (!valid || !document) {
+    try {
+      const valid = await this.isValidDocument(document);
+      if (!valid || !document) {
+        this._document.set(null);
+        this.saveDocument(null);
+        return;
+      }
+
+      this._document.set(document);
+      this.saveDocument(document);
+    } catch (error) {
+      console.error("[EditorWorkspaceService] Failed to set document:", error);
       this._document.set(null);
       this.saveDocument(null);
-      return;
     }
-
-    this._document.set(document);
-    this.saveDocument(document);
   }
 
   /**
@@ -102,8 +122,17 @@ export class EditorWorkspaceService {
       return false;
     }
 
-    const exists = await this.electronApi.fsApi.exists(document.path);
-    if (!exists) {
+    try {
+      const exists = await this.electronApi.fsApi.exists(document.path);
+      if (!exists) {
+        return false;
+      }
+    } catch (error) {
+      console.error(
+        "[EditorWorkspaceService] Failed to check if document exists:",
+        document.path,
+        error,
+      );
       return false;
     }
 
@@ -125,9 +154,16 @@ export class EditorWorkspaceService {
    * Rehydrate the saved workspace
    */
   private async rehydrateWorkspace(): Promise<void> {
-    await this.setWorkspace(
-      this.applicationLocalStorageService.get<string | null>(WORKSPACE_KEY),
-    );
+    try {
+      await this.setWorkspace(
+        this.applicationLocalStorageService.get<string | null>(WORKSPACE_KEY),
+      );
+    } catch (error) {
+      console.error(
+        "[EditorWorkspaceService] Failed to rehydrate workspace:",
+        error,
+      );
+    }
   }
 
   /**
@@ -135,12 +171,19 @@ export class EditorWorkspaceService {
    * @param workspace The new workspace folder
    */
   public async changeWorkspace(workspace: string | null): Promise<void> {
-    const current = this._workspace();
-    if (workspace && current && normalize(current) === normalize(workspace)) {
-      return;
-    }
+    try {
+      const current = this._workspace();
+      if (workspace && current && normalize(current) === normalize(workspace)) {
+        return;
+      }
 
-    await this.setWorkspace(workspace);
+      await this.setWorkspace(workspace);
+    } catch (error) {
+      console.error(
+        "[EditorWorkspaceService] Failed to change workspace:",
+        error,
+      );
+    }
   }
 
   /**
@@ -148,17 +191,22 @@ export class EditorWorkspaceService {
    * @param workspace The workspace folder
    */
   private async setWorkspace(workspace: string | null): Promise<void> {
-    const valid = await this.isValidWorkspace(workspace);
-    if (!valid || !workspace) {
+    try {
+      const valid = await this.isValidWorkspace(workspace);
+      if (!valid || !workspace) {
+        this._workspace.set(null);
+        this.saveWorkspace(null);
+        return;
+      }
+
+      const normalized = await this.electronApi.pathApi.normalize(workspace);
+      this.saveWorkspace(normalized);
+      this._workspace.set(normalized);
+    } catch (error) {
+      console.error("[EditorWorkspaceService] Failed to set workspace:", error);
       this._workspace.set(null);
       this.saveWorkspace(null);
-      return;
     }
-
-    const normalized = await this.electronApi.pathApi.normalize(workspace);
-    this.saveWorkspace(normalized);
-
-    this._workspace.set(normalized);
   }
 
   /**
@@ -182,13 +230,21 @@ export class EditorWorkspaceService {
       return false;
     }
 
-    const type = typeof workspace;
-    if (type !== "string") {
+    if (typeof workspace !== "string") {
       return false;
     }
 
-    const exists = await this.electronApi.fsApi.exists(workspace);
-    if (!exists) {
+    try {
+      const exists = await this.electronApi.fsApi.exists(workspace);
+      if (!exists) {
+        return false;
+      }
+    } catch (error) {
+      console.error(
+        "[EditorWorkspaceService] Failed to check if workspace exists:",
+        workspace,
+        error,
+      );
       return false;
     }
 
