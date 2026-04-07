@@ -195,7 +195,7 @@ export class EditorOpenFileItemComponent implements OnInit {
     if (this.isActive()) {
       let nextAvNode: fileNode | null = nodes[0];
       if (nextAvNode) {
-        this.editorDocumentOpenerService.openFileNodeInEditor(nextAvNode);
+        this.editorDocumentOpenerService.open(nextAvNode);
       }
     }
   }
@@ -204,6 +204,6 @@ export class EditorOpenFileItemComponent implements OnInit {
    * Selects the given tab item node as the new active
    */
   public selectFileTabItem(event: Event) {
-    this.editorDocumentOpenerService.openFileNodeInEditor(this.fileNode());
+    this.editorDocumentOpenerService.open(this.fileNode());
   }
 }

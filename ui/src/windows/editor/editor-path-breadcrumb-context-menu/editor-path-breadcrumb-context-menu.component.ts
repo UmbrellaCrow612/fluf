@@ -89,7 +89,7 @@ export class EditorPathBreadcrumbContextMenuComponent implements OnInit {
     this.activeNode.set(node);
 
     if (!node.isDirectory) {
-      this.editorDocumentOpenerService.openFileNodeInEditor(node);
+      this.editorDocumentOpenerService.open(node);
       this.applicationContextMenuService.close();
     }
   }

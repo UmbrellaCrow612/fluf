@@ -31,13 +31,6 @@ export class EditorStateService {
     this.restoreField("autoSave", false),
   );
 
-  /**
-   * Exposes scrollToDefinitionLocation signal
-   */
-  public readonly scrollToDefinitionLocation = signal<
-    EditorState["scrollToDefinitionLocation"]
-  >(this.restoreField("scrollToDefinitionLocation", null));
-
   constructor() {
     effect(() => {
       const snapshot = this.getSnapShot();
@@ -59,7 +52,6 @@ export class EditorStateService {
   public getSnapShot(): EditorState {
     return {
       autoSave: this.autoSave(),
-      scrollToDefinitionLocation: this.scrollToDefinitionLocation(),
     };
   }
 
@@ -68,7 +60,6 @@ export class EditorStateService {
    */
   public reset() {
     this.autoSave.set(false);
-    this.scrollToDefinitionLocation.set(null);
   }
 
   /**

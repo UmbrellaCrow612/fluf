@@ -42,10 +42,7 @@ import { autocompletion, CompletionSource } from "@codemirror/autocomplete";
 import { lspCompletionListToCodeMirror } from "../core/lsp/completion";
 import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import { createGoToDefinitionHoverStyles } from "./extensions/hover";
-import {
-  goToDefinitionInEditor,
-  scrollToVSCodeLocation,
-} from "../core/lsp/definition";
+import { scrollToVSCodeLocation } from "../core/lsp/definition";
 import { EditorLanguageServerProtocolLifecycleTracker } from "../core/lsp/editor-language-server-protocol-lifecycle-tracker";
 import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-changes-queue.service";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
@@ -54,6 +51,7 @@ import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-op
 import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
 import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 import { EditorMainPaneService } from "../core/panes/editor-main-pane.service";
+import { normalize } from "../../../lib/path";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -163,6 +161,11 @@ export class EditorPlainTextPaneComponent
    */
   private readonly linterCompartment = new Compartment();
 
+  /**
+   * Holds the a callback which run the logic scroll to a given location between changes
+   */
+  private scrollToLocationCallback: voidCallback | null = null;
+
   public ngAfterViewInit() {
     this.editorMainPaneService.resolvePane();
   }
@@ -179,16 +182,6 @@ export class EditorPlainTextPaneComponent
         await this.displayPlainTextEditor(fileNode);
       },
       [this.activeNode],
-    );
-
-    useEffect(
-      (_, location) => {
-        const view = this.editorView;
-        if (location && view) {
-          scrollToVSCodeLocation(view, location);
-        }
-      },
-      [this.editorStateService.scrollToDefinitionLocation],
     );
 
     useEffect(() => {
@@ -455,6 +448,8 @@ export class EditorPlainTextPaneComponent
         console.log("Using cahche view");
         this.editorView = cachedView;
         this.editorView.focus();
+        this.scrollToLocationCallback?.();
+
         this.hydrateDataOnChange(cachedView);
         this.hydrateDiagnostics(normalizedPath, this.editorView);
 
@@ -487,6 +482,7 @@ export class EditorPlainTextPaneComponent
         extensions: this.createExtensions(),
       });
       this.editorView.focus();
+      this.scrollToLocationCallback?.();
       this.hydrateDataOnChange(this.editorView);
       this.hydrateDiagnostics(normalizedPath, this.editorView);
 
@@ -556,11 +552,21 @@ export class EditorPlainTextPaneComponent
               return null;
             }
 
-            await goToDefinitionInEditor(
-              result,
-              this.editorDocumentOpenerService,
-              this.editorStateService,
-            );
+            const location = Array.isArray(result) ? result[0] : result;
+
+            const uri = location.uri;
+            const asPathLike = await this.electronApi.pathApi.fromUri(uri);
+            const node = await this.electronApi.fsApi.getNode(asPathLike);
+
+            if (normalize(node.path) === normalize(filePath)) {
+              scrollToVSCodeLocation(this.editorView!, location);
+            } else {
+              this.scrollToLocationCallback = () => {
+                scrollToVSCodeLocation(this.editorView!, location);
+              };
+            }
+
+            await this.editorDocumentOpenerService.open(node);
 
             return null;
           } catch (error: any) {

@@ -13,11 +13,6 @@ export type EditorState = {
    * Keeps track if it should auto saves changes in files beofre closing
    */
   autoSave: boolean;
-
-  /**
-   * Holds the location of where to scroll to when a file is opened
-   */
-  scrollToDefinitionLocation: Location | null;
 };
 
 /**

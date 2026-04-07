@@ -1,41 +1,5 @@
-import { Definition, Location } from "vscode-languageserver-protocol";
-import { getElectronApi } from "../../../../shared/electron";
-import { EditorDocumentOpenerService } from "../services/editor-document-opener.service";
-import { EditorStateService } from "../state/editor-state.service";
+import { Location } from "vscode-languageserver-protocol";
 import { EditorView } from "codemirror";
-
-const electronApi = getElectronApi();
-
-const impl = async (
-  location: Location,
-  fpOpener: EditorDocumentOpenerService,
-) => {
-  const uri = location.uri;
-  const asPathLike = await electronApi.pathApi.fromUri(uri);
-  const node = await electronApi.fsApi.getNode(asPathLike);
-  fpOpener.openFileNodeInEditor(node, location);
-};
-
-/**
- * Open a file / go to definition of a file in the editor
- * @param definition The LSP definition
- * @param fpOpener Service
- */
-export const goToDefinitionInEditor = async (
-  definition: Definition,
-  fpOpener: EditorDocumentOpenerService,
-  state: EditorStateService,
-) => {
-  try {
-    if (Array.isArray(definition)) {
-      await impl(definition[0], fpOpener);
-    } else {
-      await impl(definition, fpOpener);
-    }
-  } catch (error) {
-    console.error("Failed to go to definition");
-  }
-};
 
 /**
  * Convert a VSCode Location to a CodeMirror absolute offset,
@@ -45,6 +9,7 @@ export function scrollToVSCodeLocation(
   view: EditorView,
   location: Location,
 ): void {
+  console.warn("scrollToVSCodeLocation  ran");
   const { start } = location.range;
   const doc = view.state.doc;
 
@@ -52,14 +17,16 @@ export function scrollToVSCodeLocation(
   const ch = Math.min(start.character, line.length);
   const pos = line.from + ch;
 
-  view.dispatch({
-    selection: { anchor: pos, head: pos },
-    effects: EditorView.scrollIntoView(pos, {
-      y: "center",
-      x: "nearest",
-    }),
-    scrollIntoView: true,
-  });
+  setTimeout(() => {
+    view.dispatch({
+      selection: { anchor: pos, head: pos },
+      effects: EditorView.scrollIntoView(pos, {
+        y: "center",
+        x: "nearest",
+      }),
+      scrollIntoView: true,
+    });
 
-  view.focus();
+    view.focus();
+  });
 }

@@ -1,6 +1,5 @@
 import { inject, Injectable } from "@angular/core";
 import { fileNode } from "../../../../gen/type";
-import { EditorStateService } from "../state/editor-state.service";
 import { EditorImageService } from "./editor-image.service.service";
 import { EditorVideoService } from "./editor-video.service";
 import { EditorAudioService } from "./editor-audio.service";
@@ -23,7 +22,6 @@ import {
   providedIn: "root",
 })
 export class EditorDocumentOpenerService {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);
   private readonly editorAudioService = inject(EditorAudioService);
@@ -46,10 +44,7 @@ export class EditorDocumentOpenerService {
    * @param [location=null] To scroll to a specific location when opening a file in the editor
    * @returns Nothing; errors are logged to console for invalid operations
    */
-  public async openFileNodeInEditor(
-    target: fileNode,
-    location: vscodeLocation | null = null,
-  ): Promise<void> {
+  public async open(target: fileNode): Promise<void> {
     if (target.isDirectory) {
       console.error("Cannot open a directory in the editor");
       return;
@@ -58,19 +53,6 @@ export class EditorDocumentOpenerService {
     this.addToOpenFiles(target);
     await this.setActiveFile(target);
     await this.setMainEditorComponent(target);
-    this.scrollToLocation(location);
-  }
-
-  /**
-   * Updates the scroll location value to trigger a scroll to with a delay
-   * @param location The LSP location
-   */
-  private scrollToLocation(location: vscodeLocation | null = null) {
-    if (!location) {
-      return;
-    }
-
-    this.editorStateService.scrollToDefinitionLocation.set(location);
   }
 
   /**
