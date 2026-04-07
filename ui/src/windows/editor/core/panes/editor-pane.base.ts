@@ -61,7 +61,7 @@ export abstract class EditorPaneServiceBase<T extends string | null> {
    * // Read imperatively
    * const current = this.paneService.pane();
    */
-  public readonly pane: Signal<T | null> = computed(() => this._pane());
+  public readonly pane: Signal<T | null>;
 
   /**
    * @param _validPanes - Set of all valid pane values for this panel.
@@ -72,6 +72,7 @@ export abstract class EditorPaneServiceBase<T extends string | null> {
     private readonly _storageKey: string,
   ) {
     this._pane = signal<T | null>(this._restoreState());
+    this.pane = this._pane.asReadonly();
   }
 
   /**

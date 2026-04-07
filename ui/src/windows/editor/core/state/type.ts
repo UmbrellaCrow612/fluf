@@ -6,47 +6,9 @@ import {
 import { Location } from "vscode-languageserver-protocol";
 
 /**
- * All the components that can be rendered in the middle of the text editor.
- */
-export const EDITOR_MAIN_ACTIVE_ELEMENT = {
-  PLAIN_TEXT_FILE_EDITOR: "plain-text-file-editor",
-  IMAGE_EDITOR: "image-editor",
-  VIDEO_EDITOR: "video-editor",
-  PDF_EDITOR: "pdf-editor",
-  UNKNOWN: "unknown",
-  AUDIO_EDITOR: "audio-editor",
-  MARKDOWN_EDITOR: "markdown-editor",
-} as const;
-
-/**
- * Valid main editor elements
- */
-export type editorMainActiveElement =
-  | (typeof EDITOR_MAIN_ACTIVE_ELEMENT)[keyof typeof EDITOR_MAIN_ACTIVE_ELEMENT]
-  | null;
-
-/**
- * Contains a map of all valid editor main active elements
- */
-export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> =
-  new Set<any>(Object.values(EDITOR_MAIN_ACTIVE_ELEMENT));
-
-/**
  * Represents editor application-wide state that persists between sessions for the editor.
  */
 export type EditorState = {
-  /**
-   * Represents the main component to render in the middle of the text editor,
-   * such as the file text editor or other components.
-   */
-  editorMainActiveElement: editorMainActiveElement;
-
-  /**
-   * Represents the editor theme used to persist it between sessions.
-   * It is a stringified version of a `cssVar[]` object.
-   */
-  editorTheme: string | null;
-
   /**
    * Keeps track if it should auto saves changes in files beofre closing
    */

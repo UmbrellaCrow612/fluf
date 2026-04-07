@@ -1,6 +1,7 @@
 import { Compartment, Extension } from "@codemirror/state";
 import { history, historyField } from "@codemirror/commands";
 import {
+  AfterViewInit,
   Component,
   computed,
   ElementRef,
@@ -52,6 +53,7 @@ import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-lan
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
 import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
+import { EditorMainPaneService } from "../core/panes/editor-main-pane.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -62,7 +64,9 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   templateUrl: "./editor-plain-text-pane.component.html",
   styleUrl: "./editor-plain-text-pane.component.css",
 })
-export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
+export class EditorPlainTextPaneComponent
+  implements OnDestroy, OnInit, AfterViewInit
+{
   private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
@@ -99,6 +103,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
     EditorDocumentOpenTrackerService,
   );
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+  private readonly editorMainPaneService = inject(EditorMainPaneService);
 
   /**
    * Keeps track of the current open file in the editor
@@ -157,6 +162,10 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
    * Linter compartment
    */
   private readonly linterCompartment = new Compartment();
+
+  public ngAfterViewInit() {
+    this.editorMainPaneService.resolvePane();
+  }
 
   constructor() {
     useEffect(

@@ -25,20 +25,6 @@ const LOCAL_STORAGE_KEY = "editor-app-context";
 })
 export class EditorStateService {
   /**
-   * Exposes the editorMainActiveElement signal
-   */
-  public readonly editorMainActiveElement = signal<
-    EditorState["editorMainActiveElement"]
-  >(this.restoreField("editorMainActiveElement", null));
-
-  /**
-   * Exposes editorTheme signal
-   */
-  public readonly editorTheme = signal<EditorState["editorTheme"]>(
-    this.restoreField("editorTheme", null),
-  );
-
-  /**
    * Exposes auto save signal
    */
   public readonly autoSave = signal<EditorState["autoSave"]>(
@@ -72,8 +58,6 @@ export class EditorStateService {
 
   public getSnapShot(): EditorState {
     return {
-      editorMainActiveElement: this.editorMainActiveElement(),
-      editorTheme: this.editorTheme(),
       autoSave: this.autoSave(),
       scrollToDefinitionLocation: this.scrollToDefinitionLocation(),
     };
@@ -83,8 +67,6 @@ export class EditorStateService {
    * Resets the state of all fields to their default
    */
   public reset() {
-    this.editorMainActiveElement.set(null);
-    this.editorTheme.set(null);
     this.autoSave.set(false);
     this.scrollToDefinitionLocation.set(null);
   }

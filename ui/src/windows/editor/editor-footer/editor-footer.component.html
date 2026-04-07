@@ -1,5 +1,5 @@
 <footer class="editor_footer scroll_bar">
-  @if (hasGit() && currentBranch()) {
+  @if (currentBranch()) {
     <div
       class="editor_footer_git_branch"
       [matTooltip]="'current branch ' + this.currentBranch()"
@@ -27,17 +27,23 @@
   <!---->
 
   @if (selectedLines()) {
-    <div class="editor_footer_cursor_position" matTooltip="Current line column of cursor">
+    <div
+      class="editor_footer_cursor_position"
+      matTooltip="Current line column of cursor"
+    >
       Ln {{ selectedLines()?.line }}, Col {{ selectedLines()?.column }}
     </div>
   }
 
   <!---->
 
-  @if(diagnosticErrorCount() > 0){
-    <div class="editor_footer_diagnostic_count" [matTooltip]="diagnosticErrorCount() + ' Errors'">
-      <mat-icon fontIcon="error"/>
-      <span>{{diagnosticErrorCount()}}</span>
+  @if (diagnosticErrorCount() > 0) {
+    <div
+      class="editor_footer_diagnostic_count"
+      [matTooltip]="diagnosticErrorCount() + ' Errors'"
+    >
+      <mat-icon fontIcon="error" />
+      <span>{{ diagnosticErrorCount() }}</span>
     </div>
   }
 </footer>

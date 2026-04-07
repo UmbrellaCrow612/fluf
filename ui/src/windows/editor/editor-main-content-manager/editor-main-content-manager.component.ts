@@ -14,9 +14,12 @@ import { EditorVideoPaneComponent } from "../editor-video-pane/editor-video-pane
 import { EditorAudioPaneComponent } from "../editor-audio-pane/editor-audio-pane.component";
 import { EditorMarkdownPaneComponent } from "../editor-markdown-pane/editor-markdown-pane.component";
 import { EditorPlainTextPaneComponent } from "../editor-plain-text-pane/editor-plain-text-pane.component";
-import { EDITOR_MAIN_ACTIVE_ELEMENT } from "../core/state/type";
 import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
 import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
+import {
+  EDITOR_MAIN_PANE_ELEMENTS,
+  EditorMainPaneService,
+} from "../core/panes/editor-main-pane.service";
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -41,6 +44,7 @@ export class EditorMainContentManagerComponent {
     EditorDisplayBottomService,
   );
   private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorMainPaneService = inject(EditorMainPaneService);
 
   private resizer: Resizer | null = null;
   private resizerTimeout: NodeJS.Timeout | undefined = undefined;
@@ -155,57 +159,55 @@ export class EditorMainContentManagerComponent {
     {
       component: EditorMainContentEmptyComponent,
       condition: computed(
-        () =>
-          this.editorStateService.editorMainActiveElement() === null ||
-          this.noFilesOpen(),
+        () => this.editorMainPaneService.pane() === null || this.noFilesOpen(),
       ),
     },
     {
       component: EditorImagePaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() ===
-          EDITOR_MAIN_ACTIVE_ELEMENT.IMAGE_EDITOR,
+          this.editorMainPaneService.pane() ===
+          EDITOR_MAIN_PANE_ELEMENTS.IMAGE_EDITOR,
       ),
     },
     {
       component: EditorPdfPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() ===
-          EDITOR_MAIN_ACTIVE_ELEMENT.PDF_EDITOR,
+          this.editorMainPaneService.pane() ===
+          EDITOR_MAIN_PANE_ELEMENTS.PDF_EDITOR,
       ),
     },
     {
       component: EditorVideoPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() ===
-          EDITOR_MAIN_ACTIVE_ELEMENT.VIDEO_EDITOR,
+          this.editorMainPaneService.pane() ===
+          EDITOR_MAIN_PANE_ELEMENTS.VIDEO_EDITOR,
       ),
     },
     {
       component: EditorAudioPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() ===
-          EDITOR_MAIN_ACTIVE_ELEMENT.AUDIO_EDITOR,
+          this.editorMainPaneService.pane() ===
+          EDITOR_MAIN_PANE_ELEMENTS.AUDIO_EDITOR,
       ),
     },
     {
       component: EditorMarkdownPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() ===
-          EDITOR_MAIN_ACTIVE_ELEMENT.MARKDOWN_EDITOR,
+          this.editorMainPaneService.pane() ===
+          EDITOR_MAIN_PANE_ELEMENTS.MARKDOWN_EDITOR,
       ),
     },
     {
       component: EditorPlainTextPaneComponent,
       condition: computed(
         () =>
-          this.editorStateService.editorMainActiveElement() ===
-          EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR,
+          this.editorMainPaneService.pane() ===
+          EDITOR_MAIN_PANE_ELEMENTS.PLAIN_TEXT_FILE_EDITOR,
       ),
     },
   ];
