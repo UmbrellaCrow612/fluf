@@ -13,6 +13,7 @@ import { normalize } from "../../../../lib/path";
 import { Location as vscodeLocation } from "vscode-languageserver-protocol";
 import { EditorOpenFilesService } from "../../editor-open-files/services/editor-open-files.service";
 import { EditorFileExplorerService } from "../../editor-file-explorer/services/editor-file-explorer.service";
+import { EditorWorkspaceService } from "../workspace/editor-workspace.service";
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -30,6 +31,7 @@ export class EditorDocumentOpenerService {
   private readonly editorFileExplorerService = inject(
     EditorFileExplorerService,
   );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Opens a file node in the editor.
@@ -43,17 +45,17 @@ export class EditorDocumentOpenerService {
    * @param [location=null] To scroll to a specific location when opening a file in the editor
    * @returns Nothing; errors are logged to console for invalid operations
    */
-  public openFileNodeInEditor(
+  public async openFileNodeInEditor(
     target: fileNode,
     location: vscodeLocation | null = null,
-  ): void {
+  ): Promise<void> {
     if (target.isDirectory) {
       console.error("Cannot open a directory in the editor");
       return;
     }
 
     this.addToOpenFiles(target);
-    this.setActiveFile(target);
+    await this.setActiveFile(target);
     this.setMainEditorComponent(target);
     this.scrollToLocation(location);
   }
@@ -90,13 +92,13 @@ export class EditorDocumentOpenerService {
    *
    * @param target - The file node to set as active
    */
-  private setActiveFile(target: fileNode): void {
-    const current = this.editorStateService.currentOpenFileInEditor();
+  private async setActiveFile(target: fileNode): Promise<void> {
+    const current = this.editorWorkspaceService.document();
     if (current && normalize(current.path) === normalize(target.path)) {
       return;
     }
 
-    this.editorStateService.currentOpenFileInEditor.set(target);
+    await this.editorWorkspaceService.changeDocument(target);
     this.editorFileExplorerService.updateActive(target);
   }
 

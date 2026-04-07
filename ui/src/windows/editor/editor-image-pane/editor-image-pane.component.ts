@@ -5,6 +5,7 @@ import { useEffect } from "../../../lib/useEffect";
 import { EditorImageService } from "../core/services/editor-image.service.service";
 import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
 import { getElectronApi } from "../../../shared/electron";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Displays a image viwer for the current open file and render any specific component needed to render it
@@ -22,13 +23,13 @@ export class EditorImagePaneComponent {
     ApplicationLocalFileUrlService,
   );
   private readonly electronApi = getElectronApi();
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Keeps track of the current active file node in the editor
    */
-  public readonly activeFileNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
-  );
+  public readonly activeFileNode: Signal<fileNode | null> =
+    this.editorWorkspaceService.document;
 
   /**
    * Holds loading state

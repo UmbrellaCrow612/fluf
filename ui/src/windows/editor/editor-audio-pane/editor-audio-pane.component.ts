@@ -5,6 +5,7 @@ import { useEffect } from "../../../lib/useEffect";
 import { fileNode } from "../../../gen/type";
 import { getElectronApi } from "../../../shared/electron";
 import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Allows users to view audio files
@@ -22,6 +23,7 @@ export class EditorAudioPaneComponent {
     ApplicationLocalFileUrlService,
   );
   private readonly electronApi = getElectronApi();
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Holds loading state
@@ -35,9 +37,8 @@ export class EditorAudioPaneComponent {
   /**
    * Current open file in the editor
    */
-  public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
-  );
+  public readonly activeNode: Signal<fileNode | null> =
+    this.editorWorkspaceService.document;
 
   /**
    * Holds refrence to the audio source

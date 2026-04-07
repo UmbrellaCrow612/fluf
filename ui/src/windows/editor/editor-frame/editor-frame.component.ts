@@ -179,7 +179,7 @@ export class EditorFrameComponent implements OnInit {
               // tood call reset then set select dir as this ro make some util
               await this.editorWorkspaceService.changeWorkspace(dir);
               this.editorOpenFilesService.reset();
-              this.editorStateService.currentOpenFileInEditor.set(null);
+              await this.editorWorkspaceService.changeDocument(null);
               this.editorStateService.editorMainActiveElement.set(null);
               this.editorFileExplorerService.updateActive(null);
             },

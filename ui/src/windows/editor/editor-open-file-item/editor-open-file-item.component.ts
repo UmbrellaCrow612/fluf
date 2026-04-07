@@ -117,9 +117,7 @@ export class EditorOpenFileItemComponent implements OnInit {
    * Keep track if the given file tab is the one open / active
    */
   public isActive: Signal<boolean> = computed(
-    () =>
-      this.editorStateService.currentOpenFileInEditor()?.path ===
-      this.fileNode().path,
+    () => this.editorWorkspaceService.document()?.path === this.fileNode().path,
   );
 
   /**

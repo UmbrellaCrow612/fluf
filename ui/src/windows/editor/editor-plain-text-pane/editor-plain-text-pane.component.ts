@@ -103,9 +103,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   /**
    * Keeps track of the current open file in the editor
    */
-  public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
-  );
+  public readonly activeNode: Signal<fileNode | null> =
+    this.editorWorkspaceService.document;
 
   /**
    * Holds the editor view

@@ -25,13 +25,6 @@ const LOCAL_STORAGE_KEY = "editor-app-context";
 })
 export class EditorStateService {
   /**
-   * Exposes currentOpenFileInEditor signal
-   */
-  public readonly currentOpenFileInEditor = signal<
-    EditorState["currentOpenFileInEditor"]
-  >(this.restoreField("currentOpenFileInEditor", null));
-
-  /**
    * Exposes the editorMainActiveElement signal
    */
   public readonly editorMainActiveElement = signal<
@@ -79,7 +72,6 @@ export class EditorStateService {
 
   public getSnapShot(): EditorState {
     return {
-      currentOpenFileInEditor: this.currentOpenFileInEditor(),
       editorMainActiveElement: this.editorMainActiveElement(),
       editorTheme: this.editorTheme(),
       autoSave: this.autoSave(),
@@ -91,7 +83,6 @@ export class EditorStateService {
    * Resets the state of all fields to their default
    */
   public reset() {
-    this.currentOpenFileInEditor.set(null);
     this.editorMainActiveElement.set(null);
     this.editorTheme.set(null);
     this.autoSave.set(false);

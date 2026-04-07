@@ -14,6 +14,7 @@ import { fileNode } from "../../../gen/type";
 import { useEffect } from "../../../lib/useEffect";
 import { getElectronApi } from "../../../shared/electron";
 import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Allows user to view video file formatts
@@ -31,6 +32,7 @@ export class EditorVideoPaneComponent implements OnDestroy {
     ApplicationLocalFileUrlService,
   );
   private readonly electronApi = getElectronApi();
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Reference to the video element
@@ -41,9 +43,8 @@ export class EditorVideoPaneComponent implements OnDestroy {
   /**
    * Keeps track of the current open file in the editor
    */
-  public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
-  );
+  public readonly activeNode: Signal<fileNode | null> =
+    this.editorWorkspaceService.document;
 
   /**
    * Holds loading state

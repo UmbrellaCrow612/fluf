@@ -36,11 +36,6 @@ export const EDITOR_VALID_MAIN_ACTIVE_ELEMENTS: Set<editorMainActiveElement> =
  */
 export type EditorState = {
   /**
-   * The current file being displayed in the text file editor.
-   */
-  currentOpenFileInEditor: fileNode | null;
-
-  /**
    * Represents the main component to render in the middle of the text editor,
    * such as the file text editor or other components.
    */

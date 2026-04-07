@@ -5,6 +5,7 @@ import { useEffect } from "../../../lib/useEffect";
 import { fileNode } from "../../../gen/type";
 import { getElectronApi } from "../../../shared/electron";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Displays a PDF plugin to show PDF's
@@ -22,13 +23,13 @@ export class EditorPdfPaneComponent {
   private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
   private sanitizer = inject(DomSanitizer);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Keeps track of the current open file in the editor
    */
-  public readonly activeFileNode = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
-  );
+  public readonly activeFileNode = this.editorWorkspaceService.document;
+
   /**
    * Holda a refrence to the PDF img src
    */
