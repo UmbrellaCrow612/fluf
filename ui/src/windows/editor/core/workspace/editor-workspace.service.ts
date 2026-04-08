@@ -19,11 +19,6 @@ export class EditorWorkspaceService {
     ApplicationLocalStorageService,
   );
 
-  constructor() {
-    this.rehydrateWorkspace();
-    this.rehydrateDocument();
-  }
-
   /**
    * Backing signal
    */
@@ -43,6 +38,18 @@ export class EditorWorkspaceService {
    * Readonly signal with the latest document in workspace
    */
   public readonly document = this._document.asReadonly();
+
+  /**
+   * Hydrates the workspace and document from persisted storage.
+   * Call this once during app initialisation instead of relying on the constructor.
+   */
+  public async hydrate(): Promise<void> {
+    try {
+      await Promise.all([this.rehydrateWorkspace(), this.rehydrateDocument()]);
+    } catch (error) {
+      console.error("[EditorWorkspaceService] Failed to rehydrate: ", error);
+    }
+  }
 
   /**
    * Rehydrate the saved document
