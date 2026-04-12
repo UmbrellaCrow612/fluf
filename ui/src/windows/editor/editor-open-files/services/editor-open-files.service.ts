@@ -31,13 +31,6 @@ export class EditorOpenFilesService {
     ApplicationLocalStorageService,
   );
 
-  constructor() {
-    this._nodes.set(
-      this.applicationLocalStorageService.get<fileNode[]>(LOCAL_STORAGE_KEY) ??
-        [],
-    );
-  }
-
   /**
    * Backing signal that holds the current set of open file nodes.
    * Initialised to an empty array and hydrated from local storage in the constructor.
@@ -49,6 +42,27 @@ export class EditorOpenFilesService {
    * Consumers should use this signal rather than the backing `_nodes` signal directly.
    */
   public readonly nodes = computed(() => this._nodes());
+
+  /**
+   * Hydrate the open files signals
+   */
+  public async hydrate() {
+    try {
+      await Promise.all([this.hydrateOpenFiles()]);
+    } catch (error) {
+      console.error("[EditorOpenFilesService] Failed to rehydrate: ", error);
+    }
+  }
+
+  /**
+   * Hydrates the open files
+   */
+  private async hydrateOpenFiles() {
+    this._nodes.set(
+      this.applicationLocalStorageService.get<fileNode[]>(LOCAL_STORAGE_KEY) ??
+        [],
+    );
+  }
 
   /**
    * Opens a file by adding it to the open files collection.

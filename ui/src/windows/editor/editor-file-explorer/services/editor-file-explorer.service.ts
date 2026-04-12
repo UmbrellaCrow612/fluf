@@ -27,20 +27,6 @@ export class EditorFileExplorerService {
     ApplicationLocalStorageService,
   );
 
-  constructor() {
-    this._nodes.set(
-      this.applicationLocalStorageService.get<fileNode[]>(
-        FX_LOCAL_STORAGE_KEY,
-      ) ?? [],
-    );
-
-    this._activeNode.set(
-      this.applicationLocalStorageService.get<fileNode | null>(
-        FX_ACTIVE_STORAGE_KEY,
-      ),
-    );
-  }
-
   /**
    * Backing signal that holds the current file explorer nodes.
    * Initialised to an empty array and hydrated from local storage in the constructor.
@@ -62,6 +48,39 @@ export class EditorFileExplorerService {
    * Read-only computed signal that exposes the latest active node in the file explorer
    */
   public readonly activeNode = computed(() => this._activeNode());
+
+  /**
+   * Hydrates the file explorer signals and data
+   */
+  public async hydrate() {
+    try {
+      await Promise.all([this.hydrateNodes(), this.hydrateActiveNode()]);
+    } catch (error) {
+      console.error("[EditorFileExplorerService] failed to hydrate ", error);
+    }
+  }
+
+  /**
+   * Hydrates the direcory nodes shown in the file explorer
+   */
+  private async hydrateNodes() {
+    this._nodes.set(
+      this.applicationLocalStorageService.get<fileNode[]>(
+        FX_LOCAL_STORAGE_KEY,
+      ) ?? [],
+    );
+  }
+
+  /**
+   * Hydrate the active node
+   */
+  private async hydrateActiveNode() {
+    this._activeNode.set(
+      this.applicationLocalStorageService.get<fileNode | null>(
+        FX_ACTIVE_STORAGE_KEY,
+      ),
+    );
+  }
 
   /**
    * Updates the file explorer nodes and persists them to local storage.
