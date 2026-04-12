@@ -9,7 +9,6 @@ import {
   viewChild,
 } from "@angular/core";
 import { EditorVideoService } from "../core/services/editor-video.service";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { fileNode } from "../../../gen/type";
 import { useEffect } from "../../../lib/useEffect";
 import { getElectronApi } from "../../../shared/electron";
@@ -27,7 +26,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
 })
 export class EditorVideoPaneComponent implements OnDestroy {
   private readonly editorVideoService = inject(EditorVideoService);
-  private readonly editorStateService = inject(EditorStateService);
   private readonly applicationLocalFileUrlService = inject(
     ApplicationLocalFileUrlService,
   );

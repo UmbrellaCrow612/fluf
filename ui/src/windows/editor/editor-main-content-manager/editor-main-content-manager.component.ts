@@ -1,5 +1,4 @@
 import { Component, computed, inject, Signal, Type } from "@angular/core";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { EditorOpenFilesComponent } from "../editor-open-files/editor-open-files.component";
 import { NgComponentOutlet } from "@angular/common";
 import { Renderable } from "../../../lib/ng-component-outlet/type";
@@ -36,7 +35,6 @@ import {
   styleUrl: "./editor-main-content-manager.component.css",
 })
 export class EditorMainContentManagerComponent {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );

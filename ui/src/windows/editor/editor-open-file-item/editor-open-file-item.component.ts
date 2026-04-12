@@ -9,7 +9,6 @@ import {
 } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { fileNode } from "../../../gen/type";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
@@ -32,7 +31,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-open-file-item.component.css",
 })
 export class EditorOpenFileItemComponent implements OnInit {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorDocumentOpenerService = inject(
     EditorDocumentOpenerService,
   );

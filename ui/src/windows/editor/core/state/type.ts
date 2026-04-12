@@ -8,12 +8,7 @@ import { Location } from "vscode-languageserver-protocol";
 /**
  * Represents editor application-wide state that persists between sessions for the editor.
  */
-export type EditorState = {
-  /**
-   * Keeps track if it should auto saves changes in files beofre closing
-   */
-  autoSave: boolean;
-};
+export type EditorState = {};
 
 /**
  * Represents a map of specific language servers and whether they are active.

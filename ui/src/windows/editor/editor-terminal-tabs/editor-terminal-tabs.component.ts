@@ -10,7 +10,6 @@ import { EditorTerminalTabItemComponent } from "../editor-terminal-tab-item/edit
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { getElectronApi } from "../../../shared/electron";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
@@ -30,7 +29,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-terminal-tabs.component.css",
 })
 export class EditorTerminalTabsComponent {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );

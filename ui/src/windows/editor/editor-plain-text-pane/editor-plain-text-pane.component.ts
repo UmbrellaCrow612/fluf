@@ -14,7 +14,6 @@ import {
 } from "@angular/core";
 import { getElectronApi } from "../../../shared/electron";
 import { fileNode, languageId, voidCallback } from "../../../gen/type";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { basicSetup, EditorView } from "codemirror";
 import { useEffect } from "../../../lib/useEffect";
 import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
@@ -65,7 +64,6 @@ import { normalize } from "../../../lib/path";
 export class EditorPlainTextPaneComponent
   implements OnDestroy, OnInit, AfterViewInit
 {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
@@ -270,9 +268,7 @@ export class EditorPlainTextPaneComponent
   /**
    * Keeps track if auto save is on
    */
-  private readonly autoSaveOn = computed(() =>
-    this.editorStateService.autoSave(),
-  );
+  private readonly autoSaveOn = this.editorWorkspaceService.autoSave;
 
   /**
    * Extension that listens to changes and runs logic

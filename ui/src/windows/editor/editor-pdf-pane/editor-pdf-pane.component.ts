@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { useEffect } from "../../../lib/useEffect";
 import { fileNode } from "../../../gen/type";
 import { getElectronApi } from "../../../shared/electron";
@@ -20,7 +19,6 @@ export class EditorPdfPaneComponent {
   private readonly applicationLocalFileUrlService = inject(
     ApplicationLocalFileUrlService,
   );
-  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
   private sanitizer = inject(DomSanitizer);
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);

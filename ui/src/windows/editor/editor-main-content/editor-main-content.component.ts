@@ -9,7 +9,6 @@ import {
 } from "@angular/core";
 import { EditorMainContentManagerComponent } from "../editor-main-content-manager/editor-main-content-manager.component";
 import { EditorSidebarComponent } from "../editor-sidebar/editor-sidebar.component";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { NgComponentOutlet } from "@angular/common";
 import { Renderable } from "../../../lib/ng-component-outlet/type";
 import { Resizer } from "umbr-resizer-two";
@@ -37,7 +36,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-main-content.component.css",
 })
 export class EditorMainContentComponent {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );

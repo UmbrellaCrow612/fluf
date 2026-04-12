@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, inject, signal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { getElectronApi } from "../../../shared/electron";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
 import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
@@ -16,7 +15,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
 })
 export class EditorSelectDirectoryComponent implements AfterViewInit {
   private readonly electronApi = getElectronApi();
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 

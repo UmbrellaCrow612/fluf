@@ -5,7 +5,6 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { getElectronApi } from "../../../shared/electron";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { MatMenuModule } from "@angular/material/menu";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
@@ -78,7 +77,6 @@ type EditorFrameActionWithMenus = {
 })
 export class EditorFrameComponent implements OnInit {
   private readonly electronApi = getElectronApi();
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
@@ -190,9 +188,7 @@ export class EditorFrameComponent implements OnInit {
 
           {
             label: "Exit",
-            onClick: () => {
-              this.editorStateService.reset();
-            },
+            onClick: () => {},
             id: "exit",
           },
         ],

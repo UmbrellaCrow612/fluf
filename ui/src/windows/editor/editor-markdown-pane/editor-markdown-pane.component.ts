@@ -6,7 +6,6 @@ import {
   signal,
   viewChild,
 } from "@angular/core";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { getElectronApi } from "../../../shared/electron";
 import { useEffect } from "../../../lib/useEffect";
 import { fileNode } from "../../../gen/type";
@@ -23,7 +22,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-markdown-pane.component.css",
 })
 export class EditorMarkdownPaneComponent {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly electronApi = getElectronApi();
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 

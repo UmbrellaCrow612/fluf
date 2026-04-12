@@ -6,6 +6,7 @@ import { fileNode } from "../../../../gen/type";
 
 const WORKSPACE_KEY = "editor-workspace";
 const WORKSPACE_DOCUMENT_KEY = "editor-workspace-document";
+const WORKSPACE_AUTO_SAVE_KEY = "editor-workspace-auto-save";
 
 /**
  * Manages the workspace in the editor i.e selected directory
@@ -40,21 +41,77 @@ export class EditorWorkspaceService {
   public readonly document = this._document.asReadonly();
 
   /**
+   * Backing signal for auto save
+   */
+  private readonly _autoSave = signal<boolean | null>(null);
+
+  /**
+   * Readonly signal for if auto save is on
+   */
+  public readonly autoSave = this._autoSave.asReadonly();
+
+  /**
    * Hydrates the workspace and document from persisted storage.
    * Call this once during app initialisation instead of relying on the constructor.
    */
   public async hydrate(): Promise<void> {
     try {
-      await Promise.all([this.rehydrateWorkspace(), this.rehydrateDocument()]);
+      await Promise.all([
+        this.hydrateWorkspace(),
+        this.hydrateDocument(),
+        this.hydrateAutoSave(),
+      ]);
     } catch (error) {
       console.error("[EditorWorkspaceService] Failed to rehydrate: ", error);
     }
   }
 
   /**
+   * Hydrates auto save value
+   */
+  private async hydrateAutoSave() {
+    try {
+      await this.setAutoSave(
+        this.applicationLocalStorageService.get<boolean | null>(
+          WORKSPACE_AUTO_SAVE_KEY,
+        ),
+      );
+    } catch (error) {
+      console.error(
+        "[EditorWorkspaceService] Failed to hydrate auto save ",
+        error,
+      );
+    }
+  }
+
+  /**
+   * Set the auto save value
+   * @param value The value fo set auto save to
+   */
+  private async setAutoSave(value: boolean | null): Promise<void> {
+    const type = typeof value;
+    if (type !== "boolean") {
+      this._autoSave.set(false);
+      this.saveAutoSave(value);
+      return;
+    }
+
+    this._autoSave.set(value);
+    this.saveAutoSave(value);
+  }
+
+  /**
+   * Persist the auto save value
+   * @param value The value
+   */
+  private saveAutoSave(value: boolean | null) {
+    this.applicationLocalStorageService.set(WORKSPACE_AUTO_SAVE_KEY, value);
+  }
+
+  /**
    * Rehydrate the saved document
    */
-  private async rehydrateDocument(): Promise<void> {
+  private async hydrateDocument(): Promise<void> {
     try {
       await this.setDocument(
         this.applicationLocalStorageService.get<fileNode | null>(
@@ -160,7 +217,7 @@ export class EditorWorkspaceService {
   /**
    * Rehydrate the saved workspace
    */
-  private async rehydrateWorkspace(): Promise<void> {
+  private async hydrateWorkspace(): Promise<void> {
     try {
       await this.setWorkspace(
         this.applicationLocalStorageService.get<string | null>(WORKSPACE_KEY),

@@ -9,7 +9,6 @@ export function scrollToVSCodeLocation(
   view: EditorView,
   location: Location,
 ): void {
-  console.warn("scrollToVSCodeLocation  ran");
   const { start } = location.range;
   const doc = view.state.doc;
 

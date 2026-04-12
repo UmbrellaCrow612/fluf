@@ -2,7 +2,6 @@ import { Component, computed, inject, signal, Signal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltip } from "@angular/material/tooltip";
-import { EditorStateService } from "../core/state/editor-state.service";
 import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   editorSidebarPane,
