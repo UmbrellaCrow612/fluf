@@ -1,16 +1,18 @@
 import { inject, Injectable } from "@angular/core";
 import { fileNode } from "../../../../gen/type";
-import { EditorStateService } from "../state/editor-state.service";
 import { EditorImageService } from "./editor-image.service.service";
 import { EditorVideoService } from "./editor-video.service";
 import { EditorAudioService } from "./editor-audio.service";
-import { addFileNodeIfNotExists } from "../../../../shared/file-node-helpers";
-import {
-  EDITOR_MAIN_ACTIVE_ELEMENT,
-  editorMainActiveElement,
-} from "../state/type";
 import { normalize } from "../../../../lib/path";
 import { Location as vscodeLocation } from "vscode-languageserver-protocol";
+import { EditorOpenFilesService } from "../../editor-open-files/services/editor-open-files.service";
+import { EditorFileExplorerService } from "../../editor-file-explorer/services/editor-file-explorer.service";
+import { EditorWorkspaceService } from "../workspace/editor-workspace.service";
+import {
+  EDITOR_MAIN_PANE_ELEMENTS,
+  editorMainPane,
+  EditorMainPaneService,
+} from "../panes/editor-main-pane.service";
 
 /**
  * Manages file node interactions within the editor, including opening files,
@@ -20,10 +22,15 @@ import { Location as vscodeLocation } from "vscode-languageserver-protocol";
   providedIn: "root",
 })
 export class EditorDocumentOpenerService {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorImageService = inject(EditorImageService);
   private readonly editorVideoService = inject(EditorVideoService);
   private readonly editorAudioService = inject(EditorAudioService);
+  private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorFileExplorerService = inject(
+    EditorFileExplorerService,
+  );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+  private readonly editorMainPaneService = inject(EditorMainPaneService);
 
   /**
    * Opens a file node in the editor.
@@ -37,35 +44,15 @@ export class EditorDocumentOpenerService {
    * @param [location=null] To scroll to a specific location when opening a file in the editor
    * @returns Nothing; errors are logged to console for invalid operations
    */
-  public openFileNodeInEditor(
-    target: fileNode,
-    location: vscodeLocation | null = null,
-  ): void {
+  public async open(target: fileNode): Promise<void> {
     if (target.isDirectory) {
       console.error("Cannot open a directory in the editor");
       return;
     }
 
     this.addToOpenFiles(target);
-    this.setActiveFile(target);
-    this.setMainEditorComponent(target);
-    this.scrollToLocation(location);
-  }
-
-  /**
-   * Updates the scroll location value to trigger a scroll to with a delay
-   * @param location The LSP location
-   */
-  private scrollToLocation(location: vscodeLocation | null = null) {
-    if (!location) {
-      return;
-    }
-
-    // use set timeout but could be better liek emit document ready ? Instead of replying in luck with timeout
-
-    setTimeout(() => {
-      this.editorStateService.scrollToDefinitionLocation.set(location);
-    }, 250);
+    await this.setActiveFile(target);
+    await this.setMainEditorComponent(target);
   }
 
   /**
@@ -75,9 +62,7 @@ export class EditorDocumentOpenerService {
    * @param target - The file node to add to open files
    */
   private addToOpenFiles(target: fileNode): void {
-    const openFiles = this.editorStateService.openFiles() ?? [];
-    addFileNodeIfNotExists(openFiles, target);
-    this.editorStateService.openFiles.set(structuredClone(openFiles));
+    this.editorOpenFilesService.open(target);
   }
 
   /**
@@ -86,26 +71,29 @@ export class EditorDocumentOpenerService {
    *
    * @param target - The file node to set as active
    */
-  private setActiveFile(target: fileNode): void {
-    const current = this.editorStateService.currentOpenFileInEditor();
+  private async setActiveFile(target: fileNode): Promise<void> {
+    const current = this.editorWorkspaceService.document();
     if (current && normalize(current.path) === normalize(target.path)) {
       return;
     }
 
-    this.editorStateService.currentOpenFileInEditor.set(target);
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(target);
+    await this.editorWorkspaceService.changeDocument(target);
+    this.editorFileExplorerService.updateActive(target);
   }
 
   /**
    * Wrapper around signal set for main active element
    * @param value The valu to change it to
    */
-  private setMainActiveElementInState(value: editorMainActiveElement) {
-    const current = this.editorStateService.editorMainActiveElement();
+  private async setMainActiveElementInState(
+    value: editorMainPane,
+  ): Promise<void> {
+    const current = this.editorMainPaneService.pane();
     if (current && current === value) {
       return;
     }
-    this.editorStateService.editorMainActiveElement.set(value);
+
+    await this.editorMainPaneService.activatePaneAndWait(value);
   }
 
   /**
@@ -118,31 +106,39 @@ export class EditorDocumentOpenerService {
    *
    * @param target - The file node to route to an editor component
    */
-  private setMainEditorComponent(target: fileNode): void {
+  private async setMainEditorComponent(target: fileNode): Promise<void> {
     const extension = target.extension;
 
     if (this.editorImageService.isSupportedExtension(extension)) {
-      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.IMAGE_EDITOR);
+      await this.setMainActiveElementInState(
+        EDITOR_MAIN_PANE_ELEMENTS.IMAGE_EDITOR,
+      );
       return;
     }
 
     if (this.isPdf(extension)) {
-      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.PDF_EDITOR);
+      await this.setMainActiveElementInState(
+        EDITOR_MAIN_PANE_ELEMENTS.PDF_EDITOR,
+      );
       return;
     }
 
     if (this.editorAudioService.isSupportedExtension(extension)) {
-      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.AUDIO_EDITOR);
+      await this.setMainActiveElementInState(
+        EDITOR_MAIN_PANE_ELEMENTS.AUDIO_EDITOR,
+      );
       return;
     }
 
     if (this.editorVideoService.isSupportedExtension(extension)) {
-      this.setMainActiveElementInState(EDITOR_MAIN_ACTIVE_ELEMENT.VIDEO_EDITOR);
+      await this.setMainActiveElementInState(
+        EDITOR_MAIN_PANE_ELEMENTS.VIDEO_EDITOR,
+      );
       return;
     }
 
-    this.setMainActiveElementInState(
-      EDITOR_MAIN_ACTIVE_ELEMENT.PLAIN_TEXT_FILE_EDITOR,
+    await this.setMainActiveElementInState(
+      EDITOR_MAIN_PANE_ELEMENTS.PLAIN_TEXT_FILE_EDITOR,
     );
   }
 

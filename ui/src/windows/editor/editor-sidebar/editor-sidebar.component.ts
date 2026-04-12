@@ -1,12 +1,12 @@
-import { Component, computed, inject, signal, Signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltip } from '@angular/material/tooltip';
-import { EditorStateService } from '../core/state/editor-state.service';
+import { Component, computed, inject, signal, Signal } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatTooltip } from "@angular/material/tooltip";
 import {
-  EDITOR_SIDE_BAR_ACTIVE_ELEMENT,
-  editorSideBarActiveElement,
-} from '../core/state/type';
+  EDITOR_SIDE_BAR_PANE_ELEMENTS,
+  editorSidebarPane,
+  EditorSidebarPaneService,
+} from "../core/panes/editor-sidebar-pane.service";
 
 /**
  * Represents a clickable side bar element
@@ -15,7 +15,7 @@ type editorSideBarItem = {
   /**
    * The specific element to render on click
    */
-  element: editorSideBarActiveElement;
+  pane: editorSidebarPane;
 
   /**
    * Hover information
@@ -32,20 +32,18 @@ type editorSideBarItem = {
  * Renders a small widget on the left to allow users to switch which active component to render i.e file explorer etc
  */
 @Component({
-  selector: 'app-editor-sidebar',
+  selector: "app-editor-sidebar",
   imports: [MatButtonModule, MatIconModule, MatTooltip],
-  templateUrl: './editor-sidebar.component.html',
-  styleUrl: './editor-sidebar.component.css',
+  templateUrl: "./editor-sidebar.component.html",
+  styleUrl: "./editor-sidebar.component.css",
 })
 export class EditorSidebarComponent {
-  private readonly editorStateService = inject(EditorStateService);
+  private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
 
   /**
    * Keeps track of the current active side bar element
    */
-  public activeElement = computed(() =>
-    this.editorStateService.sideBarActiveElement(),
-  );
+  public activeElement = this.editorSidebarPaneService.pane;
 
   /**
    * Select a side bar item for the editor state
@@ -53,10 +51,12 @@ export class EditorSidebarComponent {
    * @returns Nothing
    */
   public selectSidebarItem(item: editorSideBarItem) {
-    const newValue =
-      this.activeElement() === item.element ? null : item.element;
-
-    this.editorStateService.sideBarActiveElement.set(newValue);
+    const newValue = this.activeElement() === item.pane ? null : item.pane;
+    if (newValue === null) {
+      this.editorSidebarPaneService.activatePane(newValue);
+    } else {
+      this.editorSidebarPaneService.activatePaneAndWait(newValue);
+    }
   }
 
   /**
@@ -64,30 +64,30 @@ export class EditorSidebarComponent {
    */
   public sideBarElements: Signal<editorSideBarItem[]> = signal([
     {
-      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.FILE_EXPLORER,
-      tooltip: 'File explorer',
-      icon: 'file_copy',
+      pane: EDITOR_SIDE_BAR_PANE_ELEMENTS.FILE_EXPLORER,
+      tooltip: "File explorer",
+      icon: "file_copy",
     },
     {
-      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.SEARCH,
-      tooltip: 'Search',
-      icon: 'search',
+      pane: EDITOR_SIDE_BAR_PANE_ELEMENTS.SEARCH,
+      tooltip: "Search",
+      icon: "search",
     },
 
     {
-      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.SOURCE_CONTROL,
-      tooltip: 'Source control',
-      icon: 'change_history',
+      pane: EDITOR_SIDE_BAR_PANE_ELEMENTS.SOURCE_CONTROL,
+      tooltip: "Source control",
+      icon: "change_history",
     },
     {
-      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.RUN_AND_DEBUG,
-      tooltip: 'Run and debug',
-      icon: 'bug_report',
+      pane: EDITOR_SIDE_BAR_PANE_ELEMENTS.RUN_AND_DEBUG,
+      tooltip: "Run and debug",
+      icon: "bug_report",
     },
     {
-      element: EDITOR_SIDE_BAR_ACTIVE_ELEMENT.EXTENSIONS,
-      tooltip: 'Extensions',
-      icon: 'extension',
+      pane: EDITOR_SIDE_BAR_PANE_ELEMENTS.EXTENSIONS,
+      tooltip: "Extensions",
+      icon: "extension",
     },
   ]);
 }

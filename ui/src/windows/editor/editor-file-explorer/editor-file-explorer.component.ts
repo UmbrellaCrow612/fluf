@@ -1,24 +1,32 @@
-import { Component, computed, inject, Signal } from '@angular/core';
-import { EditorFileExplorerTreeComponent } from '../editor-file-explorer-tree/editor-file-explorer-tree.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { fileNode, fileNodeMode } from '../../../gen/type';
-import { A11yModule } from '@angular/cdk/a11y';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { EditorStateService } from '../core/state/editor-state.service';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  inject,
+  Signal,
+} from "@angular/core";
+import { EditorFileExplorerTreeComponent } from "../editor-file-explorer-tree/editor-file-explorer-tree.component";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { fileNode, fileNodeMode } from "../../../gen/type";
+import { A11yModule } from "@angular/cdk/a11y";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import {
   collapseFileNodeFirstLayer,
   findFileNodeByPath,
   replaceFileNode,
-} from '../../../shared/file-node-helpers';
-import { normalize } from '../../../lib/path';
+} from "../../../shared/file-node-helpers";
+import { normalize } from "../../../lib/path";
+import { EditorSidebarPaneService } from "../core/panes/editor-sidebar-pane.service";
+import { EditorFileExplorerService } from "./services/editor-file-explorer.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Renders a file explorer with the current files and folders in the select directory
  */
 @Component({
-  selector: 'app-editor-file-explorer',
+  selector: "app-editor-file-explorer",
   imports: [
     EditorFileExplorerTreeComponent,
     MatButtonModule,
@@ -26,14 +34,22 @@ import { normalize } from '../../../lib/path';
     MatTooltipModule,
     A11yModule,
   ],
-  templateUrl: './editor-file-explorer.component.html',
-  styleUrl: './editor-file-explorer.component.css',
+  templateUrl: "./editor-file-explorer.component.html",
+  styleUrl: "./editor-file-explorer.component.css",
 })
-export class EditorFileExplorerComponent {
-  private readonly editorStateService = inject(EditorStateService);
+export class EditorFileExplorerComponent implements AfterViewInit {
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
+  private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
+  private readonly editorFileExplorerService = inject(
+    EditorFileExplorerService,
+  );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+
+  public ngAfterViewInit() {
+    this.editorSidebarPaneService.resolvePane();
+  }
 
   /**
    * Creates a simple node that represents a node that will render as a create node for a file or folder
@@ -46,12 +62,12 @@ export class EditorFileExplorerComponent {
     return {
       children: [],
       expanded: false,
-      extension: '',
+      extension: "",
       isDirectory: false,
-      lastModified: '',
+      lastModified: "",
       mode: mode,
-      name: '',
-      parentName: '',
+      name: "",
+      parentName: "",
       parentPath: parentPath,
       path: path,
       size: 0,
@@ -65,14 +81,14 @@ export class EditorFileExplorerComponent {
     return {
       children: [],
       expanded: false,
-      extension: '',
+      extension: "",
       isDirectory: false,
-      lastModified: '',
-      mode: 'default',
-      name: '',
-      parentName: '',
-      parentPath: this.editorStateService.selectedDirectoryPath()!,
-      path: this.editorStateService.selectedDirectoryPath()!,
+      lastModified: "",
+      mode: "default",
+      name: "",
+      parentName: "",
+      parentPath: this.editorWorkspaceService.workspace()!,
+      path: this.editorWorkspaceService.workspace()!,
       size: 1,
     };
   });
@@ -80,23 +96,21 @@ export class EditorFileExplorerComponent {
   /**
    * Keeps track of the current selected directory nodes
    */
-  public readonly rootNodeChildren: Signal<fileNode[]> = computed(
-    () => this.editorStateService.directoryFileNodes() ?? [],
-  );
+  public readonly rootNodeChildren: Signal<fileNode[]> =
+    this.editorFileExplorerService.nodes;
 
   /**
    * Keeps track of the current file in the editor
    */
-  public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.fileExplorerActiveFileOrFolder(),
-  );
+  public readonly activeNode: Signal<fileNode | null> =
+    this.editorFileExplorerService.activeNode;
 
   /**
    * Updates the session state nodes for the selected directory root node
    * @param nodes The updates nodes
    */
   public updateRootNodeChildren(nodes: fileNode[]) {
-    this.editorStateService.directoryFileNodes.set(nodes);
+    this.editorFileExplorerService.update(nodes);
   }
 
   /**
@@ -104,11 +118,11 @@ export class EditorFileExplorerComponent {
    * @param node The node clicked
    */
   public itemSelected(node: fileNode) {
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(node);
+    this.editorFileExplorerService.updateActive(node);
   }
 
   public readonly isRootNodeActive: Signal<boolean> = computed(() => {
-    const activeNode = this.editorStateService.fileExplorerActiveFileOrFolder();
+    const activeNode = this.editorFileExplorerService.activeNode();
     if (!activeNode) {
       return false;
     }
@@ -134,9 +148,9 @@ export class EditorFileExplorerComponent {
    * Collapses the nodes to root
    */
   public collapseDirectoryNodes() {
-    const nodes = this.editorStateService.directoryFileNodes() ?? [];
+    const nodes = this.editorFileExplorerService.nodes();
     collapseFileNodeFirstLayer(nodes);
-    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorFileExplorerService.update(nodes);
   }
 
   /**
@@ -154,13 +168,10 @@ export class EditorFileExplorerComponent {
 
     this.editorInMemoryStateService.isCreateFileOrFolderActive.set(true);
 
-    const rootPath = normalize(
-      this.editorStateService.selectedDirectoryPath()!,
-    );
-    const nodes = this.editorStateService.directoryFileNodes() ?? [];
+    const rootPath = normalize(this.editorWorkspaceService.workspace()!);
+    const nodes = this.editorFileExplorerService.nodes();
     const activeNode =
-      this.editorStateService.fileExplorerActiveFileOrFolder() ??
-      this.rootNode();
+      this.editorFileExplorerService.activeNode() ?? this.rootNode();
     const copy = structuredClone(activeNode);
 
     // Determine the target directory path where the new node will be created
@@ -172,14 +183,14 @@ export class EditorFileExplorerComponent {
         this.createFileOrFolderNode(targetDirPath, targetDirPath, mode),
       );
 
-      this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+      this.editorFileExplorerService.update(nodes);
       return;
     }
 
     // Find the parent node to add the new node to
     const parentNode = findFileNodeByPath(nodes, targetDirPath);
     if (!parentNode) {
-      console.error('Could not find parent node for creating new file/folder');
+      console.error("Could not find parent node for creating new file/folder");
       return;
     }
 
@@ -190,13 +201,13 @@ export class EditorFileExplorerComponent {
     );
 
     replaceFileNode(nodes, parentNode, parentCopyNode);
-    this.editorStateService.directoryFileNodes.set(structuredClone(nodes));
+    this.editorFileExplorerService.update(nodes);
   }
 
   /**
    * When the user clicks the empty space in the file explroer we set the active node to be the root node
    */
   public focusFileExplorerRoot() {
-    this.editorStateService.fileExplorerActiveFileOrFolder.set(this.rootNode());
+    this.editorFileExplorerService.updateActive(this.rootNode());
   }
 }

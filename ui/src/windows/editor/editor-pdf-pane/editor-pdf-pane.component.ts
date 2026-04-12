@@ -1,36 +1,37 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { ApplicationapplicationLocalFileUrlService } from '../../../shared/services/application-local-file-url.service';
-import { EditorStateService } from '../core/state/editor-state.service';
-import { useEffect } from '../../../lib/useEffect';
-import { fileNode } from '../../../gen/type';
-import { getElectronApi } from '../../../shared/electron';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Component, computed, inject, signal } from "@angular/core";
+import { ApplicationLocalFileUrlService } from "../../../shared/services/application-local-file-url.service";
+import { useEffect } from "../../../lib/useEffect";
+import { fileNode } from "../../../gen/type";
+import { getElectronApi } from "../../../shared/electron";
+import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Displays a PDF plugin to show PDF's
  */
 @Component({
-  selector: 'app-editor-pdf-pane',
+  selector: "app-editor-pdf-pane",
   imports: [],
-  templateUrl: './editor-pdf-pane.component.html',
-  styleUrl: './editor-pdf-pane.component.css',
+  templateUrl: "./editor-pdf-pane.component.html",
+  styleUrl: "./editor-pdf-pane.component.css",
 })
 export class EditorPdfPaneComponent {
-  private readonly applicationLocalFileUrlService = inject(ApplicationapplicationLocalFileUrlService);
-  private readonly editorStateService = inject(EditorStateService);
+  private readonly applicationLocalFileUrlService = inject(
+    ApplicationLocalFileUrlService,
+  );
   private readonly electronApi = getElectronApi();
   private sanitizer = inject(DomSanitizer);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Keeps track of the current open file in the editor
    */
-  public readonly activeFileNode = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
-  );
+  public readonly activeFileNode = this.editorWorkspaceService.document;
+
   /**
    * Holda a refrence to the PDF img src
    */
-  public readonly pdfSrcUrl = signal<SafeResourceUrl | string>('');
+  public readonly pdfSrcUrl = signal<SafeResourceUrl | string>("");
 
   /**
    * Holds error state
@@ -65,8 +66,8 @@ export class EditorPdfPaneComponent {
     this.isLoading.set(true);
 
     try {
-      if (node.extension !== '.pdf') {
-        throw new Error('File is not a PDF');
+      if (node.extension !== ".pdf") {
+        throw new Error("File is not a PDF");
       }
 
       const norm = await this.electronApi.pathApi.normalize(node.path);
@@ -75,8 +76,8 @@ export class EditorPdfPaneComponent {
       const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(src);
       this.pdfSrcUrl.set(safeUrl);
     } catch (error) {
-      console.error('Failed to load pdf file ', error);
-      this.error.set('Failed to load pdf file');
+      console.error("Failed to load pdf file ", error);
+      this.error.set("Failed to load pdf file");
     } finally {
       this.isLoading.set(false);
     }

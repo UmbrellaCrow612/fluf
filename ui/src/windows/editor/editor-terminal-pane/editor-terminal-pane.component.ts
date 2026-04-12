@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   computed,
   ElementRef,
@@ -8,29 +9,35 @@ import {
   Signal,
   signal,
   viewChild,
-} from '@angular/core';
-import { useEffect } from '../../../lib/useEffect';
-import { shellPid, voidCallback } from '../../../gen/type';
-import { IDisposable, ITheme, Terminal } from '@xterm/xterm';
-import { getElectronApi } from '../../../shared/electron';
-import { FitAddon } from '@xterm/addon-fit';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { SerializeAddon } from '@xterm/addon-serialize';
+} from "@angular/core";
+import { useEffect } from "../../../lib/useEffect";
+import { shellPid, voidCallback } from "../../../gen/type";
+import { IDisposable, ITheme, Terminal } from "@xterm/xterm";
+import { getElectronApi } from "../../../shared/electron";
+import { FitAddon } from "@xterm/addon-fit";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
+import { SerializeAddon } from "@xterm/addon-serialize";
+import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
 
 /**
  * Renders the actual interact / xterm UI for the current active shell ID
  */
 @Component({
-  selector: 'app-editor-terminal-pane',
+  selector: "app-editor-terminal-pane",
   imports: [],
-  templateUrl: './editor-terminal-pane.component.html',
-  styleUrl: './editor-terminal-pane.component.css',
+  templateUrl: "./editor-terminal-pane.component.html",
+  styleUrl: "./editor-terminal-pane.component.css",
 })
-export class EditorTerminalPaneComponent implements OnDestroy {
+export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
   private readonly electronApi = getElectronApi();
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
+  private readonly editorBottomPaneService = inject(EditorBottomPaneService);
+
+  public ngAfterViewInit() {
+    this.editorBottomPaneService.resolvePane();
+  }
 
   /**
    * The specific shell PID to show the UI for in the panel
@@ -74,13 +81,13 @@ export class EditorTerminalPaneComponent implements OnDestroy {
    */
   private readonly terminalTargetContainer = viewChild<
     ElementRef<HTMLDivElement>
-  >('xtermContainerTarget');
+  >("xtermContainerTarget");
 
   constructor() {
     useEffect(
       async (_, pid) => {
         if (!pid) {
-          this.cleanUpState('No PID');
+          this.cleanUpState("No PID");
           return;
         }
 
@@ -100,7 +107,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
   }
 
   public ngOnDestroy() {
-    this.cleanUpState('ngOnDestroy');
+    this.cleanUpState("ngOnDestroy");
   }
 
   /**
@@ -109,17 +116,17 @@ export class EditorTerminalPaneComponent implements OnDestroy {
    */
   private async attachToPane(pid: shellPid): Promise<void> {
     console.log(
-      '[EditorTerminalPaneComponent] attach to pane ran for pid: ',
+      "[EditorTerminalPaneComponent] attach to pane ran for pid: ",
       pid,
     );
 
-    this.cleanUpState('attachToPane');
+    this.cleanUpState("attachToPane");
     this.createTerminalError.set(null);
 
     try {
       const container = this.terminalTargetContainer()?.nativeElement;
       if (!container) {
-        throw new Error('Could not find container element to attach xterm to');
+        throw new Error("Could not find container element to attach xterm to");
       }
 
       const isAlive = await this.electronApi.shellApi.isAlive(pid);
@@ -132,10 +139,10 @@ export class EditorTerminalPaneComponent implements OnDestroy {
 
       const theme = this.buildXtermThemeFromCss();
       const fontFamily =
-        this.getCssVariable('--code-editor-font-family').replace(/"/g, '') ||
+        this.getCssVariable("--code-editor-font-family").replace(/"/g, "") ||
         '"Fira Code", Consolas, monospace';
       const fontSize =
-        parseInt(this.getCssVariable('--code-editor-font-size'), 10) || 14;
+        parseInt(this.getCssVariable("--code-editor-font-size"), 10) || 14;
 
       const xterm = new Terminal({
         cols,
@@ -159,11 +166,11 @@ export class EditorTerminalPaneComponent implements OnDestroy {
         .terminalBuffers()
         .get(pid);
       if (storedTerminalBuffer) {
-        console.log('[EditorTerminalPaneComponent] restored terminal buffer');
+        console.log("[EditorTerminalPaneComponent] restored terminal buffer");
         this.terminal.write(storedTerminalBuffer);
       }
 
-      window.addEventListener('resize', this.onResizeEvent);
+      window.addEventListener("resize", this.onResizeEvent);
 
       this.terminalDisposes.push(
         this.terminal.onData((data) => {
@@ -181,7 +188,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
         this.electronApi.shellApi.onChange(pid, (_, chunk) => {
           if (!this.terminal) {
             console.error(
-              'Data sent from backend could not be written to UI xterm instace as it is null',
+              "Data sent from backend could not be written to UI xterm instace as it is null",
             );
             return;
           }
@@ -190,7 +197,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
             const serlized = this.serializeAddon?.serialize();
             if (!serlized) {
               console.error(
-                'Data could not be serlized as the serlize addon is null for PID: ',
+                "Data could not be serlized as the serlize addon is null for PID: ",
                 pid,
               );
               return;
@@ -214,11 +221,11 @@ export class EditorTerminalPaneComponent implements OnDestroy {
         this.fitAddon?.fit();
       }, 4);
     } catch (error: any) {
-      console.error('Failed to attach xterm terminal to UI ', error);
+      console.error("Failed to attach xterm terminal to UI ", error);
       this.createTerminalError.set(
         `Failed to attach xterm terminal to UI ${error?.message}`,
       );
-      this.cleanUpState('Error attachToPane');
+      this.cleanUpState("Error attachToPane");
     }
   }
 
@@ -231,7 +238,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
     const bufferMap = this.editorInMemoryStateService.terminalBuffers();
     bufferMap.set(pid, buffer);
     console.log(
-      '[EditorTerminalPaneComponent] Updated terminal buffer in store for PID: ',
+      "[EditorTerminalPaneComponent] Updated terminal buffer in store for PID: ",
       pid,
     );
   }
@@ -251,31 +258,31 @@ export class EditorTerminalPaneComponent implements OnDestroy {
   private buildXtermThemeFromCss(): ITheme {
     return {
       // Core colors
-      background: this.getCssVariable('--xterm-background'),
-      foreground: this.getCssVariable('--xterm-foreground'),
-      cursor: this.getCssVariable('--xterm-cursor'),
-      cursorAccent: this.getCssVariable('--xterm-cursor-accent'),
-      selectionBackground: this.getCssVariable('--xterm-selection'),
+      background: this.getCssVariable("--xterm-background"),
+      foreground: this.getCssVariable("--xterm-foreground"),
+      cursor: this.getCssVariable("--xterm-cursor"),
+      cursorAccent: this.getCssVariable("--xterm-cursor-accent"),
+      selectionBackground: this.getCssVariable("--xterm-selection"),
 
       // ANSI colors
-      black: this.getCssVariable('--xterm-black'),
-      red: this.getCssVariable('--xterm-red'),
-      green: this.getCssVariable('--xterm-green'),
-      yellow: this.getCssVariable('--xterm-yellow'),
-      blue: this.getCssVariable('--xterm-blue'),
-      magenta: this.getCssVariable('--xterm-magenta'),
-      cyan: this.getCssVariable('--xterm-cyan'),
-      white: this.getCssVariable('--xterm-white'),
+      black: this.getCssVariable("--xterm-black"),
+      red: this.getCssVariable("--xterm-red"),
+      green: this.getCssVariable("--xterm-green"),
+      yellow: this.getCssVariable("--xterm-yellow"),
+      blue: this.getCssVariable("--xterm-blue"),
+      magenta: this.getCssVariable("--xterm-magenta"),
+      cyan: this.getCssVariable("--xterm-cyan"),
+      white: this.getCssVariable("--xterm-white"),
 
       // Bright ANSI colors
-      brightBlack: this.getCssVariable('--xterm-bright-black'),
-      brightRed: this.getCssVariable('--xterm-bright-red'),
-      brightGreen: this.getCssVariable('--xterm-bright-green'),
-      brightYellow: this.getCssVariable('--xterm-bright-yellow'),
-      brightBlue: this.getCssVariable('--xterm-bright-blue'),
-      brightMagenta: this.getCssVariable('--xterm-bright-magenta'),
-      brightCyan: this.getCssVariable('--xterm-bright-cyan'),
-      brightWhite: this.getCssVariable('--xterm-bright-white'),
+      brightBlack: this.getCssVariable("--xterm-bright-black"),
+      brightRed: this.getCssVariable("--xterm-bright-red"),
+      brightGreen: this.getCssVariable("--xterm-bright-green"),
+      brightYellow: this.getCssVariable("--xterm-bright-yellow"),
+      brightBlue: this.getCssVariable("--xterm-bright-blue"),
+      brightMagenta: this.getCssVariable("--xterm-bright-magenta"),
+      brightCyan: this.getCssVariable("--xterm-bright-cyan"),
+      brightWhite: this.getCssVariable("--xterm-bright-white"),
     };
   }
 
@@ -284,7 +291,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
    * @param pid The Shell to remove
    */
   private removeTerminalFromDataStore(pid: number): void {
-    console.log('[EditorTerminalPaneComponent] remove ran');
+    console.log("[EditorTerminalPaneComponent] remove ran");
 
     try {
       const shellPids = this.editorInMemoryStateService.shells() ?? [];
@@ -300,7 +307,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
         structuredClone(filteredShellPids),
       );
     } catch (error) {
-      console.log('Failed to remove pid: ', pid, error);
+      console.log("Failed to remove pid: ", pid, error);
     }
   }
 
@@ -314,7 +321,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
       setTimeout(() => {
         this.fitAddon?.fit();
       }, 4);
-      console.log('[EditorTerminalPaneComponent] terminal resize ran');
+      console.log("[EditorTerminalPaneComponent] terminal resize ran");
     }
   };
 
@@ -322,7 +329,7 @@ export class EditorTerminalPaneComponent implements OnDestroy {
    * Cleans up previous xterm instace, addons and other cleanup needed
    */
   private cleanUpState(from: string) {
-    console.log('[EditorTerminalPaneComponent] cleanup ran from ', from);
+    console.log("[EditorTerminalPaneComponent] cleanup ran from ", from);
 
     this.terminalDisposes.forEach((x) => {
       x.dispose();
@@ -347,6 +354,6 @@ export class EditorTerminalPaneComponent implements OnDestroy {
       this.serializeAddon = null;
     }
 
-    window.removeEventListener('resize', this.onResizeEvent);
+    window.removeEventListener("resize", this.onResizeEvent);
   }
 }

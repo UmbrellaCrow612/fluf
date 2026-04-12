@@ -339,7 +339,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     this.itemSelected.emit(node);
 
     if (!node.isDirectory) {
-      this.editorDocumentOpenerService.openFileNodeInEditor(node);
+      this.editorDocumentOpenerService.open(node);
       return;
     }
 

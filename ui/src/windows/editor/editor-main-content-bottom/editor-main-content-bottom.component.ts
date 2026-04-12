@@ -1,12 +1,21 @@
-import { Component, computed, inject, Signal, Type } from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  inject,
+  Signal,
+  Type,
+} from "@angular/core";
 import { EditorMainContentBottomFrameComponent } from "../editor-main-content-bottom-frame/editor-main-content-bottom-frame.component";
 import { Renderable } from "../../../lib/ng-component-outlet/type";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { NgComponentOutlet } from "@angular/common";
 import { EditorTerminalComponent } from "../editor-terminal/editor-terminal.component";
 import { EditorMainContentBottomEmptyComponent } from "../editor-main-content-bottom-empty/editor-main-content-bottom-empty.component";
-import { EDITOR_BOTTOM_ACTIVE_ELEMENT } from "../core/state/type";
 import { EditorProblemsComponent } from "../editor-problems/editor-problems.component";
+import {
+  EDITOR_BOTTOM_PANE_ELEMENT,
+  EditorBottomPaneService,
+} from "../core/panes/bottom/editor-bottom-pane.service";
 
 /**
  * Represents the bottom section of the main content which contains stuff like the terminal etc, manages which one to show
@@ -17,8 +26,10 @@ import { EditorProblemsComponent } from "../editor-problems/editor-problems.comp
   templateUrl: "./editor-main-content-bottom.component.html",
   styleUrl: "./editor-main-content-bottom.component.css",
 })
-export class EditorMainContentBottomComponent {
-  private readonly editorStateService = inject(EditorStateService);
+export class EditorMainContentBottomComponent implements AfterViewInit {
+  private readonly editorBottomPaneService = inject(EditorBottomPaneService);
+
+  public ngAfterViewInit() {}
 
   /**
    * Holds list of components that can be rendered as the main content of this component
@@ -28,8 +39,8 @@ export class EditorMainContentBottomComponent {
       component: EditorTerminalComponent,
       condition: computed(() => {
         return (
-          this.editorStateService.editorBottomActiveElement() ===
-          EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL
+          this.editorBottomPaneService.pane() ===
+          EDITOR_BOTTOM_PANE_ELEMENT.TERMINAL
         );
       }),
     },
@@ -37,15 +48,15 @@ export class EditorMainContentBottomComponent {
       component: EditorProblemsComponent,
       condition: computed(() => {
         return (
-          this.editorStateService.editorBottomActiveElement() ===
-          EDITOR_BOTTOM_ACTIVE_ELEMENT.PROBLEMS
+          this.editorBottomPaneService.pane() ===
+          EDITOR_BOTTOM_PANE_ELEMENT.PROBLEMS
         );
       }),
     },
     {
       component: EditorMainContentBottomEmptyComponent,
       condition: computed(() => {
-        return !this.editorStateService.editorBottomActiveElement();
+        return !this.editorBottomPaneService.pane();
       }),
     },
   ];

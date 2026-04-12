@@ -1,18 +1,20 @@
-import { inject, Injectable } from '@angular/core';
-import { useEffect } from '../../../../lib/useEffect';
-import { EditorInMemoryStateService } from '../../core/state/editor-in-memory-state.service';
-import { voidCallback } from '../../../../gen/type';
-import { getElectronApi } from '../../../../shared/electron';
-import { EditorStateService } from '../../core/state/editor-state.service';
+import { inject, Injectable } from "@angular/core";
+import { useEffect } from "../../../../lib/useEffect";
+import { EditorInMemoryStateService } from "../../core/state/editor-in-memory-state.service";
+import { voidCallback } from "../../../../gen/type";
+import { getElectronApi } from "../../../../shared/electron";
+import { EditorDisplayBottomService } from "../../core/panes/bottom/editor-display-bottom.service";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class EditorTerminalService {
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
-  private readonly editorStateService = inject(EditorStateService);
+  private readonly editorDisplayBottomService = inject(
+    EditorDisplayBottomService,
+  );
   private readonly electronApi = getElectronApi();
 
   /**
@@ -45,7 +47,7 @@ export class EditorTerminalService {
           this.ptyDisposes.push(
             this.electronApi.shellApi.onChange(pid, (_, chunk) => {
               console.log(
-                '[EditorTerminalService] backgrounbd buffer updated for PID: ',
+                "[EditorTerminalService] backgrounbd buffer updated for PID: ",
                 pid,
               );
 
@@ -67,7 +69,7 @@ export class EditorTerminalService {
       },
       [
         this.editorInMemoryStateService.shells,
-        this.editorStateService.displayFileEditorBottom,
+        this.editorDisplayBottomService.display,
       ],
     );
   }
@@ -76,7 +78,7 @@ export class EditorTerminalService {
    * Cleans the state
    */
   private cleanUpState() {
-    console.log('[EditorTerminalService] clean up ran');
+    console.log("[EditorTerminalService] clean up ran");
     this.ptyDisposes.forEach((dispose) => {
       dispose();
     });

@@ -9,11 +9,9 @@ import {
 } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
-import { EditorStateService } from "../core/state/editor-state.service";
-import { fileNode, voidCallback } from "../../../gen/type";
+import { fileNode } from "../../../gen/type";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
-import { removeFileNodeIfExists } from "../../../shared/file-node-helpers";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
@@ -23,6 +21,8 @@ import { Diagnostic } from "vscode-languageserver-protocol";
 import { EditorLanguageServerProtocolService } from "../core/lsp/editor-language-server-protocol.service";
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
+import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 @Component({
   selector: "app-editor-open-file-item",
@@ -31,7 +31,6 @@ import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-op
   styleUrl: "./editor-open-file-item.component.css",
 })
 export class EditorOpenFileItemComponent implements OnInit {
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorDocumentOpenerService = inject(
     EditorDocumentOpenerService,
   );
@@ -56,6 +55,8 @@ export class EditorOpenFileItemComponent implements OnInit {
   private readonly editorDocumentOpenTrackerService = inject(
     EditorDocumentOpenTrackerService,
   );
+  private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Displays count of error diagnostic it has for file
@@ -108,17 +109,13 @@ export class EditorOpenFileItemComponent implements OnInit {
   /**
    * Keep track selected directory
    */
-  private readonly workspaceFolder = computed(() =>
-    this.editorStateService.selectedDirectoryPath(),
-  );
+  private readonly workspaceFolder = this.editorWorkspaceService.workspace;
 
   /**
    * Keep track if the given file tab is the one open / active
    */
   public isActive: Signal<boolean> = computed(
-    () =>
-      this.editorStateService.currentOpenFileInEditor()?.path ===
-      this.fileNode().path,
+    () => this.editorWorkspaceService.document()?.path === this.fileNode().path,
   );
 
   /**
@@ -190,15 +187,13 @@ export class EditorOpenFileItemComponent implements OnInit {
       console.log("Send text document closed");
     }
 
-    let openfiles = this.editorStateService.openFiles() ?? [];
-    removeFileNodeIfExists(openfiles, this.fileNode());
-
-    this.editorStateService.openFiles.set(structuredClone(openfiles));
+    this.editorOpenFilesService.close(this.fileNode());
+    const nodes = this.editorOpenFilesService.nodes();
 
     if (this.isActive()) {
-      let nextAvNode: fileNode | null = openfiles[0];
+      let nextAvNode: fileNode | null = nodes[0];
       if (nextAvNode) {
-        this.editorDocumentOpenerService.openFileNodeInEditor(nextAvNode);
+        this.editorDocumentOpenerService.open(nextAvNode);
       }
     }
   }
@@ -207,6 +202,6 @@ export class EditorOpenFileItemComponent implements OnInit {
    * Selects the given tab item node as the new active
    */
   public selectFileTabItem(event: Event) {
-    this.editorDocumentOpenerService.openFileNodeInEditor(this.fileNode());
+    this.editorDocumentOpenerService.open(this.fileNode());
   }
 }

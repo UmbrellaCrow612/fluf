@@ -1,6 +1,7 @@
 import { Compartment, Extension } from "@codemirror/state";
 import { history, historyField } from "@codemirror/commands";
 import {
+  AfterViewInit,
   Component,
   computed,
   ElementRef,
@@ -13,7 +14,6 @@ import {
 } from "@angular/core";
 import { getElectronApi } from "../../../shared/electron";
 import { fileNode, languageId, voidCallback } from "../../../gen/type";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { basicSetup, EditorView } from "codemirror";
 import { useEffect } from "../../../lib/useEffect";
 import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
@@ -41,16 +41,16 @@ import { autocompletion, CompletionSource } from "@codemirror/autocomplete";
 import { lspCompletionListToCodeMirror } from "../core/lsp/completion";
 import { EditorDocumentOpenerService } from "../core/services/editor-document-opener.service";
 import { createGoToDefinitionHoverStyles } from "./extensions/hover";
-import {
-  goToDefinitionInEditor,
-  scrollToVSCodeLocation,
-} from "../core/lsp/definition";
+import { scrollToVSCodeLocation } from "../core/lsp/definition";
 import { EditorLanguageServerProtocolLifecycleTracker } from "../core/lsp/editor-language-server-protocol-lifecycle-tracker";
 import { EditorPendingChangesQueueService } from "../core/lsp/editor-pending-changes-queue.service";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { EditorDocumentLanguageIdService } from "../core/lsp/editor-document-language-id.service";
 import { EditorDocumentOpenTrackerService } from "../core/lsp/editor-document-open-tracker.service";
 import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
+import { EditorMainPaneService } from "../core/panes/editor-main-pane.service";
+import { normalize } from "../../../lib/path";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -61,8 +61,9 @@ import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
   templateUrl: "./editor-plain-text-pane.component.html",
   styleUrl: "./editor-plain-text-pane.component.css",
 })
-export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
-  private readonly editorStateService = inject(EditorStateService);
+export class EditorPlainTextPaneComponent
+  implements OnDestroy, OnInit, AfterViewInit
+{
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
@@ -97,13 +98,14 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   private readonly editorDocumentOpenTrackerService = inject(
     EditorDocumentOpenTrackerService,
   );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+  private readonly editorMainPaneService = inject(EditorMainPaneService);
 
   /**
    * Keeps track of the current open file in the editor
    */
-  public readonly activeNode: Signal<fileNode | null> = computed(() =>
-    this.editorStateService.currentOpenFileInEditor(),
-  );
+  public readonly activeNode: Signal<fileNode | null> =
+    this.editorWorkspaceService.document;
 
   /**
    * Holds the editor view
@@ -145,9 +147,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   /**
    * Keeps track of the selected directory in the editor
    */
-  private readonly selectedDirectory = computed(() =>
-    this.editorStateService.selectedDirectoryPath(),
-  );
+  private readonly selectedDirectory = this.editorWorkspaceService.workspace;
 
   /**
    * Holds if the user has control pressed
@@ -158,6 +158,15 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
    * Linter compartment
    */
   private readonly linterCompartment = new Compartment();
+
+  /**
+   * Holds the a callback which run the logic scroll to a given location between changes
+   */
+  private scrollToLocationCallback: voidCallback | null = null;
+
+  public ngAfterViewInit() {
+    this.editorMainPaneService.resolvePane();
+  }
 
   constructor() {
     useEffect(
@@ -171,16 +180,6 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         await this.displayPlainTextEditor(fileNode);
       },
       [this.activeNode],
-    );
-
-    useEffect(
-      (_, location) => {
-        const view = this.editorView;
-        if (location && view) {
-          scrollToVSCodeLocation(view, location);
-        }
-      },
-      [this.editorStateService.scrollToDefinitionLocation],
     );
 
     useEffect(() => {
@@ -269,9 +268,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
   /**
    * Keeps track if auto save is on
    */
-  private readonly autoSaveOn = computed(() =>
-    this.editorStateService.autoSave(),
-  );
+  private readonly autoSaveOn = this.editorWorkspaceService.autoSave;
 
   /**
    * Extension that listens to changes and runs logic
@@ -447,6 +444,8 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         console.log("Using cahche view");
         this.editorView = cachedView;
         this.editorView.focus();
+        this.scrollToLocationCallback?.();
+
         this.hydrateDataOnChange(cachedView);
         this.hydrateDiagnostics(normalizedPath, this.editorView);
 
@@ -479,6 +478,7 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
         extensions: this.createExtensions(),
       });
       this.editorView.focus();
+      this.scrollToLocationCallback?.();
       this.hydrateDataOnChange(this.editorView);
       this.hydrateDiagnostics(normalizedPath, this.editorView);
 
@@ -548,11 +548,21 @@ export class EditorPlainTextPaneComponent implements OnDestroy, OnInit {
               return null;
             }
 
-            await goToDefinitionInEditor(
-              result,
-              this.editorDocumentOpenerService,
-              this.editorStateService,
-            );
+            const location = Array.isArray(result) ? result[0] : result;
+
+            const uri = location.uri;
+            const asPathLike = await this.electronApi.pathApi.fromUri(uri);
+            const node = await this.electronApi.fsApi.getNode(asPathLike);
+
+            if (normalize(node.path) === normalize(filePath)) {
+              scrollToVSCodeLocation(this.editorView!, location);
+            } else {
+              this.scrollToLocationCallback = () => {
+                scrollToVSCodeLocation(this.editorView!, location);
+              };
+            }
+
+            await this.editorDocumentOpenerService.open(node);
 
             return null;
           } catch (error: any) {

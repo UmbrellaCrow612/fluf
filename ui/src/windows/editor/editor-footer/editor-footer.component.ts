@@ -9,10 +9,11 @@ import {
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { getElectronApi } from "../../../shared/electron";
 import { MatIconModule } from "@angular/material/icon";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { DatePipe } from "@angular/common";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
+import { useEffect } from "../../../lib/useEffect";
 
 @Component({
   selector: "app-editor-footer",
@@ -20,15 +21,15 @@ import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-dia
   templateUrl: "./editor-footer.component.html",
   styleUrl: "./editor-footer.component.css",
 })
-export class EditorFooterComponent implements OnInit {
+export class EditorFooterComponent {
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
   private readonly electronApi = getElectronApi();
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorDocumentDiagnosticService = inject(
     EditorDocumentDiagnosticService,
   );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Keeps track if the system has GIT version control
@@ -57,9 +58,17 @@ export class EditorFooterComponent implements OnInit {
   /**
    * Keeps track of the current selected directory path
    */
-  private readonly selectedDirectory = computed(() =>
-    this.editorStateService.selectedDirectoryPath(),
-  );
+  private readonly selectedDirectory = this.editorWorkspaceService.workspace;
+
+  constructor() {
+    useEffect(
+      (_, dir) => {
+        if (!dir) return;
+        this.getCurrentGitBranch(dir);
+      },
+      [this.selectedDirectory],
+    );
+  }
 
   /**
    * Holds count of how many diagnostic error we have
@@ -77,28 +86,13 @@ export class EditorFooterComponent implements OnInit {
     return count;
   });
 
-  async ngOnInit() {
-    await this.checkIfSystemHasGit();
-    await this.getCurrentGitBranch();
-  }
-
-  private async checkIfSystemHasGit() {
+  /**
+   * Display the current branch
+   * @param directory The directory selected in the editor
+   */
+  private async getCurrentGitBranch(directory: string) {
     try {
-      const hasGit = await this.electronApi.gitApi.hasGit();
-      this.hasGit.set(hasGit);
-    } catch (error) {
-      console.error("Failed to check if system has git ", error);
-    }
-  }
-
-  private async getCurrentGitBranch() {
-    try {
-      const dir = this.selectedDirectory();
-      if (!dir) {
-        return;
-      }
-
-      const branch = await this.electronApi.gitApi.getCurrentBranch(dir);
+      const branch = await this.electronApi.gitApi.getCurrentBranch(directory);
       this.currentBranch.set(branch);
     } catch (error) {
       console.error("Failed to get current git branch ", error);

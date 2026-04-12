@@ -5,15 +5,20 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { getElectronApi } from "../../../shared/electron";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
-import { EditorStateService } from "../core/state/editor-state.service";
 import { MatMenuModule } from "@angular/material/menu";
-import {
-  EDITOR_BOTTOM_ACTIVE_ELEMENT,
-  EDITOR_SIDE_BAR_ACTIVE_ELEMENT,
-} from "../core/state/type";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
 import { EditorDocumentSavingService } from "../core/lsp/editor-document-saving.service";
+import {
+  EDITOR_SIDE_BAR_PANE_ELEMENTS,
+  EditorSidebarPaneService,
+} from "../core/panes/editor-sidebar-pane.service";
+import { EditorDisplayBottomService } from "../core/panes/bottom/editor-display-bottom.service";
+import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
+import { EditorOpenFilesService } from "../editor-open-files/services/editor-open-files.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
+import { EditorFileExplorerService } from "../editor-file-explorer/services/editor-file-explorer.service";
+import { EditorMainPaneService } from "../core/panes/editor-main-pane.service";
 
 /**
  * Represents a item in the frame that is clickable and displays a menu of options
@@ -72,7 +77,6 @@ type EditorFrameActionWithMenus = {
 })
 export class EditorFrameComponent implements OnInit {
   private readonly electronApi = getElectronApi();
-  private readonly editorStateService = inject(EditorStateService);
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
@@ -85,6 +89,17 @@ export class EditorFrameComponent implements OnInit {
   private readonly editorDocumentSavingService = inject(
     EditorDocumentSavingService,
   );
+  private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
+  private readonly editorDisplayBottomService = inject(
+    EditorDisplayBottomService,
+  );
+  private readonly editorBottomPaneService = inject(EditorBottomPaneService);
+  private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+  private readonly editorFileExplorerService = inject(
+    EditorFileExplorerService,
+  );
+  private readonly editorMainPaneService = inject(EditorMainPaneService);
 
   /**
    * Holds state if the given chrome window is maximized
@@ -156,23 +171,24 @@ export class EditorFrameComponent implements OnInit {
               let res = await this.electronApi.fsApi.selectFolder();
               if (res.canceled) return;
 
+              const dir = res.filePaths[0];
+              if (!dir) {
+                return;
+              }
+
               // tood call reset then set select dir as this ro make some util
-              this.editorStateService.selectedDirectoryPath.set(
-                res.filePaths[0],
-              );
-              this.editorStateService.openFiles.set(null);
-              this.editorStateService.currentOpenFileInEditor.set(null);
-              this.editorStateService.editorMainActiveElement.set(null);
-              this.editorStateService.fileExplorerActiveFileOrFolder.set(null);
+              await this.editorWorkspaceService.changeWorkspace(dir);
+              this.editorOpenFilesService.reset();
+              await this.editorWorkspaceService.changeDocument(null);
+              this.editorMainPaneService.activatePane(null);
+              this.editorFileExplorerService.updateActive(null);
             },
             id: "file",
           },
 
           {
             label: "Exit",
-            onClick: () => {
-              this.editorStateService.reset();
-            },
+            onClick: () => {},
             id: "exit",
           },
         ],
@@ -192,18 +208,20 @@ export class EditorFrameComponent implements OnInit {
           },
           {
             label: "Problems",
-            onClick: () => {
-              this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set("problems");
+            onClick: async () => {
+              this.editorDisplayBottomService.show();
+              await this.editorBottomPaneService.activatePaneAndWait(
+                "problems",
+              );
             },
             id: "problems",
           },
           {
             label: "Terminal",
-            onClick: () => {
-              this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set(
-                EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL,
+            onClick: async () => {
+              this.editorDisplayBottomService.show();
+              await this.editorBottomPaneService.activatePaneAndWait(
+                "problems",
               );
             },
             id: "terminal",
@@ -211,8 +229,8 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "File explorer",
             onClick: () => {
-              this.editorStateService.sideBarActiveElement.set(
-                EDITOR_SIDE_BAR_ACTIVE_ELEMENT.FILE_EXPLORER,
+              this.editorSidebarPaneService.activatePaneAndWait(
+                EDITOR_SIDE_BAR_PANE_ELEMENTS.FILE_EXPLORER,
               );
             },
             id: "file_explor",
@@ -220,7 +238,9 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Search",
             onClick: () => {
-              this.editorStateService.sideBarActiveElement.set("search");
+              this.editorSidebarPaneService.activatePaneAndWait(
+                EDITOR_SIDE_BAR_PANE_ELEMENTS.SEARCH,
+              );
             },
             id: "search",
           },
@@ -228,8 +248,8 @@ export class EditorFrameComponent implements OnInit {
           {
             label: "Version control",
             onClick: () => {
-              this.editorStateService.sideBarActiveElement.set(
-                "source-control",
+              this.editorSidebarPaneService.activatePaneAndWait(
+                EDITOR_SIDE_BAR_PANE_ELEMENTS.SOURCE_CONTROL,
               );
             },
             id: "version_control",
@@ -243,21 +263,17 @@ export class EditorFrameComponent implements OnInit {
         children: [
           {
             label: "New terminal",
-            onClick: () => {
-              this.editorStateService.displayFileEditorBottom.set(true);
-              this.editorStateService.editorBottomActiveElement.set(
-                EDITOR_BOTTOM_ACTIVE_ELEMENT.TERMINAL,
+            onClick: async () => {
+              this.editorDisplayBottomService.show();
+              await this.editorBottomPaneService.activatePaneAndWait(
+                "problems",
               );
               this.editorInMemoryStateService.resetEditorBottomPanelDragHeight.update(
                 (x) => x + 1,
               );
-
-              setTimeout(() => {
-                // we need a slight delay for UI to catch up
-                this.editorInMemoryStateService.createTerminal.update(
-                  (x) => x + 1,
-                );
-              }, 200);
+              this.editorInMemoryStateService.createTerminal.update(
+                (x) => x + 1,
+              );
             },
             id: "new_terminal",
           },
