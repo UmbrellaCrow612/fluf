@@ -14,7 +14,9 @@ export class EditorHydrationService {
    * Attempts to hydrate all services
    */
   public async hydrate(): Promise<void> {
-    await this.trySafeHydrate(() => this.editorWorkspaceService.hydrate());
+    await Promise.all([
+      this.trySafeHydrate(() => this.editorWorkspaceService.hydrate()),
+    ]);
   }
 
   /**
