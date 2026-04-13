@@ -76,9 +76,4 @@ export type EditorInMemoryState = {
    * Holds the users current selected line and column numbers in a editor text document
    */
   selectedLineAndColumn: { line: number; column: number } | null;
-
-  /**
-   * Holds the current git blame information for the cusor line
-   */
-  gitBlameLineInformation: gitBlameLineInformation | null;
 };

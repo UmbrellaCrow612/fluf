@@ -14,6 +14,7 @@ import { DatePipe } from "@angular/common";
 import { EditorDocumentDiagnosticService } from "../core/lsp/editor-document-diagnostic.service";
 import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 import { useEffect } from "../../../lib/useEffect";
+import { EditorGitService } from "../core/git/editor-git.service";
 
 @Component({
   selector: "app-editor-footer",
@@ -30,6 +31,7 @@ export class EditorFooterComponent {
     EditorDocumentDiagnosticService,
   );
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+  private readonly editorGitService = inject(EditorGitService);
 
   /**
    * Keeps track if the system has GIT version control
@@ -51,9 +53,8 @@ export class EditorFooterComponent {
   /**
    * Keeps track of the latest git blame line information
    */
-  public readonly gitBlameLineInformation = computed(() =>
-    this.editorInMemoryStateService.gitBlameLineInformation(),
-  );
+  public readonly gitBlameLineInformation =
+    this.editorGitService.gitBlameLineInformation;
 
   /**
    * Keeps track of the current selected directory path

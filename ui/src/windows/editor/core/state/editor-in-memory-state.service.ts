@@ -90,10 +90,4 @@ export class EditorInMemoryStateService {
    */
   public readonly selectedLineAndColumn =
     signal<EditorInMemoryState["selectedLineAndColumn"]>(null);
-
-  /**
-   * Exposes gitBlameLineInformation signal
-   */
-  public readonly gitBlameLineInformation =
-    signal<EditorInMemoryState["gitBlameLineInformation"]>(null);
 }
