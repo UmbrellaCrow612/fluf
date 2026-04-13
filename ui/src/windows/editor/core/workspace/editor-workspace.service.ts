@@ -51,6 +51,23 @@ export class EditorWorkspaceService {
   public readonly autoSave = this._autoSave.asReadonly();
 
   /**
+   * Backing signal for control save
+   */
+  private readonly _controlSave = signal(0);
+
+  /**
+   * Readonly signal when control save is triggered any number above 0 means it is triggered
+   */
+  public readonly controlSave = this._controlSave.asReadonly();
+
+  /**
+   * Trigger a control save
+   */
+  public triggerControlSave(): void {
+    this._controlSave.update((x) => x + 1);
+  }
+
+  /**
    * Hydrates the workspace and document from persisted storage.
    * Call this once during app initialisation instead of relying on the constructor.
    */

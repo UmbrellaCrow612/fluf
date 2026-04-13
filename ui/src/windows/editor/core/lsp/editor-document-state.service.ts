@@ -6,6 +6,7 @@ import {
 } from "./editor-document-dirty.service";
 import { useEffect } from "../../../../lib/useEffect";
 import { EditorInMemoryStateService } from "../state/editor-in-memory-state.service";
+import { EditorWorkspaceService } from "../workspace/editor-workspace.service";
 
 /**
  * Centralizes document state management by coordinating draft storage
@@ -19,6 +20,7 @@ export class EditorDocumentStateService {
   private readonly draftService = inject(EditorDocumentDraftService);
   private readonly documentDirtyService = inject(EditorDocumentDirtyService);
   private readonly inMemoryState = inject(EditorInMemoryStateService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Registers a document change with draft storage and dirty tracking.
@@ -107,7 +109,7 @@ export class EditorDocumentStateService {
           await this.saveAll();
         }
       },
-      [this.inMemoryState.controlSaveCount],
+      [this.editorWorkspaceService.controlSave],
     );
   }
 }

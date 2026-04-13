@@ -80,12 +80,6 @@ export class EditorInMemoryStateService {
     signal<EditorInMemoryState["resetEditorBottomPanelDragHeight"]>(0);
 
   /**
-   * Exposes controlSaveCount signal
-   */
-  public readonly controlSaveCount =
-    signal<EditorInMemoryState["controlSaveCount"]>(0);
-
-  /**
    * Exposes selectedLineAndColumn signal
    */
   public readonly selectedLineAndColumn =
