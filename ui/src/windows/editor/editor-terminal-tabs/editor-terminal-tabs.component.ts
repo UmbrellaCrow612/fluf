@@ -59,8 +59,8 @@ export class EditorTerminalTabsComponent {
         directory = await this.electronApi.pathApi.getDefaultProfilePath();
       }
 
-      const pid = await this.electronApi.shellApi.create(directory);
-      if (pid === -1) {
+      const info = await this.electronApi.shellApi.create(directory);
+      if (!info) {
         console.error("Failed to create terminal at directory ", directory);
         return;
       }

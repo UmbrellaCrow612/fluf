@@ -13,10 +13,12 @@ import type {
   CombinedCallback,
   createShell,
   getShellInformation,
+  getShellSpawnExecutables,
   IpcMainInvokeEventCallback,
   isShellAlive,
   killShell,
   resizeShell,
+  shellExecutableInformation,
   shellInformation,
   writeToShell,
 } from "./type.js";
@@ -25,9 +27,13 @@ import { broadcastToAll } from "./broadcast.js";
 import type { TypedIpcMain } from "./typed-ipc.js";
 
 /**
- * Contains a map of shell PID and then the proccess
+ * Contains a map of shell PID and then the proccess pty
  */
-const shells: Map<number, IPty> = new Map<number, IPty>();
+const shellPtys: Map<number, IPty> = new Map<number, IPty>();
+/**
+ * Contains shell pid and it's information
+ */
+const shellInformations: Map<number, shellInformation> = new Map();
 
 /**
  * Contains a list of specific shell PID's and there dipose methods
@@ -38,28 +44,114 @@ const shellDisposes: Map<number, IDisposable[]> = new Map<
 >();
 
 /**
- * Spawn specific shell based on platform
+ * Default exe to spawn specific shell based on platform
  * */
-const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
+const defaultExecutable = os.platform() === "win32" ? "powershell.exe" : "bash";
+
+/**
+ * Well-known shells by platform.
+ * Keys are the bare executable name (no extension); values are the display name.
+ */
+const KNOWN_SHELLS = {
+  // Unix-like
+  bash: "Bash",
+  zsh: "Zsh",
+  fish: "Fish",
+  sh: "Sh",
+  dash: "Dash",
+  ksh: "KornShell",
+  csh: "C Shell",
+  tcsh: "TC Shell",
+  nu: "Nushell",
+  xonsh: "Xonsh",
+
+  // Windows
+  powershell: "Windows PowerShell",
+  pwsh: "PowerShell",
+  cmd: "Command Prompt",
+  wsl: "WSL",
+  wsl2: "WSL 2",
+  ubuntu: "Ubuntu (WSL)",
+  debian: "Debian (WSL)",
+  kali: "Kali Linux (WSL)",
+  "git-bash": "Git Bash",
+} as const;
+
+async function resolveExecutable(
+  dir: string,
+  baseName: string,
+): Promise<string | null> {
+  const candidates =
+    process.platform === "win32"
+      ? [`${baseName}.exe`, `${baseName}.cmd`, `${baseName}.bat`]
+      : [baseName];
+
+  for (const candidate of candidates) {
+    const full = path.join(dir, candidate);
+    try {
+      await fs.access(full, fs.constants.X_OK);
+      const stat = await fs.stat(full);
+      if (stat.isFile()) return full;
+    } catch {
+      // not found / not executable
+    }
+  }
+  return null;
+}
+
+export const getShellSpawnExecutablesImpl: getShellSpawnExecutables =
+  async () => {
+    const delimiter = process.platform === "win32" ? ";" : ":";
+    const pathDirs = (process.env["PATH"] ?? "")
+      .split(delimiter)
+      .filter(Boolean);
+
+    const results: shellExecutableInformation[] = [];
+    const seen = new Set<string>();
+
+    for (const [baseName, displayName] of Object.entries(KNOWN_SHELLS)) {
+      for (const dir of pathDirs) {
+        const resolved = await resolveExecutable(dir, baseName);
+        if (!resolved || seen.has(resolved)) continue;
+        seen.add(resolved);
+        results.push({ name: displayName, path: resolved });
+        break; // first match on PATH wins, like which/where
+      }
+    }
+
+    return results;
+  };
 
 const createImpl: CombinedCallback<
   IpcMainInvokeEventCallback,
   createShell
-> = async (_, directory) => {
-  /** Return -1 for error's */
-  const err = -1;
-
+> = async (_, directory, executable, args) => {
   try {
     if (!directory) {
       logger.error("Directory not passed for shell");
-      return err;
+      return null;
     }
 
     const norm = path.normalize(directory);
 
     await fs.access(norm);
 
-    const pty = spawn(shell, [], {
+    let exeToSpawn: string | undefined = undefined;
+    if (typeof executable === "string") {
+      await fs.access(path.resolve(path.normalize(executable)));
+      exeToSpawn = executable;
+    } else {
+      exeToSpawn = defaultExecutable;
+    }
+
+    let exeArgsToSpawn: string[] | undefined = undefined;
+    if (Array.isArray(args)) {
+      exeArgsToSpawn = args;
+    } else {
+      exeArgsToSpawn = [];
+    }
+
+    const pty = spawn(exeToSpawn, exeArgsToSpawn, {
       name: "xterm-color",
       cols: 80,
       rows: 30,
@@ -67,11 +159,19 @@ const createImpl: CombinedCallback<
       env: process.env,
     });
 
-    shells.set(pty.pid, pty);
+    shellPtys.set(pty.pid, pty);
+    const shellInfo: shellInformation = {
+      args: exeArgsToSpawn,
+      cols: pty.cols,
+      executable: exeToSpawn,
+      pid: pty.pid,
+      rows: pty.rows,
+      title: path.basename(exeToSpawn),
+    };
+    shellInformations.set(pty.pid, shellInfo);
 
     /**
      * Contains all disposes for this pty
-     * @type {import("@homebridge/node-pty-prebuilt-multiarch").IDisposable[]}
      */
     const disposes: IDisposable[] = [];
 
@@ -85,25 +185,23 @@ const createImpl: CombinedCallback<
       pty.onExit((exit) => {
         broadcastToAll("shell:exit", pty.pid, exit);
 
-        const shell = shells.get(pty.pid);
+        const shell = shellPtys.get(pty.pid);
         shellDisposes.get(pty.pid)?.forEach((x) => {
           x.dispose();
         });
         shellDisposes.delete(pty.pid);
 
         shell?.kill();
-        shells.delete(pty.pid);
+        shellPtys.delete(pty.pid);
       }),
     );
 
     shellDisposes.set(pty.pid, disposes);
 
-    return pty.pid;
+    return shellInfo;
   } catch (error) {
-    logger.error(
-      "Create shell failed " + error + " Directory path " + directory,
-    );
-    return err;
+    logger.error("Create shell failed ", error, " Directory path ", directory);
+    return null;
   }
 };
 
@@ -112,7 +210,7 @@ const killImpl: CombinedCallback<IpcMainInvokeEventCallback, killShell> = (
   pid,
 ) => {
   try {
-    const shell = shells.get(pid);
+    const shell = shellPtys.get(pid);
     if (!shell) return Promise.resolve(false);
 
     const disposes = shellDisposes.get(pid);
@@ -126,11 +224,12 @@ const killImpl: CombinedCallback<IpcMainInvokeEventCallback, killShell> = (
 
     shell.kill();
 
-    shells.delete(pid);
+    shellPtys.delete(pid);
     shellDisposes.delete(pid);
+    shellInformations.delete(pid);
     return Promise.resolve(true);
   } catch (error) {
-    logger.error("Failed to kill shell " + JSON.stringify(error));
+    logger.error("Failed to kill shell ", error);
     return Promise.resolve(false);
   }
 };
@@ -142,10 +241,15 @@ const resizeImpl: CombinedCallback<IpcMainInvokeEventCallback, resizeShell> = (
   row,
 ) => {
   try {
-    const shell = shells.get(pid);
-    if (!shell) return;
+    const shell = shellPtys.get(pid);
+    const info = shellInformations.get(pid);
+    if (!shell || !info) {
+      logger.error("Could not resize shell pid ", pid);
+      return;
+    }
 
     shell.resize(col, row);
+    shellInformations.set(pid, { ...info, cols: col, rows: row });
   } catch (error) {
     logger.error("Failed to resize shell ", error);
 
@@ -158,7 +262,7 @@ const writeImpl: CombinedCallback<IpcMainInvokeEventCallback, writeToShell> = (
   pid,
   content,
 ) => {
-  const shell = shells.get(pid);
+  const shell = shellPtys.get(pid);
   if (!shell) return;
 
   shell.write(content);
@@ -169,7 +273,7 @@ const shellAliveImpl: CombinedCallback<
   isShellAlive
 > = (_, pid) => {
   try {
-    const shell = shells.get(pid);
+    const shell = shellPtys.get(pid);
     if (!shell) return Promise.resolve(false);
 
     // Check if process is still running by sending signal 0
@@ -186,16 +290,12 @@ const shellInformationImpl: CombinedCallback<
   getShellInformation
 > = (_, pid) => {
   try {
-    const shell = shells.get(pid);
-    if (!shell) {
-      throw new Error(`Shell with PID ${pid} not found`);
-    }
+    const shell = shellPtys.get(pid);
+    const info = shellInformations.get(pid);
 
-    const info: shellInformation = {
-      cols: shell.cols,
-      rows: shell.rows,
-      title: shell.process,
-    };
+    if (!shell || !info) {
+      throw new Error(`Shell with PID ${String(pid)} not found`);
+    }
 
     return Promise.resolve(info);
   } catch (error) {
@@ -208,7 +308,7 @@ const shellInformationImpl: CombinedCallback<
  * Kills shells
  */
 export const cleanUpShells = () => {
-  const a = Array.from(shells.values());
+  const a = Array.from(shellPtys.values());
   const b = Array.from(shellDisposes.values());
 
   b.forEach((x) => {
@@ -222,7 +322,7 @@ export const cleanUpShells = () => {
   });
 
   a.forEach((x) => {
-    logger.info("Killed shell " + x.pid);
+    logger.info("Killed shell ", x.pid);
     x.kill();
   });
 };
@@ -232,8 +332,8 @@ export const cleanUpShells = () => {
  */
 export interface ShellEvents {
   "shell:create": {
-    args: [directory: string];
-    return: number;
+    args: [directory: string, executable?: string, args?: string[]];
+    return: shellInformation | null;
   };
 
   "shell:kill": {
@@ -243,7 +343,7 @@ export interface ShellEvents {
 
   "shell:resize": {
     args: [pid: number, col: number, row: number];
-    return: void;
+    return: unknown;
   };
 
   "shell:write": {
@@ -253,12 +353,12 @@ export interface ShellEvents {
 
   "shell:change": {
     args: [pid: number, chunk: string];
-    return: void;
+    return: unknown;
   };
 
   "shell:exit": {
     args: [pid: number, exit: { exitCode: number; signal?: number }];
-    return: void;
+    return: unknown;
   };
 
   "shell:is:alive": {
@@ -269,6 +369,11 @@ export interface ShellEvents {
   "shell:information": {
     args: [pid: number];
     return: shellInformation;
+  };
+
+  "shell:executables": {
+    args: [];
+    return: shellExecutableInformation[];
   };
 }
 
@@ -282,4 +387,5 @@ export const registerShellListeners = (typedIpcMain: TypedIpcMain) => {
   typedIpcMain.on("shell:write", writeImpl);
   typedIpcMain.handle("shell:is:alive", shellAliveImpl);
   typedIpcMain.handle("shell:information", shellInformationImpl);
+  typedIpcMain.handle("shell:executables", getShellSpawnExecutablesImpl);
 };

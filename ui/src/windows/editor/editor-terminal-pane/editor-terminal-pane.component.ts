@@ -18,6 +18,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { SerializeAddon } from "@xterm/addon-serialize";
 import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
+import { EditorTerminalService } from "../core/terminal/editor-terminal.service";
 
 /**
  * Renders the actual interact / xterm UI for the current active shell ID
@@ -29,11 +30,11 @@ import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane
   styleUrl: "./editor-terminal-pane.component.css",
 })
 export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
-  private readonly electronApi = getElectronApi();
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
   private readonly editorBottomPaneService = inject(EditorBottomPaneService);
+  private readonly editorTerminalService = inject(EditorTerminalService);
 
   public ngAfterViewInit() {
     this.editorBottomPaneService.resolvePane();
@@ -42,9 +43,10 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
   /**
    * The specific shell PID to show the UI for in the panel
    */
-  public readonly shellPid: Signal<number | null> = computed(() =>
-    this.editorInMemoryStateService.currentActiveShellId(),
-  );
+  public readonly shellPid: Signal<number | null> = computed(() => {
+    this.editorTerminalService.valueChanged();
+    return this.editorTerminalService.getActiveShellPid();
+  });
 
   /**
    * Holds any error state for creating xterm

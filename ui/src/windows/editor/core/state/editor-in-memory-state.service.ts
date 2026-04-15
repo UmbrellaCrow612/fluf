@@ -45,41 +45,6 @@ export class EditorInMemoryStateService {
   readonly editorResize = signal<EditorInMemoryState["editorResize"]>(0);
 
   /**
-   * Exposes shells signal
-   */
-  readonly shells = signal<EditorInMemoryState["shells"]>(null);
-
-  /**
-   * Exposes currentActiveShellId signal
-   */
-  readonly currentActiveShellId =
-    signal<EditorInMemoryState["currentActiveShellId"]>(null);
-
-  /**
-   * Exposes terminalBuffers signal
-   */
-  readonly terminalBuffers = signal<EditorInMemoryState["terminalBuffers"]>(
-    new Map(),
-  );
-
-  /**
-   * Exposes createTerminal signal
-   */
-  readonly createTerminal = signal<EditorInMemoryState["createTerminal"]>(0);
-
-  /**
-   * Exposes showCommandPalette signal
-   */
-  readonly showCommandPalette =
-    signal<EditorInMemoryState["showCommandPalette"]>(false);
-
-  /**
-   * Exposes resetEditorBottomPanelDragHeight signal
-   */
-  readonly resetEditorBottomPanelDragHeight =
-    signal<EditorInMemoryState["resetEditorBottomPanelDragHeight"]>(0);
-
-  /**
    * Exposes selectedLineAndColumn signal
    */
   public readonly selectedLineAndColumn =

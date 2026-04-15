@@ -220,6 +220,8 @@ const pathApi: pathApi = {
 
 const shellApi: shellApi = {
   create: (...args) => typedIpcRender.invoke("shell:create", ...args),
+  getShellSpawnExecutables: (...args) =>
+    typedIpcRender.invoke("shell:executables", ...args),
   kill: (...args) => typedIpcRender.invoke("shell:kill", ...args),
   resize: (...args) => {
     typedIpcRender.send("shell:resize", ...args);

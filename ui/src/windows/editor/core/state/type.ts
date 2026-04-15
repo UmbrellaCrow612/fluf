@@ -37,36 +37,6 @@ export type EditorInMemoryState = {
   isCreateFileOrFolderActive: boolean | null;
 
   /**
-   * Contains a list of active shell PIDs.
-   */
-  shells: number[] | null;
-
-  /**
-   * Contains the current shell's PID that should be shown in the UI as active.
-   */
-  currentActiveShellId: number | null;
-
-  /**
-   * Contains a specific shell PID and its stdout buffer collected.
-   */
-  terminalBuffers: Map<number, string>;
-
-  /**
-   * Used to indicate if a terminal should be created; incrementing will trigger a creation.
-   */
-  createTerminal: number;
-
-  /**
-   * Used to indicate whether the command palette should be visible or not.
-   */
-  showCommandPalette: boolean;
-
-  /**
-   * Used as a way to react when its value changes to be greater than 0; then it means reset the resize panel height to be back at 50%.
-   */
-  resetEditorBottomPanelDragHeight: number;
-
-  /**
    * Holds the users current selected line and column numbers in a editor text document
    */
   selectedLineAndColumn: { line: number; column: number } | null;

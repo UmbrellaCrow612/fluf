@@ -658,14 +658,14 @@ export type clipboardApi = {
   writeImage: writeImageToClipboard;
 };
 /**
- * Represents a PID number of a shell
- */
-export type shellPid = number;
-/**
  * Create a shell
- * @returns Shell PID or -1 on failure
+ * @returns Shell information or null if it could not
  */
-export type createShell = (directory: string) => Promise<-1 | shellPid>;
+export type createShell = (
+  directory: string,
+  executable?: string,
+  args?: string[],
+) => Promise<shellInformation | null>;
 /**
  * Kill a specific shell by it's PID
  */
@@ -720,11 +720,42 @@ export type shellInformation = {
    * The title of the process
    */
   title: string;
+  /**
+   * The pid
+   */
+  pid: number;
+  /**
+   * The executable spawned
+   */
+  executable: string;
+  /**
+   * Arguments passed on spawn
+   */
+  args: string[];
 };
 /**
  * Get information about a specific shell
  */
 export type getShellInformation = (pid: number) => Promise<shellInformation>;
+/**
+ * Information about a exe that can be spawned in a shell
+ */
+export type shellExecutableInformation = {
+  /**
+   * Readable name
+   */
+  name: string;
+  /**
+   * The path to the exe
+   */
+  path: string;
+};
+/**
+ * Gets the spawnable executables that can be spawned in the shell process on spawn
+ */
+export type getShellSpawnExecutables = () => Promise<
+  shellExecutableInformation[]
+>;
 /**
  * Contains all the method to interact with shell's for terminals to use
  */
@@ -761,6 +792,10 @@ export type shellApi = {
    * Get information about a specific shell
    */
   getInformation: getShellInformation;
+  /**
+   * Get all spawnable shell executables to spawn in the shell i.e bash, powershell etc
+   */
+  getShellSpawnExecutables: getShellSpawnExecutables;
 };
 /**
  * List of all methods that can be in the method of a request / message / Notification
