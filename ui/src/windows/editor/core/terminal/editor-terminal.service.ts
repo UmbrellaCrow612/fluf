@@ -24,14 +24,26 @@ export class EditorTerminalService {
   private readonly _shellPidInfoMap = signal(
     new Map<number, shellInformation>(),
   );
+  /**
+   * Readonyl signal for shells map
+   */
   public readonly shellPidInfoMap = this._shellPidInfoMap.asReadonly();
 
   /**
    * Current active shell shown in the UI
    */
-  private readonly _activeShellPid = signal(null);
+  private readonly _activeShellPid = signal<number | null>(null);
+  /**
+   * Readonly signal for active shell
+   */
   public readonly activeShellPid = this._activeShellPid.asReadonly();
 
+  /**
+   * Create a shell
+   * @param executable A path to a custom exe to run as the shell in the terminal UI
+   * @param args Addtional arguments to pass to it
+   * @returns Result object
+   */
   public async createShell(
     executable?: string,
     args?: string[],
@@ -55,8 +67,11 @@ export class EditorTerminalService {
         };
       }
 
-      this._shellPidInfoMap.set(shellInformation.pid, shellInformation);
-      this._emitChange();
+      const map = this._shellPidInfoMap();
+      map.set(shellInformation.pid, shellInformation);
+      this._shellPidInfoMap.set(structuredClone(map));
+
+      this._activeShellPid.set(shellInformation.pid);
 
       return {
         successed: true,
@@ -70,6 +85,11 @@ export class EditorTerminalService {
     }
   }
 
+  /**
+   * Delete a shell
+   * @param pid The specific shell
+   * @returns If it could or could not
+   */
   public async deleteAndKill(pid: number): Promise<boolean> {
     try {
       const map = this._shellPidInfoMap();
@@ -83,6 +103,14 @@ export class EditorTerminalService {
       map.delete(pid);
       this._shellPidInfoMap.set(structuredClone(map));
 
+      const arr = Array.from(map.keys());
+      if (arr.length > 0) {
+        const nextActivePid = arr[0];
+        this.setActiveShell(nextActivePid);
+      } else {
+        this.setActiveShell(null);
+      }
+
       return result;
     } catch (error) {
       console.error("Failed to delete and kill shell ", pid, error);
@@ -90,17 +118,35 @@ export class EditorTerminalService {
     }
   }
 
+  /**
+   * Kill all shells
+   */
   public deleteAndKillAll() {
     for (const pid of this._shellPidInfoMap().keys()) {
       this.deleteAndKill(pid);
     }
+
+    this.setActiveShell(null);
   }
 
-  public setActiveShell(pid: number) {
-    this.activeShellPid = pid;
+  /**
+   * Change the active shell
+   * @param pid The new value
+   */
+  public setActiveShell(pid: number | null) {
+    this._activeShellPid.set(pid);
   }
 
-  public getActiveShellPid(): number | null {
-    return this.activeShellPid;
+  /**
+   * Check if a shell is still active
+   * @param pid The shell PID
+   * @returns If it is or is not
+   */
+  public async isShellAlive(pid: number | null): Promise<boolean> {
+    if (typeof pid === "number") {
+      return await this.electronApi.shellApi.isAlive(pid);
+    } else {
+      return false;
+    }
   }
 }

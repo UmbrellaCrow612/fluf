@@ -1,18 +1,9 @@
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  Signal,
-  signal,
-} from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import { EditorTerminalTabItemComponent } from "../editor-terminal-tab-item/editor-terminal-tab-item.component";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { getElectronApi } from "../../../shared/electron";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
-import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
+import { EditorTerminalService } from "../core/terminal/editor-terminal.service";
 
 /**
  * Holds the active tabs and allows crud operations on them
@@ -29,11 +20,7 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-terminal-tabs.component.css",
 })
 export class EditorTerminalTabsComponent {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
-  private readonly electronApi = getElectronApi();
-  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+  private readonly editorTerminalService = inject(EditorTerminalService);
 
   /**
    * Holds state for creating terminal
@@ -43,9 +30,7 @@ export class EditorTerminalTabsComponent {
   /**
    * Keeps track of all the active shell PID's
    */
-  public readonly activeShells: Signal<number[]> = computed(
-    () => this.editorInMemoryStateService.shells() ?? [],
-  );
+  public readonly activeShells = this.editorTerminalService.shellPidInfoMap;
 
   /**
    * Creats a new terminal in the selected directory path or default path if it not defined
@@ -54,24 +39,10 @@ export class EditorTerminalTabsComponent {
     try {
       this.isCreatingTerminal.set(true);
 
-      let directory: string | null = this.editorWorkspaceService.workspace();
-      if (!directory || !(await this.electronApi.fsApi.exists(directory))) {
-        directory = await this.electronApi.pathApi.getDefaultProfilePath();
+      const res = await this.editorTerminalService.createShell(); // tood allow dropdown select specific shell when creating
+      if (!res.successed) {
+        throw new Error(res.reason);
       }
-
-      const info = await this.electronApi.shellApi.create(directory);
-      if (!info) {
-        console.error("Failed to create terminal at directory ", directory);
-        return;
-      }
-
-      const currentShellPids = this.editorInMemoryStateService.shells() ?? [];
-      currentShellPids.push(pid);
-      this.editorInMemoryStateService.shells.set(
-        structuredClone(currentShellPids),
-      );
-
-      this.editorInMemoryStateService.currentActiveShellId.set(pid);
     } catch (error) {
       console.error("Failed to create terminal ", error);
     } finally {

@@ -199,11 +199,7 @@ export class EditorFrameComponent implements OnInit {
         children: [
           {
             label: "Command Palette",
-            onClick: () => {
-              this.editorInMemoryStateService.showCommandPalette.update(
-                (x) => !x,
-              );
-            },
+            onClick: () => {},
             id: "cmd_pal",
           },
           {
@@ -267,12 +263,6 @@ export class EditorFrameComponent implements OnInit {
               this.editorDisplayBottomService.show();
               await this.editorBottomPaneService.activatePaneAndWait(
                 "problems",
-              );
-              this.editorInMemoryStateService.resetEditorBottomPanelDragHeight.update(
-                (x) => x + 1,
-              );
-              this.editorInMemoryStateService.createTerminal.update(
-                (x) => x + 1,
               );
             },
             id: "new_terminal",
