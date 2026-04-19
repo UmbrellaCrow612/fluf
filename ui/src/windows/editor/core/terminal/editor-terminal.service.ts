@@ -1,5 +1,9 @@
 import { inject, Injectable, signal } from "@angular/core";
-import { shellInformation } from "../../../../gen/type";
+import {
+  shellChangeCallback,
+  shellInformation,
+  voidCallback,
+} from "../../../../gen/type";
 import { getElectronApi } from "../../../../shared/electron";
 import { EditorWorkspaceService } from "../workspace/editor-workspace.service";
 
@@ -83,6 +87,48 @@ export class EditorTerminalService {
         reason: `Failed to create shell ${error?.message}`,
       };
     }
+  }
+
+  /**
+   * Resize the backing shell process to change it's size
+   * @param pid The shell process ID
+   * @param col The new col numnber
+   * @param row The new row number
+   */
+  public resizeShell(pid: number, col: number, row: number): void {
+    this.electronApi.shellApi.resize(pid, col, row);
+  }
+
+  /**
+   * Listen to when a shell changes
+   * @param pid The shell process ID
+   * @param callback The function to run
+   * @returns Unsub callback
+   */
+  public onShellChange(
+    pid: number,
+    callback: shellChangeCallback,
+  ): voidCallback {
+    return this.electronApi.shellApi.onChange(pid, callback);
+  }
+
+  /**
+   * Listen to when a shell exits
+   * @param pid The shell process ID
+   * @param callback The function to run
+   * @returns Unsub callback
+   */
+  public onShellExit(pid: number, callback: voidCallback): voidCallback {
+    return this.electronApi.shellApi.onExit(pid, callback);
+  }
+
+  /**
+   * Write data to a shell process
+   * @param pid The shell process ID
+   * @param chunk The new data
+   */
+  public writeToShell(pid: number, chunk: string): void {
+    this.electronApi.shellApi.write(pid, chunk);
   }
 
   /**

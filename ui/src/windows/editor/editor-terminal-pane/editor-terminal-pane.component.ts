@@ -1,19 +1,15 @@
 import {
   AfterViewInit,
   Component,
-  computed,
   ElementRef,
   inject,
-  input,
   OnDestroy,
-  Signal,
   signal,
   viewChild,
 } from "@angular/core";
 import { useEffect } from "../../../lib/useEffect";
 import { voidCallback } from "../../../gen/type";
 import { IDisposable, ITheme, Terminal } from "@xterm/xterm";
-import { getElectronApi } from "../../../shared/electron";
 import { FitAddon } from "@xterm/addon-fit";
 import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { SerializeAddon } from "@xterm/addon-serialize";
@@ -35,7 +31,6 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
-  private readonly electronApi = getElectronApi();
 
   public ngAfterViewInit() {
     this.editorBottomPaneService.resolvePane();
@@ -170,18 +165,18 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
 
       this.terminalDisposes.push(
         this.terminal.onData((data) => {
-          this.electronApi.shellApi.write(pid, data);
+          this.editorTerminalService.writeToShell(pid, data);
         }),
       );
 
       this.terminalDisposes.push(
         this.terminal.onResize(({ cols, rows }) => {
-          this.electronApi.shellApi.resize(pid, cols, rows);
+          this.editorTerminalService.resizeShell(pid, cols, rows);
         }),
       );
 
       this.ptyDisposes.push(
-        this.electronApi.shellApi.onChange(pid, (_, chunk) => {
+        this.editorTerminalService.onShellChange(pid, (_, chunk) => {
           if (!this.terminal) {
             console.error(
               "Data sent from backend could not be written to UI xterm instace as it is null",
@@ -203,7 +198,7 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
       );
 
       this.ptyDisposes.push(
-        this.electronApi.shellApi.onExit(pid, () => {
+        this.editorTerminalService.onShellExit(pid, () => {
           this.removeTerminalFromDataStore(pid);
         }),
       );
