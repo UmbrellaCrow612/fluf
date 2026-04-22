@@ -27,11 +27,6 @@ export type EditorInMemoryState = {
   editorResize: number;
 
   /**
-   * Indicates whether a directory being watched should be refreshed — whenever the number changes (i.e., increments), it means it should be re-read.
-   */
-  refreshDirectory: number;
-
-  /**
    * Represents whether a file or folder creator is active.
    */
   isCreateFileOrFolderActive: boolean | null;

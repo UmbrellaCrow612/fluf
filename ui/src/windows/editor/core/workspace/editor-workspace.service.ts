@@ -61,6 +61,16 @@ export class EditorWorkspaceService {
   public readonly controlSave = this._controlSave.asReadonly();
 
   /**
+   * Backing signal to if the directory should be refreshed
+   */
+  private readonly _refresh = signal(0);
+
+  /**
+   * Readonly signal to indicate if it should refresh
+   */
+  public readonly refresh = this._refresh.asReadonly();
+
+  /**
    * Trigger a control save
    */
   public triggerControlSave(): void {
@@ -141,6 +151,13 @@ export class EditorWorkspaceService {
         error,
       );
     }
+  }
+
+  /**
+   * Trigger a refresh
+   */
+  public refreshWorkspace() {
+    this._refresh.update((x) => x + 1);
   }
 
   /**

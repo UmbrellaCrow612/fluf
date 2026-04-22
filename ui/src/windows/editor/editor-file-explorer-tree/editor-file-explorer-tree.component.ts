@@ -7,18 +7,19 @@ import {
   output,
   signal,
   Signal,
-} from '@angular/core';
-import { EditorFileExplorerTreeItemComponent } from '../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component';
-import { fileNode, voidCallback } from '../../../gen/type';
-import { getElectronApi } from '../../../shared/electron';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { useEffect } from '../../../lib/useEffect';
-import { normalize } from '../../../lib/path';
+} from "@angular/core";
+import { EditorFileExplorerTreeItemComponent } from "../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component";
+import { fileNode, voidCallback } from "../../../gen/type";
+import { getElectronApi } from "../../../shared/electron";
+import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
+import { useEffect } from "../../../lib/useEffect";
+import { normalize } from "../../../lib/path";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Component that renders a node tree structure for a node and it's children node.
- * 
- * THe reason we design it to be agnostic and accept root node and other fields so we can render a tree of any directory file explroer is just a implamenation of this 
+ *
+ * THe reason we design it to be agnostic and accept root node and other fields so we can render a tree of any directory file explroer is just a implamenation of this
  * with specific contrained needs.
  *
  * Like:
@@ -32,16 +33,17 @@ import { normalize } from '../../../lib/path';
  * ```
  */
 @Component({
-  selector: 'app-editor-file-explorer-tree',
+  selector: "app-editor-file-explorer-tree",
   imports: [EditorFileExplorerTreeItemComponent],
-  templateUrl: './editor-file-explorer-tree.component.html',
-  styleUrl: './editor-file-explorer-tree.component.css',
+  templateUrl: "./editor-file-explorer-tree.component.html",
+  styleUrl: "./editor-file-explorer-tree.component.css",
 })
 export class EditorFileExplorerTreeComponent implements OnDestroy {
   private readonly editorInMemoryStateService = inject(
     EditorInMemoryStateService,
   );
   private readonly electronApi = getElectronApi();
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   /**
    * Previous selected directory
@@ -88,21 +90,21 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
     useEffect(
       // whenever refresh directory is run we merge nodes
       async (_, count) => {
-        console.log('[EditorFileExplorerTreeComponent] refresh effect ran');
+        console.log("[EditorFileExplorerTreeComponent] refresh effect ran");
         const rootNode = this.rootNode();
 
         if (count > 0 && rootNode) {
           await this.mergeDirectoryNodes(rootNode);
         }
       },
-      [this.editorInMemoryStateService.refreshDirectory],
+      [this.editorWorkspaceService.refresh],
     );
 
     useEffect(
       async (_, newRootNode) => {
         // whenever the root node changes i.e selected directory we re run out logic
         console.log(
-          '[EditorFileExplorerTreeComponent] selected directory effect ran',
+          "[EditorFileExplorerTreeComponent] selected directory effect ran",
         );
         this.error.set(null);
 
@@ -133,17 +135,15 @@ export class EditorFileExplorerTreeComponent implements OnDestroy {
                 path,
                 event,
               );
-              this.editorInMemoryStateService.refreshDirectory.update(
-                (x) => x + 1,
-              );
+              this.editorWorkspaceService.refreshWorkspace();
             },
           );
 
           if (nodes && nodes.length > 0) {
-            console.log('Merging latest nodes');
+            console.log("Merging latest nodes");
             await this.mergeDirectoryNodes(newRootNode);
           } else {
-            console.log('Fetching nodes latests');
+            console.log("Fetching nodes latests");
             await this.fetchDirectoryNodes(this.previousSelectedDirectory);
           }
         }

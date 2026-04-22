@@ -28,12 +28,6 @@ import { EditorInMemoryState } from "./type";
 })
 export class EditorInMemoryStateService {
   /**
-   * Exposes the signal for refreshDirectory in the ctx - used to react to / compute the value of this field throughout the app
-   */
-  readonly refreshDirectory =
-    signal<EditorInMemoryState["refreshDirectory"]>(0);
-
-  /**
    * Exposes signal for isCreateFileOrFolderActive
    */
   readonly isCreateFileOrFolderActive =

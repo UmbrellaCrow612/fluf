@@ -157,7 +157,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    * Updates state to trigger a refresh / re read of the select directory manually by the user
    */
   public refreshDirectory() {
-    this.editorInMemoryStateService.refreshDirectory.update((x) => x + 1);
+    this.editorWorkspaceService.refreshWorkspace();
   }
 
   /**
