@@ -28,12 +28,6 @@ import { EditorInMemoryState } from "./type";
 })
 export class EditorInMemoryStateService {
   /**
-   * Exposes signal for isCreateFileOrFolderActive
-   */
-  readonly isCreateFileOrFolderActive =
-    signal<EditorInMemoryState["isCreateFileOrFolderActive"]>(null);
-
-  /**
    * Exposes signal editorResize
    */
   readonly editorResize = signal<EditorInMemoryState["editorResize"]>(0);

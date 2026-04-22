@@ -27,11 +27,6 @@ export type EditorInMemoryState = {
   editorResize: number;
 
   /**
-   * Represents whether a file or folder creator is active.
-   */
-  isCreateFileOrFolderActive: boolean | null;
-
-  /**
    * Holds the users current selected line and column numbers in a editor text document
    */
   selectedLineAndColumn: { line: number; column: number } | null;

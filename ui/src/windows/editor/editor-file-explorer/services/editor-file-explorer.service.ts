@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from "@angular/core";
+import { inject, Injectable, signal } from "@angular/core";
 import { ApplicationLocalStorageService } from "../../../../shared/services/application-local-storage.service";
 import { fileNode } from "../../../../gen/type";
 
@@ -42,12 +42,23 @@ export class EditorFileExplorerService {
    * Read-only computed signal that exposes the latest file explorer nodes.
    * Consumers should use this signal rather than the backing `_nodes` signal directly.
    */
-  public readonly nodes = computed(() => this._nodes());
+  public readonly nodes = this._nodes.asReadonly();
 
   /**
    * Read-only computed signal that exposes the latest active node in the file explorer
    */
-  public readonly activeNode = computed(() => this._activeNode());
+  public readonly activeNode = this._activeNode.asReadonly();
+
+  /**
+   * Backing signal if create file or folder is active
+   */
+  private readonly _isCreateFileOrFolderActive = signal(false);
+
+  /**
+   * Readonly signal
+   */
+  public readonly isCreateFileOrFolderActive =
+    this._isCreateFileOrFolderActive.asReadonly();
 
   /**
    * Hydrates the file explorer signals and data
@@ -80,6 +91,18 @@ export class EditorFileExplorerService {
         FX_ACTIVE_STORAGE_KEY,
       ),
     );
+  }
+
+  /**
+   * Change the is create file or folder backing signal
+   * @param value The new value
+   */
+  public isCreatingNode(value: boolean | null): void {
+    if (typeof value !== "boolean") {
+      return;
+    }
+
+    this._isCreateFileOrFolderActive.set(value);
   }
 
   /**

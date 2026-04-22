@@ -136,7 +136,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    */
   public readonly shouldDisableFileExplorerActions: Signal<boolean> = computed(
     () => {
-      const flag = this.editorInMemoryStateService.isCreateFileOrFolderActive();
+      const flag = this.editorFileExplorerService.isCreateFileOrFolderActive();
       if (!flag) {
         return false;
       }
@@ -166,7 +166,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
   public createNode(event: Event, mode: fileNodeMode) {
     event.stopPropagation();
 
-    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(true);
+    this.editorFileExplorerService.isCreatingNode(true);
 
     const rootPath = normalize(this.editorWorkspaceService.workspace()!);
     const nodes = this.editorFileExplorerService.nodes();
