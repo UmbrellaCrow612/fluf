@@ -1,5 +1,6 @@
 # **Flufy**
 
+![UI](public/editor_ui.png)
 ![Flufy UI Preview](public/demo_project.gif)
 
 A simple text editor written in electron and angular
