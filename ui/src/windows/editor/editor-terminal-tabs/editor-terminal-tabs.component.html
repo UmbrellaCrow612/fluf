@@ -8,12 +8,20 @@
     }
   </div>
 
-  <button
-    matIconButton
-    matTooltip="Add terminal"
-    (click)="createNewTerminal()"
-    [disabled]="isCreatingTerminal()"
-  >
+  <button matIconButton [matMenuTriggerFor]="createTerminalMenu">
     <mat-icon fontIcon="add" />
   </button>
+  <mat-menu #createTerminalMenu="matMenu">
+    <button mat-menu-item [matMenuTriggerFor]="selectedTerminalShells">
+      New Terminal
+    </button>
+  </mat-menu>
+
+  <mat-menu #selectedTerminalShells="matMenu">
+    @for (item of shellExecutableInformations(); track item.path) {
+      <button mat-menu-item (click)="createNewTerminal(item.path)">
+        {{ item.name }}
+      </button>
+    }
+  </mat-menu>
 </div>
