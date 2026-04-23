@@ -22,11 +22,6 @@ export type ActiveLanguageServer = {
  */
 export type EditorInMemoryState = {
   /**
-   * When its value changes, it means the editor has been resized (i.e., when it increments).
-   */
-  editorResize: number;
-
-  /**
    * Holds the users current selected line and column numbers in a editor text document
    */
   selectedLineAndColumn: { line: number; column: number } | null;

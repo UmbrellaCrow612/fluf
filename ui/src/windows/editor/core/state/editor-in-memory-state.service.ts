@@ -28,11 +28,6 @@ import { EditorInMemoryState } from "./type";
 })
 export class EditorInMemoryStateService {
   /**
-   * Exposes signal editorResize
-   */
-  readonly editorResize = signal<EditorInMemoryState["editorResize"]>(0);
-
-  /**
    * Exposes selectedLineAndColumn signal
    */
   public readonly selectedLineAndColumn =

@@ -15,6 +15,7 @@ import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state
 import { SerializeAddon } from "@xterm/addon-serialize";
 import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
 import { EditorTerminalService } from "../core/terminal/editor-terminal.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Renders the actual interact / xterm UI for the current active shell ID
@@ -28,9 +29,7 @@ import { EditorTerminalService } from "../core/terminal/editor-terminal.service"
 export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
   private readonly editorBottomPaneService = inject(EditorBottomPaneService);
   private readonly editorTerminalService = inject(EditorTerminalService);
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   public ngAfterViewInit() {
     this.editorBottomPaneService.resolvePane();
@@ -97,7 +96,7 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
           this.onResizeEvent();
         }
       },
-      [this.editorInMemoryStateService.editorResize],
+      [this.editorWorkspaceService.resize],
     );
   }
 

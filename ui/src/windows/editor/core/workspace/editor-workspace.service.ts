@@ -71,6 +71,16 @@ export class EditorWorkspaceService {
   public readonly refresh = this._refresh.asReadonly();
 
   /**
+   * Backing signal for resizing the editor in the workspace
+   */
+  private readonly _resize = signal(0);
+
+  /**
+   * Readonly signal when the editor is resized
+   */
+  public readonly resize = this._resize.asReadonly();
+
+  /**
    * Trigger a control save
    */
   public triggerControlSave(): void {
@@ -158,6 +168,13 @@ export class EditorWorkspaceService {
    */
   public refreshWorkspace() {
     this._refresh.update((x) => x + 1);
+  }
+
+  /**
+   * Triggeres a resize event
+   */
+  public resized() {
+    this._resize.update((x) => x + 1);
   }
 
   /**
