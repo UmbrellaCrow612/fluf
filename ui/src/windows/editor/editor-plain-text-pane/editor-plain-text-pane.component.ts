@@ -20,7 +20,6 @@ import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import {
   linter,
   Diagnostic as CmDiagnostic,
@@ -65,9 +64,6 @@ import { EditorGitService } from "../core/git/editor-git.service";
 export class EditorPlainTextPaneComponent
   implements OnDestroy, OnInit, AfterViewInit
 {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly electronApi = getElectronApi();
   private readonly editorDocumentStateService = inject(
     EditorDocumentStateService,
@@ -327,7 +323,7 @@ export class EditorPlainTextPaneComponent
    */
   private hydrateCursorPosition(view: EditorView) {
     const cursorPos = this.getCursorPosition(view);
-    this.editorInMemoryStateService.selectedLineAndColumn.set({
+    this.editorDocumentStateService.changeSelectedLineAndCol({
       line: cursorPos.line,
       column: cursorPos.col,
     });

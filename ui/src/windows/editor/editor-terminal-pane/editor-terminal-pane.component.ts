@@ -11,7 +11,6 @@ import { useEffect } from "../../../lib/useEffect";
 import { voidCallback } from "../../../gen/type";
 import { IDisposable, ITheme, Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { SerializeAddon } from "@xterm/addon-serialize";
 import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
 import { EditorTerminalService } from "../core/terminal/editor-terminal.service";

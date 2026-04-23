@@ -11,7 +11,6 @@ import {
 import { EditorFileExplorerTreeItemComponent } from "../editor-file-explorer-tree-item/editor-file-explorer-tree-item.component";
 import { fileNode, voidCallback } from "../../../gen/type";
 import { getElectronApi } from "../../../shared/electron";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { useEffect } from "../../../lib/useEffect";
 import { normalize } from "../../../lib/path";
 import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
@@ -39,9 +38,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-file-explorer-tree.component.css",
 })
 export class EditorFileExplorerTreeComponent implements OnDestroy {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly electronApi = getElectronApi();
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 

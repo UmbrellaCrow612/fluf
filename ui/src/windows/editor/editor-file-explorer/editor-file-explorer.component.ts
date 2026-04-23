@@ -11,7 +11,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { fileNode, fileNodeMode } from "../../../gen/type";
 import { A11yModule } from "@angular/cdk/a11y";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import {
   collapseFileNodeFirstLayer,
   findFileNodeByPath,
@@ -38,9 +37,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-file-explorer.component.css",
 })
 export class EditorFileExplorerComponent implements AfterViewInit {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
   private readonly editorFileExplorerService = inject(
     EditorFileExplorerService,

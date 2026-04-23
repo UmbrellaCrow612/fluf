@@ -28,7 +28,6 @@ import {
 import { ApplicationContextMenuService } from "../../../shared/services/application-context-menu.service";
 import { EditorFileExplorerContextMenuComponent } from "../editor-file-explorer-context-menu/editor-file-explorer-context-menu.component";
 import { normalize } from "../../../lib/path";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { EditorFileExplorerService } from "../editor-file-explorer/services/editor-file-explorer.service";
 
 /**
@@ -47,9 +46,6 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly electronApi = getElectronApi();
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
-  );
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
   );
   private readonly editorFileExplorerService = inject(
     EditorFileExplorerService,
