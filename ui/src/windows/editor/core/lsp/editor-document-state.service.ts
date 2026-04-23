@@ -1,11 +1,13 @@
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, signal } from "@angular/core";
 import { EditorDocumentDraftService } from "./editor-document-draft.service";
-import {
-  EditorDirtyFileChangeCallback,
-  EditorDocumentDirtyService,
-} from "./editor-document-dirty.service";
+import { EditorDocumentDirtyService } from "./editor-document-dirty.service";
 import { useEffect } from "../../../../lib/useEffect";
-import { EditorInMemoryStateService } from "../state/editor-in-memory-state.service";
+import { EditorWorkspaceService } from "../workspace/editor-workspace.service";
+
+type selectedLineAndCol = {
+  line: number;
+  column: number;
+};
 
 /**
  * Centralizes document state management by coordinating draft storage
@@ -18,7 +20,28 @@ import { EditorInMemoryStateService } from "../state/editor-in-memory-state.serv
 export class EditorDocumentStateService {
   private readonly draftService = inject(EditorDocumentDraftService);
   private readonly documentDirtyService = inject(EditorDocumentDirtyService);
-  private readonly inMemoryState = inject(EditorInMemoryStateService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
+
+  /**
+   * Backing signal for selected line column of current document in UI
+   */
+  private readonly _selectedLineAndColumn = signal<selectedLineAndCol | null>(
+    null,
+  );
+
+  /**
+   * Readonly signal of the current selected position of the document
+   */
+  public readonly selectedLineAndColumn =
+    this._selectedLineAndColumn.asReadonly();
+
+  /**
+   * Change the selected line and col selected
+   * @param position The new value
+   */
+  public changeSelectedLineAndCol(position: selectedLineAndCol | null): void {
+    this._selectedLineAndColumn.set(position);
+  }
 
   /**
    * Registers a document change with draft storage and dirty tracking.
@@ -107,7 +130,7 @@ export class EditorDocumentStateService {
           await this.saveAll();
         }
       },
-      [this.inMemoryState.controlSaveCount],
+      [this.editorWorkspaceService.controlSave],
     );
   }
 }

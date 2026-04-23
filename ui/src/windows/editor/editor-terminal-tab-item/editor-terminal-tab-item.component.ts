@@ -5,23 +5,20 @@ import {
   input,
   signal,
   Signal,
-} from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditorInMemoryStateService } from '../core/state/editor-in-memory-state.service';
-import { getElectronApi } from '../../../shared/electron';
+} from "@angular/core";
+import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { EditorTerminalService } from "../core/terminal/editor-terminal.service";
+import { shellInformation } from "../../../gen/type";
 
 @Component({
-  selector: 'app-editor-terminal-tab-item',
+  selector: "app-editor-terminal-tab-item",
   imports: [MatIconModule, MatTooltipModule],
-  templateUrl: './editor-terminal-tab-item.component.html',
-  styleUrl: './editor-terminal-tab-item.component.css',
+  templateUrl: "./editor-terminal-tab-item.component.html",
+  styleUrl: "./editor-terminal-tab-item.component.css",
 })
 export class EditorTerminalTabItemComponent {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
-  private readonly electronApi = getElectronApi();
+  private readonly editorTerminalService = inject(EditorTerminalService);
 
   /**
    * Text to render in the tab item
@@ -31,15 +28,15 @@ export class EditorTerminalTabItemComponent {
   /**
    * Holds the PID of the shell that is being rendered
    */
-  public readonly shellPid = input.required<number>();
+  public readonly shellInformation = input.required<shellInformation>();
 
   /**
    * Keeps track if the given terminal tab item is the active one
    */
   public readonly isActive: Signal<boolean> = computed(
     () =>
-      this.editorInMemoryStateService.currentActiveShellId() ===
-      this.shellPid(),
+      this.editorTerminalService.activeShellPid() ===
+      this.shellInformation().pid,
   );
 
   /**
@@ -75,16 +72,15 @@ export class EditorTerminalTabItemComponent {
    * Makes the active shell pid this shell
    */
   public selectTerminal() {
-    const shellPid = this.shellPid();
-
     try {
       if (this.isActive()) {
         return;
       }
 
-      this.editorInMemoryStateService.currentActiveShellId.set(shellPid);
+      const shellInfo = this.shellInformation();
+      this.editorTerminalService.setActiveShell(shellInfo.pid);
     } catch (error) {
-      console.error('Failed to set shell as active: ', shellPid);
+      console.error("Failed to set shell as active: ", error);
     }
   }
 
@@ -101,40 +97,16 @@ export class EditorTerminalTabItemComponent {
     try {
       this.isDeletingShell.set(true);
 
-      const shellPid = this.shellPid();
-      const deleted = await this.electronApi.shellApi.kill(shellPid);
-      if (!deleted) {
-        console.error('Failed to delete shell with pid: ', shellPid);
-        return;
+      const succ = await this.editorTerminalService.deleteAndKill(
+        this.shellInformation().pid,
+      );
+      if (!succ) {
+        throw new Error("Could not delete shell");
       }
-
-      this.updateInMemeoryDataOnDelete();
     } catch (error) {
-      console.error('Failed to delete shell ', error);
+      console.error("Failed to delete shell ", error);
     } finally {
       this.isDeletingShell.set(false);
     }
-  }
-
-  /**
-   * Updates the in memeory data structures to remove the deleted shell PID and other related information about it
-   */
-  private updateInMemeoryDataOnDelete(): void {
-    const shellPids = this.editorInMemoryStateService.shells() ?? [];
-    const pidToRemove: number = this.shellPid();
-    const filteredShellPids = shellPids.filter((n) => n !== pidToRemove);
-
-    if (this.isActive()) {
-      const nextAvailableShellPid = filteredShellPids[0] ?? null;
-      this.editorInMemoryStateService.currentActiveShellId.set(
-        nextAvailableShellPid,
-      );
-    }
-
-    this.editorInMemoryStateService.shells.set(
-      structuredClone(filteredShellPids),
-    );
-
-    this.editorInMemoryStateService.terminalBuffers().delete(pidToRemove);
   }
 }

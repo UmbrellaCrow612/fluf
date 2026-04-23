@@ -1,12 +1,4 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  Signal,
-  Type,
-  untracked,
-} from "@angular/core";
+import { Component, computed, inject, Signal, Type } from "@angular/core";
 import { EditorMainContentManagerComponent } from "../editor-main-content-manager/editor-main-content-manager.component";
 import { EditorSidebarComponent } from "../editor-sidebar/editor-sidebar.component";
 import { NgComponentOutlet } from "@angular/common";
@@ -15,7 +7,6 @@ import { Resizer } from "umbr-resizer-two";
 import { EditorFileExplorerComponent } from "../editor-file-explorer/editor-file-explorer.component";
 import { useEffect } from "../../../lib/useEffect";
 import { EditorSelectDirectoryComponent } from "../editor-select-directory/editor-select-directory.component";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import {
   EDITOR_SIDE_BAR_PANE_ELEMENTS,
   EditorSidebarPaneService,
@@ -36,9 +27,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-main-content.component.css",
 })
 export class EditorMainContentComponent {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
@@ -97,13 +85,13 @@ export class EditorMainContentComponent {
         },
         {
           onBeginDrag: () => {
-            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+            this.editorWorkspaceService.resized();
           },
           onDrag: () => {
-            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+            this.editorWorkspaceService.resized();
           },
           onDragFinished: (flexValues) => {
-            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+            this.editorWorkspaceService.resized();
           },
           onDragPastMin: (side, pixelsPast) => {
             if (side === "left" && pixelsPast > 200) {
@@ -118,14 +106,14 @@ export class EditorMainContentComponent {
         },
       );
 
-      this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+      this.editorWorkspaceService.resized();
     });
   };
 
   private disposeResizer = () => {
     this.resizer?.dispose();
     this.resizer = null;
-    this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+    this.editorWorkspaceService.resized();
   };
 
   /**

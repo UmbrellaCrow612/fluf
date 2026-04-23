@@ -11,7 +11,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { fileNode, fileNodeMode } from "../../../gen/type";
 import { A11yModule } from "@angular/cdk/a11y";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import {
   collapseFileNodeFirstLayer,
   findFileNodeByPath,
@@ -38,9 +37,6 @@ import { EditorWorkspaceService } from "../core/workspace/editor-workspace.servi
   styleUrl: "./editor-file-explorer.component.css",
 })
 export class EditorFileExplorerComponent implements AfterViewInit {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly editorSidebarPaneService = inject(EditorSidebarPaneService);
   private readonly editorFileExplorerService = inject(
     EditorFileExplorerService,
@@ -136,7 +132,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    */
   public readonly shouldDisableFileExplorerActions: Signal<boolean> = computed(
     () => {
-      const flag = this.editorInMemoryStateService.isCreateFileOrFolderActive();
+      const flag = this.editorFileExplorerService.isCreateFileOrFolderActive();
       if (!flag) {
         return false;
       }
@@ -157,7 +153,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
    * Updates state to trigger a refresh / re read of the select directory manually by the user
    */
   public refreshDirectory() {
-    this.editorInMemoryStateService.refreshDirectory.update((x) => x + 1);
+    this.editorWorkspaceService.refreshWorkspace();
   }
 
   /**
@@ -166,7 +162,7 @@ export class EditorFileExplorerComponent implements AfterViewInit {
   public createNode(event: Event, mode: fileNodeMode) {
     event.stopPropagation();
 
-    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(true);
+    this.editorFileExplorerService.isCreatingNode(true);
 
     const rootPath = normalize(this.editorWorkspaceService.workspace()!);
     const nodes = this.editorFileExplorerService.nodes();

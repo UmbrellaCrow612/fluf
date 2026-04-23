@@ -1,7 +1,10 @@
 <div class="editor_terminal_tabs">
   <div class="editor_terminal_tabs_tab_items scroll_bar">
-    @for (pid of activeShells(); track $index) {
-      <app-editor-terminal-tab-item label="Terminal" [shellPid]="pid" />
+    @for (info of activeShells().values(); track $index) {
+      <app-editor-terminal-tab-item
+        label="Terminal"
+        [shellInformation]="info"
+      />
     }
   </div>
 

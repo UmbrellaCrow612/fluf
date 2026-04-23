@@ -51,6 +51,43 @@ export class EditorWorkspaceService {
   public readonly autoSave = this._autoSave.asReadonly();
 
   /**
+   * Backing signal for control save
+   */
+  private readonly _controlSave = signal(0);
+
+  /**
+   * Readonly signal when control save is triggered any number above 0 means it is triggered
+   */
+  public readonly controlSave = this._controlSave.asReadonly();
+
+  /**
+   * Backing signal to if the directory should be refreshed
+   */
+  private readonly _refresh = signal(0);
+
+  /**
+   * Readonly signal to indicate if it should refresh
+   */
+  public readonly refresh = this._refresh.asReadonly();
+
+  /**
+   * Backing signal for resizing the editor in the workspace
+   */
+  private readonly _resize = signal(0);
+
+  /**
+   * Readonly signal when the editor is resized
+   */
+  public readonly resize = this._resize.asReadonly();
+
+  /**
+   * Trigger a control save
+   */
+  public triggerControlSave(): void {
+    this._controlSave.update((x) => x + 1);
+  }
+
+  /**
    * Hydrates the workspace and document from persisted storage.
    * Call this once during app initialisation instead of relying on the constructor.
    */
@@ -124,6 +161,20 @@ export class EditorWorkspaceService {
         error,
       );
     }
+  }
+
+  /**
+   * Trigger a refresh
+   */
+  public refreshWorkspace() {
+    this._refresh.update((x) => x + 1);
+  }
+
+  /**
+   * Triggeres a resize event
+   */
+  public resized() {
+    this._resize.update((x) => x + 1);
   }
 
   /**

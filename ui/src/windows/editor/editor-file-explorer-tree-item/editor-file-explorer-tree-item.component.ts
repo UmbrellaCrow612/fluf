@@ -28,7 +28,7 @@ import {
 import { ApplicationContextMenuService } from "../../../shared/services/application-context-menu.service";
 import { EditorFileExplorerContextMenuComponent } from "../editor-file-explorer-context-menu/editor-file-explorer-context-menu.component";
 import { normalize } from "../../../lib/path";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
+import { EditorFileExplorerService } from "../editor-file-explorer/services/editor-file-explorer.service";
 
 /**
  * Used to render a given file node content and it's children
@@ -47,8 +47,8 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
   private readonly applicationContextMenuService = inject(
     ApplicationContextMenuService,
   );
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
+  private readonly editorFileExplorerService = inject(
+    EditorFileExplorerService,
   );
 
   /**
@@ -308,7 +308,7 @@ export class EditorFileExplorerTreeItemComponent implements AfterViewInit {
     removeTempoaryFileNodes(nodes);
 
     this.rootNodeChildrenUpdated.emit(nodes);
-    this.editorInMemoryStateService.isCreateFileOrFolderActive.set(false);
+    this.editorFileExplorerService.isCreatingNode(false);
   }
 
   /**

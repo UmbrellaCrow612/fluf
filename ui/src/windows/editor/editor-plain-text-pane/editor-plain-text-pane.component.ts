@@ -20,7 +20,6 @@ import { editorPlainTextPaneThemeExtension } from "./extensions/theme";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { EditorSessionStateService } from "../core/services/editor-session-state.service";
 import { EditorPathBreadcrumbBarComponent } from "../editor-path-breadcrumb-bar/editor-path-breadcrumb-bar.component";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import {
   linter,
   Diagnostic as CmDiagnostic,
@@ -51,6 +50,7 @@ import { vscodeToCodeMirrorDiagnostic } from "../core/lsp/diagnostic";
 import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 import { EditorMainPaneService } from "../core/panes/editor-main-pane.service";
 import { normalize } from "../../../lib/path";
+import { EditorGitService } from "../core/git/editor-git.service";
 
 /**
  * Shows a editor for plain text documents such as txt or code files such as .js ts etc basically any document with text
@@ -64,9 +64,6 @@ import { normalize } from "../../../lib/path";
 export class EditorPlainTextPaneComponent
   implements OnDestroy, OnInit, AfterViewInit
 {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly electronApi = getElectronApi();
   private readonly editorDocumentStateService = inject(
     EditorDocumentStateService,
@@ -100,6 +97,7 @@ export class EditorPlainTextPaneComponent
   );
   private readonly editorWorkspaceService = inject(EditorWorkspaceService);
   private readonly editorMainPaneService = inject(EditorMainPaneService);
+  private readonly editorGitService = inject(EditorGitService);
 
   /**
    * Keeps track of the current open file in the editor
@@ -325,7 +323,7 @@ export class EditorPlainTextPaneComponent
    */
   private hydrateCursorPosition(view: EditorView) {
     const cursorPos = this.getCursorPosition(view);
-    this.editorInMemoryStateService.selectedLineAndColumn.set({
+    this.editorDocumentStateService.changeSelectedLineAndCol({
       line: cursorPos.line,
       column: cursorPos.col,
     });
@@ -354,7 +352,7 @@ export class EditorPlainTextPaneComponent
         lineNumber,
       );
 
-      this.editorInMemoryStateService.gitBlameLineInformation.set(result);
+      this.editorGitService.changeGitBlame(result);
     } catch (error) {
       console.error("Failed to hydrate git blame line ", error);
     }

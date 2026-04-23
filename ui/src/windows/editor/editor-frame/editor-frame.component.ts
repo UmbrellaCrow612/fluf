@@ -4,7 +4,6 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { getElectronApi } from "../../../shared/electron";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { MatMenuModule } from "@angular/material/menu";
 import { EditorDocumentStateService } from "../core/lsp/editor-document-state.service";
 import { ApplicationConfirmationService } from "../../../shared/services/application-confirmation.service";
@@ -77,9 +76,6 @@ type EditorFrameActionWithMenus = {
 })
 export class EditorFrameComponent implements OnInit {
   private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly editorDocumentStateService = inject(
     EditorDocumentStateService,
   );
@@ -199,11 +195,7 @@ export class EditorFrameComponent implements OnInit {
         children: [
           {
             label: "Command Palette",
-            onClick: () => {
-              this.editorInMemoryStateService.showCommandPalette.update(
-                (x) => !x,
-              );
-            },
+            onClick: () => {},
             id: "cmd_pal",
           },
           {
@@ -267,12 +259,6 @@ export class EditorFrameComponent implements OnInit {
               this.editorDisplayBottomService.show();
               await this.editorBottomPaneService.activatePaneAndWait(
                 "problems",
-              );
-              this.editorInMemoryStateService.resetEditorBottomPanelDragHeight.update(
-                (x) => x + 1,
-              );
-              this.editorInMemoryStateService.createTerminal.update(
-                (x) => x + 1,
               );
             },
             id: "new_terminal",

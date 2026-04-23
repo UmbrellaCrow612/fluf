@@ -5,7 +5,6 @@ import { Renderable } from "../../../lib/ng-component-outlet/type";
 import { EditorMainContentBottomComponent } from "../editor-main-content-bottom/editor-main-content-bottom.component";
 import { Resizer } from "umbr-resizer-two";
 import { useEffect } from "../../../lib/useEffect";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { EditorMainContentEmptyComponent } from "../editor-main-content-empty/editor-main-content-empty.component";
 import { EditorImagePaneComponent } from "../editor-image-pane/editor-image-pane.component";
 import { EditorPdfPaneComponent } from "../editor-pdf-pane/editor-pdf-pane.component";
@@ -19,6 +18,7 @@ import {
   EDITOR_MAIN_PANE_ELEMENTS,
   EditorMainPaneService,
 } from "../core/panes/editor-main-pane.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Handles which component to render based on editor state such as PDF viwer component, core editor, markdown etc, open files and the bottom section which contains
@@ -35,13 +35,11 @@ import {
   styleUrl: "./editor-main-content-manager.component.css",
 })
 export class EditorMainContentManagerComponent {
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly editorDisplayBottomService = inject(
     EditorDisplayBottomService,
   );
   private readonly editorOpenFilesService = inject(EditorOpenFilesService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
   private readonly editorMainPaneService = inject(EditorMainPaneService);
 
   private resizer: Resizer | null = null;
@@ -91,18 +89,18 @@ export class EditorMainContentManagerComponent {
         },
         {
           onBeginDrag: () => {
-            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+            this.editorWorkspaceService.resized();
           },
           onDrag: () => {
-            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+            this.editorWorkspaceService.resized();
           },
           onDragFinished: (flexValues) => {
-            this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+            this.editorWorkspaceService.resized();
           },
         },
       );
 
-      this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+      this.editorWorkspaceService.resized();
     }, 10);
   };
 
@@ -110,7 +108,7 @@ export class EditorMainContentManagerComponent {
     this.resizer?.dispose();
     this.resizer = null;
     clearTimeout(this.resizerTimeout);
-    this.editorInMemoryStateService.editorResize.update((x) => x + 1);
+    this.editorWorkspaceService.resized();
   };
 
   /**

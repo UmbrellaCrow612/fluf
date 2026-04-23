@@ -1,23 +1,20 @@
 import {
   AfterViewInit,
   Component,
-  computed,
   ElementRef,
   inject,
-  input,
   OnDestroy,
-  Signal,
   signal,
   viewChild,
 } from "@angular/core";
 import { useEffect } from "../../../lib/useEffect";
-import { shellPid, voidCallback } from "../../../gen/type";
+import { voidCallback } from "../../../gen/type";
 import { IDisposable, ITheme, Terminal } from "@xterm/xterm";
-import { getElectronApi } from "../../../shared/electron";
 import { FitAddon } from "@xterm/addon-fit";
-import { EditorInMemoryStateService } from "../core/state/editor-in-memory-state.service";
 import { SerializeAddon } from "@xterm/addon-serialize";
 import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane.service";
+import { EditorTerminalService } from "../core/terminal/editor-terminal.service";
+import { EditorWorkspaceService } from "../core/workspace/editor-workspace.service";
 
 /**
  * Renders the actual interact / xterm UI for the current active shell ID
@@ -29,27 +26,23 @@ import { EditorBottomPaneService } from "../core/panes/bottom/editor-bottom-pane
   styleUrl: "./editor-terminal-pane.component.css",
 })
 export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
-  private readonly electronApi = getElectronApi();
-  private readonly editorInMemoryStateService = inject(
-    EditorInMemoryStateService,
-  );
   private readonly editorBottomPaneService = inject(EditorBottomPaneService);
+  private readonly editorTerminalService = inject(EditorTerminalService);
+  private readonly editorWorkspaceService = inject(EditorWorkspaceService);
 
   public ngAfterViewInit() {
     this.editorBottomPaneService.resolvePane();
   }
 
   /**
-   * The specific shell PID to show the UI for in the panel
-   */
-  public readonly shellPid: Signal<number | null> = computed(() =>
-    this.editorInMemoryStateService.currentActiveShellId(),
-  );
-
-  /**
    * Holds any error state for creating xterm
    */
   public readonly createTerminalError = signal<string | null>(null);
+
+  /**
+   * Holds the current active shell
+   */
+  public readonly shellPid = this.editorTerminalService.activeShellPid;
 
   /**
    * Holds the xterm terminal object instace
@@ -102,7 +95,7 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
           this.onResizeEvent();
         }
       },
-      [this.editorInMemoryStateService.editorResize],
+      [this.editorWorkspaceService.resize],
     );
   }
 
@@ -114,7 +107,7 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
    * Listens to the PID given and creates a Xterm UI for the given PID listening to changes and reflecting them in the UI, as well as removing the previous instance
    * @param pid The PID to listen to
    */
-  private async attachToPane(pid: shellPid): Promise<void> {
+  private async attachToPane(pid: number): Promise<void> {
     console.log(
       "[EditorTerminalPaneComponent] attach to pane ran for pid: ",
       pid,
@@ -129,13 +122,17 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
         throw new Error("Could not find container element to attach xterm to");
       }
 
-      const isAlive = await this.electronApi.shellApi.isAlive(pid);
+      const isAlive = await this.editorTerminalService.isShellAlive(pid);
       if (!isAlive) {
         throw new Error(`Shell with PID ${pid} no longer alive`);
       }
 
-      const { cols, rows } =
-        await this.electronApi.shellApi.getInformation(pid);
+      const shellInformation = this.editorTerminalService
+        .shellPidInfoMap()
+        .get(pid);
+      if (!shellInformation) {
+        throw new Error("Could not find shell to attach in map");
+      }
 
       const theme = this.buildXtermThemeFromCss();
       const fontFamily =
@@ -145,8 +142,8 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
         parseInt(this.getCssVariable("--code-editor-font-size"), 10) || 14;
 
       const xterm = new Terminal({
-        cols,
-        rows,
+        cols: shellInformation.cols,
+        rows: shellInformation.rows,
         theme,
         fontFamily,
         fontSize,
@@ -162,30 +159,22 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
 
       this.serializeAddon.activate(this.terminal);
 
-      const storedTerminalBuffer = this.editorInMemoryStateService
-        .terminalBuffers()
-        .get(pid);
-      if (storedTerminalBuffer) {
-        console.log("[EditorTerminalPaneComponent] restored terminal buffer");
-        this.terminal.write(storedTerminalBuffer);
-      }
-
       window.addEventListener("resize", this.onResizeEvent);
 
       this.terminalDisposes.push(
         this.terminal.onData((data) => {
-          this.electronApi.shellApi.write(pid, data);
+          this.editorTerminalService.writeToShell(pid, data);
         }),
       );
 
       this.terminalDisposes.push(
         this.terminal.onResize(({ cols, rows }) => {
-          this.electronApi.shellApi.resize(pid, cols, rows);
+          this.editorTerminalService.resizeShell(pid, cols, rows);
         }),
       );
 
       this.ptyDisposes.push(
-        this.electronApi.shellApi.onChange(pid, (_, chunk) => {
+        this.editorTerminalService.onShellChange(pid, (_, chunk) => {
           if (!this.terminal) {
             console.error(
               "Data sent from backend could not be written to UI xterm instace as it is null",
@@ -202,14 +191,12 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
               );
               return;
             }
-
-            this.updateTerminalBufferStore(pid, serlized);
           });
         }),
       );
 
       this.ptyDisposes.push(
-        this.electronApi.shellApi.onExit(pid, () => {
+        this.editorTerminalService.onShellExit(pid, () => {
           this.removeTerminalFromDataStore(pid);
         }),
       );
@@ -227,20 +214,6 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
       );
       this.cleanUpState("Error attachToPane");
     }
-  }
-
-  /**
-   * Update the given terminals
-   * @param pid The specific terminal shell to update
-   * @param buffer The new buffer content
-   */
-  private updateTerminalBufferStore(pid: number, buffer: string): void {
-    const bufferMap = this.editorInMemoryStateService.terminalBuffers();
-    bufferMap.set(pid, buffer);
-    console.log(
-      "[EditorTerminalPaneComponent] Updated terminal buffer in store for PID: ",
-      pid,
-    );
   }
 
   /**
@@ -294,18 +267,7 @@ export class EditorTerminalPaneComponent implements OnDestroy, AfterViewInit {
     console.log("[EditorTerminalPaneComponent] remove ran");
 
     try {
-      const shellPids = this.editorInMemoryStateService.shells() ?? [];
-      const pidToRemove = pid;
-      const filteredShellPids = shellPids.filter((n) => n !== pidToRemove);
-      const nextAviableShellPid = filteredShellPids[0] ?? null;
-
-      this.editorInMemoryStateService.currentActiveShellId.set(
-        nextAviableShellPid,
-      );
-
-      this.editorInMemoryStateService.shells.set(
-        structuredClone(filteredShellPids),
-      );
+      this.editorTerminalService.deleteAndKill(pid);
     } catch (error) {
       console.log("Failed to remove pid: ", pid, error);
     }

@@ -13,7 +13,7 @@
 
   <span
     class="editor_terminal_tab_item_close"
-    [matTooltip]="'delete: ' + label() + ' pid:' + shellPid()"
+    [matTooltip]="'delete: ' + label() + ' pid:' + shellInformation().pid"
     (mouseenter)="childHovered()"
     (mouseleave)="childHoverLeave()"
     (click)="deleteShell($event)"
